@@ -1,0 +1,162 @@
+{
+    "swagger": "2.0",
+    "basePath": "/",
+    "info": {
+        "title": "valaa-blob-storage"
+    },
+    "schemes": [
+        "https"
+    ],
+    "paths": {
+        "/verify-blob": {
+            "get": {
+                "summary": "Verify a pending blob",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ID of the verified blob",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "contentId": {
+                                            "type": "string",
+                                            "description": "The verified blob ID"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - wrong http method or missing parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "The reason the reqeust was rejected"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pending blob not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "description": "The AWS not found error code"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "description": "If errors comes from AWS, this is the AWS error code"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "description": "If error comes from JS exception, this is the exception message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "x-amazon-apigateway-integration": {
+                    "responses": {
+                        "default": {
+                            "statusCode": 200
+                        }
+                    },
+                    "httpMethod": "POST",
+                    "type": "aws_proxy",
+                    "passthroughBehavior": "when_no_match",
+                    "uri": {
+                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ValaaBlobVerify.Arn}/invocations"
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "pendingObjectName",
+                        "in": "query",
+                        "description": "Name of the pending blob to verify",
+                        "required": true,
+                        "type": "string"
+                    }
+                ]
+            },
+            "options": {
+                "consumes": [
+                "application/json"
+                ],
+                "produces": [
+                "application/json"
+                ],
+                "responses": {
+                "200": {
+                    "description": "200 response",
+                    "schema": {
+                        "$ref": "#/definitions/Empty"
+                    },
+                    "headers": {
+                        "Access-Control-Allow-Origin": {
+                            "type": "string"
+                        },
+                        "Access-Control-Allow-Methods": {
+                            "type": "string"
+                        },
+                        "Access-Control-Allow-Headers": {
+                            "type": "string"
+                        }
+                    }
+                }
+                },
+                "x-amazon-apigateway-integration": {
+                "responses": {
+                    "default": {
+                        "statusCode": 200,
+                        "responseParameters": {
+                            "method.response.header.Access-Control-Allow-Methods": "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'",
+                            "method.response.header.Access-Control-Allow-Headers": "'x-Requested-With,Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'",
+                            "method.response.header.Access-Control-Allow-Origin": "'*'"
+                        }
+                    }
+                },
+                "passthroughBehavior": "when_no_match",
+                "requestTemplates": {
+                    "application/json": "{\"statusCode\": 200}"
+                },
+                "type": "mock"
+                }
+            }
+        }
+    },
+    "definitions": {
+      "Empty": {
+         "type": "object",
+         "title": "Empty Schema"
+      }
+   }
+}

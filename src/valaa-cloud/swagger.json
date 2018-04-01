@@ -1,0 +1,448 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "2017-07-19T09:16:41Z",
+    "title": "ValaaCloud"
+  },
+  "host": "tbdmbuzdg5.execute-api.eu-west-1.amazonaws.com",
+  "basePath": "/develop",
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/commands": {
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "summary": "commands",
+        "description": "put command with command envelope, this will check if lastEntityId was the last previous one to ensure continuety, and decline entries that had new ones in between.",
+        "responses": {
+          "200": {
+            "description": "accepted",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 1507
+            }
+          },
+          "409": {
+            "description": "there was a conflict, as in the lastEntityId was out of date"
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "the command envelope.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CommandEnvelope"
+            }
+          }
+        ],
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200"
+            }
+          },
+          "uri": { "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${commands.Arn}/invocations"},          "passthroughBehavior": "when_no_match",
+          "httpMethod": "POST",
+          "contentHandling": "CONVERT_TO_TEXT",
+          "type": "aws_proxy"
+        }
+      },
+      "options": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Methods": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Headers": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Methods": "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Requested-With'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            }
+          },
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "passthroughBehavior": "when_no_match",
+          "type": "mock"
+        }
+      },
+      "x-amazon-apigateway-any-method": {
+        "responses": {
+          "200": {
+            "description": "200 response"
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            ".*": {
+              "statusCode": "200"
+            }
+          },
+          "uri": { "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${commands.Arn}/invocations"},
+          "passthroughBehavior": "when_no_match",
+          "httpMethod": "POST",
+          "type": "aws_proxy"
+        }
+      }
+    },
+    "/deletePartition": {
+      "options": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Methods": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Headers": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Methods": "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            }
+          },
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "passthroughBehavior": "when_no_match",
+          "type": "mock"
+        }
+      },
+      "x-amazon-apigateway-any-method": {
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200"
+            }
+          },
+          "uri": { "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${deletePartition.Arn}/invocations"},
+          "passthroughBehavior": "when_no_match",
+          "httpMethod": "POST",
+          "contentHandling": "CONVERT_TO_TEXT",
+          "type": "aws_proxy"
+        }
+      },
+      "get": {
+        "summary": "delete a partition by get request",
+        "description": "this is kind-of-an-alias, as delete to events didn't work in all cases",
+        "parameters": [
+          {
+            "name": "partitionId",
+            "in": "query",
+            "description": "the id of the partition to work with.",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200"
+            }
+          },
+          "uri": { "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${deletePartition.Arn}/invocations"},          "passthroughBehavior": "when_no_match",
+          "httpMethod": "POST",
+          "contentHandling": "CONVERT_TO_TEXT",
+          "type": "aws_proxy"
+        },
+        "responses": {
+          "200": {
+            "description": "accepted"
+          }
+        }
+      }
+    },
+    "/events": {
+      "options": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Methods": {
+                "type": "string"
+              },
+              "Access-Control-Allow-Headers": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Methods": "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Requested-With'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              }
+            }
+          },
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "passthroughBehavior": "when_no_match",
+          "type": "mock"
+        }
+      },
+      "x-amazon-apigateway-any-method": {
+        "produces": [
+          "application/json"
+        ],
+        "responses": {},
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200"
+            }
+          },
+          "uri": { "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${events.Arn}/invocations"},          "passthroughBehavior": "when_no_match",
+          "httpMethod": "POST",
+          "contentHandling": "CONVERT_TO_TEXT",
+          "type": "aws_proxy"
+        }
+      },
+      "get": {
+        "summary": "events",
+        "description": "return events for a certain partitionId.",
+        "responses": {
+          "200": {
+            "description": "accepted",
+            "schema": {
+              "type": "object",
+              "required": [
+                "Items",
+                "Count"
+              ],
+              "properties": {
+                "Items": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/EventEnvelope"
+                  }
+                },
+                "Count": {
+                  "type": "integer",
+                  "example": 10,
+                  "description": "count of elements"
+                },
+                "LastEvaluatedKey": {
+                  "type": "integer",
+                  "example": 10,
+                  "description": "the last key evaluated by dynamodb, if this is present, then there is more results to fetch!"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "partitionId",
+            "in": "query",
+            "description": "the id of the partition to work with.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lastEvaluatedKey",
+            "in": "query",
+            "description": "IMPORTANT: dynamodb might cap the amount of values returned. if so, the result will contain a key named LastEvaluatedKey, which contains the last key that was relevant in the query before the cap - this parameter allows to provide this key, so the next chunk of results can be fetched, this might even still be relevant when browsing between precedingEvent and lastEvent, as even then dynamodb might only give back a limited amount of results.",
+            "type": "integer"
+          },
+          {
+            "name": "precedingEvent",
+            "in": "query",
+            "description": "return events after (exclusive) this eventId",
+            "type": "integer"
+          },
+          {
+            "name": "lastEvent",
+            "in": "query",
+            "description": "return events up until (inclusive) this eventId",
+            "type": "integer"
+          }
+        ],
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200"
+            }
+          },
+          "uri": { "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${events.Arn}/invocations"},          "passthroughBehavior": "when_no_match",
+          "httpMethod": "POST",
+          "contentHandling": "CONVERT_TO_TEXT",
+          "type": "aws_proxy"
+        }
+      },
+      "delete": {
+        "summary": "delete events",
+        "description": "deletes all events in the partition identified by partitionId.",
+        "responses": {
+          "200": {
+            "description": "accepted"
+          }
+        },
+        "parameters": [
+          {
+            "name": "partitionId",
+            "in": "query",
+            "description": "the id of the partition to work with.",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200"
+            }
+          },
+          "uri": { "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${events.Arn}/invocations"},          "passthroughBehavior": "when_no_match",
+          "httpMethod": "POST",
+          "contentHandling": "CONVERT_TO_TEXT",
+          "type": "aws_proxy"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "CommandEnvelope": {
+      "type": "object",
+      "properties": {
+        "partitionId": {
+          "type": "string",
+          "description": "the identifier for the partition"
+        },
+        "lastEventId": {
+          "type": "integer",
+          "format": "int64",
+          "description": "id of last command known to the client"
+        },
+        "command": {
+          "$ref": "#/definitions/Event"
+        },
+        "partitionList": {
+          "required": "false",
+          "type": "array",
+          "items": {
+            "lastEventId": 1506,
+            "partitionId": "the identifier of the partition"
+          },
+          "example": [
+            {"lastEventId": 1506, "partitionId": "test-partition-1"},
+            {"lastEventId": 1980, "partitionId": "test-partition-2"}
+          ],
+          "description": "optional array of objects containing lastEventId and partitionId in case this command is supposed to be written to multiple partitions"
+        }
+      }
+    },
+    "Event": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "Type of the command"
+        }
+      }
+    },
+    "EventEnvelope": {
+      "type": "object",
+      "properties": {
+        "partitionId": {
+          "type": "string",
+          "description": "partition identifier"
+        },
+        "eventId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "event": {
+          "$ref": "#/definitions/Event"
+        }
+      }
+    },
+    "Empty": {
+      "type": "object",
+      "title": "Empty Schema"
+    }
+  }
+}

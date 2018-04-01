@@ -1,0 +1,1 @@
+{"httpMethod":"PUT","body":{"partitionId":"dummy-11-7223-4cf8-923f-93ab87c45d01","origin":{},"lastEventId":0,"log":{},"command":{"type":"CREATED","typeName":"Blob","id":"004661f3e7cb27895a7c0c87f90d3abd7056df1d2ec03bd9e0c981a585dff2452f0419fed1ef9972b782348ad25307bb21cf33c0f7287ec08148346fa9bacde2","data":{}}}}
