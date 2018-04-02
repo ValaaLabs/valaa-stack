@@ -1,3 +1,7 @@
+# THIS PROJECT IS CONTINUED BY VALAA TECHNOLOGIES
+
+This repository is no longer maintained. Development is continued by Valaa Technologies. [Repository can be found here](https://github.com/Valaa-Technologies/valaa-stack).
+
 # Valaa Stack
 
 Distributed platform of platforms, with minimal threshold of entry
