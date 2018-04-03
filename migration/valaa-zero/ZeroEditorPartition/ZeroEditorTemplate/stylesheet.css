@@ -1,0 +1,101 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.header-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: #03a8f4;
+  color: white;
+  padding: 10px;
+}
+
+.header-logo {
+  flex-grow: 0;
+  /*
+  background-image: url(assets/images/logo-header.png);
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 100px;
+  */
+  margin-left: 10px;
+}
+
+.header-title {
+  flex-grow: 1;
+  text-align: center;
+}
+
+.header-version {
+  flex-grow: 0;
+}
+
+.main-wrapper {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  color: #a9a9a9;
+}
+
+.panel-wrapper {
+  display: flex;
+  flex-direction: column;
+  background-color: #dedede;
+}
+
+.panel-body {
+  display: flex;
+  flex: 1;
+}
+
+.panel-body-nav {
+  background-color: #4c4c4c;
+  padding-top: 20px;
+}
+
+.panel-button {
+  padding: 0px 8px 0px 8px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.panel-button:hover {
+  background-color: #515151;
+  color: #ffffff;
+}
+
+
+.panel-button-icon {
+  display: flex;
+  flex-direction: column;
+  text-rendering: auto;
+  font-size: 28px;
+  font-style: normal;
+}
+
+.icon-search:before { content: "🔎"; }
+.icon-chat:before { content: "🗩"; }
+.icon-settings:before { content: "⚙"; }
+.icon-account:before { content: "🙍"; }
+.icon-sign-out:before { content: "🛫"; }
+.icon-test:before { content: "☠"; }
+
+.panel-body-content {
+  background-color: #353535;
+}
+
+/* Defined this in SplitView's stylesheet? */
+.content-wrapper {
+  display: flex;
+  flex: 10 1 auto;
+  flex-direction: column;
+  background-color: #272727;
+}

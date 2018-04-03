@@ -1,0 +1,38 @@
+[{
+    "actions": [{
+        "typeName": "Entity",
+        "id": ["lcl-0a494baa-a45e-4ae6-8f6f-be2ef222f45b", null, null, "valaa-local:?id=lcl-0a494baa-a45e-4ae6-8f6f-be2ef222f45b"],
+        "initialState": {
+            "name": "New partition",
+            "partitionAuthorityURI": "valaa-local:"
+        },
+        "type": "CREATED",
+        "commandId": "lcl-0a494baa-a45e-4ae6-8f6f-be2ef222f45b"
+    }],
+    "type": "TRANSACTED",
+    "version": "0.1",
+    "commandId": "lcl-6c84922c-c436-469e-825e-618ddc7428a6",
+    "timeStamp": 1512995431650,
+    "partitions": {
+        "lcl-0a494baa-a45e-4ae6-8f6f-be2ef222f45b": {
+            "eventId": 0,
+            "partitionAuthorityURI": "valaa-local:"
+        }
+    }
+}, {
+    "id": ["lcl-0a494baa-a45e-4ae6-8f6f-be2ef222f45b", null, null, "valaa-local:?id=lcl-0a494baa-a45e-4ae6-8f6f-be2ef222f45b"],
+    "typeName": "Entity",
+    "type": "MODIFIED",
+    "sets": {
+        "name": "Zero homes"
+    },
+    "version": "0.1",
+    "commandId": "lcl-a20c00a0-f633-4d70-800c-81b3846e86f0",
+    "timeStamp": 1512995591247,
+    "partitions": {
+        "lcl-0a494baa-a45e-4ae6-8f6f-be2ef222f45b": {
+            "eventId": 1,
+            "partitionAuthorityURI": "valaa-local:"
+        }
+    }
+}]

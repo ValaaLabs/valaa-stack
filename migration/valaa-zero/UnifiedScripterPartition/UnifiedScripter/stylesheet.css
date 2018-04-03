@@ -1,0 +1,400 @@
+/* Root styles */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: 98%;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Target selection */
+.target-selector {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+  align-items: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.target-selector-label {
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.target-selector-widget {
+  flex-grow: 1;
+}
+
+/* Lens selection */
+.lens-selector {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+  align-items: center;
+}
+
+.lens-selector-button {
+  flex-grow: 1;
+  padding: 10px;
+  border-style: solid;
+  border-width: thin;
+  text-align: center;
+}
+
+.lens-selector-button:hover {
+  background-color: #aaaaaa;
+  color: #000000;
+}
+
+/* Missing content styles */
+.missing-target {
+  color: salmon;
+  font-size: 32px;
+}
+
+/* Documenter styles */
+.documenter-root {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: 100%;
+}
+
+.documenter-missing {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.documenter-missing-text {
+  font-size: 32px;
+  color: salmon;
+}
+
+.documenter-documentation {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.documenter-add-documentation-button {
+  padding: 10px;
+  border-style: solid;
+  border-width: thin;
+  text-align: center;
+  font-family: monospace;
+}
+
+.documenter-add-documentation-button:hover {
+  background-color: #aaaaaa;
+  color: #000000;
+}
+
+.documenter-sections {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-left: 5%;
+  padding-right: 5%;
+  overflow-y: auto;
+}
+
+.documenter-section {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex-shrink: 0;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.documenter-section-header {
+  display: flex;
+  flex-direction: row;
+  font-weight: bold;
+  align-items: center;
+  padding-top:    10px;
+  padding-bottom: 10px;
+  white-space: pre;
+}
+
+.documenter-section-header-label {
+  font-family: monospace;
+  font-size: large;
+}
+
+.documenter-section-body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.documenter-section-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.documenter-section-field-label {
+  font-family: monospace;
+}
+
+.documenter-section-widget {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: stretch;
+}
+
+.documenter-remove-section-button {
+  padding: 10px;
+  border-style: solid;
+  border-width: thin;
+  text-align: center;
+  font-family: monospace;
+  flex-grow: 1;
+}
+
+.documenter-remove-section-button:hover {
+  background-color: #aaaaaa;
+  color: #000000;
+}
+
+.documenter-subsections {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.documenter-subsection {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-left: 15px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.documenter-subsection-header {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.documenter-subsection-header-label {
+  display: flex;
+  flex-grow: 1;
+  font-family: monospace;
+  white-space: pre;
+}
+
+.documenter-subsection-header-toolbox {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+}
+
+.documenter-remove-subsection-button {
+  padding: 5px;
+  border-style: solid;
+  border-width: thin;
+  text-align: center;
+  font-family: monospace;
+  flex-grow: 1;
+}
+
+.documenter-remove-subsection-button:hover {
+  background-color: #aaaaaa;
+  color: #000000;
+}
+
+.documenter-subsection-body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch
+}
+
+.documenter-subsection-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex-shrink: 0;
+  padding-left: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.documenter-subsection-field-label {
+  font-family: monospace;
+}
+
+.documenter-toggle {
+  flex-grow: 1;
+  flex-shrink: 0;
+  border-style: solid;
+  border-width: thin;
+  padding: 5px;
+  text-align: center;
+  font-family: monospace;
+}
+
+.toggle-add {
+  background-color: honeydew;
+}
+
+.toggle-add:hover {
+  background-color: palegreen;
+  color: black;
+}
+
+.toggle-remove {
+  background-color: mistyrose;
+}
+
+.toggle-remove:hover {
+  background-color: lightpink;
+  color: black;
+}
+
+.documenter-short-editor {
+  flex-shrink: 0;
+  height: 50px;
+}
+
+.documenter-tall-editor {
+  flex-shrink: 0;
+  height: 125px;
+}
+
+/* Scripter styles */
+.scripter-root {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  align-items: stretch;
+  height: 100%; /* TODO check necessity of this in the combined view */
+}
+
+.scripter-toolbox {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  align-items: stretch;
+}
+
+.scripter-toolbox-button {
+  flex-grow: 1;
+  padding: 10px;
+  border-style: solid;
+  border-width: thin;
+  text-align: center;
+  font-family: monospace;
+}
+
+.scripter-toolbox-button:hover {
+  background-color: #aaaaaa;
+  color: #000000;
+}
+
+.scripter-sections {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow-y: auto;
+  padding-left: 5%;
+  padding-right: 5%;
+}
+
+.scripter-section {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.scripter-section-header {
+  display: flex;
+  flex-direction: row;
+  font-size: large;
+  font-weight: bold;
+  padding-top:    10px;
+  padding-bottom: 10px;
+  white-space: pre;
+}
+
+.scripter-section-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.scripter-section-entry {
+  padding-top:    5px;
+  padding-bottom: 5px;
+}
+
+.scripter-section-entry-header {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.scripter-section-entry-body {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  align-items: stretch;
+  height: 300px;
+}
+
+.scripter-section-entry-label {
+  flex-shrink: 0;
+  flex-grow: 0;
+  font-family: monospace;
+  padding: 5px;
+}
+
+.scripter-section-entry-value {
+  flex-shrink: 0;
+  flex-grow: 0;
+  font-family: monospace;
+  padding: 5px;
+}
+
+.scripter-section-entry-widget {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: stretch;
+} 
+
+.scripter-section-entry-button {
+  flex-grow: 1;
+  flex-shrink: 0;
+  padding: 5px;
+  border-style: solid;
+  border-width: thin;
+  text-align: center;
+  font-family: monospace;
+}
+
+.scripter-section-entry-button:hover {
+  background-color: #aaaaaa;
+  color: #000000;
+}

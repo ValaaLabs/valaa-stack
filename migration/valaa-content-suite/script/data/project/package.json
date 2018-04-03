@@ -1,0 +1,43 @@
+{
+    "name": "skeleton",
+    "version": "0.1.0",
+    "description": "Project skeleton",
+    "author": "ValaaLabs",
+    "license": "MIT",
+    "private": true,
+    "config": {
+      "remote": null,
+      "engine": null
+    },
+    "scripts": {
+        "start": "NODE_ENV=development node script/run-with-local-engine $npm_package_config_engine",
+        "package": "node script/package false",
+        "repackage": "node script/package true",
+        "bump:major": "node script/bump-version 0",
+        "bump:minor": "node script/bump-version 1",
+        "bump:patch": "node script/bump-version 2",
+        "bump:prerelease": "node script/bump-version 3",
+        "bump:build": "node script/bump-version 4",
+        "set:version": "node script/set-package-json-value version",
+        "set:engine-name": "node script/set-package-json-value valaa/engine/name",
+        "set:engine-version": "node script/set-package-json-value valaa/engine/version",
+        "sync:down": "node script/sync-down $npm_package_config_remote",
+        "sync:up": "node script/sync-up $npm_package_config_remote"
+   },
+    "valaa": {
+        "type": "project",
+        "engine": {
+            "name": "inspire-engine",
+            "version": "0.1.0"
+        },
+        "descriptions": {
+            "en-US": "Project skeleton"
+        }
+    },
+    "devDependencies": {
+        "js-beautify": "^1.6.3",
+        "json-loader": "^0.5.4",
+        "lodash": "^4.17.2",
+        "shelljs": "^0.7.2"
+    }
+}

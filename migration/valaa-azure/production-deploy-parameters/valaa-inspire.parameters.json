@@ -1,0 +1,21 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-05-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "newStorageAccountName": {
+      "value": "valaainspirestorage"
+    },
+    "adminUsername": {
+      "value": "valaa-user"
+    },
+    "adminSSHKeyData": {
+      "value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDP69bfpGUIHKHPgK2eNn5EQfEUEd/p4gGEJ2XJp7N2eTb/OK+kObRgnOeztDRB4dipSufE31hnxOevo0I0qTp/fnJmP/fVsm+qnzY94GDLBincIzPwjvbWNcGBYGp2hzgtU+UXoDj0Ok6CirOVk3INq/XTqD5iG4hdFg0GoRKJ3ZycznwSSu36NmN/Wo/PqMC0YV9F/UrIlKZepSz2hVGvg12j08bOORBzrN8T/28FHB9vcEI/+2GinrxshD1jrfPBJ6esmIxuC5LJ+TL8a0T8pSFJe8MlNd6BgKcaBGBmD4nwYU4PiTXTY8H9J8qQgHeo9x06S61J02LmtJYtVHDx mattahj@devbox"
+    },
+    "dnsNameForPublicIP": {
+      "value": "valaa-inspire"
+    },
+    "ubuntuOSVersion": {
+      "value": "14.04.2-LTS"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+    "lcl-108dd14e-0416-4b45-8b15-700bc0b1f328": {
+        "mediaId": "lcl-108dd14e-0416-4b45-8b15-700bc0b1f328",
+        "mediaInfo": {
+            "name": "partition.vsx",
+            "blobId": "5552b86ed8b224cf47ad3f7dbac443b95a937906015f70b9894867461da3f286300c019ef1d58a6ae24244a6bb5282d96b0b8ddd5697c357fc6300c331eabe83"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-2becca7f-767a-4c87-917a-ebdf5decb5ce": {
+        "mediaId": "lcl-2becca7f-767a-4c87-917a-ebdf5decb5ce",
+        "mediaInfo": {
+            "name": "createLocalInstance.vs",
+            "blobId": "c9d16346e2b6fa6ec914b9d7aad92396846967d6db29f0f87932efb6d0ec0e5d7d292ecbfc14151840c7635f90cf579ac1d50ba1618b9ba1557a3ee4e10e0844"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-8d644bf3-a590-4b5d-907c-b45423bf814b": {
+        "mediaId": "lcl-8d644bf3-a590-4b5d-907c-b45423bf814b",
+        "mediaInfo": {
+            "name": "login.vsx",
+            "blobId": "da4145e3158941e3d2d609af914515ea10bc5b92fda277265c13e65c91d1cb8beb93292ef2b8e05561672d9d81f544daf4a91cd961ddb03ba9f0f908084ffbd6"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-97014a29-4029-495f-a42d-24e7d7528187": {
+        "mediaId": "lcl-97014a29-4029-495f-a42d-24e7d7528187",
+        "mediaInfo": {
+            "name": "test.vsx",
+            "blobId": "7825a6d2747f73a7035a4ff65e7c2d5f96a3e07821ff2478216ef9b6f48343409528876b0eab88fdc9f46d0735f2d3ae70642ff6270d545cf07f66342ca1a810"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-f0fd21ce-9e46-4ed3-a1b3-618636b0f27c": {
+        "mediaId": "lcl-f0fd21ce-9e46-4ed3-a1b3-618636b0f27c",
+        "mediaInfo": {
+            "name": "attemptLogin.vs",
+            "blobId": "4722a8e21373f35e94b449323d189ad9df3f0ab6eb9639625530ed486d5bbedc91b6598c653ee2c3e34f94f5446bd4b75523e32088e9510224f6384aedb21ee2"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    }
+}

@@ -1,0 +1,194 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: 90%;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex-grow: 1;
+  overflow: auto;
+  padding-left: 5%;
+  padding-right: 5%
+}
+
+/* Missing documentation styles */
+
+.documentation-missing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+}
+
+.documentation-missing-text {
+  font-size: 32px;
+  font-family: monospace;
+}
+
+/* Existing documentation styles */
+
+.documentation {
+  display: flex;
+  flex-direction: column;
+}
+
+.documentation-header {
+  display: flex;
+  font-weight: bold;
+  font-size: 32px;
+  padding-top:    16px;
+  padding-bottom: 16px;
+}
+
+/* Main documentation sections */
+
+.main-documentation-summary {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  margin-top: 15px;
+}
+
+.main-documentation-summary-header {
+  font-family: monospace;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.main-documentation-summary-body {
+  font-family: monospace;
+}
+
+.main-documentation-description {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  margin-top: 15px;
+}
+
+.main-documentation-description-header {
+  font-family: monospace;
+  font-weight: bold;
+  font-size: 20px;
+  text-transform: capitalize;
+}
+
+.main-documentation-description-body {
+  font-family: monospace;
+}
+
+/* Per-property documentation */
+
+.property-list {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.list-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex-shrink: 0;
+  margin-top: 15px;
+}
+
+.entry-header {
+  font-family: monospace;
+  font-weight: bold;
+  font-size: 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.entry-name {
+  font-family: monospace;
+  font-weight: bold;
+  font-size: 20px;
+  margin-left: 1em;
+  color: salmon;
+}
+
+/* Undocumented property styles */
+
+.entry-undocumented {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.entry-undocumented-label {
+  font-family: monospace;
+  padding-top: 10px;
+  color: darkslategray;
+}
+
+/* Property documentation sections */
+
+.entry-documentation {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.entry-documentation-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 10px;
+}
+
+.entry-documentation-summary-body {
+  font-family: monospace;
+}
+
+.entry-documentation-long {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 10px;
+}
+
+.entry-documentation-long-body {
+  font-family: monospace;
+}
+
+.entry-documentation-example {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 10px;
+}
+
+.entry-documentation-example-header {
+  font-family: monospace;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.entry-documentation-example-body {
+  font-family: monospace;
+  white-space: pre-line;
+}
+
+.entry-documentation-example-clarification {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 10px;
+}
+
+.entry-documentation-example-clarification-header {
+  font-family: monospace;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.entry-documentation-example-clarification-body {
+  font-family: monospace;
+}

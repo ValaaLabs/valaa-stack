@@ -1,0 +1,36 @@
+.main-wrapper {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  background-color: #4c4c4c;
+  color: #a9a9a9;
+}
+
+.panel-wrapper {
+  display: flex;
+  flex-direction: column;
+  background-color: #dedede;
+}
+
+.panel-button {
+  padding: 0px 8px 0px 8px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.panel-button:hover {
+  background-color: #515151;
+  color: #ffffff;
+}
+
+/* Defined this in SplitView's stylesheet? */
+.content-wrapper {
+  display: flex;
+  flex: 10 1 auto;
+  flex-direction: column;
+  background-color: #272727;
+}

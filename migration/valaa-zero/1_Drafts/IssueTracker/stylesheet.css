@@ -1,0 +1,253 @@
+.root {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 100%;
+}
+
+.side-pane {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  border-style: solid;
+  border-width: thin;
+}
+
+.new-issue-button {
+  text-align: center;
+  font-weight: bold;
+  background-color: green;
+  color: white;
+  padding: 10px;
+  text-transform: uppercase;
+}
+
+.new-issue-button:hover {
+  background-color: lightgreen;
+  color: black;
+}
+
+.folders {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow-y: auto;
+}
+
+.folder {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  align-items: stretch;
+  padding-top:    10px;
+  padding-bottom: 5px;
+}
+
+.folder-label {
+  font-family: monospace;
+}
+
+.issues {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-left: 15px;
+}
+
+.issue {
+  flex-shrink: 0;
+  padding-top:    5px;
+  padding-bottom: 5px;
+}
+
+.issue-label {
+  font-family: monospace;
+}
+
+.focused {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  align-items: stretch;
+  overflow-y: auto;
+  border-style: solid;
+  border-width: thin;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.focused-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-bottom: 15px;
+}
+
+.focused-label {
+  font-size: large;
+  font-weight: bold;
+  flex-grow: 1;
+}
+
+.focused-status {
+  font-size: large;
+  font-weight: bold;
+}
+
+.focused-status-selector {
+  background-color: lightslategray;
+  color: black;
+  padding: 10px;
+}
+
+.focused-status-selector:hover {
+  background-color: lightgray;
+  color: darkslategray;
+}
+
+.focused-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: stretch;
+}
+
+.focused-description-adder {
+  padding: 30px;
+  border-style: dotted;
+  border-width: medium;
+  text-align: center;
+  background-color: lightgray;
+}
+
+.focused-description-adder:hover {
+  background-color: palegoldenrod;
+  color: black;
+}
+
+.focused-description {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex-shrink: 0;
+}
+
+.focused-description-text {
+  display: flex;
+  flex-grow: 1;
+  font-family: monospace;
+}
+
+.focused-description-toolbox {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.focused-description-save {
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: lightgray;
+  color: black;
+}
+
+.focused-description-save:hover {
+  background-color: lightgreen;
+}  
+
+.focused-description-revert {
+  padding: 10px;
+  background-color: lightgray;
+  color: black;
+}
+
+.focused-description-revert:hover {
+  background-color: lightgreen;
+}
+
+.focused-comments-section {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: stretch;
+  padding-top: 15px;
+}
+
+.focused-comments-header {
+  font-size: large;
+  font-weight: bold;
+}
+
+.focused-comments {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex-shrink: 0;
+}
+
+.focused-comment-adder {
+  padding: 30px;
+  border-style: dotted;
+  border-width: medium;
+  text-align: center;
+  background-color: lightgray;
+}
+
+.focused-comment-adder:hover {
+  background-color: palegoldenrod;
+  color: black;
+}
+
+
+.focused-comment {
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  align-items: stretch;
+  padding-top:    10px;
+  padding-bottom: 10px;
+}
+
+.focused-comment-text {
+  display: flex;
+  flex-grow: 1;
+  font-family: monospace;
+}
+
+.focused-comment-toolbox {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.focused-comment-save {
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: lightgray;
+  color: black;
+}
+
+.focused-comment-save:hover {
+  background-color: lightgreen;
+}  
+
+.focused-comment-revert {
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: lightgray;
+  color: black;
+}
+
+.focused-comment-revert:hover {
+  background-color: lightgreen;
+}
+
+.focused-comment-remove {
+  padding: 10px;
+  background-color: lightgray;
+  color: black;
+}
+
+.focused-comment-remove:hover {
+  background-color: lightpink;
+}

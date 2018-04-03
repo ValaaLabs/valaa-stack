@@ -1,0 +1,57 @@
+.root {
+  width:  100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+}
+
+.title {
+  font-size: large;
+  flex-shrink: 0;
+}
+
+.canvas {
+  position: relative;
+  top: 0px;
+  left: 0px;
+  width:  256px;
+  height: 256px;
+}
+
+.candidate {
+  width:  256px;
+  height: 256px;
+  margin: 10px;
+  border-style: solid;
+  border-width: thin;
+}
+
+.§rows {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  flex-shrink: 0;
+}
+
+.entry {
+  display: flex;
+  flex-direction: column;
+  border-style: solid;
+  border-width: thin;
+  padding: 10px;
+  margin: 5px;
+}
+
+.exclude-button {
+  padding: 5px;
+  background-color: salmon;
+  align-self: stretch;
+}
+
+.button {
+  margin: 15px;
+  padding: 10px;
+}

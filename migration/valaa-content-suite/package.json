@@ -1,0 +1,24 @@
+{
+  "name": "valaa-content-suite",
+  "version": "0.3.0",
+  "config": {
+    "package_author": "ValaaLabs",
+    "valaa_host": "inspire.valaa.com",
+    "valaa_user": "inspire_8",
+    "valaa_engine": "../inspire"
+  },
+  "description": "Valaa Content Suite",
+  "scripts": {
+    "configure": "node script/configure",
+    "create": "node script/create"
+  },
+  "author": "ValaaLabs",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "js-beautify": "^1.6.3",
+    "json-loader": "^0.5.4",
+    "lodash": "^4.17.2",
+    "shelljs": "^0.7.2"
+  }
+}

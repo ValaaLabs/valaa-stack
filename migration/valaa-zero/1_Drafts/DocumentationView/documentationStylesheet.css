@@ -1,0 +1,67 @@
+.root {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    height: 90%;
+}
+
+.title {
+    padding: 20px;
+    font-size: large;
+    align-self: center;
+}
+
+.documentationParagraph {
+    padding: 10px;
+}
+
+.sectionHeader {
+    font-size: large;
+    padding: 10px;
+    color: black;
+}
+
+.apiFunctionEntry {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    flex-shrink: 0;
+}
+
+.apiFunctionHeader {
+    padding-left: 10px;
+    color: darkred;
+    font-family: monospace;
+}
+
+.apiFunctionDescription {
+    padding-left: 20px;
+    font-family: monospace;
+}
+
+.scriptsHeader {
+    font-size: large;
+    align-self: center;
+    padding: 10px;
+}
+
+.scriptList {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 0;
+    overflow: auto;
+}
+
+.listEntry {
+    display: flex;
+    flex-direction: column;
+    padding-top: 10px;
+}
+
+.entrySource {
+    border-style: solid;
+    overflow-x: auto;
+    color: black;
+    padding: 5px;
+}

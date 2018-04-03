@@ -1,0 +1,2234 @@
+{
+    "lcl-01da2111-ef26-4e1a-9e6d-c95fb5e61462": {
+        "mediaId": "lcl-01da2111-ef26-4e1a-9e6d-c95fb5e61462",
+        "mediaInfo": {
+            "name": "bookmarkNode.vs",
+            "blobId": "3ea5ed5556792bd62780e2986e7cfaf4caefb3c3784904af873bcd5b1c28847d5aec4329b923b8fa4df37629dfb87aff486f0033da3ac03033dbbcd4e62c463a"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-02204c96-3fae-4d5b-9e39-23cd29f9826e": {
+        "mediaId": "lcl-02204c96-3fae-4d5b-9e39-23cd29f9826e",
+        "mediaInfo": {
+            "name": "postLoadActions.vs",
+            "blobId": "e6e9a0e276dce73465f980386ff1b0223348370dc043d81877d3a3dc2d4136fe7ebdb782bbd9e35150e5cb6a6092214ee6e220708c4c6646543d0b84683f6b4d"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-027368d1-1abb-4c7f-be25-915760933cb9": {
+        "mediaId": "lcl-027368d1-1abb-4c7f-be25-915760933cb9",
+        "mediaInfo": {
+            "name": "createPartition.vs",
+            "blobId": "5f966ddd038444a335c6c4227e7d863ae5063c1d55f87c44ebf95d497ef2a86e567cb17f918be862c6a347ecac81e77e91861fe411170cf6a0aba0031bd49495"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-047a2f06-a21f-4dc4-9aeb-e0ef044ec07a": {
+        "mediaId": "lcl-047a2f06-a21f-4dc4-9aeb-e0ef044ec07a",
+        "mediaInfo": {
+            "name": "getTargetingProperty.vs",
+            "blobId": "c6af78373053e37310a42a55830013d8f47e0075ce326a439f127585dfa05adc07206632c5a993b3216678b44a64f556c0a8892023a2786a0889133883e5b61b"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-05bbd94d-d4aa-4c6a-b265-2ecca67fbb28": {
+        "mediaId": "lcl-05bbd94d-d4aa-4c6a-b265-2ecca67fbb28",
+        "mediaInfo": {
+            "name": "moveToHere.vs",
+            "blobId": "983a82f7d8d5e320b5f55a40565f2ca33ecf7fd7b4cd118b9ed1b7b4b9082d0308ad5328f8ba1ddbc40e01130d329c45690b20c7f113f7023aab6b5db2876ecf"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-06e0001f-0446-4f85-929b-69cdb46ff6d3": {
+        "mediaId": "lcl-06e0001f-0446-4f85-929b-69cdb46ff6d3",
+        "mediaInfo": {
+            "name": "setPropertyTarget.vs",
+            "blobId": "f93aec5bb6cb4c55f07b15f0e89bba3ade94ef121d1cfd96e2d14c98bf87a00be4ccc7ebe41b03d43673aaaebf2dbe35980f5e316d033e339ce445058e801548"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-07833c7f-9ad1-4410-ba0e-e19749a27c38": {
+        "mediaId": "lcl-07833c7f-9ad1-4410-ba0e-e19749a27c38",
+        "mediaInfo": {
+            "name": "openTab.vs",
+            "blobId": "206bed8f7f6ca1db19c2cb2bbed5d83027ba7c42483b4648801cc9f3bf08108e1f275817c6190df2382583c417457d8179b658d6b7bbdfbeb8b3d7545bc1dc5d"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-095d8337-86c6-42eb-ba6d-6de2601874d1": {
+        "mediaId": "lcl-095d8337-86c6-42eb-ba6d-6de2601874d1",
+        "mediaInfo": {
+            "name": "focusViewGenerator.vs",
+            "blobId": "ba3de3695c681d51a875e78583814b1dfa21c3dd6747e10a72e89413d3d5c9fee03a6a6afab94160fb360eb11a9263d0de3394ea46b4ce62fefe45bf8c82d397"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-0a8f76ef-f7f9-4414-b49b-557510ad2e28": {
+        "mediaId": "lcl-0a8f76ef-f7f9-4414-b49b-557510ad2e28",
+        "mediaInfo": {
+            "name": "InfoView.vsx",
+            "blobId": "47c95d307fcd54ff1753cd90aa8905f95de4a701985acabc4119ef844a4988491ef236aa59e543393f41ec9662e3d43a1e9149162f0c1e4337b5ce5daf1cd4c0"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-0c03b03b-41ef-425e-ab4c-ee0d3576f124": {
+        "mediaId": "lcl-0c03b03b-41ef-425e-ab4c-ee0d3576f124",
+        "mediaInfo": {
+            "name": "displayVSBoxState.vsx",
+            "blobId": "994d166fc5f2e4aa684664b5f5ae328d77f4fdd4e39c4d7906f80cfbf9c366440766fb7687f1edfcb0adbcfd00c5fe1c7cc86e36426fc50d433257020f1b00fc"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-0c8f1389-dc6d-46a3-810a-8e26ecf66f1a": {
+        "mediaId": "lcl-0c8f1389-dc6d-46a3-810a-8e26ecf66f1a",
+        "mediaInfo": {
+            "name": "getNodeClasses.vs",
+            "blobId": "d43cb192722c22dc883f259bf17bfc96f67d8695775ee5aa85fa4e558918dfc2456f0b5251da71d22c0c68c3c234674cd51990a6d22bef88fcdb09853a1b3bc4"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-0f1835f4-a4ba-4c14-8a20-12c79d494ad3": {
+        "mediaId": "lcl-0f1835f4-a4ba-4c14-8a20-12c79d494ad3",
+        "mediaInfo": {
+            "name": "relationArrow.vsx",
+            "blobId": "a9f72da821a983e1eb1d2c7f77c8ffc29e93e9940bfe97020280c38d3b33ba57143849bcf9f3b6330f7368adc56eb78ea6550e2a2d6ea8e660a5b38955af657d"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-0f7a6628-bcef-4354-ba57-e298b997e8f0": {
+        "mediaId": "lcl-0f7a6628-bcef-4354-ba57-e298b997e8f0",
+        "mediaInfo": {
+            "name": "stylesheet.css",
+            "blobId": "258ce21ac8ad0a148cc3e295fcc77ea500b66fb78429546a30c9d7b559af92479084be6f4ceecd375698c158bab4ff944cab68cf4e19a50d50c79c6bbae61bbf"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-1148e099-cbb0-46ca-b900-2e75de5a291e": {
+        "mediaId": "lcl-1148e099-cbb0-46ca-b900-2e75de5a291e",
+        "mediaInfo": {
+            "name": "getMediaExtension.vs",
+            "blobId": "839876bab46f386205d45975cd0f6e5608dc618fec8a712a93657e8d99e88538086c2ed84d56f06a6934b8681dc5baeb05a0c0ee0416a1c2b194f648bb990417"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-12890e3a-b04b-45ef-bf04-6207f9ea7b07": {
+        "mediaId": "lcl-12890e3a-b04b-45ef-bf04-6207f9ea7b07",
+        "mediaInfo": {
+            "name": "nodeIsPrototype.vs",
+            "blobId": "196d6f971543fa7e819117e025c15cff1203a3d75f3a1e28cce005d55d04440b97f116bb5cc5133c0ad4bd448e7f92c2d4ef5ea96b820c584aa9efd34c92c0f8"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-131dc8a5-866b-425b-91dd-49de8fe1c760": {
+        "mediaId": "lcl-131dc8a5-866b-425b-91dd-49de8fe1c760",
+        "mediaInfo": {
+            "name": "nodeCanExpand.vs",
+            "blobId": "d8175d28016c0f44d71b67fb04c064a1dae8a173992577762322b845f53c7258d6ebbd9c216545a267f358d5dd5ab824043f49c6a85feb084a1521d662e0b795"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-13c419c3-6f5b-453a-bbc7-c4455074a199": {
+        "mediaId": "lcl-13c419c3-6f5b-453a-bbc7-c4455074a199",
+        "mediaInfo": {
+            "name": "openTab.vs",
+            "blobId": "62251b9fd7fd49ba7a062b74e55a959543cb104235cb8b2ea45d4440c808c26913b0aa8fe43526f233804b0ad563bd8ab188543de0c8ebf4ba742b83b87a7bf1"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-14e5c7db-69bd-4332-a769-5e8bdb1c8ab6": {
+        "mediaId": "lcl-14e5c7db-69bd-4332-a769-5e8bdb1c8ab6",
+        "mediaInfo": {
+            "name": "editDone.vs",
+            "blobId": "ef26c7f819614d0dc2aae0c9331b53cbfcb61dfe7db9ffd09e1eebd08b94eb86c27e2c65f03e4c9a8b06eb941c2bc9b64173f3638bf208839606c888e2fe8fb9"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-153342f3-9a44-435c-900d-057874d35695": {
+        "mediaId": "lcl-153342f3-9a44-435c-900d-057874d35695",
+        "mediaInfo": {
+            "name": "cancelUI.vsx",
+            "blobId": "fb9766828284e81e0f7241e1cc26821c11b5e8d93984802d8b958207e8900aafa6b58957c12a920f6a9722d07aa16861f72fe4ab09e0a0ad7915e98f6b7a72a0"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-160a4490-970f-460f-9f9b-1b9285c98100": {
+        "mediaId": "lcl-160a4490-970f-460f-9f9b-1b9285c98100",
+        "mediaInfo": {
+            "name": "nodeIsAccessorProperty.vs",
+            "blobId": "b3e7de4c1e5c08efe5c09468e35ebbdfe48291c90748b15b61407e9498cb7086261df7e2f837f71a4e2e72f76bd14b2fee9101f58ee1d1b8ebdf891e9c49bc13"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-1772a65e-4573-4bfb-bf8f-e81d1c82f3b3": {
+        "mediaId": "lcl-1772a65e-4573-4bfb-bf8f-e81d1c82f3b3",
+        "mediaInfo": {
+            "name": "registerListener.vs",
+            "blobId": "3aab749b58c1316167036c5f83e0effc97cfe244ab6085fea1307e4e7c78f01de825dc2d53e8cb5eb005d9f5d29e3fbaf922ce67ad95faaf09519483ad0c34d3"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-17b3f90b-db77-44d7-8b3a-7bca6a15db34": {
+        "mediaId": "lcl-17b3f90b-db77-44d7-8b3a-7bca6a15db34",
+        "mediaInfo": {
+            "name": "createAndGoToLocalPartition.vs",
+            "blobId": "890eb25d6873a7d1c529b71c61fbb426061da85a9b61d75e3e828b2b9cab48a34913c269068cad60a7c17d0fc219a2470c22cbb00b192953c106c5734ca57367"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-1a358a36-e53b-4569-ae37-6295a883f98e": {
+        "mediaId": "lcl-1a358a36-e53b-4569-ae37-6295a883f98e",
+        "mediaInfo": {
+            "name": "listAllRelations.vsx",
+            "blobId": "b565dd26b97576e3d6c18ac471ca6ec3d600fb2f96b5969c28e56567d0af0d0765035f26c044c86b20d4a8a3db5ac7b515046bf161e8ac7c66c357c9a3ea7cad"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-1b2257a6-fb28-43c5-bd98-afbb1e2e716b": {
+        "mediaId": "lcl-1b2257a6-fb28-43c5-bd98-afbb1e2e716b",
+        "mediaInfo": {
+            "name": "registerListener.vs",
+            "blobId": "5c215c73e00b16083145ee29532b210cfb1762668e04af40d0a98533fae20336115be1eb46d908b9a07094924c569f4b041ed1c8253bfc45d92df633d3b138dc"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-1d46f8ab-d7b2-4cb5-a3fc-25c299705f60": {
+        "mediaId": "lcl-1d46f8ab-d7b2-4cb5-a3fc-25c299705f60",
+        "mediaInfo": {
+            "name": "genericEditorLens.css",
+            "blobId": "02566bb1ee0976fb1e9437e21ed4aa65f1ebd1306e9e4270017d6068a127affe3ac48aa2f32727712b819a8f1078977385a5bb3b253429210d9d5bde3f2b7e2f"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-1d66d15d-eb23-49b7-b42d-8474cfb0ed97": {
+        "mediaId": "lcl-1d66d15d-eb23-49b7-b42d-8474cfb0ed97",
+        "mediaInfo": {
+            "name": "fontawesome.js",
+            "blobId": "58cd47130f48ec7a6714032fb934e21e1eaa5ddc33c5af0ad274f9cc0788e3f5c617422a5b5e4e57f8c3204cba8e49bdb1271d7997ac707a3913913a2bbe32b2"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-1edcd92d-84fd-4718-9018-e8b302e37d09": {
+        "mediaId": "lcl-1edcd92d-84fd-4718-9018-e8b302e37d09",
+        "mediaInfo": {
+            "name": "moveToTrash.vs",
+            "blobId": "24346778c338af271462fd533d40b979274aea0358e845937d3a12ae59ec94c3a21162eb037185525b9636a23040bcac51db30351ea077620e9724f4cb055735"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-1fac91d6-2299-40cc-8467-8d1dbe4e69f4": {
+        "mediaId": "lcl-1fac91d6-2299-40cc-8467-8d1dbe4e69f4",
+        "mediaInfo": {
+            "name": "closeView.vs",
+            "blobId": "5fdec455116f3eb8b79e3cfd999b18447aa611ccae94eaac9e59dcda1cb65ca9d736f66f5059c43ac5c3124aaa69aa73568c6588f9719a0664fcfd555fb7f025"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-24571e0b-583d-44a0-bfe6-6bb8ee7d1d7b": {
+        "mediaId": "lcl-24571e0b-583d-44a0-bfe6-6bb8ee7d1d7b",
+        "mediaInfo": {
+            "name": "projectList.vsx",
+            "blobId": "e6440c834339708c19b35aabf64eb14efa4d3abefa7468d8dba2536aa1938bb30924758f596eea4b3c3b3ca1e267bf4f5acf5dee72ab71df2504e1407658466a"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-24b6a7bd-60d1-42ff-a087-876f60d1f12e": {
+        "mediaId": "lcl-24b6a7bd-60d1-42ff-a087-876f60d1f12e",
+        "mediaInfo": {
+            "name": "style.css",
+            "blobId": "e65f70b1a6a679b0a47903a43d77de2e2d162c586ed836d8442092637f54802bd777d33bef4ac0286c4f9db3c0c6a5ef8f57cf41aa15b34c71ae066440ae773a"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-24f24551-4bb4-4283-8f1c-16722d73cd62": {
+        "mediaId": "lcl-24f24551-4bb4-4283-8f1c-16722d73cd62",
+        "mediaInfo": {
+            "name": "pasteToTargetUsingApply.vs",
+            "blobId": "b8c63715bd78f17cf0a72042b0884022b64ca78b8cb1e6e4accf785ab0ebf584750586412c9a6ce3b71faaa1172707977580502c78e66612c85accf4b0d3ac28"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-28e66621-9119-4935-9252-1a0281f8203d": {
+        "mediaId": "lcl-28e66621-9119-4935-9252-1a0281f8203d",
+        "mediaInfo": {
+            "name": "hasInactiveTarget.vs",
+            "blobId": "364a938a811f2ccea4b8109e79dcfcf954d317594760dfa756cb6a1fa3373d59de205b4624036811359104a2aeb328eb42ae4d808f9f773dcf8b10c7237a97f3"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-293a4d0a-3483-4931-8e5a-6a0d56d1be45": {
+        "mediaId": "lcl-293a4d0a-3483-4931-8e5a-6a0d56d1be45",
+        "mediaInfo": {
+            "name": "createProperty.vs",
+            "blobId": "af03c06048b92397ca96ede5ef117b04cd3e2ffe1fc0c50c5d8c3c8959bc87a3b94ca0f151810a166de2ac701286725bbcc3c60d14511e80a5ccf2e469078bac"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-296e42ff-c0ec-4858-a372-6090140e8dca": {
+        "mediaId": "lcl-296e42ff-c0ec-4858-a372-6090140e8dca",
+        "mediaInfo": {
+            "name": "insert_before",
+            "blobId": "5965799353754ef46e52823b96b55f5d37afb5651b28c48c6cef79ed3fcd117e5c635450f8f1c5ae4dd67cc9b5cca357aa2449a12eb7b498f37b5263334cf398"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-29d19b08-5a24-48c3-a35f-8917d716227d": {
+        "mediaId": "lcl-29d19b08-5a24-48c3-a35f-8917d716227d",
+        "mediaInfo": {
+            "name": "createRelationForNode.vs",
+            "blobId": "3b62d07773bdce42adf4dad1290480a1e845d57c07134ab3d4c537bc4ef832ba074422e62a52686f8a0c21e8cb9f45711a4a32873bdc891af4c1e004a2453895"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-2a8067bf-74fe-4b96-976c-6c02b019be71": {
+        "mediaId": "lcl-2a8067bf-74fe-4b96-976c-6c02b019be71",
+        "mediaInfo": {
+            "name": "code_end",
+            "blobId": "fc6ed07350135bc6ff602551991a426ae00cfff1b0e496a60a3ba56e8781dd4f94a72d9412ed6bccb684c013d63bd3a817b31e8e4a38aab8bcc006284c66cfd5"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-2a9a1928-56be-4aa9-a6a2-1f9cc09e1ce5": {
+        "mediaId": "lcl-2a9a1928-56be-4aa9-a6a2-1f9cc09e1ce5",
+        "mediaInfo": {
+            "name": "Bookmarks.vsx",
+            "blobId": "97349cd1e7dee918fcc3f2345b0e401033d29e2e8635b19b1a011f7e29e756eec4f00e81f74ae146336c82dd5da046e480c97d049c1c9181b1bd0eaf229fe8d0"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-2d53810e-9333-4612-9f24-fb0fd93443e6": {
+        "mediaId": "lcl-2d53810e-9333-4612-9f24-fb0fd93443e6",
+        "mediaInfo": {
+            "name": "copyTarget.vs",
+            "blobId": "866eebbf97cb8a4af44c3f3c303436815b167c3cb8593024bcd1a87e24178890441b94e3ce15de2f3b5306980ca6764564ef6f7077cd9f39dc1384d0a40fae33"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-2df5ba16-96db-4306-a2cb-14ca144fea4a": {
+        "mediaId": "lcl-2df5ba16-96db-4306-a2cb-14ca144fea4a",
+        "mediaInfo": {
+            "name": "TreeView.vsx",
+            "blobId": "28e5618f5593d327f134e8344752f4cd0e2d78f5bd9427c3928cbdb8a95c97aaec54c940b3e13a59c969307a7726f84e10df2cafd9eece7670a7f41c95d02642"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-2e3f7b16-062a-40f9-aac6-a1b4d9055791": {
+        "mediaId": "lcl-2e3f7b16-062a-40f9-aac6-a1b4d9055791",
+        "mediaInfo": {
+            "name": "createAndGoToTransientPartition.vs",
+            "blobId": "925ff3d9f264d894a541f5e6e2e6e45d96e2c1516f71a1668798f27cbdc787e7c9eec9a25f431a58cd55d5ea34b00615cfeaf94d73508409c27486077d6b7a42"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-2f9298a2-bea6-4e06-8be8-b4a42c77a490": {
+        "mediaId": "lcl-2f9298a2-bea6-4e06-8be8-b4a42c77a490",
+        "mediaInfo": {
+            "name": "splitPasteToTargetUsingApply.vs",
+            "blobId": "8e9b6bf439f1a7fcdb70ed655864a24b21143372f47592b3a066e05ddb5aa221f90d3073bc36fda328ac1a90baed590143468823c7a78f8563e70376ae6b147b"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-2ff5c2a8-2c05-499e-8817-056724053019": {
+        "mediaId": "lcl-2ff5c2a8-2c05-499e-8817-056724053019",
+        "mediaInfo": {
+            "name": "createLogger.vs",
+            "blobId": "09ac05091a0854d460c073cd3b4de130211e8dd22f3d7c7c2b8d0c2fa072fad20628fd44024b575664ef56fb160cc545882dbdd53cc256a020e7563ff36a5d11"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-314838b8-72cd-4d27-8419-acdf3102af3a": {
+        "mediaId": "lcl-314838b8-72cd-4d27-8419-acdf3102af3a",
+        "mediaInfo": {
+            "name": "split_paste.vs",
+            "blobId": "57fc5ebcf4b717b1a6626f51933a317e14e9ba4df57ca3623b639372bac5c3078e908b61f41d16e6abc91953862c8931abf62d6a4416bf3d143225f0835d4068"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-31e973f0-ef24-4128-b7c8-105fb45ec208": {
+        "mediaId": "lcl-31e973f0-ef24-4128-b7c8-105fb45ec208",
+        "mediaInfo": {
+            "name": "Clipboard.vsx",
+            "blobId": "ddabbad7a22eee956093f9ba3328554a59ed5ed6dcd6220112e7847c2f8c67c49299b6c3bba24eb2e7c2a31d22b05cbee7285a0e5f6cc46abb8d6b1f6c4e3d94"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-333bde59-5513-439f-99bc-da89a8b02e14": {
+        "mediaId": "lcl-333bde59-5513-439f-99bc-da89a8b02e14",
+        "mediaInfo": {
+            "name": "test_content.vs",
+            "blobId": "10218e4d1f23d9025287f39d7a7d38c37591259e539c436d80fe42f06c012a229f514c9b57cd19bac4397f5c2c197807d45af446168803490f4277e36a0e4125"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-33f42d32-4a5f-4197-ab23-b9d96e78c7cc": {
+        "mediaId": "lcl-33f42d32-4a5f-4197-ab23-b9d96e78c7cc",
+        "mediaInfo": {
+            "name": "clickExpander.vs",
+            "blobId": "1c2802050ecbcb23948a036e883b147a1965d8726b50fca39da8f85d1973a3bc24a671f6097295ae719bfbf5b3a052499e870d1c5871a33469bf9f3e274a6710"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-3664fae7-c911-47dd-b123-de5f3d62cb2d": {
+        "mediaId": "lcl-3664fae7-c911-47dd-b123-de5f3d62cb2d",
+        "mediaInfo": {
+            "name": "cssPrefixer.vs",
+            "blobId": "7290c38bfe0cd0e7605e252e24a76b9a28c04daf7ffe8cdd1e0b38c4c23e90dc7431a79306ec5e3215878efc0ad4bebe54c511a165f8e0c0c1813ae66ea924f7"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-36a46a68-ccb5-4bd7-98b2-912cdddd75d3": {
+        "mediaId": "lcl-36a46a68-ccb5-4bd7-98b2-912cdddd75d3",
+        "mediaInfo": {
+            "name": "afterCreate.vs",
+            "blobId": "0a300c9c804d684a232603a9aadcaaac01e2056549bd6b95177f979063017da6d5f2d7107f44a1514f7db6862486fb2e03d58c3ac00e338e849e2df67f68d8dc"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-3776c6b4-15aa-484c-a2e4-c5d7eb445507": {
+        "mediaId": "lcl-3776c6b4-15aa-484c-a2e4-c5d7eb445507",
+        "mediaInfo": {
+            "name": "nodeHasContent.vs",
+            "blobId": "e8661106efe786ae2ae61fbdf31d5e5fe537ba331d54ea435d1bfb15db1bddb014a3bd037258bd715cfdb7602b484a645892f8ab19b1c017c4126064c8845f39"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-37948bda-f81c-4bc8-b5c9-341972f859f8": {
+        "mediaId": "lcl-37948bda-f81c-4bc8-b5c9-341972f859f8",
+        "mediaInfo": {
+            "name": "setContents.vs",
+            "blobId": "496c1be2cda1859b3ff54ed863d72b27102ea307ef9593e96de7c8a091ce856ceb2214ffd06897e1529c947632db026d0bdea8076a0e6b3edd358ae866cbac8a"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-37b164e0-f6e1-4742-b4ed-5128550cf8a8": {
+        "mediaId": "lcl-37b164e0-f6e1-4742-b4ed-5128550cf8a8",
+        "mediaInfo": {
+            "name": "loader.vsx",
+            "blobId": "57cf2cae05722f228b5f6f5e350486203fa898b1a316d031f5ae258d60641e1dd587f87f9f7c5a584a69cb0d0f12f7e1ade77286fd3c06c9e84198b4947d404b"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-387c5aa6-5f3a-4a2d-9419-d865b53fd2f4": {
+        "mediaId": "lcl-387c5aa6-5f3a-4a2d-9419-d865b53fd2f4",
+        "mediaInfo": {
+            "name": "isActive.vs",
+            "blobId": "ea10264e4c124e706ac7df4c572ace8778be7d7d5b5bec2d30bfdd85f5c20b75825819eef84d3bac5a5344bd7aa91c904046e20333646714cf8532ac5be1325d"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-3a09373a-d5e2-4247-a920-70953ad8acf4": {
+        "mediaId": "lcl-3a09373a-d5e2-4247-a920-70953ad8acf4",
+        "mediaInfo": {
+            "name": "isOverridden.vs",
+            "blobId": "9d6d18f311581c13c0bee84f638b476345add1a7986d514d756aac31da2e13328aeb9fcad88b35e19b82caa15b7ac4ed29d85bfc51c3ff28450c3c702cc7c1a1"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-3b54697d-9479-437d-8291-1831f8d4cfc6": {
+        "mediaId": "lcl-3b54697d-9479-437d-8291-1831f8d4cfc6",
+        "mediaInfo": {
+            "name": "ZeroEditor.vsx",
+            "blobId": "f173ff4b4fd299693ba60505a7a60129d14aca9f1623302c31a2e086f773817c529175e8c262ea7af48ba6a01fbe2783c8257e7f724da6b5b8676017acc7d70a"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-3b83ab93-f995-48e5-9842-38f0dd620b53": {
+        "mediaId": "lcl-3b83ab93-f995-48e5-9842-38f0dd620b53",
+        "mediaInfo": {
+            "name": "Project.vsx",
+            "blobId": "06b09c0f1a3cafaf9664728ad403091a11f088c84cdc537a2293ff357901461374477f80127bf57e1dd664ca280c5730fabfe2fd8f9c50abbad20d5f495b3733"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-3b977551-552b-426a-94a6-038e664c5237": {
+        "mediaId": "lcl-3b977551-552b-426a-94a6-038e664c5237",
+        "mediaInfo": {
+            "name": "listProperties.vsx",
+            "blobId": "3555c5eed3472dd06add1b94a02ee8eb238e8c9cccc5bee7fa6ba866cdc06e71b3e43151b95589175725956ff7fae5556e3d3d484ea48b6108f42a13c637cb4f"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-3b9c9524-2a99-4b46-b9c3-6a1d3f9ee700": {
+        "mediaId": "lcl-3b9c9524-2a99-4b46-b9c3-6a1d3f9ee700",
+        "mediaInfo": {
+            "name": "getClipboardStats.vs",
+            "blobId": "a6192cd6f166a4ecdd2280929e77c2184c77dbfe9985a95aa4b3e013216dc7f5fa8c5aff37330b41589a8906404c8134acabd6e4cf5f1b922e9267cc3340e5d9"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-3c098d18-e482-4eb9-a071-9392138de874": {
+        "mediaId": "lcl-3c098d18-e482-4eb9-a071-9392138de874",
+        "mediaInfo": {
+            "name": "findTab.vs",
+            "blobId": "69fedc7ab589ad114a96e89d3cdda4cf8ea48b8d8609ff1f6a7ef482f359bd55b6174d4d3adf187e07e7b5c23aaaed81354598f52419ad88cb6ae4e47ad8709c"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-3cb588f2-70a2-4240-b918-440d6fbb6c09": {
+        "mediaId": "lcl-3cb588f2-70a2-4240-b918-440d6fbb6c09",
+        "mediaInfo": {
+            "name": "createLogger.vs",
+            "blobId": "09ac05091a0854d460c073cd3b4de130211e8dd22f3d7c7c2b8d0c2fa072fad20628fd44024b575664ef56fb160cc545882dbdd53cc256a020e7563ff36a5d11"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-3e4af615-bdf7-422e-a0b1-c68b88f21d7b": {
+        "mediaId": "lcl-3e4af615-bdf7-422e-a0b1-c68b88f21d7b",
+        "mediaInfo": {
+            "name": "propertyLiteralValue.vsx",
+            "blobId": "249e289dbfeb29e135433f9f0f28d7fc8370df89d1605c0df1e22f41fe69c5195eb698ad2a50d673cf824bbe82ac15541e4e507bf17e347e3d845ee0aea88d96"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-3fdb9e53-11db-45cb-8315-d80528240185": {
+        "mediaId": "lcl-3fdb9e53-11db-45cb-8315-d80528240185",
+        "mediaInfo": {
+            "name": "getFunctionParameters.vs",
+            "blobId": "bc1e7f17cbdb45c5e22a1e9ac3cb86ebe55e459c1081d762f78800f21e506434ca0add8174b8417cf2c54ccf266f677b0c42d170e58084679660f89e71f4f4a9"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-400697f2-4f7c-422e-99b1-d0ecaec9f249": {
+        "mediaId": "lcl-400697f2-4f7c-422e-99b1-d0ecaec9f249",
+        "mediaInfo": {
+            "name": "clearNode.vs",
+            "blobId": "598f704e0f3e8e3f25ad3f323f7757be8d3adced0fb37530ba8481c106b3a476c65fd67ce1ac56184ff702a64e07afc469052e595d15642fc702176894f22297"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-40bf682d-44a7-474a-a13c-6ef9ca2345f2": {
+        "mediaId": "lcl-40bf682d-44a7-474a-a13c-6ef9ca2345f2",
+        "mediaInfo": {
+            "name": "DEPRECATED-limitedText.vs",
+            "blobId": "415f3d439cf6ae8c343717d6fa74eb7f3506504de048019ba4761309526acc601ebccd46d3d1a370778f8fc4a3d3bdf715065f3e45da6f8b43def5f2216df5b1"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-40c86c5c-38ca-4a79-8c0d-f7de22992d1e": {
+        "mediaId": "lcl-40c86c5c-38ca-4a79-8c0d-f7de22992d1e",
+        "mediaInfo": {
+            "name": "focusTab.vs",
+            "blobId": "f87feceb55491ef0fcd2afb7ed95d6e0098c7bb0d42a52607d73f3e83a3f75a7ebbb5189a4f5895ea269dd5d09420095c445ecbffa779c327ee2789755d26a4d"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-40e312a5-ceb0-42ec-b086-f09ed826f5cc": {
+        "mediaId": "lcl-40e312a5-ceb0-42ec-b086-f09ed826f5cc",
+        "mediaInfo": {
+            "name": "displayItemCount.vs",
+            "blobId": "2b280b52bcfe38e40bbf59b6862dc9a784e7d89af42dc469f09b4564ce850f59cd10c6f0cd29464e4a87b9fa61dbbcba252dc6bec6a1d5167f81683eabef4b7f"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-40e3b055-e4d9-4efd-8fe4-adc8fb97999b": {
+        "mediaId": "lcl-40e3b055-e4d9-4efd-8fe4-adc8fb97999b",
+        "mediaInfo": {
+            "name": "emitSignal.vs",
+            "blobId": "0a80d6debaea2765653c3d61c21722034347a11eb52ddc63ac94f91f2b795426eba4c75f94bbab352fbf953fde2689033da10d853c2891911df9108a56719a39"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-4154fc68-ea70-44ec-8720-428a5604f98a": {
+        "mediaId": "lcl-4154fc68-ea70-44ec-8720-428a5604f98a",
+        "mediaInfo": {
+            "name": "closeTab.vs",
+            "blobId": "232ae1cb609d8118abac40f4ca0a47a0302a888edfdaf77d3538223beb89bc7211ca986caa139e901b4bf88007c65cde36c019872b198236c66e575b4eb28a08"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-426adefa-dc85-457c-8b5f-fb3919a4403f": {
+        "mediaId": "lcl-426adefa-dc85-457c-8b5f-fb3919a4403f",
+        "mediaInfo": {
+            "name": "initLibs.vs",
+            "blobId": "6074707052b135c260a8afefa55cfefb0742c1d211103c8c06489f529615bc33cd623229816c1746db8fc6df49d148fc4551f0566a362de2001326b73199e0b8"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-43d724da-0387-4d31-abc8-64799071c28e": {
+        "mediaId": "lcl-43d724da-0387-4d31-abc8-64799071c28e",
+        "mediaInfo": {
+            "name": "ProjectBrowser.vsx",
+            "blobId": "ff8a2230da0ae15313e096b937a2ee704a3658e885e21e5c00255f431d4b4098048efffcfd77af77eaf2a2c62d61680938814ff802839e8a169b2f72b500d820"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-44bb1421-a4e8-4543-b3c2-1b1f4e0b4c33": {
+        "mediaId": "lcl-44bb1421-a4e8-4543-b3c2-1b1f4e0b4c33",
+        "mediaInfo": {
+            "name": "createLogger.vs",
+            "blobId": "09ac05091a0854d460c073cd3b4de130211e8dd22f3d7c7c2b8d0c2fa072fad20628fd44024b575664ef56fb160cc545882dbdd53cc256a020e7563ff36a5d11"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-44ed476c-ebd9-4084-b102-49f34e8fab44": {
+        "mediaId": "lcl-44ed476c-ebd9-4084-b102-49f34e8fab44",
+        "mediaInfo": {
+            "name": "propertyContents.vsx",
+            "blobId": "6c1ed63b195f0fecf53104d806174e105c620509a2ef388ed62bcdf6e799d609d5f64d71f153099c39059ba4d957a9211599735fef2fe7e869cbb9af00bf09f8"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-457357f6-93d2-4036-92f5-a3b77f6a77a1": {
+        "mediaId": "lcl-457357f6-93d2-4036-92f5-a3b77f6a77a1",
+        "mediaInfo": {
+            "name": "createInstance.vs",
+            "blobId": "c30c1dce6fa0a21d5e238a3aee6aa9ef32ce2cb54701621ed419522f853b9daae0a0c9f268635f19f3f9e0a8357ebe9f7305ea6e814389392bf6aefb108f7210"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-457cb05b-f2d0-4fa7-9f42-f99234b4833b": {
+        "mediaId": "lcl-457cb05b-f2d0-4fa7-9f42-f99234b4833b",
+        "mediaInfo": {
+            "name": "baseAccessorPropertyMarker.vsx",
+            "blobId": "67d75271710442c8a4be7a5239c548b2ba997c1af03f08d892184b9567d8c49fdd197c083c7d8a90d7a0215c4e277ba5938aa1f480b9ce80c0fac0b4b6dd81bc"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-458e8a20-08a9-4d1b-a1d9-5e8abd6db583": {
+        "mediaId": "lcl-458e8a20-08a9-4d1b-a1d9-5e8abd6db583",
+        "mediaInfo": {
+            "name": "getWorkspaceSettings.vs",
+            "blobId": "32e25a71dc57c6ea4007b7ef1d549c5eb1b2f2a3ba9e8b43a13c3abaf5dde684dd641352d93e0178c50444343510a27a2848515a25220132f35b9941cd08a886"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-45cf63e0-0ab2-4062-bbc0-abf42359023b": {
+        "mediaId": "lcl-45cf63e0-0ab2-4062-bbc0-abf42359023b",
+        "mediaInfo": {
+            "name": "setRootToTest.vs",
+            "blobId": "e72405a1984503484d543ce20f5653d80f63c5c356483fe6ed25529316f263bf14e6c58d48944e2d5cc5f0910fb1b26d9982dff7f3f48268baf939f062023584"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-46967a44-055c-4dec-98f9-e026da4161d7": {
+        "mediaId": "lcl-46967a44-055c-4dec-98f9-e026da4161d7",
+        "mediaInfo": {
+            "name": "showPartitionLink.vs",
+            "blobId": "1c93bcddbea8db2a4927374128552c33a6faa6da34ab6f7486a72851e42a9ac8d777002dc011566f4040c5ebc301c50c6f91a5f5ad91fc1c3b75292ff5cbb72c"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-487e21c5-fd10-4673-9d98-dd3fb10ffd6f": {
+        "mediaId": "lcl-487e21c5-fd10-4673-9d98-dd3fb10ffd6f",
+        "mediaInfo": {
+            "name": "VSBoxContent.vs",
+            "blobId": "856a307f2c7f3b6b52198a7d2bb3843ad397e09b0bbba9dd140af2da8e6bbd3f528952110a09ac77167ba77bf2c3e3a393d7b47432aba9827843e51adb22780f"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-4a758b17-be67-434b-a40c-8a3262b274a2": {
+        "mediaId": "lcl-4a758b17-be67-434b-a40c-8a3262b274a2",
+        "mediaInfo": {
+            "name": "createInstanceTo.vs",
+            "blobId": "4f3ff3edff6c5b3b43b7f5ca26d1dc8463deb05d276722b2d90039977453be0e38a19179885c765748c2ac4aa0c5f0443d6ae9c5538ba640f9f7d2b228bca833"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-4b395e87-a662-4b0f-8db1-d3bbc524cb9b": {
+        "mediaId": "lcl-4b395e87-a662-4b0f-8db1-d3bbc524cb9b",
+        "mediaInfo": {
+            "name": "makePossibleAccessorNames.vs",
+            "blobId": "021e399baed80915fcc0c58119079925d4da8b516fa0d2782d7244d2bad13aebd1396de9fb18098786805cd5c780c5baee154dfd098a577cdd932329822746dd"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-4b6cdca7-4250-41f7-970d-297031175adc": {
+        "mediaId": "lcl-4b6cdca7-4250-41f7-970d-297031175adc",
+        "mediaInfo": {
+            "name": "emitSignal.vs",
+            "blobId": "e69400e359cec6c75e7a601d9376bebe66c48a9eb1c701f9e275345f4a03d45a63f40c6218e5c309fed0d35ead6a4b2c9f3171d4bb6730aab38743784a138813"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-4b794d26-9925-43ac-ac0e-bcdc94d7e23a": {
+        "mediaId": "lcl-4b794d26-9925-43ac-ac0e-bcdc94d7e23a",
+        "mediaInfo": {
+            "name": "sideMenu.vsx",
+            "blobId": "2506b8aa52c1f38189e290adb5ed0b535c55e83f11c2098fe7f171b2f7ac719a4d35e37611f99efc9e1c0d2aa3fe7fef42c68c72b9af4ed0faaef91a45658eaf"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-4c1176ed-d78b-4009-84d2-f468ac5d55de": {
+        "mediaId": "lcl-4c1176ed-d78b-4009-84d2-f468ac5d55de",
+        "mediaInfo": {
+            "name": "insert_after",
+            "blobId": "fc94b008717af8929a8a75ab85bd165f790e0bc0d3f6f999e31341e9bfe990b396d89449486dcee6c122738ce8229c7814d4658d491807915a6c83497f7f775d"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-4fecbe5e-5fa3-4778-9eec-c7ad5970f9c2": {
+        "mediaId": "lcl-4fecbe5e-5fa3-4778-9eec-c7ad5970f9c2",
+        "mediaInfo": {
+            "name": "firstIncomingRelationFor.vs",
+            "blobId": "a8ca2d185eff27024c4132cd07575bbc4b50acc87218af9aaf5e2131e17a39337a18ca4867d7c5315686f34fbb2e48c4b7da0656f4a8af6dfd2ba8eef1d883ec"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-5122393d-2483-4bf1-ba7e-e63ae21368f5": {
+        "mediaId": "lcl-5122393d-2483-4bf1-ba7e-e63ae21368f5",
+        "mediaInfo": {
+            "name": "openForEditing.vs",
+            "blobId": "d2ba9486b6b05831cec2f3a302ea52957d218541086104380882c1db7eac9d5bce61f08d3b403b2dd38a50da9dbe91dfaead99c22bc13520fa9159c45f30da06"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-51625149-5a3a-4683-bd1a-39833fc4da72": {
+        "mediaId": "lcl-51625149-5a3a-4683-bd1a-39833fc4da72",
+        "mediaInfo": {
+            "name": "overview.vsx",
+            "blobId": "175c2cee7b0bc061e99a27e1cc4a45c8d70d8aa7adb534e049cd91c75712534c1233ccb0a4a0c8354d58211da4a0ae955984bbc573f4177ddcfcf38f88b3a786"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-51e0cef6-3ee0-4afa-920b-ef15bd3236f1": {
+        "mediaId": "lcl-51e0cef6-3ee0-4afa-920b-ef15bd3236f1",
+        "mediaInfo": {
+            "name": "createPartitionToWorkspace.vs",
+            "blobId": "2aea4752961902d5a41baa72925c7ddb961cb5686265dba1ac9d5fdd2e25a5ae0211a5599e99392034d634affba5bf6de20871dc13cb0be736469bc92ad26eef"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-537237e1-13d4-4155-9894-e1f5f05864cb": {
+        "mediaId": "lcl-537237e1-13d4-4155-9894-e1f5f05864cb",
+        "mediaInfo": {
+            "name": "newRelationForNode.vs",
+            "blobId": "1956ffddc5e3a415d2e2dc83ba404997e8d2018fcaa1d4deefbb9d9a61ce7c8afa6ffa957dcb5e7ac4aa38ed164ef3b9990da65fd25991b8efd089229435d21c"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-5378ec14-0114-48c0-aa27-8f22809cac09": {
+        "mediaId": "lcl-5378ec14-0114-48c0-aa27-8f22809cac09",
+        "mediaInfo": {
+            "name": "newMediaForNode.vs",
+            "blobId": "833e6ebeb1de74bcb028c9755f79529dc48cf82abf828335599968b1da0087e022306fd8e7e66bdf3e1db14506b81e5d2a3ee2708c52cd8c2d3e76658e55c02c"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-548941ee-b3ac-47cd-869d-96503611d879": {
+        "mediaId": "lcl-548941ee-b3ac-47cd-869d-96503611d879",
+        "mediaInfo": {
+            "name": "listEntities.vsx",
+            "blobId": "a00828c6012d332d0cabd2924f456bfd825573af77101e6461a05bd7ab309e70ff31debc4fc08c7e81a17ccbbf804d5b4c899a0e830b0187c99754991e120f82"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-5619feb7-14ce-4fdf-9f8f-9bb0a7ba4284": {
+        "mediaId": "lcl-5619feb7-14ce-4fdf-9f8f-9bb0a7ba4284",
+        "mediaInfo": {
+            "name": "firstRelationFromSource.vs",
+            "blobId": "5a1a673bb278f01bbc2ba7ff21cb8359fa46ece9284f6c4b3360d3d748989e34f75d12abd43ebb89c831b9e1e65c2491311bade8b439bba77b52d01e3aa33c8d"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-57b028a6-5a09-43d5-8d27-e54ee1fafb50": {
+        "mediaId": "lcl-57b028a6-5a09-43d5-8d27-e54ee1fafb50",
+        "mediaInfo": {
+            "name": "getRelationsFromSource.vs",
+            "blobId": "7beb96e418de35fe03577a13ed848a5ba4ba0796c0e4c81426e4ea5661221718278557e2897773c1645cd2dfed9a3b1503715e50f6c116c87d9d5c582a6e7339"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-58801208-82bf-47c7-ab2f-08c7d48f4b8b": {
+        "mediaId": "lcl-58801208-82bf-47c7-ab2f-08c7d48f4b8b",
+        "mediaInfo": {
+            "name": "openNodeInNewWindow.vs",
+            "blobId": "0508abf5149fcb631f6860dc1c6cd99c0467dd8d2cd197560369fbe3ec171db5ac3ad3b829b05c66ad2032430e3b942f5142b50024500cd1ef885384a652818d"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-5912912d-9619-466e-8117-2bd12b61dad1": {
+        "mediaId": "lcl-5912912d-9619-466e-8117-2bd12b61dad1",
+        "mediaInfo": {
+            "name": "menuStyles1.css",
+            "blobId": "1c52aedec03b2873de524de76776ff8dcbfb0ac59075a92c3f3eb3fe44a932cfdbff1bada7ceeb30e0b225375895fb0c4b2ea0c3591f61b1e7f744874e2937ca"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-5a3b1a19-af82-4736-b55d-c9acb7062e6a": {
+        "mediaId": "lcl-5a3b1a19-af82-4736-b55d-c9acb7062e6a",
+        "mediaInfo": {
+            "name": "editPropertyValue.vs",
+            "blobId": "a1acea001a843af85ddd2b7dd6ff80e10753b6f71025f4743176e40f426801f508f2f470dfff2a254415b7923b481b4c715852a8293cc5a9098a838da14e81c5"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-5a6cee54-2534-4938-a415-58a4b87ab2a2": {
+        "mediaId": "lcl-5a6cee54-2534-4938-a415-58a4b87ab2a2",
+        "mediaInfo": {
+            "name": "EditableText.vsx",
+            "blobId": "54e94869d6639b14c54bdd372ca2ada88991c3aaa4d4b3a689904833f5b137461c4169ac99904eea019d44d52cd3b01a2f4a48b0bf54247747c8adf8756a6625"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-5b477488-5dde-465c-88d8-aa2763d4b5d8": {
+        "mediaId": "lcl-5b477488-5dde-465c-88d8-aa2763d4b5d8",
+        "mediaInfo": {
+            "name": "editDone.vs",
+            "blobId": "ef26c7f819614d0dc2aae0c9331b53cbfcb61dfe7db9ffd09e1eebd08b94eb86c27e2c65f03e4c9a8b06eb941c2bc9b64173f3638bf208839606c888e2fe8fb9"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-5c70f500-aac1-4e90-bfa5-7c3585e01c21": {
+        "mediaId": "lcl-5c70f500-aac1-4e90-bfa5-7c3585e01c21",
+        "mediaInfo": {
+            "name": "openVSBox.vs",
+            "blobId": "ab9eb9f426830398148f2d7cfb0f492681968b451976ae5bbf8369d70c783958085152dff20738141b54a2c69c09dce0d374531c9c6b3073956ae13abbeccc63"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-5e0f31f7-34a1-4bbb-97de-8c2f3c0b8e9b": {
+        "mediaId": "lcl-5e0f31f7-34a1-4bbb-97de-8c2f3c0b8e9b",
+        "mediaInfo": {
+            "name": "openPartitionInNewWindow.vs",
+            "blobId": "ac9d015b0f9a760e2dcc0be70db67f7399be3c57a8e5010a8f3dfedf5006b72c2dd04ce28af804537e2d2d99788175e9247fd16295b488d8262cc3dbb4b3074b"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-5ebf17fd-3568-425b-8218-d5be3740cc4c": {
+        "mediaId": "lcl-5ebf17fd-3568-425b-8218-d5be3740cc4c",
+        "mediaInfo": {
+            "name": "addAccessorProperty.vs",
+            "blobId": "dce71df94ad3fd46d563e68e72a449de25650ab02dd86489979f8fc7f727f80f26d36db66844d7997bd4c55b8dac6ca9d8872c5322ee21d0b889e2f20ac2a7f1"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-5f4f77d3-aca6-4829-9795-8c29511e0aa1": {
+        "mediaId": "lcl-5f4f77d3-aca6-4829-9795-8c29511e0aa1",
+        "mediaInfo": {
+            "name": "removeEmptyTabbedView.vs",
+            "blobId": "e6870e598c789a95235fc46a055ee40972561825bce215c3fad111a801fe05239b087eed4e6943452a556d616b325acda9102cdcf769101b99bcf3bf2e10f2f8"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-5fa0b5c5-0d3e-45e9-a6b6-700af95c05ff": {
+        "mediaId": "lcl-5fa0b5c5-0d3e-45e9-a6b6-700af95c05ff",
+        "mediaInfo": {
+            "name": "ContextMenu.jsx",
+            "blobId": "3904918bf104248d4d5265581a7e8453a121caec7e409b42b2a8f8aba963de03e09faf3e2dfdd58f2546afcd289e5353093fa66ce45e612ca24552e3c5041b03"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-61952a7d-aa62-428f-88d8-f58d07655de9": {
+        "mediaId": "lcl-61952a7d-aa62-428f-88d8-f58d07655de9",
+        "mediaInfo": {
+            "name": "openPartition.vs",
+            "blobId": "aa71485b503e997e2acd04ed5e776bc9e017609f646684719cfd99c5a7796d5f765cd1b0fc56f439651943426149f21c341d0923edca27a19d0adc85b36509fd"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-61cffe9f-6b1b-46ea-822d-520aabce8671": {
+        "mediaId": "lcl-61cffe9f-6b1b-46ea-822d-520aabce8671",
+        "mediaInfo": {
+            "name": "VSBoxContent",
+            "blobId": "374d7cd7ce9c57561787c237acc72bd5ba475a560c87287f6d7c576b585effdb7261f8afba96f1956d5aca1e943e412d3fe7dab1fe69cabc8e8f7dcd40f275de"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-62f4adf4-1be5-4499-a67c-8c3f8f246a20": {
+        "mediaId": "lcl-62f4adf4-1be5-4499-a67c-8c3f8f246a20",
+        "mediaInfo": {
+            "name": "openForEditing.vs",
+            "blobId": "d2ba9486b6b05831cec2f3a302ea52957d218541086104380882c1db7eac9d5bce61f08d3b403b2dd38a50da9dbe91dfaead99c22bc13520fa9159c45f30da06"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-6842776a-1b75-42d1-a02c-446d95b51f11": {
+        "mediaId": "lcl-6842776a-1b75-42d1-a02c-446d95b51f11",
+        "mediaInfo": {
+            "name": "startSetTarget.vs",
+            "blobId": "094b32b724815c7722ad738524623e2e264aa0b29dbd81479ba3a223c09aedfcabf9795169b6645ab198a9ba730a659617f61098c297b3b61a5eccf1e932b0d6"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-691087c0-6aef-4a51-978a-63a611e74b27": {
+        "mediaId": "lcl-691087c0-6aef-4a51-978a-63a611e74b27",
+        "mediaInfo": {
+            "name": "emitSignal.vs",
+            "blobId": "34695966cec14a7dcb141bb29ec0f8adeae23872eebca62fda7d37aa4fd82f0ce54e2e431c6eb39bb5f80f207ff0cccd535247fd4e446da2dbfb9cff7a544aaf"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-692bf365-d11b-4a30-ae43-20207ae04512": {
+        "mediaId": "lcl-692bf365-d11b-4a30-ae43-20207ae04512",
+        "mediaInfo": {
+            "name": "nodeIsInstance.vs",
+            "blobId": "a167dc1b0a9f8e198d3afc6b0095e947b73a88693961176ca319a2039af0e1776838d364d03d26be7b9d770e7b8994642b9a545ca44fced0211df57ed90fbf85"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-69b02639-3f54-4de5-b53c-af5e4b5e8b34": {
+        "mediaId": "lcl-69b02639-3f54-4de5-b53c-af5e4b5e8b34",
+        "mediaInfo": {
+            "name": "clearNodeClickOverride.vs",
+            "blobId": "8284c9597f72911aa1417dff3e7efdd8cc50289bf501ab497d46467e016265ffc227589ce59e981ca48b90b6ff93e0065a2cf5e77e119f4e9779af028395d571"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-6be83036-8dde-4a28-8790-ffec99202f37": {
+        "mediaId": "lcl-6be83036-8dde-4a28-8790-ffec99202f37",
+        "mediaInfo": {
+            "name": "copy.vs",
+            "blobId": "c5d71d349db18ef8b89d08dc9f972889556f4d4e200f99e24736e97ea3dca99a5213895c2c0fd1633eac8c8d50301fe8ec9a8b946ec7ecc71ce3991d5e924086"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-6ce5fbf1-feaf-48f0-964c-36302e76ebbe": {
+        "mediaId": "lcl-6ce5fbf1-feaf-48f0-964c-36302e76ebbe",
+        "mediaInfo": {
+            "name": "openTab.vs",
+            "blobId": "0cdabc3e9b86ff922f4a54e3b5845ac6f566261b0cb182be63e5e5e8ed6a801279ce6dd930f15553c2b963dc1a2b5cad1fbab9fc20d2e2c3d2b6355a992ec8d6"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-6d95c016-cd8e-45db-8395-f02f9d265968": {
+        "mediaId": "lcl-6d95c016-cd8e-45db-8395-f02f9d265968",
+        "mediaInfo": {
+            "name": "listMedias.vsx",
+            "blobId": "7a03fcf02c5250feef75f2edcfe9d770d926602c6be49b86da508033a4528e3f5550766c172ba9be181882026405e247a6fb013349b9f6f59b85c5f2831cc8dd"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-71434165-0c4b-4fea-8861-77eeeb454056": {
+        "mediaId": "lcl-71434165-0c4b-4fea-8861-77eeeb454056",
+        "mediaInfo": {
+            "name": "setNodeClickOverride.vs",
+            "blobId": "dbdc00cb164b04871c52982de000bd6c9fff4f62024a47ba42dddfa4ad15f320cf545e17c3d9cc7ba869e269e08312e8cef64bcbd9ebe44c01a5ae7cc0b3d4e4"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-72b8b7e7-9443-4bb4-b1a2-374c59b33d0c": {
+        "mediaId": "lcl-72b8b7e7-9443-4bb4-b1a2-374c59b33d0c",
+        "mediaInfo": {
+            "name": "relationCount.vs",
+            "blobId": "856a307f2c7f3b6b52198a7d2bb3843ad397e09b0bbba9dd140af2da8e6bbd3f528952110a09ac77167ba77bf2c3e3a393d7b47432aba9827843e51adb22780f"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-734fb2c7-58f5-449d-aff8-2fed3e8a6062": {
+        "mediaId": "lcl-734fb2c7-58f5-449d-aff8-2fed3e8a6062",
+        "mediaInfo": {
+            "name": "openForRename.vs",
+            "blobId": "a91fc0a069cee5740a0d6eb7a6e0fd501a76f187b7909cc4ad4a32c23331ecc5213dc76ee478b0055ebdc43b211aa7e5fa1b66584813d0dc5b5e327f09373741"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-7452f8a7-28f8-4899-9213-9759eb1eabaa": {
+        "mediaId": "lcl-7452f8a7-28f8-4899-9213-9759eb1eabaa",
+        "mediaInfo": {
+            "name": "anchorTo.vs",
+            "blobId": "84f67d90ec770442bdb88bd2c791cd8e1c10ea62f6b04f344e5b3fff6db40fa2653445b8330b8e1337338b82711e137fef3dda5f09c6701e2979b005a878ada9"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-75b07594-7abc-40ee-b0e5-88556d7a11a6": {
+        "mediaId": "lcl-75b07594-7abc-40ee-b0e5-88556d7a11a6",
+        "mediaInfo": {
+            "name": "renameNode.vs",
+            "blobId": "4e84b7570d76ef4b6168ff765612338d773f6c3d217091ba30698fdaaea1d321ac5ab88b1d1f5028bf4056b2be14755412ea9015dc48e35e4e348534552179ad"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-780c7eb2-84cc-434c-9f06-f8ab960db5dd": {
+        "mediaId": "lcl-780c7eb2-84cc-434c-9f06-f8ab960db5dd",
+        "mediaInfo": {
+            "name": "setRootToHomePartition.vs",
+            "blobId": "de9d0859ea00953537b46e66ecebc7e57338ec466ed436113e6f9ea1799f026836c75c054abb7fa2d76b38a55a898e1f5212e5d0be759d2828d25910f2f965c3"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-7ab867d2-7761-4a09-9683-01052672c096": {
+        "mediaId": "lcl-7ab867d2-7761-4a09-9683-01052672c096",
+        "mediaInfo": {
+            "name": "getPartitionLink.vs",
+            "blobId": "27a82002a534e462f67f4bbc72469c2302ffe2734bdc62696da28b1c5da3fb5446844376c659f7c83f6d2b503d196c5427d04056f0b40b7c7438065615f058db"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-7d9e8d76-f8a3-4fb4-a5d5-7bd211e4cafb": {
+        "mediaId": "lcl-7d9e8d76-f8a3-4fb4-a5d5-7bd211e4cafb",
+        "mediaInfo": {
+            "name": "nodeTitle.vsx",
+            "blobId": "6251c1a396581c9c97de07664926d5186c808082a7b8c6d5c75ed2824a1f332bcf86f47c1abc270e57badb3401e2a82e59019fe98781fc11e4709035272a663d"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-7db15617-83c9-465c-a821-a43b677c229a": {
+        "mediaId": "lcl-7db15617-83c9-465c-a821-a43b677c229a",
+        "mediaInfo": {
+            "name": "editCancelled.vs",
+            "blobId": "b0439975234ffbbcf913ac1248cc2d72b9ed8dd735a243135cbd1e9bf622c401393377b35f38e83fa61a329e66da64b45154ddb9ef576a377f69e0358721b3bd"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-7f61dbc8-e364-44bd-bfed-e3291fe3947d": {
+        "mediaId": "lcl-7f61dbc8-e364-44bd-bfed-e3291fe3947d",
+        "mediaInfo": {
+            "name": "createPartitionGoLink.vs",
+            "blobId": "25d6473746ebd0afdba3766f478725a4bcdd23c31e99513d183ec55f6574f933e00fb720b7bc271dc0c1dc4bf5adf534f1b6d324b0a641f3ed7bb5f4c92954f6"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-7fea001f-4d56-4e9b-8380-bc83488a8fad": {
+        "mediaId": "lcl-7fea001f-4d56-4e9b-8380-bc83488a8fad",
+        "mediaInfo": {
+            "name": "pasteToTarget.vs",
+            "blobId": "9a2a41a8d17c4628824e79fdc97207b025774a5cc720aae87ad366b75371154ba6a445fab9ac822253872e1d212d0b7529943e62476c427912c23a3449479c11"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-819d2231-c9a4-49c1-81e7-1eff0944353d": {
+        "mediaId": "lcl-819d2231-c9a4-49c1-81e7-1eff0944353d",
+        "mediaInfo": {
+            "name": "moveNode.vs",
+            "blobId": "0d273695e438039d78d019651847f02e7008b69167b6317eeea95bcb633a42fbe8f79a92505927dbf83b0891d7869c80eb2c5e001266f727789a1a0e563e9d4c"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-84c4a864-23b4-41c8-89f6-df39fb8d157a": {
+        "mediaId": "lcl-84c4a864-23b4-41c8-89f6-df39fb8d157a",
+        "mediaInfo": {
+            "name": "startSetPropertyTarget.vs",
+            "blobId": "14ff08a83280dcb168d5366cd380139ffde45ff7d5eea98b956d41599538ac63e63ec9ec5f3127ed2b38201e48bb9839e19dea1c2b7a4be5a63e7bb043a67b35"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-85f8de4b-368b-4931-8502-d2b0bf186384": {
+        "mediaId": "lcl-85f8de4b-368b-4931-8502-d2b0bf186384",
+        "mediaInfo": {
+            "name": "openView.vs",
+            "blobId": "1d8e1eacd6f21b2ddf211000ec11424f0bd5ec408210b93deabf365013a9058c4a5aaf315ec0c9abea269a724aa23990e5b56b525f160d3b4cb0673dfb9aeb02"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-887f5489-bdbc-4b91-8770-dd1320afd15b": {
+        "mediaId": "lcl-887f5489-bdbc-4b91-8770-dd1320afd15b",
+        "mediaInfo": {
+            "name": "getInspireVersion.vs",
+            "blobId": "864c8eaf7f6df6e476b9a85a4519d927a56d634464b1d7f950d015e1af16a7d2409628e6ef0e8cda4b25ac91df2fb8bf612ebe7f8ab49a483905e8d14dfb65b3"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-8908de33-9bfa-451b-ba27-16fbc77f6d81": {
+        "mediaId": "lcl-8908de33-9bfa-451b-ba27-16fbc77f6d81",
+        "mediaInfo": {
+            "name": "selectNode.vs",
+            "blobId": "c22d720f12cfe2a81515dc942f5b345eef08728420ed0525000063cf5ce8bc7eafbfb96d1b7d045637ad8eb11160441c9928d146e78f6d3ae976c6bd9392e796"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-89cca9b1-1681-4af1-ac3f-55d467f22adf": {
+        "mediaId": "lcl-89cca9b1-1681-4af1-ac3f-55d467f22adf",
+        "mediaInfo": {
+            "name": "focusTabDirectly.vs",
+            "blobId": "19a98b1955e02602e8700dc319d90ee61c5a7e783edc6a808de66ba39be6a2625dff143c22bd743a5572c80ef343d20039dfcc8834d27178beecd930aae66e19"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-8adb301a-2e28-47f6-99d4-182aa5ef2506": {
+        "mediaId": "lcl-8adb301a-2e28-47f6-99d4-182aa5ef2506",
+        "mediaInfo": {
+            "name": "profiling_preview.vsx",
+            "blobId": "a7b03b190921cf662a2089ba98672ce17634032ade82796d12e7ac0ec1c4a042e304b9de0d8b16390c497fca62dc7aac70b23819009e3e83d3767fd23b0e95c1"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-8c24e4d9-609b-4dc7-8999-d5c3362aa43f": {
+        "mediaId": "lcl-8c24e4d9-609b-4dc7-8999-d5c3362aa43f",
+        "mediaInfo": {
+            "name": "createPointerForNode.vs",
+            "blobId": "f218defe964bd72be77be1d7922f89915fb0641e8ffa341aadcff9033826b8ca779b171511b6922c9998e15d6539745a5169366c0989342d0920290202f5184f"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-9153a223-f15a-4519-8ff6-9858d1080a07": {
+        "mediaId": "lcl-9153a223-f15a-4519-8ff6-9858d1080a07",
+        "mediaInfo": {
+            "name": "optionList.vsx",
+            "blobId": "46eb1604afed1666998a31bc197adf15535c78b15694c94fc96651c5e5f86fafc38fb3b5ecc9af074a79c519a1d5f3079ba97886ff821ec50825382d2c94868a"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-91d9b3a9-6756-4b62-849e-c85915b507a5": {
+        "mediaId": "lcl-91d9b3a9-6756-4b62-849e-c85915b507a5",
+        "mediaInfo": {
+            "name": "setTarget.vs",
+            "blobId": "4e691ff916d1cedd9127910d15356a6293eb790c2faedd64931682dff6751b0164adb87c54daad269882e3d0155eab41137a5cb05eda0fa068eef664a2e2fac8"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-931d4149-bc1c-429f-8a57-cfe9ccda49c8": {
+        "mediaId": "lcl-931d4149-bc1c-429f-8a57-cfe9ccda49c8",
+        "mediaInfo": {
+            "name": "clickNode.vs",
+            "blobId": "5b6c67e6f4394eedb704eb9bcdd3634d4bd2d101372ec7758eb70a0838ceda80b72aa029fb5e96c5ecdb7eaaf77f542e1f2f56916428e201f244568e2bcea4b1"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-94488052-2bf3-4472-901c-f6e3111203d9": {
+        "mediaId": "lcl-94488052-2bf3-4472-901c-f6e3111203d9",
+        "mediaInfo": {
+            "name": "setOverride.vs",
+            "blobId": "4e654439f56f367f7440c6aca2151730b87cccffacbebf219a47e50880f36855f40bd6e8c8e7875ca946fdfc2a3c00e5d5b7321f7296603a7c098f6214568470"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-94ef2d0a-3e4e-4232-8ec0-cbb2506c07e2": {
+        "mediaId": "lcl-94ef2d0a-3e4e-4232-8ec0-cbb2506c07e2",
+        "mediaInfo": {
+            "name": "unpack.vs",
+            "blobId": "ffae3040b822c6366a19408a942d39dfc34fc3bd959ccbf043cf0c333d1337332407369748e71195d72c621fe52dbb75890f39ec73571407dc6360872766f581"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-965d400e-cc9c-4b37-bf40-c9f86d9dafb9": {
+        "mediaId": "lcl-965d400e-cc9c-4b37-bf40-c9f86d9dafb9",
+        "mediaInfo": {
+            "name": "openOwner.vs",
+            "blobId": "bc3ec43c17d0f2ccdfdf3f0918e7c9dd7c1e50346dc7fc527b72910da4de090502d861579578d7729fce4bc6f56670dfe27d1d9bf4fe41cd6825758ecc95a7b9"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-96f99d0b-55ad-4566-b45f-49dc382e159b": {
+        "mediaId": "lcl-96f99d0b-55ad-4566-b45f-49dc382e159b",
+        "mediaInfo": {
+            "name": "getPropertyResourceByName.vs",
+            "blobId": "2cd55364ae70cac49a7fc912f760072ae53b5bbc8d4478d3f4d3bd43963b78209f8d667e33baad0578e17c6bffdb42eaada4713c68fb5bd26ab47e26d5cfcdf7"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-979c6650-fd6a-477b-acc3-45f27f188cd8": {
+        "mediaId": "lcl-979c6650-fd6a-477b-acc3-45f27f188cd8",
+        "mediaInfo": {
+            "name": "createNewProject.vs",
+            "blobId": "1336a858b0067acf605347243783a124a40859b14874a581e1e7ccd9dd1c67762f51de1cb69ff4b439d818826a9d8e51b6f1f6aa333fbba24deec15d0bd27fee"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-9890d903-aa30-4f0b-a42f-195efdaab694": {
+        "mediaId": "lcl-9890d903-aa30-4f0b-a42f-195efdaab694",
+        "mediaInfo": {
+            "name": "unpackFunctionContents.txt",
+            "blobId": "8cacd3b017e8a4752e74f4c792a344c1ad3e7385cc786bb573498dd473731b0412565dacccb707c62eb8122da8a6b7f5c591f596ef7d6f5023e6b05b448595f2"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-98fa35e2-79dc-4889-bcf8-3fe40bcfc142": {
+        "mediaId": "lcl-98fa35e2-79dc-4889-bcf8-3fe40bcfc142",
+        "mediaInfo": {
+            "name": "makeAccessorPropertyName.vs",
+            "blobId": "ed6331e2dbf94e895b785ddd01b35858f156f0873a98042df6083e203cb6e9fd5a77af499e0e8c3f99029b0c6db256d169299eb9e645bddf133fa11f324ec040"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-99ad3f4a-cb5f-4cf4-82be-28c1ffb09028": {
+        "mediaId": "lcl-99ad3f4a-cb5f-4cf4-82be-28c1ffb09028",
+        "mediaInfo": {
+            "name": "VSBox.vsx",
+            "blobId": "0d6a69c2ab1fca1986050a1c30981e05c9feee6c9d4bb638018f3f6095895cc4ed13c10fe82866b9559ec8e9528a28b86c746fdca819ce8aa1943db08e9784d1"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-9b696719-ce02-4f8a-bd04-798cd9c911e0": {
+        "mediaId": "lcl-9b696719-ce02-4f8a-bd04-798cd9c911e0",
+        "mediaInfo": {
+            "name": "createProjectForNode.vs",
+            "blobId": "e51a531cc660299851211390ec5ee372719a5d8b5e187c6330ed9fd45629ec5febc80341b45930cdc1b7b06b3a6f798d8058d9b837a099b07cfb89fc0e772fcd"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-9be10e41-e7e7-4354-a252-9e6120195e96": {
+        "mediaId": "lcl-9be10e41-e7e7-4354-a252-9e6120195e96",
+        "mediaInfo": {
+            "name": "topMenu.vsx",
+            "blobId": "88f47c93e115297df66ebcf4526c3f70dd7d406417682046b709bdb594f97bfaeb05db72c68230e0a3e7e32f6bbb00388f7cfd84ba836dad3f264992b69b92cf"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-9be41dd1-88f2-422f-88a7-ab3f338ca715": {
+        "mediaId": "lcl-9be41dd1-88f2-422f-88a7-ab3f338ca715",
+        "mediaInfo": {
+            "name": "stylesheet.css",
+            "blobId": "6d1843f29814d6bbae0fd8a05b7f5af9bcb207ea4d8a60ee646786118874737919b8957a1f335e67bf89e42a3b3cc936ee4568be8ac24b03bcff5b417e0bea62"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-9c7f5819-76f2-4859-b39b-c7ef0e7d36bd": {
+        "mediaId": "lcl-9c7f5819-76f2-4859-b39b-c7ef0e7d36bd",
+        "mediaInfo": {
+            "name": "isInProject.vs",
+            "blobId": "058b796d226bc860d2eadc765b7de8d2ed82f19cc294a67bea184352f8f27f5c664cfb54c995f2903aca668971c2239e0b1c070c286ce8e76485aa6365db11ed"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-9d369e70-2e11-435e-bcda-107a7bf2b49d": {
+        "mediaId": "lcl-9d369e70-2e11-435e-bcda-107a7bf2b49d",
+        "mediaInfo": {
+            "name": "buildUnpacker.vs",
+            "blobId": "f08fc3a7120d2883bc4e5512e6f6630b92cb89959fbe34aed91b86970a23e4d67f73f11f36def32852dd6bc46b17ba65540864be7bcfabfc00b77f218f0f73a8"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-9eb2c1d6-2f43-4336-8436-0f751ba992c1": {
+        "mediaId": "lcl-9eb2c1d6-2f43-4336-8436-0f751ba992c1",
+        "mediaInfo": {
+            "name": "activationGate.vsx",
+            "blobId": "70e48a3b9a0f4aca01e56591c5b5489d217e05f2094491e15ca4036c1915ef04e26f0242a223882e2bfca1c328c0dcfaa8a5bd1dab9702dec5d154b8779c293c"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-a1c06be8-5414-4646-a821-f5f6653ccb43": {
+        "mediaId": "lcl-a1c06be8-5414-4646-a821-f5f6653ccb43",
+        "mediaInfo": {
+            "name": "getBranchForNode.vs",
+            "blobId": "49d774738a6c8aa5aca1c08438b92c17bdb555f5234ba518dadac0adf3b47b1d5245bf8b2c7f10f85fe23265a372ada653ce3fc23263b1651782d29bca5a7041"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-a1d577a0-359d-4868-96e3-f0119a1aeeea": {
+        "mediaId": "lcl-a1d577a0-359d-4868-96e3-f0119a1aeeea",
+        "mediaInfo": {
+            "name": "openForEditing.vs",
+            "blobId": "0f6e58b3e3eda22ce239a40358c126f794932fafdd61ec4370b57427e929e6ecaed26baddbba879bb61a6a44388272392a0d52ee21afb45e6e9481e989ebe910"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-a1e02943-1903-432a-a9b8-1a6abb47300a": {
+        "mediaId": "lcl-a1e02943-1903-432a-a9b8-1a6abb47300a",
+        "mediaInfo": {
+            "name": "openForEditing.vs",
+            "blobId": "da6b3a66ef3cc73c2369a6f376859bea6ceeeed628bfd637430de03d3d7550fe16bf2bc49c15a4dcb425c8be3d198e738bf3914b6fcd7dcf3a920678b72f5bb9"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-a1e4d308-902f-4eb5-bf64-3c3ea080fb47": {
+        "mediaId": "lcl-a1e4d308-902f-4eb5-bf64-3c3ea080fb47",
+        "mediaInfo": {
+            "name": "setRootToHome.vs",
+            "blobId": "ba35ea8d291904d22db1aec5fb5832538aa97902bbb898827009a9faa985e1ac6ec656bb010a520cdc51c068923e1cd1df6c49c49f94d208d462865bf86e7b82"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-a303d559-4470-43ad-96de-5524fca2f499": {
+        "mediaId": "lcl-a303d559-4470-43ad-96de-5524fca2f499",
+        "mediaInfo": {
+            "name": "newPropertyForNode.vs",
+            "blobId": "605a1c523d021de3811054c7e88fe1bf2bb1f73042da906b22495048f2178e85b41b3480933a867b44d2f697b5a8cde6cca5b47e07a20263e822c007794fb5a0"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-a3f99d96-f78a-4f70-b507-fad88564a3a7": {
+        "mediaId": "lcl-a3f99d96-f78a-4f70-b507-fad88564a3a7",
+        "mediaInfo": {
+            "name": "setContent.vs",
+            "blobId": "02688497d70e970f62b91b06e5c34aba5a10fc0253dc8475951d6119684bdb44b3ea3145de7a6c2b8394b318645c6d1b9f041848e300c74da18ab4d60b81b5f8"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-a888b885-e85b-4b14-a700-7854bb91382b": {
+        "mediaId": "lcl-a888b885-e85b-4b14-a700-7854bb91382b",
+        "mediaInfo": {
+            "name": "handleKeyDown.vs",
+            "blobId": "e2b55d211d2faeb1d44d35601a28a83eb1332f419a86163aecab75570c9787e9c30969f5472306f181c4ad138dfa10e9673e0b48dc3cca232620bed1552f831f"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-a906afb8-53db-4193-abde-2112c9eebea9": {
+        "mediaId": "lcl-a906afb8-53db-4193-abde-2112c9eebea9",
+        "mediaInfo": {
+            "name": "insert_after",
+            "blobId": "2da4e59a9cf65fe47ffaa79f5771616a4f567f7f028a75578d2403f41da68b2fb71fcdce331906c22378a3db3e631f0e0d23de8f6e7c278b5a8dd3d5abca4be6"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-ab921a74-d38c-4735-885e-18a72fede56f": {
+        "mediaId": "lcl-ab921a74-d38c-4735-885e-18a72fede56f",
+        "mediaInfo": {
+            "name": "activator.vs",
+            "blobId": "de7cbaf72479698006daf4c34a10f99a9cbce08e28b87eca7a1582b66b46fa09521f74e84498b1d264a6f22c41efaf4c3dedb293fbf8a209ac8b58ee7911e64b"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-ac419f57-ead8-49be-b06e-be9c658917b2": {
+        "mediaId": "lcl-ac419f57-ead8-49be-b06e-be9c658917b2",
+        "mediaInfo": {
+            "name": "startCreateInstanceTo.vs",
+            "blobId": "881aa5dbdbb6c60c6a81d909c4ff3c3ac22bea5f07ebff86146015f85b73dcbf3d8cfdd5503ece34dca406f743770dba5283122de2f5e103849816d03762ea91"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-ac72cb95-f251-4edf-9a43-94cea534d0d4": {
+        "mediaId": "lcl-ac72cb95-f251-4edf-9a43-94cea534d0d4",
+        "mediaInfo": {
+            "name": "destroyNode.vs",
+            "blobId": "9285dc77017c07774dfb7c8a6e9a358d76a15cde720f05cd0d5ced3e5c999e0ccefee5ea87b53d61e71ae3159f626bf334e04e5e0ab3e8fba7dbcd6712e375a0"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-adff564e-a43a-4e14-b0d2-a1f36f4cd8c9": {
+        "mediaId": "lcl-adff564e-a43a-4e14-b0d2-a1f36f4cd8c9",
+        "mediaInfo": {
+            "name": "renamePropertyCallback.vs",
+            "blobId": "32e10c715e5a36b600450ff7744e9b12e720c15830121fa458c18e1441ecc97ee261a1fd57921a206fb3d9a887f72880057388b58e4db28cb281a2918215d9d5"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-af9399fb-337f-49a9-945e-f6b45ff7e91f": {
+        "mediaId": "lcl-af9399fb-337f-49a9-945e-f6b45ff7e91f",
+        "mediaInfo": {
+            "name": "TabbedView.vsx",
+            "blobId": "a332e7050a2c0eab68ca116b107aed429828d16e0eab16f62288c3bb99d13221603ed03250ec8f1c8361ad00681ae1125730211ccaa31ca372bcef5773b3367b"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-b25f3236-ff23-4b2a-825d-52ab09a680e7": {
+        "mediaId": "lcl-b25f3236-ff23-4b2a-825d-52ab09a680e7",
+        "mediaInfo": {
+            "name": "getNodeInstancingState.vs",
+            "blobId": "785181c55d4fb8c439f288ed39f20b5e078e99c68a0f3851e464b7c7da4b48b8ead4e1a0804e55c83b0197cfe3a73da6ecd78911461b41b8aaaf6ec137070ccd"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-b484df5f-3595-4d8b-a984-f938758d4e9d": {
+        "mediaId": "lcl-b484df5f-3595-4d8b-a984-f938758d4e9d",
+        "mediaInfo": {
+            "name": "addBookmark.vs",
+            "blobId": "efe420c814225c658d1f9b4994be24ee95cd8d61f1b5f0a1ceb1d00949efa6dc67f8c4f63c4441480a4540bcf2f25164f1c15e43acb6d202008f1db38f5afb1a"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-b59ada10-b7ce-4e31-be8c-1897c88f292f": {
+        "mediaId": "lcl-b59ada10-b7ce-4e31-be8c-1897c88f292f",
+        "mediaInfo": {
+            "name": "focusView.vs",
+            "blobId": "65d0545407a4a0ce180c4c54e2f18c862bfb7ecb2342f881007a51dac3902828e4dda08e2fa94670edb215252bef44169bead4bcc268ac7c217099d11b27f043"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-b5cbf8e0-ba7a-4117-aa73-ebd7f7df93f2": {
+        "mediaId": "lcl-b5cbf8e0-ba7a-4117-aa73-ebd7f7df93f2",
+        "mediaInfo": {
+            "name": "moveThisToSelected.vs",
+            "blobId": "683fe5acbeb1a6006b7c3b81d9619498c18957753b98ec82a7dcb4bdfd6e2cf164706b0c703f608c5021ce459aff900b0f05f905d9e32859aac5dccd2bee43a7"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-b72bc350-71d3-47b3-8a98-c68ac972b098": {
+        "mediaId": "lcl-b72bc350-71d3-47b3-8a98-c68ac972b098",
+        "mediaInfo": {
+            "name": "openTreeViewHere.vs",
+            "blobId": "365303eac5a855c9131c7bd014bc99411c06979b296831fd208c565009c89fec48d7c6b63405fc685f7bd7e80303dd3bd4d70645354965ee14a6921bcd0825ae"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-b95fb60f-8f81-4184-8d4b-981a9cae669c": {
+        "mediaId": "lcl-b95fb60f-8f81-4184-8d4b-981a9cae669c",
+        "mediaInfo": {
+            "name": "moveNode.vs",
+            "blobId": "67c2c8e7e4c54f3640dbc515b5c902512b419c941cdc0533c9ad71d00fa4c7a2e4cfe0f6fee0f52c9d74a33a4d629bc6f62113345c9c2db767957f10fbad53e7"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-b9ebab0b-36e0-4236-8bd3-944dbb54e6ea": {
+        "mediaId": "lcl-b9ebab0b-36e0-4236-8bd3-944dbb54e6ea",
+        "mediaInfo": {
+            "name": "setRootToZero.vs",
+            "blobId": "98207d0b8b3cc793308eac2015c0ba928c39ed252220a06d066285756bee78b2cd7921287243869e2149bad11cd00cb937ac48089f894e9d2eb72cc9e91b36c3"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-ba601db6-d990-4d06-ab7f-b28283573f74": {
+        "mediaId": "lcl-ba601db6-d990-4d06-ab7f-b28283573f74",
+        "mediaInfo": {
+            "name": "branchPoint.vsx",
+            "blobId": "4633c11f809ef36ddfdcff739334ba8cae20122697d5e5f28e22d98768ac0abadbb87ec8c72e34f75d818db1425baa89565610a103894d837dfe177e13554afd"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-ba689705-d073-491f-9138-ee6b9c39035d": {
+        "mediaId": "lcl-ba689705-d073-491f-9138-ee6b9c39035d",
+        "mediaInfo": {
+            "name": "setClipboardContentsFromMedia.vs",
+            "blobId": "578b0a74eddfdd96868675e21f2c53bee6ca84070405d1ade2088b269658ba1b18161c4e629b0b300c6936c271bb4866312de2271a79571b0d76a1102e192250"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-bc1903eb-7b7f-4f9a-a513-aa3367a8336a": {
+        "mediaId": "lcl-bc1903eb-7b7f-4f9a-a513-aa3367a8336a",
+        "mediaInfo": {
+            "name": "relationInfo.jsx",
+            "blobId": "d1fb6b134fe70d2c4e71e94e447283cfd5857a597aa9aced8d8ee767b5ea24382428a2e5d7f7dcc63e9f2f45324f0c1f85d09ece61cd59a47a686c42265bd474"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-bc4a9ac6-f014-41f6-ae07-714375a37fa0": {
+        "mediaId": "lcl-bc4a9ac6-f014-41f6-ae07-714375a37fa0",
+        "mediaInfo": {
+            "name": "getPartitionAuthority.vs",
+            "blobId": "51d1cb3cf2cf712a26d4fe66c5976781fc1800eae0dd1ff52d30dc0620fd78fe35197ee130cc49d437d2e0563f7aee3fa698339d54a21142ca94a3ad1c76e887"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-bc6d1659-d803-470a-ba09-327c531a212f": {
+        "mediaId": "lcl-bc6d1659-d803-470a-ba09-327c531a212f",
+        "mediaInfo": {
+            "name": "createPartitionAnywhere.vs",
+            "blobId": "af6cdf82463ca9251cce00d9945921fc0e519d87cf7bb69e8c8968323f5fdee56fdb11f6f8e655553b9db9393a115c8157901a9e0be70352016f7311a4600d05"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-bd553cd0-222f-4bf4-8e50-a46e675f78a5": {
+        "mediaId": "lcl-bd553cd0-222f-4bf4-8e50-a46e675f78a5",
+        "mediaInfo": {
+            "name": "doProfilingReplaceFor.vs",
+            "blobId": "944119e915a9b3fc38d054ba1245f12b865f35ee521a93d383924aeddd32f6248abfa76da6a1b576127d2b7655742e05133221f0510eac43a60efd70baee26b8"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-bd570fef-e66d-46a9-856e-15c77914ffa1": {
+        "mediaId": "lcl-bd570fef-e66d-46a9-856e-15c77914ffa1",
+        "mediaInfo": {
+            "name": "clearOverride.vs",
+            "blobId": "600338ac41a5f3548582138780d6a4e1e308c95019e928005333cf73ca5bb462419a2cb99e2446d973716bd61fa0b71ff061aa0b0d718366c7ff6d2fd6fb206e"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-bdcfe114-902b-406d-a291-4be187ce8241": {
+        "mediaId": "lcl-bdcfe114-902b-406d-a291-4be187ce8241",
+        "mediaInfo": {
+            "name": "EditableText.vsx",
+            "blobId": "27f6866e1bd7a30a46dd7a108ae75cb416d23c4a1a8371d7e23dabe6dc64eac70b63c72136bbb4813bd959a396efd96daf8ffd7a107c844856977e57f9078a0b"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-bde46767-a1d7-4f83-84d7-3b44cd9f8b94": {
+        "mediaId": "lcl-bde46767-a1d7-4f83-84d7-3b44cd9f8b94",
+        "mediaInfo": {
+            "name": "displayVSBox.vsx",
+            "blobId": "9c05e3a8d8c2a309171ab4adbd08785d33eff2bc7c78f9f1f95cc862a79d952ee649748ca202390ae4a84a279a9f756f18e951e2c26d37ab056ab21c481d79bb"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-be025e27-7be8-4196-8ddb-010fb8a48250": {
+        "mediaId": "lcl-be025e27-7be8-4196-8ddb-010fb8a48250",
+        "mediaInfo": {
+            "name": "editCancelled.vs",
+            "blobId": "b0439975234ffbbcf913ac1248cc2d72b9ed8dd735a243135cbd1e9bf622c401393377b35f38e83fa61a329e66da64b45154ddb9ef576a377f69e0358721b3bd"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-be9222fa-644f-4ec7-ae9b-a2345dbba789": {
+        "mediaId": "lcl-be9222fa-644f-4ec7-ae9b-a2345dbba789",
+        "mediaInfo": {
+            "name": "setRelationTarget.vs",
+            "blobId": "353771ee4e07643884f3509ffc59f3f0024352e9499b44a461d3e4d87d2be1a51cd0e4374a57e5d6003f5f72b3ea26f125f38b7820b53759a50db9ecf918e204"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-bf3ffd7f-6067-41a9-a174-51c14666aaf7": {
+        "mediaId": "lcl-bf3ffd7f-6067-41a9-a174-51c14666aaf7",
+        "mediaInfo": {
+            "name": "collapseNode.vs",
+            "blobId": "34a82d70a13e4c5437684d13f0f7b17c16f04cdbbe477dcd24b0e3b54288fbbf027170ff292e7376035e4c058bc0fcd668bd6b2be2fc2442fa57bb58a6147b01"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-c0721f4e-00e7-4a9b-831e-a99729c0f6e6": {
+        "mediaId": "lcl-c0721f4e-00e7-4a9b-831e-a99729c0f6e6",
+        "mediaInfo": {
+            "name": "selectTabLensGenerator.vs",
+            "blobId": "5ec60b2c50fe543c9545fb545f870ffcc96d21fad132ae9e130635d923f512ec0729886d1b4c3c9b898aed4bf363bfbf01bca81a5862d25f31a9f435296e92f5"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-c4ed9338-5ec5-4612-bbd4-6358b0eba9ce": {
+        "mediaId": "lcl-c4ed9338-5ec5-4612-bbd4-6358b0eba9ce",
+        "mediaInfo": {
+            "name": "split_unpack.vs",
+            "blobId": "847d86066b9e11925849ba62436fe6345ab1011b3153e6781dccd80692bac76f7a4690e2e55ab16e348b259e9ddcfe888705e7650db2f0f880c5cab0de8e748b"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-c50ceec1-05e4-4e60-b7f3-0c6e6e98e080": {
+        "mediaId": "lcl-c50ceec1-05e4-4e60-b7f3-0c6e6e98e080",
+        "mediaInfo": {
+            "name": "accessorPropertyMarker.vsx",
+            "blobId": "a3fef1c3b1f4b160e8c8f52e4e095f208988044bbe80258670dde5bd080c6808a753f3646e989beb77c57d2f416b9a82a3e8b8457cb365dc66afb905cf7759bb"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-c5593b6c-f02f-49e9-b6ee-94869324f2fc": {
+        "mediaId": "lcl-c5593b6c-f02f-49e9-b6ee-94869324f2fc",
+        "mediaInfo": {
+            "name": "DEPRECATED-isAccessorPropertyNameFor.vs",
+            "blobId": "7af1b32298628a5d8d314669fec0a457650ff54a18e756f8fc47a1dcd7cbc168117586d8c3817f40200fc9fbd08847bdc92fe2cd799c8681d373e498e7cca7fb"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-c576d95b-b192-4aa5-8c81-76973db697a0": {
+        "mediaId": "lcl-c576d95b-b192-4aa5-8c81-76973db697a0",
+        "mediaInfo": {
+            "name": "EditorContainerTemplate.vsx",
+            "blobId": "5c48c2c70f9ec5bc64ab1f3fa702fd8bf4945738fe924cd35f126016f54d04beb9957f6fee67b23c6843f44c1297d0c40cb869f35862bbd30c70a8e701d4d1e1"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-c6734352-9c1a-4f48-a12f-135b3d1a6313": {
+        "mediaId": "lcl-c6734352-9c1a-4f48-a12f-135b3d1a6313",
+        "mediaInfo": {
+            "name": "getAccessorPropertyName.vs",
+            "blobId": "ca418b12ea62f6eaf7f76ca4ef5ab82777159bbd481a08d41d274e8bc89aea68e59db0a8b0ab417458fa2190106545ca8f3019a261b6621967dd06b1282bc13b"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-c7dbc3ac-6e0a-49dc-a047-4376940609c2": {
+        "mediaId": "lcl-c7dbc3ac-6e0a-49dc-a047-4376940609c2",
+        "mediaInfo": {
+            "name": "setProjectTo.vs",
+            "blobId": "0cb4573d5f4d0e20f5a685b303579746ca34c94117dff79b4e45924e29e2da841386d39cf029be378587c74edc622c833bf3f6b6f45cef2c12542a127a0fb86a"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-c817b57b-6026-43c3-8e03-2749af7f07be": {
+        "mediaId": "lcl-c817b57b-6026-43c3-8e03-2749af7f07be",
+        "mediaInfo": {
+            "name": "style.css",
+            "blobId": "ddb055139666077bc03c0b761392ee21adcb75b7d788c50c31683d3ae5ac38c407a0df8f3f3aecb591955e9e39f1fc53703c672f686e80d328d1ea3b85b6a15f"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-c9d8a074-94a0-49d1-818a-2abd9f3a0183": {
+        "mediaId": "lcl-c9d8a074-94a0-49d1-818a-2abd9f3a0183",
+        "mediaInfo": {
+            "name": "DEPRECATED-firstRelationFromSource.vs",
+            "blobId": "6fa3fc6bfd36befe681f767097574e981f94e1987d79c9222f7c762479e604f4ca573f1adfd0829f426ad4fc59d5952069e61ac8fda3c7db989c59449fd5344a"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-ca8694bd-7089-40f2-8084-5c1223b73b3f": {
+        "mediaId": "lcl-ca8694bd-7089-40f2-8084-5c1223b73b3f",
+        "mediaInfo": {
+            "name": "loadResource.vs",
+            "blobId": "6c3dabd88a97b6d409556ed574fe64015259dee8a45f003aecdd7223bcaba8c85c3eea1af013db9d9444270fa3db406f69c8fa64234e0b9a81af376d48b67b1d"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-cd29b0b2-645a-4599-95a7-857d83e3a45e": {
+        "mediaId": "lcl-cd29b0b2-645a-4599-95a7-857d83e3a45e",
+        "mediaInfo": {
+            "name": "startMove.vs",
+            "blobId": "1cb800739d29c915eceaf9bd50b7ff3070769b72611dc3993f19c8b74553d4fd821444208e04ba0e61c908673fbb11d53ac385f678a024371e5528566548704d"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-cd2a6f37-d58d-4784-b773-088dc6687fe3": {
+        "mediaId": "lcl-cd2a6f37-d58d-4784-b773-088dc6687fe3",
+        "mediaInfo": {
+            "name": "showHomelessZero.vsx",
+            "blobId": "6c68109b9b38bd562efb543d574e14e597d3c3fcaae11816cae7fc6c03edd2b936599426fb477e8a058d8f5416ef09880b8c766e490a8ce7ba4983c759c224ca"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-cd560829-570d-4058-815f-2b8c60ff5912": {
+        "mediaId": "lcl-cd560829-570d-4058-815f-2b8c60ff5912",
+        "mediaInfo": {
+            "name": "createTabbedView.vs",
+            "blobId": "a9688a5975ac92e0723f6afaf8fa26ba261d075c83216735632a1f5a48d5545a47f97b27a7cef6dcc1eb7727dba47e02d6e7ee38e9cef79f839aafcc7bdd745f"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-cd7d60d4-2409-4d89-b9a2-c025333684b3": {
+        "mediaId": "lcl-cd7d60d4-2409-4d89-b9a2-c025333684b3",
+        "mediaInfo": {
+            "name": "addLensForNode.vs",
+            "blobId": "e6e3748bd91fd4bac14b58d53737c188943130595bf4877acaa345f8991e1d92b5922b93c428b27101d3ee709b9d18dc9b440b38b3d1d4a933961399b7cb7e5b"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-cfa23ef8-6d0e-4120-a4f0-75cb262b6dac": {
+        "mediaId": "lcl-cfa23ef8-6d0e-4120-a4f0-75cb262b6dac",
+        "mediaInfo": {
+            "name": "getOpenBranchForNode.vs",
+            "blobId": "30a57ee8190868768e2f20990af1d2e7d58621541a132faed7e1f5bca017c66c0572ceb0d2f802f1e8db9f8f84d0400fb15199616fe78abbd8d02be7c1499bc2"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-cfa86c9d-1819-48b2-ac49-62461a72ddd0": {
+        "mediaId": "lcl-cfa86c9d-1819-48b2-ac49-62461a72ddd0",
+        "mediaInfo": {
+            "name": "moveToLocalSettings.vs",
+            "blobId": "f25a117596e28c14689f709f37a9edf3768d592270e037df666dd49189264174a6102f4da9fe874d912f89eb1731686a44542a2664d3db4733effcf9296f43ce"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-d0c6893d-7e6a-48c1-a623-421ef038397a": {
+        "mediaId": "lcl-d0c6893d-7e6a-48c1-a623-421ef038397a",
+        "mediaInfo": {
+            "name": "newEntityForNode.vs",
+            "blobId": "62f622009217d3cdd6c4b2d6b22ee1f421088cb7f8eebe326676a7268cf9e1f432378c060296dc96ba5be61bb980610f423564cd342dc3374992ef0e6bad99bf"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-d28dead1-a9ee-4da1-aea8-8f3969499ebf": {
+        "mediaId": "lcl-d28dead1-a9ee-4da1-aea8-8f3969499ebf",
+        "mediaInfo": {
+            "name": "Branch.vsx",
+            "blobId": "5bb0a350446b4227060fa6a476fa5e6396c12390bcd6aba8568dac0c224797668bbe9f7080cba26d3cf743ac3d2384f0f4a65560bf5d9d71aed81fd4f7b97ce5"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-d38f0255-4f8d-417d-84d2-5acb908050e8": {
+        "mediaId": "lcl-d38f0255-4f8d-417d-84d2-5acb908050e8",
+        "mediaInfo": {
+            "name": "paste.vs",
+            "blobId": "1a8e6339b93546c59b406bf4b55fba4bf7875a7f598ea34b53fa24b2f33c50f0b48dac5810ab5b493bd8c595ab063c9c92dac3eac8dd2959fb3b495ce1794b21"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-d4006827-8d70-4736-aa64-176affe7b385": {
+        "mediaId": "lcl-d4006827-8d70-4736-aa64-176affe7b385",
+        "mediaInfo": {
+            "name": "EditableText.vsx",
+            "blobId": "54e94869d6639b14c54bdd372ca2ada88991c3aaa4d4b3a689904833f5b137461c4169ac99904eea019d44d52cd3b01a2f4a48b0bf54247747c8adf8756a6625"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-d4051dcd-0b66-4910-8668-26c535aa715c": {
+        "mediaId": "lcl-d4051dcd-0b66-4910-8668-26c535aa715c",
+        "mediaInfo": {
+            "name": "resizeTreeView.vs",
+            "blobId": "8b26a93ffd6fb2fba879bd54049d6e7dad220aa274f3c36c8e233c9c8e4b649e4e3af7e5986f6b4befef4eec82865fac49e5afa7ba80c3e1117f65b9199d7863"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-d6b599f6-73b7-4348-bf7e-265afc7b4b51": {
+        "mediaId": "lcl-d6b599f6-73b7-4348-bf7e-265afc7b4b51",
+        "mediaInfo": {
+            "name": "projectListSelection.vsx",
+            "blobId": "23f28fa219dbeb9e00e5767829035cd8598bae6f280efbce513018bdeb43b15de1bfbdda821387394659de713f6a099a5af2610c9d8dd97b3c728a911cf1867f"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-d6cecfb5-3d23-465f-81a7-ab3e67d4beab": {
+        "mediaId": "lcl-d6cecfb5-3d23-465f-81a7-ab3e67d4beab",
+        "mediaInfo": {
+            "name": "nodeHasAccessorProperty.vs",
+            "blobId": "5a60572dddd0a0b9e4c0fac1fe3b0eb2268594ed1c30ca599dca240e4061962f87e7585b68169a8aebd740484d4ce101905e54ed66bdc8a912cbe22d8acfefb2"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-d744d28f-22e6-44aa-92cd-6d6e226e4395": {
+        "mediaId": "lcl-d744d28f-22e6-44aa-92cd-6d6e226e4395",
+        "mediaInfo": {
+            "name": "contents",
+            "blobId": "38f048b8d04011bcd70a4fcee1e131eac60153c2d06eefef5ee4927dfad17a3a9930ccd92a1ec38875d9de96e7030d9e0d040c17d191c9e3fa835f6c30be8805"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-d7d5b68d-70c3-4f1f-a3ff-6387f57cad3f": {
+        "mediaId": "lcl-d7d5b68d-70c3-4f1f-a3ff-6387f57cad3f",
+        "mediaInfo": {
+            "name": "changes-0.02.06.vsx",
+            "blobId": "d7a0e7f6bd326d13d22a756e64ff4ebb00e64b70f8b5b82ea86d6b7efeac3f2e8c0ee506004665d3b2080ab9829684cae329955862e27cf800f43b6de752b74b"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-d8fce2b6-8443-4e7f-ac5a-a56f95e59af0": {
+        "mediaId": "lcl-d8fce2b6-8443-4e7f-ac5a-a56f95e59af0",
+        "mediaInfo": {
+            "name": "showWovenZero.vsx",
+            "blobId": "5698c315529ebf7c271ec6259928fb888ec1b8c61cb5faed42fdffdafa68e1104ad9db71756125d5322bdc7c64235bd08b41aac9cec430fcee79834ba61a6798"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-d98ff01b-e7ed-41d6-a2e4-b8878ac18eec": {
+        "mediaId": "lcl-d98ff01b-e7ed-41d6-a2e4-b8878ac18eec",
+        "mediaInfo": {
+            "name": "editCancelled.vs",
+            "blobId": "b0439975234ffbbcf913ac1248cc2d72b9ed8dd735a243135cbd1e9bf622c401393377b35f38e83fa61a329e66da64b45154ddb9ef576a377f69e0358721b3bd"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-df06f790-1cb3-49c3-9f38-8bb411f1d6e6": {
+        "mediaId": "lcl-df06f790-1cb3-49c3-9f38-8bb411f1d6e6",
+        "mediaInfo": {
+            "name": "listGroupedRelations.jsx",
+            "blobId": "6242806ae60cd4dbd521e04930fe8f65dc81ea38ca2b2c1efd14d11ab86bfd5178bc96c6a497a19e894bf952195a9b3d74f4b1ede9bfaf58fafd212be8e706df"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-df630338-be5a-495d-a746-5584d0a7d781": {
+        "mediaId": "lcl-df630338-be5a-495d-a746-5584d0a7d781",
+        "mediaInfo": {
+            "name": "stylesheet.css",
+            "blobId": "b8e7e373ef7692acb54c2d4510cec6c159a60dbed5e6b7a7f29745976ad96b51314a261da8a86d84800706502eef3f50f1488f036e8270d1b676c93bc913b09a"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-dffb7d85-021e-481d-8ccd-69cb5854f918": {
+        "mediaId": "lcl-dffb7d85-021e-481d-8ccd-69cb5854f918",
+        "mediaInfo": {
+            "name": "pack.vs",
+            "blobId": "796f0e89fe481003c7dedd79ab33c757d39a16bbae4a4d0f088ce0bb13058d156c6be16d0f09e592b2aac8896a66533cbfcacf1e2f9722f800874e454cf8040c"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-e10ab224-849a-47f1-a683-167be1954f03": {
+        "mediaId": "lcl-e10ab224-849a-47f1-a683-167be1954f03",
+        "mediaInfo": {
+            "name": "openVSBox.vs",
+            "blobId": "6d582c9269202d901e02d1e603819d2d968818cb22ff35ef3856d8b8c4a3a11fb2b2e1311752bf7d50488bcda2518c18090bee4c60da27eb598c02dae1eb56b7"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-e2d93566-289b-4db4-bd4b-c68a73291ea7": {
+        "mediaId": "lcl-e2d93566-289b-4db4-bd4b-c68a73291ea7",
+        "mediaInfo": {
+            "name": "trashNode.vs",
+            "blobId": "0908aac6fecdbb62048a24125353a5faf3d2c4a6335c82391714111d7b4a5b79a47b4c658a5571b2311cb26a01e451fba5e4f6b06df8a7449dca7908cbd5a35f"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-e52d3409-b928-4c09-aabc-b3174e383293": {
+        "mediaId": "lcl-e52d3409-b928-4c09-aabc-b3174e383293",
+        "mediaInfo": {
+            "name": "openForEditing.vs",
+            "blobId": "d2ba9486b6b05831cec2f3a302ea52957d218541086104380882c1db7eac9d5bce61f08d3b403b2dd38a50da9dbe91dfaead99c22bc13520fa9159c45f30da06"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-e7034a07-12ae-465c-a7ce-9ddc67acea79": {
+        "mediaId": "lcl-e7034a07-12ae-465c-a7ce-9ddc67acea79",
+        "mediaInfo": {
+            "name": "getDerivedLocalInstance.vs",
+            "blobId": "af4e7186d9f790f15c13777adc79081f3939c02a7b8a5a8988d3895313b7531010c7d9312ea1a4567aa672c614f0e8a6e780ea1a1600b2a71ec288849dbe2452"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-e794b3e3-6a03-4265-b81d-3ace3056e131": {
+        "mediaId": "lcl-e794b3e3-6a03-4265-b81d-3ace3056e131",
+        "mediaInfo": {
+            "name": "getAccessorProperty.vs",
+            "blobId": "2c7f5763672e605cd4e1976289068c45ff27c729309702d7645e9b8abadf072f1227ff89b6fee9c49689f17fe7322dde7c7d0189836e3846a4cfb663f07d56d4"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-e88362eb-ad91-42e8-88a9-bdc798a9afdd": {
+        "mediaId": "lcl-e88362eb-ad91-42e8-88a9-bdc798a9afdd",
+        "mediaInfo": {
+            "name": "createMedia.vs",
+            "blobId": "3de988591daf4982b8cfe007ad9ff0aeb80af36fbd2227a6fabac522e087da2faa0f4e0ca4e6de2a699a9d99b91fa1f06076266fa19aec87c8d98b6aef6f0c32"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-e8c33440-9acb-43ac-8db0-a6b6420c9119": {
+        "mediaId": "lcl-e8c33440-9acb-43ac-8db0-a6b6420c9119",
+        "mediaInfo": {
+            "name": "isInactive.vs",
+            "blobId": "a89f59b2891bd0fb9872f8bfc0da2f63b49653a75f088b686dd7280464fa84d41a8e8bd16bb50f567fdbf5e2aefab1774602b10379a7b53d2355b0beaae46818"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-e9b5627f-92a6-4d90-9b18-70b075cf0a36": {
+        "mediaId": "lcl-e9b5627f-92a6-4d90-9b18-70b075cf0a36",
+        "mediaInfo": {
+            "name": "destroyNode.vs",
+            "blobId": "e4356181bac0c42ed6a97ecdbda42d24ad9b7db1057159a3e9e30aa2dda2dba7078bfc1ed8c31fdf4fde9a3113b696aa69983fdc078c641efca29ca5d2b0ba3a"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-eab57770-a8ea-469c-a489-dc5af813b810": {
+        "mediaId": "lcl-eab57770-a8ea-469c-a489-dc5af813b810",
+        "mediaInfo": {
+            "name": "createSplitView.vs",
+            "blobId": "7686c6ffe3c9da52914a5acfdde5b2a4d46293be2085eb9fdc06f1691dbe3901419548c61698e98f9804820fe2f795680484fd8ab8dbbcb626d4dbf0c6a49bee"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-ec67332c-d531-4f3b-8d42-dbaf9cf93388": {
+        "mediaId": "lcl-ec67332c-d531-4f3b-8d42-dbaf9cf93388",
+        "mediaInfo": {
+            "name": "code_start",
+            "blobId": "670fb7e5faf2a26ef167b4eff8dbc7179c3bfa72069d72b6590d324575b516857fdb771ed1dde81ee1ab89609c83305d6a4aa3222f8e427bac221c0d75c2b453"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-ececde60-982c-407b-b013-209d1dd6ef19": {
+        "mediaId": "lcl-ececde60-982c-407b-b013-209d1dd6ef19",
+        "mediaInfo": {
+            "name": "handleDrag.vs",
+            "blobId": "043e1c325cfac69186955efa66d11c33b1b178bfaccf2da7223a6e978457aa7b0a268d50e463f82e9a08b1dcbea8663ddbad03d38043061b68584b56b87ee391"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-eec9d7d8-2b1d-4684-b92a-9b29c44a0b65": {
+        "mediaId": "lcl-eec9d7d8-2b1d-4684-b92a-9b29c44a0b65",
+        "mediaInfo": {
+            "name": "instanciateNode.vs",
+            "blobId": "d96c4c290403ff7f41ef4888e73e9b27e5a96cdd93716dc1ff2834c71e38c078c3b9c73247e5feb917c7f6592ab03934530fdb3acf31544a2305c5b668188c42"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-eeebecf0-6263-44bb-84bb-7641a67bda63": {
+        "mediaId": "lcl-eeebecf0-6263-44bb-84bb-7641a67bda63",
+        "mediaInfo": {
+            "name": "test_content.vsx",
+            "blobId": "5eb17ad0555472552f3a7bb06b21e00ff780e1786657e8a4cd769b3214ce6f84befd8d20ffc99570f951c05c4625818aa0ed2e6924fa02df8028dace3eadb20a"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-ef456549-4fd5-45c8-92f7-b95c87df263d": {
+        "mediaId": "lcl-ef456549-4fd5-45c8-92f7-b95c87df263d",
+        "mediaInfo": {
+            "name": "relationTypes.vs",
+            "blobId": "7606ddfa0b4e69af27f19b500588041d5599d9bb65f2d7a67f47a1d121db2b03f42057887d5116ef16f1c7f45e79ca9c2ae369d12b64b8aa70ee78772a790f29"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-f0b2e4bd-8e0d-4fb6-8594-7e274f9364b0": {
+        "mediaId": "lcl-f0b2e4bd-8e0d-4fb6-8594-7e274f9364b0",
+        "mediaInfo": {
+            "name": "expandNode.vs",
+            "blobId": "dc4fb4e286ab2433d6c6fc571ae40dca632b0ae1531911091fba70482a35fbe9e803f800909ad89a29f377a396bd4aa0443432156795d92e9df2d89dd444f28b"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-f0dd12c0-15a9-4cb6-85b0-c322509ab644": {
+        "mediaId": "lcl-f0dd12c0-15a9-4cb6-85b0-c322509ab644",
+        "mediaInfo": {
+            "name": "closeTabGenerator.vs",
+            "blobId": "3a48dfa161d70deba276248326e8537440585dc3ff368e2e31ac4db6108f7c3fc8e3de9d229354d82bafb908f3c77883643231c911bde399d2e3723118408e8a"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-f108670e-aa6f-450b-a4c0-250ea70c7842": {
+        "mediaId": "lcl-f108670e-aa6f-450b-a4c0-250ea70c7842",
+        "mediaInfo": {
+            "name": "noProjectContainer.vsx",
+            "blobId": "a41c4a6c8045c4e8629753121464d5d5d4813bc674197eb206f7558fdc2f6df0ed26990206956f7f52180fd48206aa7b2348dc81739b36dcc83383f2de9818ba"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-f18792c3-3384-44f2-aa89-f3b7dbcc930c": {
+        "mediaId": "lcl-f18792c3-3384-44f2-aa89-f3b7dbcc930c",
+        "mediaInfo": {
+            "name": "createLocalPartition.vs",
+            "blobId": "a3bcdf8efd50e5154ab0990105333cc68913fc588278b7313e53e68ed4943c9524f7374f460a0b4e5bcea4c405a11e8601b24f2766092afb54711d2fcd92fbb7"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-f3902279-a94c-4094-9c53-44fa0c676637": {
+        "mediaId": "lcl-f3902279-a94c-4094-9c53-44fa0c676637",
+        "mediaInfo": {
+            "name": "createPartitionForNode.vs",
+            "blobId": "87eec402acf8aa90a654c4c849dfeb1f8f7ec6834695d1d428d79a9b81e4570d0212b494fbb9be8cb9233e9729b6d4c5b9732bcafab65b6f9c164e49afe6827f"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-f511fb17-ba1d-4caf-b740-9b1e543e5e06": {
+        "mediaId": "lcl-f511fb17-ba1d-4caf-b740-9b1e543e5e06",
+        "mediaInfo": {
+            "name": "focusTabByIndex.vs",
+            "blobId": "f79c03b1ec26f4caf62599b3c00256a33a065690a3fef3151e74c55bbaba4013fa4898b0e4b8c2ce7dd6e8b975407b173d619bda88e3d07a9f09bddcd94d5a96"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-f6a8506c-894a-4630-bd9d-6bd320cfbf9d": {
+        "mediaId": "lcl-f6a8506c-894a-4630-bd9d-6bd320cfbf9d",
+        "mediaInfo": {
+            "name": "nodeTitleLine.vsx",
+            "blobId": "b285eef38bd1a60fdb3fee55bfd295131025de0e8b7e9ce4ce25149d1a68064d1b1a4a0f1281ee1dd0cdcef96a15b37899e40b25c746f460d40e4c458ac01672"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-f7771bba-6237-4217-8c77-ef5fae09b4c0": {
+        "mediaId": "lcl-f7771bba-6237-4217-8c77-ef5fae09b4c0",
+        "mediaInfo": {
+            "name": "nodeHasOpenBranch.vs",
+            "blobId": "a90ffc4e7c7b4ec12849f7271992a78ece48db15eaff845d7a325686d8a11f7234e8336466f4a6e7778701280e1c55f036cccb19a63d654ca041d88de13b4743"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-f79b20f6-d82f-47d6-b47c-b58b8ee2aeb4": {
+        "mediaId": "lcl-f79b20f6-d82f-47d6-b47c-b58b8ee2aeb4",
+        "mediaInfo": {
+            "name": "stylesheet.css",
+            "blobId": "25961cb03aa28a1af8292538f4d6ba66c9cc507efd1659dd3c1e92751b1d78d7d37dd39505500efd3fd7c1dc7db3d5dc14a53718fabcbd17ceffff12cb4f06f7"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-f8c2f65a-4726-4c09-956f-60377a5c6124": {
+        "mediaId": "lcl-f8c2f65a-4726-4c09-956f-60377a5c6124",
+        "mediaInfo": {
+            "name": "editDone.vs",
+            "blobId": "ef26c7f819614d0dc2aae0c9331b53cbfcb61dfe7db9ffd09e1eebd08b94eb86c27e2c65f03e4c9a8b06eb941c2bc9b64173f3638bf208839606c888e2fe8fb9"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-f93b1081-4d29-4f07-94af-792a04b80999": {
+        "mediaId": "lcl-f93b1081-4d29-4f07-94af-792a04b80999",
+        "mediaInfo": {
+            "name": "limitedText.vs",
+            "blobId": "2eeeb435a22c20b297c38656fec3237e302803f3e9590f10a7167424ef48e28953ced24784f17efa4575df7e484d23b6b266439c74213fdf8a14a934614bb300"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-f9451dbd-6fb5-4022-8b91-6f7d5189765a": {
+        "mediaId": "lcl-f9451dbd-6fb5-4022-8b91-6f7d5189765a",
+        "mediaInfo": {
+            "name": "closeTabDirectly.vs",
+            "blobId": "c51074920061c7b1aa82b07f04f9960a1386e8bcd284530367ef6e3b24305ed05b59aba523dd76eee4e629913dc7dde6af7b417d02a7fbf57ebf7f812c0ef846"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-f9f35509-eac7-47c3-b271-cef0c61d8ebe": {
+        "mediaId": "lcl-f9f35509-eac7-47c3-b271-cef0c61d8ebe",
+        "mediaInfo": {
+            "name": "moveTo.vs",
+            "blobId": "1887252bb37f45c418e8fa288bf5bc31f12d9c68d96e18ae67aa33e61ed90f02859d71a206b98b353f520c2037e2661b2cb9daf0c41e21490d86efa02378ccb4"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-fbda5d24-3c37-4259-82fd-d646821dd563": {
+        "mediaId": "lcl-fbda5d24-3c37-4259-82fd-d646821dd563",
+        "mediaInfo": {
+            "name": "SplitView.vsx",
+            "blobId": "aeb802812e68f3d2d8dbaaa348a797ee1a97995eadd3e7c75a89b88514f14b66f0969abe44e44c1b23d3c492bfcedaa7f25be8f7dff878bc13562b501f0e9963"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-fbfefe38-daba-4271-bce8-e229d02c80d8": {
+        "mediaId": "lcl-fbfefe38-daba-4271-bce8-e229d02c80d8",
+        "mediaInfo": {
+            "name": "focusTabGenerator.vs",
+            "blobId": "0175f7bc4e808dd3b999c2dfeea051d13c7b6786c798873648e44d13a8b9e805986b07e67b5545cbb7cf4d4556aa680112c89acb0d786973c9b99275f4ace046"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-fc2c87b6-c8e1-4cd6-bc41-58966f220627": {
+        "mediaId": "lcl-fc2c87b6-c8e1-4cd6-bc41-58966f220627",
+        "mediaInfo": {
+            "name": "clearNode.vs",
+            "blobId": "4f96d75c4e15e84b05ca2f2c14b0112cffd71c5051afcdad1eb474a874ebcfe27f00ed157d6ec9fd05cf9dcbb9651a89de275f2a435a1590dbe296a0a26f3df6"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-fd9ac725-0924-456b-b9bc-29fb7eaceb93": {
+        "mediaId": "lcl-fd9ac725-0924-456b-b9bc-29fb7eaceb93",
+        "mediaInfo": {
+            "name": "openTestTab.vs",
+            "blobId": "7624100f96e6508d522bc7486a9ce4c641df34e8ac9b4144cf74026f99abb27e0c5a36402f4185317beeec2143eb9c0e8dce4ca953dab5864586110fca776d3e"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-fdb96f4a-f3b1-4f9f-b986-f5526d1f7f84": {
+        "mediaId": "lcl-fdb96f4a-f3b1-4f9f-b986-f5526d1f7f84",
+        "mediaInfo": {
+            "name": "historyList.vsx",
+            "blobId": "91b7da36eaa62773159a2132d19a2477cbcc7e6240f8fc360f2739d56bbbb937d9cfec52b14a87a6132f3b0b2ceac0f13190064a5b8aad09859f708184019050"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-fed2db3c-9528-474e-89b5-4d24b97e98d0": {
+        "mediaId": "lcl-fed2db3c-9528-474e-89b5-4d24b97e98d0",
+        "mediaInfo": {
+            "name": "openLocalInstance.vs",
+            "blobId": "f555f2d4af15a164184cd544db9509c3793c807a0fa3eafd35f551969c8c03b1fb917ae338ae9ecc50613b92ec0419b4287e094dd35cf4c924f77035b2afffe0"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-fef2ad34-b5a5-4f91-8625-bca30236b94b": {
+        "mediaId": "lcl-fef2ad34-b5a5-4f91-8625-bca30236b94b",
+        "mediaInfo": {
+            "name": "renameNodeCallback.vs",
+            "blobId": "3ff33b8995d382ad85aee51a9ffa00e946daf21492c848d8e0f7baae161ed5a728d34dc1fdb72e76783a15c431674592ccfa1aec36732a7343978a34307b5eda"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-ff04b769-9b54-42aa-86ce-9efc713cb1d0": {
+        "mediaId": "lcl-ff04b769-9b54-42aa-86ce-9efc713cb1d0",
+        "mediaInfo": {
+            "name": "editPropertyValueCallback.vs",
+            "blobId": "0c4c2b643758a97033a01e2ade7fc9f7482d651c2f10ac678d6e3c500488e3d5044c0867710d150890aad305a2a34f0e5b668d7fda514a90a392afb519b6bc91"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-ff0994b2-9ca9-4282-90e6-54a7c727382f": {
+        "mediaId": "lcl-ff0994b2-9ca9-4282-90e6-54a7c727382f",
+        "mediaInfo": {
+            "name": "registerListener.vs",
+            "blobId": "5c215c73e00b16083145ee29532b210cfb1762668e04af40d0a98533fae20336115be1eb46d908b9a07094924c569f4b041ed1c8253bfc45d92df633d3b138dc"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-ff306700-0af7-4400-a16c-b42a46e5b46f": {
+        "mediaId": "lcl-ff306700-0af7-4400-a16c-b42a46e5b46f",
+        "mediaInfo": {
+            "name": "insert_before",
+            "blobId": "3c7946d4b90462dcdf6b4cbb21139d68004c93ee4b1a0cd01ad5a0fca5dbf09e8e7056d44c8c83ea40ff17da9287fe33dfb756247180f29483ab422e36129d32"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-ffa074ef-30c1-43fa-9d07-6fc5257dd38d": {
+        "mediaId": "lcl-ffa074ef-30c1-43fa-9d07-6fc5257dd38d",
+        "mediaInfo": {
+            "name": "split_unpack_profiled.vs",
+            "blobId": "6cfe4d45056f414ac121afa0d4d132a990cfc90c6c14a91e955678aee4350932a7cd1e20eab23aba9b44e5b307ae0cf6f1f2a078aa40dc6db54917d2dde95c65"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-ffb1a09b-835b-4b8a-a504-465ff5e556a2": {
+        "mediaId": "lcl-ffb1a09b-835b-4b8a-a504-465ff5e556a2",
+        "mediaInfo": {
+            "name": "buildUnpackerFromClipboard.vs",
+            "blobId": "a3ec15e407433217cf5a52c4403cdab7d18b8b82bfed6feae721ec340227f88fa2c97fb011d323be7f94b6bf4527604802a30dd994fc9cf9c31c76d6d589df8f"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    }
+}

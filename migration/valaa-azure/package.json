@@ -1,0 +1,28 @@
+{
+  "name": "valaa-infra",
+  "version": "1.0.0",
+  "description": "Valaa infrastructure as code running on Azure",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "node script/deploy.js",
+    "installServer": "node script/install.js",
+    "deployValaaInspire": "npm run deploy -- 66c6cc94-69ef-4923-83b8-37c51399f139 ValaaInspire westeurope production-deploy-parameters/valaa-inspire.parameters.json",
+    "installValaaInspire": "npm run installServer -- valaa-inspire.westeurope.cloudapp.azure.com /home/mattahj/dev/valaa-deploy-keys"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ValaaLabs/infra.git"
+  },
+  "author": "ValaaLabs",
+  "license": "MIT",
+  "private": true,
+  "bugs": {
+    "url": "https://github.com/ValaaLabs/infra/issues"
+  },
+  "homepage": "https://github.com/ValaaLabs/infra#readme",
+  "dependencies": {
+    "azure-cli": "^0.10.7",
+    "shelljs": "^0.7.5",
+    "ssh-exec": "^2.0.0"
+  }
+}

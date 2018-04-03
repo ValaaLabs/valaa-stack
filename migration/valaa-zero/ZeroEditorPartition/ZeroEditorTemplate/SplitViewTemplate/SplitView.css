@@ -1,0 +1,25 @@
+.root {
+  display: flex;
+  flex-direction: row;
+  align-content: stretch;
+  height: 90%;
+}
+
+.view {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: row;
+  align-content: stretch;
+}
+
+.view-missing {
+  font-size: 32px;
+  color: salmon;
+}
+
+.view-content {
+  flex-grow: 1;
+  border-style: solid;
+  border-width: thin;
+  border-color: black;
+}

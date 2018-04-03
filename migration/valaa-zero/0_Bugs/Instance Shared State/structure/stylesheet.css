@@ -1,0 +1,20 @@
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  border-style: solid;
+  border-width: thin;
+}
+
+.button {
+  padding: 15px;
+}
+
+.padded {
+  padding: 15px;
+}
