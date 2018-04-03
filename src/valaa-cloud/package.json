@@ -9,7 +9,7 @@
     "deploy": "node script/deploy.js"
   },
   "author": "",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "devDependencies": {
     "babel-core": "^6.18.2",
     "babel-eslint": "^7.1.0",
