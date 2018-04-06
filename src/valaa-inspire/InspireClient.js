@@ -1,9 +1,19 @@
 // @flow
 
+import { v4 as uuid } from "uuid";
+import { Map as ImmutableMap } from "immutable";
+
 import { createPartitionURI } from "~/valaa-core/tools/PartitionURI";
 import { denoteValaaBuiltinWithSignature } from "~/valaa-core/VALK";
+import createRootReducer from "~/valaa-core/tools/createRootReducer";
+import createValidateActionMiddleware from "~/valaa-core/redux/middleware/validateAction";
+import createProcessCommandIdMiddleware from "~/valaa-core/redux/middleware/processCommandId";
+import createProcessCommandVersionMiddleware from
+    "~/valaa-core/redux/middleware/processCommandVersion";
+import { createBardMiddleware } from "~/valaa-core/redux/Bard";
+import Corpus from "~/valaa-core/Corpus";
 
-import { Prophet, Scribe } from "~/valaa-prophet";
+import { AuthorityNexus, FalseProphet, Oracle, Prophet, Scribe } from "~/valaa-prophet";
 
 import ValaaEngine from "~/valaa-engine/ValaaEngine";
 import EngineContentAPI from "~/valaa-engine/EngineContentAPI";
@@ -12,12 +22,13 @@ import injectScriptAPIToScope from "~/valaa-engine/ValaaSpaceAPI";
 import InspireView from "~/valaa-inspire/InspireView";
 import { registerVidgets } from "~/valaa-inspire/ui/vidget";
 
-import { createScribe, createOracle, createFalseProphet }
-    from "~/valaa-inspire/createValaaStack";
+import { createForwardLogger } from "~/valaa-tools/Logger";
+import { invariantify, LogEventGenerator, request } from "~/valaa-tools";
 import { authorityConfigs, getAuthorityURLFromPartitionURI, createAuthorityProxy }
     from "~/valaa-inspire/authorities";
+import { getDatabaseAPI } from "~/valaa-tools/indexedDB/getRealDatabaseAPI";
 
-import { LogEventGenerator, request } from "~/valaa-tools";
+const DEFAULT_ACTION_VERSION = process.env.DEFAULT_ACTION_VERSION || "0.1";
 
 export default class InspireClient extends LogEventGenerator {
   async initialize (revelationPath_: string, revelationOverrides: Object) {
@@ -42,8 +53,11 @@ export default class InspireClient extends LogEventGenerator {
       // manages the remote authority connections.
       this.oracle = await this._summonOracle(this.revelation, this.scribe);
 
+      this.corpus = await this._prepareCorpus(this.revelation);
+
       // Create the the main in-memory false prophet using the stream router as its upstream.
-      this.falseProphet = await this._proselytizeFalseProphet(this.revelation, this.oracle);
+      this.falseProphet = await this._proselytizeFalseProphet(
+            this.revelation, this.corpus, this.oracle);
 
       // Locate entry point event log (prologue), make it optimally available through scribe,
       // narrate it with false prophet and get the false prophet connection for it.
@@ -154,11 +168,15 @@ export default class InspireClient extends LogEventGenerator {
   async _proselytizeScribe (revelation: Object): Promise<Scribe> {
     try {
       this._commandCountListeners = new Map();
-      const scribe = await createScribe(EngineContentAPI, {
+      const name = { name: "Inspire Scribe" };
+      const scribe = await new Scribe({
+        name,
         logger: this.getLogger(),
+        databaseAPI: getDatabaseAPI(),
         commandCountCallback: this._updateCommandCount,
         ...revelation.scribe,
       });
+      await scribe.initialize();
       this.warnEvent(`Proselytized Scribe '${scribe.debugId()}', with revelation.scribe:`,
           revelation.scribe,
       //    "\n\tscribe:", scribe
@@ -187,7 +205,9 @@ export default class InspireClient extends LogEventGenerator {
 
   async _summonOracle (revelation: Object, scribe: Scribe): Promise<Prophet> {
     try {
-      const oracle = await createOracle({
+      const name = { name: "Inspire Oracle" };
+      const oracle = new Oracle({
+        name,
         logger: this.getLogger(),
         debugLevel: 1,
         getAuthorityURLFromPartitionURI,
@@ -206,11 +226,44 @@ export default class InspireClient extends LogEventGenerator {
     }
   }
 
-  async _proselytizeFalseProphet (revelation: Object, upstream: Prophet): Promise<Prophet> {
+  async _prepareCorpus (revelation: Object) {
+    const name = "Inspire Corpus";
+    const nameContainer = { name };
+    const logLevel = revelation.falseProphet.logLevel || 0;
+    const { schema, validators, logger, reducer, subReduce } = createRootReducer({
+      ...EngineContentAPI, // schema, validators, reducers
+      logger: createForwardLogger({ name, target: this.getLogger(), enableLog: logLevel >= 1 }),
+      subLogger: createForwardLogger({ name, target: this.getLogger(), enableLog: logLevel >= 2 }),
+      reducerName: nameContainer,
+    });
+
+    const previousId = uuid(); // FIXME(iridian): Create the deterministic-id schema. Now random.
+    const defaultCommandVersion = DEFAULT_ACTION_VERSION;
+    const middleware = [
+      createProcessCommandVersionMiddleware(defaultCommandVersion),
+      createProcessCommandIdMiddleware(previousId, schema),
+      createValidateActionMiddleware(validators),
+      createBardMiddleware({ name: { name: "Inspire Bard" }, schema, logger, subReduce }),
+    ];
+
+    return new Corpus({
+      nameContainer, schema, middleware, reducer,
+      logger: createForwardLogger({ name }),
+      initialState: new ImmutableMap(),
+      debug: undefined,
+    });
+  }
+
+  async _proselytizeFalseProphet (revelation: Object, corpus: Corpus, upstream: Prophet):
+      Promise<Prophet> {
     try {
-      const falseProphet = await createFalseProphet(upstream, EngineContentAPI, {
+      const name = { name: "Inspire FalseProphet" };
+      const falseProphet = new FalseProphet({
+        name,
+        corpus,
+        upstream,
+        schema: EngineContentAPI.schema,
         logger: this.getLogger(),
-        ...revelation.falseProphet,
       });
       this.warnEvent(`Proselytized FalseProphet ${falseProphet.debugId()}, with:`,
           "\n\trevelation.falseProphet:", revelation.falseProphet,
