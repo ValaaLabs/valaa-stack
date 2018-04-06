@@ -11,7 +11,3 @@ export const FalseProphetDiscourse = require("./prophet/FalseProphetDiscourse").
 export const Oracle = require("./prophet/Oracle").default;
 export const Scribe = require("./prophet/Scribe").default;
 export const ScribePartitionConnection = require("./prophet/ScribePartitionConnection").default;
-
-export const AWSAuthorityProxy = require("./authority/aws/AWSAuthorityProxy").default;
-export const AWSPartitionConnection = require("./authority/aws/AWSPartitionConnection").default;
-export const AWSRemoteStorageManager = require("./authority/aws/AWSRemoteStorageManager").default;
