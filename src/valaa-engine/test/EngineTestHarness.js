@@ -5,8 +5,10 @@ import ProphetTestHarness, { createProphetTestHarness, createProphetOracleHarnes
 
 import EngineTestAPI from "~/valaa-engine/test/EngineTestAPI";
 import ValaaEngine from "~/valaa-engine/ValaaEngine";
+import type Vrapper from "~/valaa-engine/Vrapper";
 import Cog from "~/valaa-engine/Cog";
 import { builtinSteppers } from "~/valaa-engine/VALEK";
+import injectScriptAPIToScope from "~/valaa-engine/ValaaSpaceAPI";
 
 import baseEventBlock from "~/valaa-engine/test/baseEventBlock";
 
@@ -35,6 +37,14 @@ export default class EngineTestHarness extends ProphetTestHarness {
       prophet: this.prophet,
       debug: this.getDebugLevel(),
     });
+
+    const Valaa = injectScriptAPIToScope(this.engine.getRootScope(),
+        this.engine.getHostObjectDescriptors(), this.schema);
+    Valaa.InspireClient = {
+      RemoteAuthorityURI: "valaa-testing:",
+      LocalAuthorityURI: "valaa-local:",
+    };
+
     this.createds = new TestCollectCREATEDCog();
     this.engine.addCog(this.createds);
     this.entities = this.createds.Entity;
@@ -47,7 +57,7 @@ export class TestCollectCREATEDCog extends Cog {
     this.TestScriptyThing = {};
   }
 
-  onEventCREATED (vResource) {
+  onEventCREATED (vResource: Vrapper) {
     (this[vResource.getTypeName()] || (this[vResource.getTypeName()] = {}))[vResource.getRawId()]
         = vResource;
   }

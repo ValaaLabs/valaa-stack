@@ -1,11 +1,13 @@
 // @flow
 
 import { createPartitionURI } from "~/valaa-core/tools/PartitionURI";
+import { denoteValaaBuiltinWithSignature } from "~/valaa-core/VALK";
 
 import { Prophet, Scribe } from "~/valaa-prophet";
 
 import ValaaEngine from "~/valaa-engine/ValaaEngine";
 import EngineContentAPI from "~/valaa-engine/EngineContentAPI";
+import injectScriptAPIToScope from "~/valaa-engine/ValaaSpaceAPI";
 
 import InspireView from "~/valaa-inspire/InspireView";
 import { registerVidgets } from "~/valaa-inspire/ui/vidget";
@@ -72,6 +74,35 @@ export default class InspireClient extends LogEventGenerator {
         revelation: this.revelation,
       });
       engine.setRootScopeEntry("inspireClient", this);
+
+      const Valaa = injectScriptAPIToScope(engine.getRootScope(), engine.getHostObjectDescriptors(),
+          this.discourse.getSchema());
+      let RemoteAuthorityURI;
+      let getPartitionIndexEntityCall;
+      if (!viewConfig.defaultAuthorityURI) {
+        RemoteAuthorityURI = null;
+        getPartitionIndexEntityCall = function getPartitionIndexEntity () {
+          throw new Error(`Cannot locate partition index entity; Inspire view configuration${
+              ""} doesn't specify defaultAuthorityURI`);
+        };
+      } else {
+        // FIXME(iridian): Implement this.schemes - still missing.
+        const defaultAuthorityConfig = this.schemes[viewConfig.defaultAuthorityURI];
+        invariantify(defaultAuthorityConfig,
+            `defaultAuthorityConfig missing when looking for default authority ${
+                  String(viewConfigs.defaultAuthorityURI)}`);
+        RemoteAuthorityURI = defaultAuthorityConfig.partitionAuthorityURI;
+        getPartitionIndexEntityCall = function getPartitionIndexEntity () {
+          return engine.tryVrapper(defaultAuthorityConfig.repositoryIndexId);
+        }
+      }
+      Valaa.InspireClient = {
+        RemoteAuthorityURI,
+        LocalAuthorityURI: "valaa-local:",
+        getPartitionIndexEntity: denoteValaaBuiltinWithSignature(
+          `Returns the partition corresponding to the partition index.`
+        )(getPartitionIndexEntityCall),
+      };
       ret[viewName] = new InspireView({ engine, name: `${viewConfig.name} View` })
           .initialize(viewConfig);
     }

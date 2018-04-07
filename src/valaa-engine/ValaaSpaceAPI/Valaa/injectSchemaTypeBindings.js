@@ -8,28 +8,17 @@ import { createPartitionURI } from "~/valaa-core/tools/PartitionURI";
 
 import { BuiltinTypePrototype, createNativeIdentifier, ValaaPrimitive } from "~/valaa-script";
 
-import type ValaaEngine from "~/valaa-engine/ValaaEngine";
 import VALEK, { extractFunctionVAKON } from "~/valaa-engine/VALEK";
 import Vrapper from "~/valaa-engine/Vrapper";
 
 import { derivedId, dumpify, dumpObject, invariantifyObject, outputCollapsedError, wrapError }
     from "~/valaa-tools";
 
-// FIXME(iridian): Removes cross-dependency to valaa-inspire
-import AWSConfig from "~/valaa-inspire/authorities/AWSDevUpstreamConfig";
-
 /* eslint-disable prefer-arrow-callback */
 
 export const defaultOwnerCoupledField = Symbol("Valaa.defaultOwnerCoupledField");
 
-function getVrapperFor (owner, engine) {
-  return owner instanceof Vrapper
-      ? owner
-      : engine.getVrapper(owner._stub ? owner._stub.get("id") : owner._singular.get("id"));
-}
-
-export default function injectSchemaTypeBindings (Valaa: Object, engine: ValaaEngine,
-    head: any, scope: Object) {
+export default function injectSchemaTypeBindings (Valaa: Object, scope: Object) {
   scope.ResourceStub = Valaa.ResourceStub = Object.assign(Object.create(BuiltinTypePrototype), {
     name: "ResourceStub",
   });
@@ -44,7 +33,10 @@ export default function injectSchemaTypeBindings (Valaa: Object, engine: ValaaEn
     name: "Resource",
     ".new": function new_ (valker: Valker, innerScope: ?Object, initialState: ?Object) {
       const actualInitialState = prepareInitialState(this, innerScope, initialState);
-      const resource = engine.create(this.name, actualInitialState, { transaction: valker });
+      // TODO(iridian): Replace valker.follower with some builtinStep when moving ValaaSpaceAPI to
+      // valaa-script. Now this relies on valker always being a FalseProphetDiscourse/transaction.
+      const resource = valker.follower.create(this.name, actualInitialState,
+          { transaction: valker });
       return resource;
     },
 
@@ -181,7 +173,10 @@ export default function injectSchemaTypeBindings (Valaa: Object, engine: ValaaEn
             ""} allows spreading the duplicates to separate partitions (at least insofar a${
             ""} multi-partition command between said partitions is possible).`
     )(function recombine (...duplicationDirectives) {
-      return engine.recombine(duplicationDirectives, { transaction: this.__callerValker__ });
+      // TODO(iridian): Replace valker.follower with some builtinStep when moving ValaaSpaceAPI to
+      // valaa-script. Now this relies on valker always being a FalseProphetDiscourse/transaction.
+      return this.__callerValker__.follower.recombine(duplicationDirectives,
+          { transaction: this.__callerValker__ });
     }),
 
     destroy: denoteValaaBuiltinWithSignature(
@@ -579,12 +574,6 @@ export default function injectSchemaTypeBindings (Valaa: Object, engine: ValaaEn
   scope.Relation = Valaa.Relation = Object.assign(Object.create(scope.Relatable), {
     name: "Relation",
     [defaultOwnerCoupledField]: "relations",
-    create: denoteDeprecatedValaaBuiltin("new Relation({ name, target }")(
-        function create (name, target, source = head) { // eslint-disable-line
-          return engine.create("Relation",
-              { name, source: getVrapperFor(source, engine), target });
-        }
-    ),
     getSourceOf: denoteDeprecatedValaaBuiltin("[Relation.source]")(
         function getSourceOf (relation) { return relation.get("source"); }), // eslint-disable-line
     setSourceOf: denoteDeprecatedValaaBuiltin("[Relation.source] = newSource")(
@@ -598,16 +587,6 @@ export default function injectSchemaTypeBindings (Valaa: Object, engine: ValaaEn
     constructor: scope.Relation,
   });
   scope.Relation.hostObjectPrototype = scope.Relation.prototype;
-
-  Valaa.InspireClient = {
-    RemoteAuthorityURI: AWSConfig.partitionAuthorityURI,
-    LocalAuthorityURI: "valaa-local:",
-    getPartitionIndexEntity: denoteValaaBuiltinWithSignature(
-      `Returns the partition corresponding to the partition index.`
-    )(function getPartitionIndexEntity () {
-      return engine.tryVrapper(AWSConfig.repositoryIndexId);
-    })
-  };
 
   scope.Partition = Valaa.Partition = Object.assign(Object.create(scope.Resource), {
     name: "Partition",
@@ -639,15 +618,6 @@ export default function injectSchemaTypeBindings (Valaa: Object, engine: ValaaEn
   delete EntityMultipleInherited.name;
   scope.Entity = Valaa.Entity = Object.assign(Object.create(EntityMultipleInherited), {
     name: "Entity",
-    create: denoteDeprecatedValaaBuiltin("new Entity({ name, owner, prototype })", ""
-    )(function create (name, owner = head, prototype = undefined) { // eslint-disable-line
-      const vOwner = owner && getVrapperFor(owner, engine);
-      return engine.create("Entity", {
-        name,
-        prototype,
-        owner: vOwner && vOwner.getId(),
-      });
-    }),
     getListenersOf (entity, name, ...additionalConditions) {
       return this.getFieldOf(entity,
           VALEK.listeners(name,

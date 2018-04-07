@@ -224,7 +224,7 @@ export default class UIComponent extends React.Component {
 
   // Public API
 
-  getValaa () { return this.context.engine.rootScope().Valaa; }
+  getValaa () { return this.context.engine.getRootScope().Valaa; }
 
   getStyle () {
     return Object.assign({},

@@ -845,7 +845,7 @@ export default class Vrapper extends Cog {
     if (vProperty) {
       return vProperty.extractValue(options, this);
     }
-    const hostValue = this.engine.rootScope().Valaa[typeName].hostObjectPrototype[propertyName];
+    const hostValue = this.engine.getRootScope().Valaa[typeName].hostObjectPrototype[propertyName];
     if ((typeof hostValue === "object") && (hostValue !== null) && hostValue.isHostField) {
       // TODO(iridian): Make this solution semantically consistent native field access.
       // Now stupidly trying to setField even if the field is not a primaryField.
@@ -881,7 +881,7 @@ export default class Vrapper extends Cog {
     }
     let newValue = this.run(0, [["§void"], actualAlterationVAKON],
         { ...options, scope: this.getLexicalScope() });
-    const hostType = this.engine.rootScope().Valaa[typeName];
+    const hostType = this.engine.getRootScope().Valaa[typeName];
     const prototypeEntry = hostType.hostObjectPrototype[propertyName];
     if ((typeof prototypeEntry === "object") && (prototypeEntry !== null)
         && prototypeEntry.writableFieldName) {

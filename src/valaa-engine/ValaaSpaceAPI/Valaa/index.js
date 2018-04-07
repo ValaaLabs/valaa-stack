@@ -14,17 +14,18 @@ import injectLensObjects from "./injectLensObjects";
 /*
  * Creates the Valaa introspection object.
 **/
-export default function createValaaObject (engine: any, head: any, rootScope: any,
-    hostObjectDescriptors: any, schema: any) {
+export default function createValaaObject (rootScope: any, hostObjectDescriptors: any,
+    schema: any) {
   const Valaa = {
     beautify: beaumpify,
     toVAKON,
     Primitive: ValaaPrimitive,
+    Lens: null,
   };
-  injectLensObjects(Valaa, rootScope, hostObjectDescriptors);
+  Valaa.Lens = injectLensObjects(Valaa, rootScope, hostObjectDescriptors);
   createTopLevelSymbolAliases(Valaa, Valaa.Lens);
 
-  injectSchemaTypeBindings(Valaa, engine, head, rootScope);
+  injectSchemaTypeBindings(Valaa, rootScope);
 
   if (schema) injectSchemaFieldBindings(Valaa, hostObjectDescriptors, schema);
   return Valaa;

@@ -270,4 +270,5 @@ export default function injectLensObjects (Valaa: Object, rootScope: Object,
       }));
 
   finalizeLensDescriptors();
+  return Valaa.Lens;
 }
