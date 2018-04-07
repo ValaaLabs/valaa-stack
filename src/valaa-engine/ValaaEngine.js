@@ -19,7 +19,6 @@ import type { Prophet } from "~/valaa-prophet";
 
 import Cog, { executeHandlers } from "~/valaa-engine/Cog";
 import Motor from "~/valaa-engine/Motor";
-import injectScriptAPIToScope from "~/valaa-engine/ValaaSpaceAPI";
 import Vrapper from "~/valaa-engine/Vrapper";
 import evaluateToCommandData from "~/valaa-engine/Vrapper/evaluateToCommandData";
 
@@ -53,7 +52,9 @@ export default class ValaaEngine extends Cog {
     this._mediaInterpreters = getAllMediaInterpreters();
     this.discourse = this._connectWithProphet(prophet);
 
-    this._rootScope = this._createRootScope();
+    this._hostObjectDescriptors = new Map();
+    this._rootScope = {};
+    this._rootScope[rootScopeSelf] = this._rootScope;
   }
 
   _connectWithProphet (prophet: Prophet) {
@@ -77,15 +78,6 @@ export default class ValaaEngine extends Cog {
     return ret;
   }
 
-  _createRootScope () {
-    const ret = {};
-    ret[rootScopeSelf] = ret;
-    this._hostObjectDescriptors = new Map();
-    injectScriptAPIToScope(null, ret, this._hostObjectDescriptors, this,
-        this.discourse.getSchema());
-    return ret;
-  }
-
   interpretMediaContent (content: any, vScope: Vrapper,
       mediaInfo: { type: string, subtype: string }, options: VALKOptions = {}) {
     let interpreter = this._mediaInterpreters.find(i => i.canInterpret(mediaInfo));
@@ -99,9 +91,10 @@ export default class ValaaEngine extends Cog {
     return this._enginePartitionId ? vRef(this._enginePartitionId) : {};
   }
 
-  rootScope () { return this._rootScope; }
-  getLexicalScope () { return this.rootScope(); }
-  getNativeGlobal () { return this.rootScope(); }
+  getRootScope () { return this._rootScope; }
+  getLexicalScope () { return this.getRootScope(); }
+  getNativeGlobal () { return this.getRootScope(); }
+  getHostObjectDescriptors () { return this._hostObjectDescriptors; }
   getHostObjectDescriptor (objectKey: any) { return this._hostObjectDescriptors.get(objectKey); }
 
   getTypeDescriptor (typeName: string) {
