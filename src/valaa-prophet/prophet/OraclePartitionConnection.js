@@ -83,13 +83,7 @@ export default class OraclePartitionConnection extends PartitionConnection {
       // be I/O bound) in parallel to the authority proxy/connection creation.
       const localNarrationProcess = this.narrateEventLog(initialNarrateOptions);
 
-      const authorityURL = this._prophet._getAuthorityURLFromPartitionURI(this.partitionURI());
-      if (typeof authorityURL === "undefined") {
-        throw new Error(`${this.debugId()}: Cannot extract authorityURL from partitionURI ${
-            this.partitionURI().toString()}`);
-      }
-      const remoteConnection = authorityURL
-          && this._connectToAuthority(authorityURL, onConnectData);
+      const remoteConnection = this._connectToAuthorityProphet(onConnectData);
 
       ret = await localNarrationProcess;
 
@@ -229,16 +223,20 @@ export default class OraclePartitionConnection extends PartitionConnection {
     return ret;
   }
 
-  async _connectToAuthority (authorityURL: string, onConnectData: Object) {
-    const authorityProxy = await this._prophet._obtainAuthorityProxy(authorityURL);
-    const remoteConnection = await authorityProxy
-        .acquirePartitionConnection(this.partitionURI(),
-            { callback: this._onConfirmTruth.bind(this, "remoteUpstream"), noConnect: true });
-    this.transferIntoDependentConnection("remoteUpstream", remoteConnection);
-    onConnectData.retrieveMediaContent =
-        remoteConnection.readMediaContent.bind(remoteConnection);
-    await remoteConnection.connect();
-    return remoteConnection;
+  _connectToAuthorityProphet (onConnectData: Object) {
+    const authorityProphetCandidate = this._prophet._authorityNexus
+        .obtainAuthorityProphetOfPartition(this.partitionURI());
+    if (!authorityProphetCandidate) return undefined;
+    return Promise.resolve(authorityProphetCandidate).then(async (authorityProphet: Prophet) => {
+      const remoteConnection = await authorityProphet
+          .acquirePartitionConnection(this.partitionURI(),
+              { callback: this._onConfirmTruth.bind(this, "remoteUpstream"), noConnect: true });
+      this.transferIntoDependentConnection("remoteUpstream", remoteConnection);
+      onConnectData.retrieveMediaContent
+          = remoteConnection.readMediaContent.bind(remoteConnection);
+      await remoteConnection.connect();
+      return remoteConnection;
+    });
   }
 
   async narrateEventLog (options: NarrateOptions = {}): Promise<any> {
