@@ -7,8 +7,13 @@ import { createTestPartitionURIFromRawId, createPartitionURI }
 
 import ScriptTestHarness, { createScriptTestHarness } from "~/valaa-script/test/ScriptTestHarness";
 
-import { FalseProphet, Oracle, Prophecy, Scribe } from "~/valaa-prophet";
+import { AuthorityNexus, FalseProphet, Oracle, Prophecy, Scribe } from "~/valaa-prophet";
+
 import ProphetTestAPI from "~/valaa-prophet/test/ProphetTestAPI";
+import { schemePlugin as valaaTestSchemePlugin } from "~/valaa-prophet/test/scheme-valaa-test";
+
+import { schemePlugin as valaaLocalSchemePlugin } from "~/scheme-valaa-local";
+import { schemePlugin as valaaTransientSchemePlugin } from "~/scheme-valaa-transient";
 
 import { getDatabaseAPI } from "~/valaa-tools/indexedDB/getFakeDatabaseAPI";
 import { openDB } from "~/valaa-tools/html5/InMemoryIndexedDBUtils";
@@ -87,12 +92,13 @@ export async function clearScribeDatabases (otherConnections: Object[] = []) {
 }
 
 export function createOracle (scribe: Scribe) {
+  const authorityNexus = new AuthorityNexus();
+  authorityNexus.addSchemePlugin(valaaLocalSchemePlugin);
+  authorityNexus.addSchemePlugin(valaaTransientSchemePlugin);
+  authorityNexus.addSchemePlugin(valaaTestSchemePlugin)
   return new Oracle({
     name: "Test Oracle",
-    getAuthorityURLFromPartitionURI () { return null; },
-    createAuthorityProxy () {
-      throw new Error("test harness setup error, check ProphetTestHarness.js");
-    },
+    authorityNexus,
     scribe,
   });
 }

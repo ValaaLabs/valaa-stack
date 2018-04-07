@@ -23,17 +23,14 @@ import InspireView from "~/valaa-inspire/InspireView";
 import { registerVidgets } from "~/valaa-inspire/ui/vidget";
 
 import { createForwardLogger } from "~/valaa-tools/Logger";
-import { invariantify, LogEventGenerator, request } from "~/valaa-tools";
-import { authorityConfigs, getAuthorityURLFromPartitionURI, createAuthorityProxy }
-    from "~/valaa-inspire/authorities";
+import { invariantify, LogEventGenerator } from "~/valaa-tools";
 import { getDatabaseAPI } from "~/valaa-tools/indexedDB/getRealDatabaseAPI";
 
 const DEFAULT_ACTION_VERSION = process.env.DEFAULT_ACTION_VERSION || "0.1";
 
 export default class InspireClient extends LogEventGenerator {
-  async initialize (revelationPath_: string, revelationOverrides: Object) {
+  async initialize (rawRevelation: Object, { schemePlugins }: Object = {}): Object {
     try {
-      const revelationPath = revelationPath_ || "project.manifest.json";
       // Process the initially served landing page and extract the initial Valaa configuration
       // ('revelation') from it. The revelation might be device/locality specific.
       // The revelation might contain initial event log snapshots for select partitions. These
@@ -43,7 +40,9 @@ export default class InspireClient extends LogEventGenerator {
       // full snapshots of all partitions that were active during previous session, allowing full
       // offline functionality. Alternatively the service worker can provide the event logs through
       // indexeddb and keep the landing page revelation minimal; whatever is most efficient.
-      this.revelation = await this._interpretRevelation(revelationPath, revelationOverrides);
+      this.revelation = await this._interpretRevelation(rawRevelation);
+
+      this.nexus = await this._establishAuthorityNexus(this.revelation, schemePlugins);
 
       // Create a connector (the 'scribe') to the locally backed event log / blob indexeddb cache
       // ('scriptures') based on the revelation.
@@ -51,7 +50,7 @@ export default class InspireClient extends LogEventGenerator {
 
       // Create the stream router ('oracle') which uses scribe as its direct upstream, but which
       // manages the remote authority connections.
-      this.oracle = await this._summonOracle(this.revelation, this.scribe);
+      this.oracle = await this._summonOracle(this.revelation, this.nexus, this.scribe);
 
       this.corpus = await this._prepareCorpus(this.revelation);
 
@@ -69,14 +68,15 @@ export default class InspireClient extends LogEventGenerator {
 
       registerVidgets();
       this.warnEvent(`initialize(): registered builtin Inspire vidgets`);
-      this.logEvent("Inspire core loaded from", revelationPath);
+      this.logEvent("InspireClient initialized, with revelation", this.revelation);
     } catch (error) {
-      throw this.wrapErrorEvent(error, "initialize",
-          "\n\tthis:", this);
+      throw this.wrapErrorEvent(error, "initialize", "\n\tthis:", this);
     }
   }
 
-  createAndConnectViewsToDOM (viewConfigs: Object) {
+  createAndConnectViewsToDOM (viewConfigs: {
+    [string]: { name: string, size: Object, defaultAuthorityURI: ?string }
+  }) {
     const ret = {};
     for (const [viewName, viewConfig] of Object.entries(viewConfigs)) {
       this.warnEvent(`createView({ name: '${viewConfig.name}', size: ${
@@ -127,41 +127,43 @@ export default class InspireClient extends LogEventGenerator {
   /**
    * Processes the landing page and extracts the revelation from it.
    *
-   * @param {string} revelationPath
-   * @param {Object} revelationOverrides
+   * @param {Object} rawRevelation
    * @returns
    *
    * @memberof InspireClient
    */
-  async _interpretRevelation (revelationPath: string, revelationOverrides: Object): Object {
-    let revelation;
+  async _interpretRevelation (rawRevelation: Object): Object {
+    const revelation = await rawRevelation;
     try {
-      revelation = await request({ url: revelationPath });
-      // const rootPath = window.location.href.match(/^(.*?)[^/]*$/)[1];
-
       // Apply overrides and defaults
-      for (const [optionName, override] of Object.entries(revelationOverrides || {})) {
-        if (typeof override !== "undefined") revelation[optionName] = override;
-      }
       if (!revelation.scribe) {
         revelation.scribe = { logLevel: 0 };
       }
       if (!revelation.falseProphet) {
         revelation.falseProphet = { logLevel: 0 };
       }
-      if (!revelation.authorityConfigs) {
-        revelation.authorityConfigs = authorityConfigs;
-      }
-      this.warnEvent(`Loaded landing revelation '${revelationPath}'`,
-          revelation, ...(!revelationOverrides ? [] : ["with overrides:", revelationOverrides]));
-      // in case the direct partition uri was already set in the revelation and we had no other come
-      // we want to change it from a string to the right object
+      this.warnEvent(`Interpreted revelation`, revelation);
       return revelation;
     } catch (error) {
       throw this.wrapErrorEvent(error, "interpretRevelation",
-          "\n\trevelationPath:", revelationPath,
-          "\n\trevelationOverrides:", revelationOverrides,
           "\n\trevelation:", revelation);
+    }
+  }
+
+  async _establishAuthorityNexus(revelation: Object, schemePlugins: Object[]) {
+    try {
+      const name = { name: "Inspire AuthorityNexus" };
+      const nexus = new AuthorityNexus({
+        name,
+        authorityConfigs: revelation.authorityConfigs,
+      });
+      for (const plugin of schemePlugins) nexus.addSchemePlugin(plugin);
+      this.warnEvent(`Established AuthorityNexus '${nexus.debugId()}'`);
+      return nexus;
+    } catch (error) {
+      throw this.wrapErrorEvent(error, "establishAuthorityNexus",
+          "\n\trevelation.authorityConfigs:", revelation.authorityConfigs,
+          "\n\tschemePlugins:", schemePlugins);
     }
   }
 
@@ -203,19 +205,18 @@ export default class InspireClient extends LogEventGenerator {
     }
   }
 
-  async _summonOracle (revelation: Object, scribe: Scribe): Promise<Prophet> {
+  async _summonOracle (revelation: Object, authorityNexus: AuthorityNexus, scribe: Scribe):
+      Promise<Prophet> {
     try {
       const name = { name: "Inspire Oracle" };
       const oracle = new Oracle({
         name,
         logger: this.getLogger(),
         debugLevel: 1,
-        getAuthorityURLFromPartitionURI,
-        createAuthorityProxy: createAuthorityProxy.bind(this, revelation.authorityConfigs),
+        authorityNexus,
         scribe,
       });
       this.warnEvent(`Created Oracle ${oracle.debugId()}, with:`,
-          "\n\trevelation.authorityConfigs:", revelation.authorityConfigs,
       //    "\n\toracle:", oracle
       );
       return oracle;

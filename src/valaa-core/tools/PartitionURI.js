@@ -73,6 +73,11 @@ export function createPartitionURI (baseString: string, partitionRawId: ?string)
   return ret;
 }
 
+export function getValaaURI (uri: URL | string): URL {
+  if (typeof uri === "string") return createValaaURI(uri);
+  return uri;
+}
+
 export function createValaaURI (uriString: string): URL {
   if (typeof uriString !== "string") return undefined;
   const ret = new URL(uriString);

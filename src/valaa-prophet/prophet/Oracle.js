@@ -7,8 +7,9 @@ import { MissingPartitionConnectionsError } from "~/valaa-core/tools/denormalize
 
 import Prophet, { ClaimResult, NarrateOptions } from "~/valaa-prophet/api/Prophet";
 import Prophecy from "~/valaa-prophet/api/Prophecy";
-import OraclePartitionConnection from "~/valaa-prophet/prophet/OraclePartitionConnection";
 
+import AuthorityNexus from "~/valaa-prophet/prophet/AuthorityNexus";
+import OraclePartitionConnection from "~/valaa-prophet/prophet/OraclePartitionConnection";
 import type Scribe from "~/valaa-prophet/prophet/Scribe";
 
 import { dumpObject, invariantifyObject, Logger, thenChainEagerly } from "~/valaa-tools";
@@ -33,8 +34,6 @@ import { dumpObject, invariantifyObject, Logger, thenChainEagerly } from "~/vala
  * @extends {Prophet}
  */
 export default class Oracle extends Prophet {
-  _getAuthorityURLFromPartitionURI: (partitionURI: PartitionURI) => string;
-  _createAuthorityProxy: (authorityURL: string) => Prophet;
 
   _partitionConnections: {
     [partitionRawId: string]: {
@@ -44,19 +43,12 @@ export default class Oracle extends Prophet {
       pendingConnection: ?Promise<OraclePartitionConnection>,
     }
   };
-  _authorityProxies: Object;
 
-  constructor (
-      { name, logger, scribe, getAuthorityURLFromPartitionURI, createAuthorityProxy }: {
-        name: string, logger: Logger, scribe: Scribe,
-        getAuthorityURLFromPartitionURI: (partitionURI: PartitionURI) => string,
-        createAuthorityProxy: (authorityURL: string) => Prophet,
-      }) {
+  constructor ({ name, logger, scribe, authorityNexus }:
+      { name: string, logger: Logger, scribe: Scribe, authorityNexus: AuthorityNexus }) {
     super({ name, logger, upstream: scribe });
-    this._getAuthorityURLFromPartitionURI = getAuthorityURLFromPartitionURI;
-    this._createAuthorityProxy = createAuthorityProxy;
+    this._authorityNexus = authorityNexus;
     this._partitionConnections = {};
-    this._authorityProxies = {};
   }
 
   /**
@@ -141,11 +133,6 @@ export default class Oracle extends Prophet {
         }
     );
     return ret;
-  }
-
-  async _obtainAuthorityProxy (authorityURL: string) {
-    return this._authorityProxies[authorityURL]
-        || (this._authorityProxies[authorityURL] = await this._createAuthorityProxy(authorityURL));
   }
 
   _claimOperationQueue = [];
@@ -287,9 +274,8 @@ export default class Oracle extends Prophet {
               entry.connection.getName()}`);
         }
         const authorityURI = command.partitions[partitionRawId].partitionAuthorityURI;
-        const authorityURL = this._getAuthorityURLFromPartitionURI(
-            createPartitionURI(authorityURI, partitionRawId));
-        operation.authorities[authorityURI] = this._authorityProxies[authorityURL];
+        operation.authorities[String(authorityURI)]
+            = this._authorityNexus.tryAuthorityProphet(authorityURI);
         invariantifyObject(entry.connection || entry.pendingConnection,
             `"entry" must have either "connection" or "pendingConnection"`);
         return [command.partitions[partitionRawId], entry.pendingConnection || entry.connection];
