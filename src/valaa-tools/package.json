@@ -1,20 +1,19 @@
 {
   "name": "valaa-tools",
-  "version": "0.1.0",
-  "description": "Valaa Core API, Schema",
-  "author": "Valaa",
+  "version": "0.30.0-prerelease",
+  "description": "Valaa Tools API",
+  "main": "index.js",
+  "author": "Valaa Technologies Ltd.",
   "license": "MIT",
-  "private": true,
   "dependencies": {
-    "bcrypt-nodejs": "0.0.3",
+    "fake-indexeddb": "^2.0.3",
     "immutable": "~3.7.4",
-    "lodash": "^4.14.0",
-    "redux": "^3.5.2",
+    "jssha": "^2.3.1",
+    "object-hash": "^1.1.3",
     "reqwest": "^2.0.5",
-    "stacktrace-js": "^1.3.1"
+    "text-encoding": "^0.6.4",
+    "uuid": "^2.0.2"
   },
   "devDependencies": {},
-  "peerDependencies": {
-    "graphql": ">= 0.6.2"
-  }
+  "peerDependencies": {}
 }

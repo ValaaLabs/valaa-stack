@@ -1,5 +1,4 @@
 import Cog from "~/valaa-engine/Cog";
-// import { AVLTree } from "dsjslib";
 import wrapError, { outputError } from "~/valaa-tools/wrapError";
 
 // NOTE(iridian, 2018-03): Motor is currently unused, but the base design of TIMED events it relates
@@ -12,8 +11,7 @@ export default class Motor extends Cog {
     this.engineTime = 0.0;
     this.timeOrigin = undefined;
     this.timeDilation = timeDilation;
-    // this.futureEventsByTime = new AVLTree();
-    this.futureEventsByTime = null; // removed dependency to dsjslib
+    this.futureEventsByTime = {}; // removed dependency to dsjslib
   }
 
   outputStatus (output) {

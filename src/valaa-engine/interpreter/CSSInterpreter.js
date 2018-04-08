@@ -1,3 +1,6 @@
+// @flow
+
+// FIXME(iridian): Remove jss-css dependency by moving CSSInterpreter to valaa-inspire
 import css from "jss-css/lib/css";
 
 import MediaInterpreter from "~/valaa-engine/interpreter/MediaInterpreter";

@@ -1,6 +1,5 @@
 // @flow
 
-import { v4 as uuid } from "uuid";
 import { Map as ImmutableMap } from "immutable";
 
 import { createPartitionURI } from "~/valaa-core/tools/PartitionURI";
@@ -23,8 +22,8 @@ import InspireView from "~/valaa-inspire/InspireView";
 import { registerVidgets } from "~/valaa-inspire/ui/vidget";
 
 import { createForwardLogger } from "~/valaa-tools/Logger";
-import { invariantify, LogEventGenerator } from "~/valaa-tools";
 import { getDatabaseAPI } from "~/valaa-tools/indexedDB/getRealDatabaseAPI";
+import { invariantify, LogEventGenerator, valaaUUID } from "~/valaa-tools";
 
 const DEFAULT_ACTION_VERSION = process.env.DEFAULT_ACTION_VERSION || "0.1";
 
@@ -238,7 +237,8 @@ export default class InspireClient extends LogEventGenerator {
       reducerName: nameContainer,
     });
 
-    const previousId = uuid(); // FIXME(iridian): Create the deterministic-id schema. Now random.
+    // FIXME(iridian): Create the deterministic-id schema. Now random.
+    const previousId = valaaUUID();
     const defaultCommandVersion = DEFAULT_ACTION_VERSION;
     const middleware = [
       createProcessCommandVersionMiddleware(defaultCommandVersion),

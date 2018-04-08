@@ -2,7 +2,6 @@ import React from "react";
 import PropTypes from "prop-types";
 import preset from "jss-preset-default";
 import jss, { SheetsManager } from "jss";
-import objectHash from "object-hash";
 
 import VALEK from "~/valaa-engine/VALEK";
 import { uiComponentProps, VSSStyleSheetSymbol } from "~/valaa-inspire/ui/base/UIComponent";
@@ -10,7 +9,7 @@ import { unthunkRepeat } from "~/valaa-inspire/ui/helper/thunk";
 import vidgets from "~/valaa-inspire/ui/vidget";
 import ValaaScope from "~/valaa-inspire/ui/vidget/ValaaScope";
 
-import { dumpObject, invariantifyString, traverse, wrapError } from "~/valaa-tools";
+import { dumpObject, invariantifyString, objectHash, traverse, wrapError } from "~/valaa-tools";
 import { getImplicitMediaInterpretation } from "~/valaa-engine/interpreter";
 
 jss.setup(preset());

@@ -1,16 +1,13 @@
 {
-  "name": "valaa-core",
+  "name": "valaa-script",
   "version": "0.30.0-prerelease",
-  "description": "Valaa Core API, Schema",
+  "description": "Valaa Script API, schema",
   "main": "index.js",
   "author": "Valaa Technologies Ltd.",
   "license": "MIT",
   "dependencies": {
-    "immutable": "~3.7.4",
-    "lodash": "^4.17.2",
-    "redux": "^3.6.0",
-    "url-search-params": "^0.10.0",
-    "valaa-tools": "^0.30.0-prerelease"
+    "acorn": "^5.0.3",
+    "valaa-core": "^0.30.0-prerelease"
   },
   "devDependencies": {},
   "peerDependencies": {

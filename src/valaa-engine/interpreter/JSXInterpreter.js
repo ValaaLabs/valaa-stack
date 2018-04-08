@@ -1,4 +1,6 @@
 // @flow
+
+// FIXME(iridian): Remove react dependency by moving JSX/VSXInterpreter's to valaa-inspire
 import React from "react";
 
 import VALEK, { Kuery, EngineKuery, VS, VALKOptions } from "~/valaa-engine/VALEK";

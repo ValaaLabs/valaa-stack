@@ -1,4 +1,3 @@
-import jsesc from "jsesc";
 import React from "react";
 import PropTypes from "prop-types";
 
@@ -75,7 +74,6 @@ export default class VALKConsole extends UIComponent {
       color: "gray",
     }];
     try {
-      const jsescOpts = { quotes: "double", json: true };
       const selectionIds = [];
       const selection = this.context.engine.getVrappers(selectionIds);
       const evalScope = {
@@ -87,7 +85,6 @@ export default class VALKConsole extends UIComponent {
         vrapper: this.context.engine.getVrapper.bind(this.context.engine),
         vrappers: this.context.engine.getVrappers.bind(this.context.engine),
         fields: this.fields,
-        escape: input => jsesc(input, jsescOpts),
       };
       let evalResult = notThatSafeEval(evalScope, `return ${this.state.cmd}`);
       if (evalResult instanceof VRef) evalResult = this.context.engine.getVrapper(evalResult);

@@ -1,5 +1,7 @@
 // @flow
 
+// TODO(iridian): valaa-inspire entry is possibly not the appropriate place for babel-polyfill:
+// at the moment it still is the top level entry point, but this might change.
 import "babel-polyfill";
 import injectTapEventPlugin from "react-tap-event-plugin";
 

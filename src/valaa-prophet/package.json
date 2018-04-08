@@ -1,13 +1,13 @@
 {
   "name": "valaa-prophet",
-  "version": "0.1.0",
-  "description": "Valaa Prophet API and implementations",
-  "author": "Valaa",
+  "version": "0.30.0-prerelease",
+  "description": "Valaa Prophet API, schema",
+  "main": "index.js",
+  "author": "Valaa Technologies Ltd.",
   "license": "MIT",
-  "private": true,
   "dependencies": {
-    "immutable": "~3.7.4",
-    "lodash": "^4.17.2"
+    "lodash": "^4.17.2",
+    "valaa-script": "^0.30.0-prerelease"
   },
   "devDependencies": {},
   "peerDependencies": {

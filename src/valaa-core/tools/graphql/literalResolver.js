@@ -1,7 +1,7 @@
-import objectHash from "object-hash";
 
 import dataFieldValue from "~/valaa-core/tools/denormalized/dataFieldValue";
 
+import valaaHash from "~/valaa-tools/id/valaaHash";
 import dumpify from "~/valaa-tools/dumpify";
 import wrapError from "~/valaa-tools/wrapError";
 
@@ -47,7 +47,7 @@ export function literalFromValue (value) {
     type,
     value: type === "null" ? null : value,
   };
-  ret.id = objectHash(ret);
+  ret.id = valaaHash(ret);
   return ret;
 }
 
