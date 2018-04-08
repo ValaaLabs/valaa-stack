@@ -1,8 +1,8 @@
 {
   "name": "@valaa/valaa-vault",
-  "version": "0.28.0",
+  "version": "0.30.0-prerelease",
   "config": {
-    "version": "0.28.0",
+    "version": "0.30.0-prerelease",
     "modulepaths": "valaa-core/node_modules:valaa-prophet/node_modules:valaa-script/node_modules:valaa-engine/node_modules"
   },
   "description": "Valaa Stack",
