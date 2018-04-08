@@ -1,5 +1,5 @@
 import { Map } from "immutable";
-import objectHash from "object-hash";
+import valaaHash from "~/valaa-tools/id/valaaHash";
 
 import { tryRawIdFrom } from "~/valaa-core/ValaaReference";
 import dumpify from "~/valaa-tools/dumpify";
@@ -8,7 +8,7 @@ export default function contentHashResolver (source, { rootValue }) {
   try {
     // TODO(iridian): Promising v5 uuid, so implement it as such.
     const id = tryRawIdFrom(source.get("id"));
-    return id || objectHash(source.toJS(), {
+    return id || valaaHash(source.toJS(), {
       // Replace direct references to objects with their id's
       replacer: value => (Map.isMap(value) ? contentHashResolver(value) : value),
     });

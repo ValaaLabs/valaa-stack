@@ -1,3 +1,8 @@
+// @flow
+
+export { default as valaaHash } from "./id/valaaHash";
+export { default as valaaUUID } from "./id/valaaUUID";
+
 export const bufferAndContentIdFromNative = require("./id/contentId").bufferAndContentIdFromNative;
 export const nativeObjectFromBufferAndMediaInfo =
     require("./id/contentId").nativeObjectFromBufferAndMediaInfo;

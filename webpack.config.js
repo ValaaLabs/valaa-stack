@@ -1,7 +1,7 @@
 const webpack = require("webpack");
 const autoprefixer = require("autoprefixer");
 
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
 
 // TODO(iridian): Figure out the clean and correct way to set up prod configuration; merely
 // running 'webpack -p' is not sufficient to enable isProduction, as -p only enables
@@ -15,11 +15,11 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 // builds later on down the line.
 // So as it stands now a production build can be triggered manually by running
 // `TARGET_ENV=production webpack`
-const isProduction = (process.env.TARGET_ENV === 'production');
-const isLocal = (process.env.TARGET_ENV === 'local');
+const isProduction = (process.env.TARGET_ENV === "production");
+const isLocal = (process.env.TARGET_ENV === "local");
 
 if (isProduction) {
-  console.log('Production webpack bundle - simple uglify (not full yet)');
+  console.log("Production webpack bundle - simple uglify (not full yet)");
 } else if (isLocal) {
   console.log(`\n\nLOCAL webpack bundle - no uglify\n\n`);
 } else {

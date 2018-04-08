@@ -1,16 +1,17 @@
 {
-  "name": "valaa-core",
+  "name": "valaa-engine",
   "version": "0.30.0-prerelease",
-  "description": "Valaa Core API, Schema",
+  "description": "Valaa Engine API and Schema",
   "main": "index.js",
   "author": "Valaa Technologies Ltd.",
   "license": "MIT",
   "dependencies": {
     "immutable": "~3.7.4",
+    "jss-css": "^3.0.0",
+    "jstransform": "^11.0.3",
     "lodash": "^4.17.2",
-    "redux": "^3.6.0",
-    "url-search-params": "^0.10.0",
-    "valaa-tools": "^0.30.0-prerelease"
+    "react": "^16.2.0",
+    "valaa-prophet": "^0.30.0-prerelease"
   },
   "devDependencies": {},
   "peerDependencies": {

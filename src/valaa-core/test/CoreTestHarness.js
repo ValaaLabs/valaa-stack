@@ -1,5 +1,3 @@
-import { v4 as uuid } from "uuid";
-
 import { OrderedMap } from "immutable";
 
 import type Command from "~/valaa-core/command/Command";
@@ -13,7 +11,8 @@ import { createBardMiddleware, isRestrictedCommand, createUniversalizableCommand
 
 import CoreTestAPI from "~/valaa-core/test/CoreTestAPI";
 
-import { dumpify, dumpObject, invariantify, LogEventGenerator, Logger } from "~/valaa-tools";
+import { dumpify, dumpObject, invariantify, LogEventGenerator, Logger, valaaUUID }
+    from "~/valaa-tools";
 import Corpus from "~/valaa-core/Corpus";
 
 const DEFAULT_ACTION_VERSION = "0.1";
@@ -120,7 +119,7 @@ export default class CoreTestHarness extends LogEventGenerator {
   }
 
   createTestMiddleware ({ schema, validators, logger, subReduce }) {
-    const previousId = uuid();
+    const previousId = valaaUUID();
     const defaultCommandVersion = DEFAULT_ACTION_VERSION;
     const bardName = { name: `Test Bard` };
     return [
