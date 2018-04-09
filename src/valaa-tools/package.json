@@ -6,6 +6,7 @@
   "author": "Valaa Technologies Ltd.",
   "license": "MIT",
   "dependencies": {
+    "base64-js": "^1.2.3",
     "fake-indexeddb": "^2.0.3",
     "immutable": "~3.7.4",
     "jssha": "^2.3.1",

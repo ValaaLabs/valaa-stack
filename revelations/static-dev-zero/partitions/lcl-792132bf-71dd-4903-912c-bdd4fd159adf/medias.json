@@ -1,0 +1,19 @@
+{
+    "lcl-84925e69-8812-4640-bd37-f09333907239": {
+        "mediaId": "lcl-84925e69-8812-4640-bd37-f09333907239",
+        "mediaInfo": {
+            "name": "New Media"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    },
+    "lcl-cb6c7915-2784-40a5-b873-5d0936856c2a": {
+        "mediaId": "lcl-cb6c7915-2784-40a5-b873-5d0936856c2a",
+        "mediaInfo": {
+            "name": "sokka.vsx",
+            "blobId": "9faf9f36e9705efca193fc8c5bc1b5ade1ff9387f1834a2d38f5121d52809dbb9bb22e7efa11baa74ae7e83bdf987995ac4dfb82b26e6e5e568b1c1a8e9aec4d"
+        },
+        "isPersisted": true,
+        "isInMemory": true
+    }
+}

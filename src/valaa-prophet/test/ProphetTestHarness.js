@@ -71,11 +71,13 @@ export default class ProphetTestHarness extends ScriptTestHarness {
 }
 
 export function createScribe (commandCountCallback: any) {
-  return new Scribe({
+  const ret = new Scribe({
     name: "Test Scribe",
     databaseAPI: getDatabaseAPI(),
     commandCountCallback,
   });
+  ret.initialize();
+  return ret;
 }
 
 export async function clearScribeDatabases (otherConnections: Object[] = []) {
