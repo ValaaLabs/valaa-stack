@@ -1,8 +1,0 @@
-{
-    "collectCoverage": false,
-    "verbose": true,
-    "roots": [
-      "src/"
-    ],
-    "testRegex": ".*\\.livetest\\.js$"
-}
