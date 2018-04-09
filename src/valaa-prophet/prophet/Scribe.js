@@ -8,7 +8,7 @@ import ScribePartitionConnection from "~/valaa-prophet/prophet/ScribePartitionCo
 import IndexedDBWrapper from "~/valaa-tools/html5/IndexedDBWrapper";
 
 import { dumpObject, invariantifyObject, invariantifyString } from "~/valaa-tools";
-import { type DatabaseAPI } from "~/valaa-tools/indexedDB/databaseAPI";
+import type { DatabaseAPI } from "~/valaa-tools/indexedDB/databaseAPI";
 
 
 /**
