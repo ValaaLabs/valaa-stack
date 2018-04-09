@@ -2,25 +2,21 @@
   "name": "@valaa/valaa-vault",
   "version": "0.30.0-prerelease",
   "config": {
-    "version": "0.30.0-prerelease",
-    "modulepaths": "valaa-core/node_modules:valaa-prophet/node_modules:valaa-script/node_modules:valaa-engine/node_modules"
+    "modulepaths": "valaa-core/node_modules:valaa-prophet/node_modules:valaa-script/node_modules:valaa-engine/node_modules:valaa-inspire/node_modules"
   },
   "description": "Vault of Valaa open source tools and libraries. Expect this package to be split when the child components mature with more stable APIs and less cross-dependencies.",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
-    "test-e2e": "karma start",
-    "livetest": "jest --config=livetest.jest.config.json",
-    "eslint": "eslint .",
-    "lint": "npm run eslint",
     "build": "cross-conf-env cross-env NODE_PATH=$NODE_PATH:$npm_package_config_modulepaths webpack ",
     "start": "cross-conf-env node script/dev $npm_package_config_project",
     "dev": "cross-conf-env node script/dev ",
     "dev-webpack": "cross-conf-env cross-env NODE_PATH=$NODE_PATH:$npm_package_config_modulepaths webpack-dev-server --inline --progress --open --host 0.0.0.0 --content-base ",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
-    "deploy-valaa-blobs": "node script/deploy-valaa-blobs"
+    "lint": "npm run eslint",
+    "test": "jest",
+    "test-e2e": "karma start"
   },
-  "author": "Valaa",
+  "author": "Valaa Technologies Ltd.",
   "license": "MIT",
   "private": false,
   "jest": {
