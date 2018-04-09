@@ -21,27 +21,21 @@ injectTapEventPlugin();
 const logger = new Logger();
 const createInspireClientGlobalName = "createInspireClient";
 
-export async function createInspireClient (revelationPath: string,
-    revelationOverrides: Object = {}) {
+export async function createInspireClient (revelation: string) {
   let ret;
   try {
     logger.warn(`Starting Inspire Client init sequence in environment (${
-        String(process.env.NODE_ENV)}), loading revelation from ${revelationPath}`);
+        String(process.env.NODE_ENV)}), loading revelation`, revelation);
     ret = new InspireClient({ name: "main", logger });
 
-    const revelation = await request({ url: revelationPath || "project.manifest.json" });
-
-    for (const [optionName, override] of Object.entries(revelationOverrides || {})) {
-      if (typeof override !== "undefined") revelation[optionName] = override;
-    }
-    await ret.initialize(revelation, { schemePlugins });
+    await ret.initialize(revelation || "project.manifest.json", { schemePlugins });
 
     getGlobal().inspireClient = ret;
     ret.warnEvent(`InspireClient set to window.inspireClient as`, ret);
     return ret;
   } catch (error) {
-    outputError((ret || logger).wrapErrorEvent(error, `createInspireClient(${revelationPath})`,
-        "\n\trevelationOverrides:", revelationOverrides));
+    outputError((ret || logger).wrapErrorEvent(error, `createInspireClient(), with`,
+        "\n\trevelation:", revelation));
     throw new Error("Failed to initialize Inspire Client. See message log for more details.");
   }
 }

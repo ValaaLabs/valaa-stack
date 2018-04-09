@@ -4,13 +4,14 @@ import preset from "jss-preset-default";
 import jss, { SheetsManager } from "jss";
 
 import VALEK from "~/valaa-engine/VALEK";
+import { getImplicitMediaInterpretation } from "~/valaa-engine/interpreter";
+
 import { uiComponentProps, VSSStyleSheetSymbol } from "~/valaa-inspire/ui/base/UIComponent";
 import { unthunkRepeat } from "~/valaa-inspire/ui/helper/thunk";
 import vidgets from "~/valaa-inspire/ui/vidget";
 import ValaaScope from "~/valaa-inspire/ui/vidget/ValaaScope";
 
-import { dumpObject, invariantifyString, objectHash, traverse, wrapError } from "~/valaa-tools";
-import { getImplicitMediaInterpretation } from "~/valaa-engine/interpreter";
+import { dumpObject, invariantifyString, traverse, wrapError, valaaHash } from "~/valaa-tools";
 
 jss.setup(preset());
 
@@ -90,7 +91,7 @@ export default class ReactRoot extends React.Component {
   getVssSheet = (context: Object, user: Object) => {
     let sheetId = _sheetIds.get(context);
     if (!sheetId) {
-      sheetId = objectHash(context);
+      sheetId = valaaHash(context);
       _sheetIds.set(context, sheetId);
     }
     let sheet = this._vssSheetManager.get(sheetId);
