@@ -99,8 +99,20 @@ export default class Scribe extends Prophet {
     return contentLookup;
   }
 
-  precacheBlobs (blobs, readBlobContent) {
-    this.errorEvent("preload not implemented yet");
+  static initialPreCachedPersistRefCount = 1;
+
+  preCacheBlob (blobId: string, newInfo: Object, readBlobContent: Function) {
+    const blobInfo = this._blobLookup[blobId];
+    if (!blobInfo) {
+      return Promise.resolve(readBlobContent(blobId)).then(
+          buffer => (typeof buffer !== "undefined")
+              && this._persistBlobContent(buffer, blobId, Scribe.initialPreCachedPersistRefCount));
+    }
+    if (blobInfo.byteLength === newInfo.byteLength
+        || typeof blobInfo.byteLength === "undefined"
+        || typeof newInfo.byteLength === "undefined") return undefined;
+    throw new Error(`byteLength mismatch between new blob (${newInfo.byteLength
+        }) and existing blob (${blobInfo.byteLength}) while precaching blob "${blobId}"`);
   }
 
   _transaction (stores: Array<string>, mode: string = "readonly", opsCallback: Function) {
@@ -145,7 +157,7 @@ export default class Scribe extends Prophet {
     );
   }
 
-  _persistBlobContent (buffer: ArrayBuffer, blobId: string): ?Promise<any> {
+  _persistBlobContent (buffer: ArrayBuffer, blobId: string, initialPersistRefCount = 0): ?Promise<any> {
     invariantifyObject(buffer, "_persistBlobContent.buffer",
         { instanceof: ArrayBuffer, allowEmpty: true });
     invariantifyString(blobId, "_persistBlobContent.blobId");
@@ -159,19 +171,19 @@ export default class Scribe extends Prophet {
       blobId,
       buffer,
       byteLength: buffer.byteLength,
-      persistRefCount: 0,
+      persistRefCount: initialPersistRefCount,
       inMemoryRefCount: 0,
       persistProcess: this._transaction(["blobs", "buffers"], "readwrite",
           ({ blobs, buffers }) => {
             blobs.get(blobId).onsuccess = event => {
-              blobInfo.persistRefCount =
-                  (event.target.result && event.target.result.persistRefCount) || 0;
+              const existingRefCount = event.target.result && event.target.result.persistRefCount;
+              blobInfo.persistRefCount = existingRefCount || initialPersistRefCount;
               blobs.put({
                 blobId,
                 byteLength: blobInfo.byteLength,
                 persistRefCount: blobInfo.persistRefCount,
               });
-              if (!blobInfo.persistRefCount) buffers.put({ blobId, buffer });
+              if (!existingRefCount) buffers.put({ blobId, buffer });
             };
             return blobId;
           })

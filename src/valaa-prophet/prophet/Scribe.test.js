@@ -62,13 +62,13 @@ describe("Scribe", () => {
     let claimResult = await connection.claimCommandEvent(simpleCommand);
     await claimResult.finalizeLocal();
     await expectStoredInDB(simpleCommand, database, "commands",
-        connection._getLastCommandEventId());
+        connection.getLastCommandEventId());
 
     // Runs a transaction and confirms that it has been stored
     claimResult = await connection.claimCommandEvent(simpleTransaction);
     await claimResult.finalizeLocal();
     await expectStoredInDB(simpleTransaction, database, "commands",
-        connection._getLastCommandEventId());
+        connection.getLastCommandEventId());
   });
 
   const mediaContents = [
@@ -116,12 +116,12 @@ describe("Scribe", () => {
     claimResult = firstConnection.claimCommandEvent(simpleTransaction);
     await claimResult.finalizeLocal();
 
-    const lastCommandId = firstConnection._getLastCommandEventId();
+    const lastCommandId = firstConnection.getLastCommandEventId();
     expect(lastCommandId).toBeGreaterThan(0);
     firstConnection.disconnect();
 
     const secondConnection = await scribe.acquirePartitionConnection(uri, {});
-    expect(secondConnection._getLastCommandEventId()).toBe(lastCommandId);
+    expect(secondConnection.getLastCommandEventId()).toBe(lastCommandId);
   });
 
   const commandList = [
@@ -140,14 +140,14 @@ describe("Scribe", () => {
 
     const connection = await scribe.acquirePartitionConnection(uri, {});
     let oldCommandId;
-    let newCommandId = connection._getLastCommandEventId();
+    let newCommandId = connection.getLastCommandEventId();
 
     for (const command of commandList) {
       const claimResult = connection.claimCommandEvent(command);
       await claimResult.finalizeLocal();
 
       oldCommandId = newCommandId;
-      newCommandId = connection._getLastCommandEventId();
+      newCommandId = connection.getLastCommandEventId();
       expect(oldCommandId).toBeLessThan(newCommandId);
     }
   });
