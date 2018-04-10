@@ -37,8 +37,6 @@ export function getActionFromPassage (passage: Passage) {
   return ret;
 }
 
-const SmuggledJourneyman = Symbol("SmuggledJourneyman");
-
 /**
  * Bard middleware creates a 'journeyman' bard (which prototypes a singleton-ish master bard) to
  * handle an incoming command or event action. It then smuggles the journeyman inside
@@ -55,16 +53,15 @@ const SmuggledJourneyman = Symbol("SmuggledJourneyman");
  * }} bardOptions
  * @returns
  */
-export function createBardMiddleware (bardOptions: {
-  name: any, schema: GraphQLSchema, logger: Object, subReduce: () => any
-}) {
-  const master = new Bard(bardOptions);
-  const bardMiddleware = (store: Object) => (next: (() => any)) => (action: Action) => {
-    const journeyman = Object.create(master);
-    journeyman.beginStory(store, action);
-    action[SmuggledJourneyman] = journeyman;
-    return journeyman.finishStory(next(action));
-  };
+export function createBardMiddleware () {
+  const bardMiddleware = (grandmaster: Object) => (next: any) =>
+      (action: Action, master: Bard = grandmaster) => {
+        const journeyman = Object.create(master);
+        const story = journeyman.beginStory(master, action);
+        journeyman.finishStory(next(story, journeyman));
+        master.updateState(journeyman.getState());
+        return story;
+      };
   return bardMiddleware;
 }
 
@@ -72,12 +69,12 @@ const EMPTY_MAP = Map();
 
 export function createBardReducer (bardOperation: (bard: Bard) => State,
     { skipPostPassageStateUpdate }: any = {}) {
-  return (state: Map = EMPTY_MAP, action: Object, seniorBard: ?Object) => {
+  return function bardReduce (state: Map = EMPTY_MAP, action: Object) {
     // Create an apprentice from the seniorBard to handle the given action as passage.
     // If there is no seniorBard the action is the root story; use the smuggled journeyman as the
     // superior bard and the story as current passage.
-    const apprentice = Object.create(seniorBard || action[SmuggledJourneyman]);
-    apprentice.passage = seniorBard ? action : apprentice.story;
+    const apprentice = Object.create(this);
+    apprentice.passage = action;
     try {
       apprentice.passage.apprentice = apprentice;
       let nextState = bardOperation(apprentice);
@@ -167,8 +164,14 @@ export default class Bard extends Resolver {
 
   objectTypeIntro: ?GraphQLObjectType;
 
+  constructor (options: Object) {
+    super(options);
+    this.subReduce = options.subReduce;
+  }
+
   debugId () {
     const action = this.passage || this.story;
+    if (!action) return super.debugId();
     return `${this.constructor.name}(${action.type} ${action.id}:${action.typeName})`;
   }
 
@@ -183,10 +186,11 @@ export default class Bard extends Resolver {
       action.partitions = {};
       this.story.isBeingUniversalized = true;
     }
+    return this.story;
   }
 
-  finishStory (resultAction: Object) {
-    invariantify(this.rootAction === resultAction,
+  finishStory (resultStory: Object) {
+    invariantify(this.story === resultStory,
         "bard middleware expects to get same action back which it gave to next");
     Object.values(this._resourceChapters).forEach(chapter => {
       if (!chapter.destroyed && chapter.preventsDestroys && chapter.preventsDestroys.length) {

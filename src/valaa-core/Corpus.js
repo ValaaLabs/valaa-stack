@@ -8,38 +8,48 @@ import wrapError, { dumpObject } from "~/valaa-tools/wrapError";
 
 let corpusIndex = 0;
 
-export default class Corpus extends Valker {
-  constructor ({ schema, middleware, reducer, initialState, debug, logger, nameContainer,
-    packFromHost, unpackToHost, builtinSteppers
-  }) {
+/**
+ * Bards in general and Corpus in specific are responsibile for managing incoming actions and
+ * modifying state in response to them.
+ *
+ * Valker, Discourses and Transactions are responsible for computation and creation of actions.
+ *
+ * @export
+ * @class Corpus
+ * @extends {Bard}
+ */
+export default class Corpus extends Bard {
+  constructor ({
+    schema, debugLevel, logger, middlewares, reduce, subReduce, initialState,
+  }: Object) {
     invariantifyObject(schema, "schema");
-    invariantifyFunction(reducer, "reducer");
+    invariantifyFunction(reduce, "reduce");
+    invariantifyFunction(subReduce, "subReduce");
     invariantifyObject(initialState, "initialState", { allowUndefined: true });
     invariantifyObject(nameContainer, "name", { allowUndefined: true });
     super(schema, debug, logger, packFromHost, unpackToHost, builtinSteppers);
     // TODO(iridian): These indirections are spaghetti. Simplify.
+    this.reduce = reduce;
+    this._dispatch = middlewares.reduceRight(
+        (next, middleware) => middleware(this)(next),
+        (action, corpus) => {
+          const newState = corpus.reduce(corpus.getState(), action);
+          corpus.updateState(newState);
+          return action;
+        });
     this.reducer = reducer;
     this.nameContainer = nameContainer || { name: `Unnamed Corpus #${++corpusIndex}` };
     this.storeCreator = !middleware ? createStore : applyMiddleware(...middleware)(createStore);
     this.reinitialize(initialState);
   }
 
-  dispatch (action) {
-    let previousName;
+  dispatch (action: Action) {
     try {
-      if (this.nameOverride) {
-        previousName = this.nameContainer.name;
-        this.nameContainer.name = this.nameOverride;
-      }
-      const story = this.store.dispatch(action);
-      this.setState(this.store.getState());
-      if (previousName) this.nameContainer.name = previousName;
-      return story;
+      return this._dispatch(action, this);
     } catch (error) {
-      if (previousName) this.nameContainer.name = previousName;
-      throw wrapError(error, `During ${this.debugId()}\n .dispatch(${
-          this.nameOverride || (this.nameContainer && this.nameContainer.name)}), with:`,
+      throw this.wrapErrorEvent(error, `dispatch()`,
           "\n\taction:", ...dumpObject(action),
+          "\n\tthis:", ...dumpObject(this),
       );
     }
   }
@@ -50,8 +60,7 @@ export default class Corpus extends Valker {
   }
 
   reinitialize (newInitialState) {
-    this.store = this.storeCreator(this.reducer, newInitialState);
-    this.setState(this.store.getState());
+    this.setState(newInitialState);
   }
 
   fork (overrides) {

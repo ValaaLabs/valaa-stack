@@ -1,5 +1,6 @@
 // @flow
 
+import { OrderedMap } from "immutable";
 import Command from "~/valaa-core/command";
 
 import { createTestPartitionURIFromRawId, createPartitionURI }
@@ -7,7 +8,8 @@ import { createTestPartitionURIFromRawId, createPartitionURI }
 
 import ScriptTestHarness, { createScriptTestHarness } from "~/valaa-script/test/ScriptTestHarness";
 
-import { AuthorityNexus, FalseProphet, Oracle, Prophecy, Scribe } from "~/valaa-prophet";
+import { AuthorityNexus, FalseProphet, FalseProphetDiscourse, Oracle, Prophecy, Scribe }
+    from "~/valaa-prophet";
 
 import ProphetTestAPI from "~/valaa-prophet/test/ProphetTestAPI";
 import { schemePlugin as valaaTestSchemePlugin } from "~/valaa-prophet/test/scheme-valaa-test";
@@ -56,10 +58,7 @@ export default class ProphetTestHarness extends ScriptTestHarness {
       this.upstream = new MockProphet();
       this.cleanup = () => undefined;
     }
-    this.prophet = new FalseProphet({
-      name: "Test FalseProphet",
-      logger: this.logger, schema: this.schema, corpus: this.corpus, upstream: this.upstream,
-    });
+    this.prophet.setUpstream(this.upstream);
 
     this.testPartitionURI = createTestPartitionURIFromRawId("test_partition");
     this.testPartitionConnection = this.prophet.acquirePartitionConnection(this.testPartitionURI);
@@ -67,6 +66,31 @@ export default class ProphetTestHarness extends ScriptTestHarness {
 
   claim (...rest: any) {
     return this.prophet.claim(...rest);
+  }
+
+  createCorpus () {
+    const corpus = super.createCorpus();
+    this.prophet = new FalseProphet({
+      name: "Test FalseProphet", logger: this.logger, schema: this.schema, corpus,
+    });
+    return corpus;
+  }
+
+  createValker () {
+    return new FalseProphetDiscourse({
+      prophet: this.prophet,
+      schema: this.schema,
+      debugLevel: this.getDebugLevel(),
+      logger: this,
+      packFromHost: value => (value instanceof OrderedMap ? value.get("id") : value),
+      unpackToHost: value => {
+        if (!(value instanceof OrderedMap)) return value;
+        const id = value.get("id");
+        if (!id || (id.typeof() !== "Resource")) return value;
+        return id;
+      },
+      builtinSteppers: this.corpusOptions.builtinSteppers,
+    });
   }
 }
 

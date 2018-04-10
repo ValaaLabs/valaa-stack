@@ -10,12 +10,12 @@ import { createId, invariantify } from "~/valaa-tools";
 
 export default function createProcessCommandIdMiddleware (initialId, schema) {
   const previousId = { value: initialId };
-  return (/* store */) => next => action => {
+  return (/* store */) => next => (action, ...rest: any[]) => {
     if (!action.hasOwnProperty("commandId")) {
       action.timeStamp = Date.now();
       recurseAndAugmentWithIds(action, previousId, schema);
     }
-    return next(action);
+    return next(action, ...rest);
   };
 }
 

@@ -27,7 +27,7 @@ describe("CREATED/DUPLICATED", () => {
         initialState: { name: "parent copy" },
       }),
     ]);
-    expect(harness.corpus.run(vRef("A_parentCopy"), "name"))
+    expect(harness.run(vRef("A_parentCopy"), "name"))
         .toEqual("parent copy");
   });
 
@@ -39,13 +39,13 @@ describe("CREATED/DUPLICATED", () => {
         initialState: { name: "structure-test copy" },
       }),
     ]);
-    expect(harness.corpus.run(vRef("A_parentCopy"),
+    expect(harness.run(vRef("A_parentCopy"),
             ["§->", "name"]))
         .toEqual("structure-test copy");
-    expect(harness.corpus.run(vRef("A_parentCopy"),
+    expect(harness.run(vRef("A_parentCopy"),
             ["§->", "children", 0, "owner", "name"]))
         .toEqual("structure-test copy");
-    expect(harness.corpus.run(vRef("A_parentCopy"),
+    expect(harness.run(vRef("A_parentCopy"),
             ["§->", "children", 1, "owner", "name"]))
         .toEqual("structure-test copy");
   });
