@@ -49,6 +49,11 @@ module.exports = {
         NODE_ENV: JSON.stringify(process.env.NODE_ENV)
       }
     }),
+    // Silences a console warning due to amdefine/require, coming through jstransform dependency.
+    // In principle jstransform dependency should be eliminated in favor of babel jsx tools (as
+    // esprima-fb is deprecated) but in practice VSX transformation relies on the custom
+    // modifications of the locally expanded jsx-transform
+    new webpack.ContextReplacementPlugin(/source-map/, /$^/),
     ...(isLocal ? [] : [new UglifyJSPlugin({
       parallel: true,
       sourceMap: !isProduction,
