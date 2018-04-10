@@ -11,9 +11,10 @@ import { createBardMiddleware, isRestrictedCommand, createUniversalizableCommand
 
 import CoreTestAPI from "~/valaa-core/test/CoreTestAPI";
 
-import { dumpify, dumpObject, invariantify, LogEventGenerator, Logger, valaaUUID }
-    from "~/valaa-tools";
 import Corpus from "~/valaa-core/Corpus";
+import Valker from "~/valaa-core/VALK/Valker";
+
+import { dumpObject, invariantify, LogEventGenerator, valaaUUID } from "~/valaa-tools";
 
 const DEFAULT_ACTION_VERSION = "0.1";
 
@@ -29,14 +30,17 @@ export function createCoreTestHarness (options: Object, ...commandBlocks: any) {
 }
 
 export default class CoreTestHarness extends LogEventGenerator {
-  constructor ({ ContentAPI, name, debug, reducerOptions, corpusOptions }) {
+  constructor ({ ContentAPI, name, debug, reducerOptions = {}, corpusOptions = {} }) {
     super({ name, debugLevel: debug });
     this.ContentAPI = ContentAPI;
     this.schema = ContentAPI.schema;
     this.reducerOptions = reducerOptions;
     this.corpusOptions = corpusOptions;
     this.corpus = this.createCorpus();
+    this.valker = this.createValker();
   }
+
+  getState () { return this.corpus.getState(); }
 
   /**
    * run always delegates the run to most sophisticated component in the harness.
@@ -46,9 +50,12 @@ export default class CoreTestHarness extends LogEventGenerator {
    *
    * @memberof CoreTestHarness
    */
-  run (...rest) { return this.corpus.run(...rest); }
-
-  getState () { return this.corpus.getState(); }
+  run (...rest) {
+    this.valker.setState(this.corpus.getState());
+    const ret = this.valker.run(...rest);
+    this.corpus.setState(this.valker.getState());
+    return ret;
+  }
 
   /**
    * dispatch always delegates the operation to corpus.dispatch (handlings restricted commands is
@@ -92,8 +99,7 @@ export default class CoreTestHarness extends LogEventGenerator {
 
   createCorpus () {
     const reducerName = { name: `${this.getName()} Reducer` };
-    const { schema, validators, logger, mainReduce, subReduce } = createRootReducer(Object.freeze({
-      reducerName,
+    const { schema, validators, mainReduce, subReduce } = createRootReducer(Object.freeze({
       ...this.ContentAPI,
       logger: this.createTestLogger(),
       ...(this.reducerOptions || {}),
@@ -101,19 +107,13 @@ export default class CoreTestHarness extends LogEventGenerator {
     return new Corpus(Object.freeze({
       nameContainer: reducerName,
       initialState: OrderedMap(),
-      middleware: this.createTestMiddleware({ schema, validators, logger, subReduce }),
-      reducer: mainReduce,
+      middlewares: this._createTestMiddlewares({ schema, validators, subReduce }),
+      reduce: mainReduce,
+      subReduce,
       schema,
       debug: this.getDebugLevel(),
       logger,
       // stubify all unpacked Transient's when packing: this causes them to autorefresh
-      packFromHost: value => (value instanceof OrderedMap ? value.get("id") : value),
-      unpackToHost: value => {
-        if (!(value instanceof OrderedMap)) return value;
-        const id = value.get("id");
-        if (!id || (id.typeof() !== "Resource")) return value;
-        return id;
-      },
       ...(this.corpusOptions || {}),
     }));
   }
@@ -128,5 +128,21 @@ export default class CoreTestHarness extends LogEventGenerator {
       createValidateActionMiddleware(validators),
       createBardMiddleware({ name: bardName, schema, logger, subReduce }),
     ];
+  }
+
+  createValker () {
+    return new Valker(
+        this.schema,
+        this.getDebugLevel(),
+        this,
+        value => (value instanceof OrderedMap ? value.get("id") : value),
+        value => {
+          if (!(value instanceof OrderedMap)) return value;
+          const id = value.get("id");
+          if (!id || (id.typeof() !== "Resource")) return value;
+          return id;
+        },
+        this.corpusOptions.builtinSteppers,
+    );
   }
 }

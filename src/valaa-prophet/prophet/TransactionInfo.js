@@ -27,10 +27,9 @@ export default class TransactionInfo {
     this.customCommand = customCommand;
     this.resultPromises = [];
     transaction.transactionDepth = 1;
-    // With this here and couple lines in Corpus:fork we have fully isolated forking
-    // for all valk operations practically for free for our tx.
-    // This also updates the forked corpus immediately for every command.
-    transaction.corpus = transaction.corpus.fork({ nameOverride: this.name });
+    transaction.corpus = transaction.corpus.fork();
+    transaction.corpus.setName(
+        `${transaction.corpus.getName()}/Transaction#${transactionCounter += 1}`);
   }
 
   isCommittable () {

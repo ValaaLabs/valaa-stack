@@ -30,7 +30,7 @@ import { dumpObject, invariantify, invariantifyObject, invariantifyString, outpu
  */
 export default class FalseProphet extends Prophet {
   constructor ({ name, logger, schema, corpus, upstream }: Object) {
-    super({ name, logger, upstream });
+    super({ name, logger });
     this.schema = schema;
     this.corpus = corpus;
 
@@ -38,6 +38,11 @@ export default class FalseProphet extends Prophet {
     this._prophecySentinel = { id: "sentinel" };
     this._prophecySentinel.next = this._prophecySentinel.prev = this._prophecySentinel;
     this._prophecyByCommandId = {};
+    if (upstream) this.setUpstream(upstream);
+  }
+
+  setUpstream (upstream) {
+    this._upstream = upstream;
     upstream.addFollower(this);
   }
 
@@ -48,8 +53,6 @@ export default class FalseProphet extends Prophet {
   _createDiscourse (follower: Follower) {
     return new FalseProphetDiscourse({ follower, prophet: this });
   }
-
-  run (...params) { return this.corpus.run(...params); }
 
   // Handle a restricted command claim towards upstream.
   claim (restrictedCommand: Command, { timed, transactionInfo } = {}): ClaimResult {

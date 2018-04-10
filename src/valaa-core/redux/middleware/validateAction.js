@@ -18,5 +18,5 @@ export default function createValidateActionMiddleware (validators) {
           "\n\taction:", ...dumpObject(action));
     }
   }
-  return (/* store */) => next => action => next(validateAction(action));
+  return (/* store */) => next => (action, ...rest: any[]) => next(validateAction(action), ...rest);
 }

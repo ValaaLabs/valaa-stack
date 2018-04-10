@@ -253,22 +253,22 @@ export default class InspireClient extends LogEventGenerator {
     // FIXME(iridian): Create the deterministic-id schema. Now random.
     const previousId = valaaUUID();
     const defaultCommandVersion = DEFAULT_ACTION_VERSION;
-    const middleware = [
+    const middlewares = [
       createProcessCommandVersionMiddleware(defaultCommandVersion),
       createProcessCommandIdMiddleware(previousId, schema),
       createValidateActionMiddleware(validators),
-      createBardMiddleware({ name: { name: "Inspire Bard" }, schema, logger, subReduce }),
+      createBardMiddleware({ name: { name: "Inspire Bard" }, schema, subReduce }),
     ];
 
-    const corpusOptions = await expose(revelation.corpus);
-    return new Corpus({
-      nameContainer, schema, middleware,
-      reducer: mainReduce,
-      logger: createForwardLogger({ name, target: this.getLogger() }),
+    const corpusOptions = {
+      name, schema, middlewares,
+      reduce: mainReduce,
+      subReduce,
       initialState: new ImmutableMap(),
-      debug: undefined,
-      ...corpusOptions,
-    });
+      logger: this,
+      ...await expose(revelation.corpus),
+    };
+    return new Corpus(corpusOptions);
   }
 
   async _proselytizeFalseProphet (revelation: Object, corpus: Corpus, upstream: Prophet):

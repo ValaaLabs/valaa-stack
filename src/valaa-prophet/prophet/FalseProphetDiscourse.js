@@ -19,16 +19,18 @@ export default class FalseProphetDiscourse extends Discourse {
   follower: Follower;
   prophet: Prophet;
 
-  constructor ({ follower, prophet, logger }:
-      { follower: Follower, prophet: Prophet, logger: Logger }) {
-    super(prophet.corpus.schema, 0, logger);
+  constructor ({
+    follower, prophet, debugLevel, logger, packFromHost, unpackToHost, builtinSteppers,
+  }: Object) {
+    // goes to Valker
+    super(prophet.corpus.schema, debugLevel, logger, packFromHost, unpackToHost, builtinSteppers);
     this.nonTransactionalBase = this;
     this.follower = follower;
     this.prophet = prophet;
     this.corpus = prophet.corpus;
     this._implicitlyConnectedPartitions = {};
     this.setState(this.prophet.getState());
-    invariantify(this.state, "this.state");
+    invariantify(this.state, "FalseProphetDiscourse.state");
   }
 
   debugId (options: ?Object): string {

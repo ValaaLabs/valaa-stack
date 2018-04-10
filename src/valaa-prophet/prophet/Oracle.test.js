@@ -36,7 +36,7 @@ describe("Prophet", () => {
     expect(harness.testPartitionConnection).toBeTruthy();
     expect(harness.testPartitionConnection.isConnected())
         .toEqual(true);
-    expect(harness.prophet.run(vRef("test_partition"), "name"))
+    expect(harness.run(vRef("test_partition"), "name"))
         .toEqual("Test Partition");
   });
 

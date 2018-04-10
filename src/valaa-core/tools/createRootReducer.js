@@ -19,10 +19,12 @@ function mergeActionReducers (reducers, context) {
           (list, reducer) => (list || []).concat([reducer])),
       {});
   return Object.freeze(mapValues(reducerListsByActionType,
-      reducerList => (state, action, ...rest) =>
-          reducerList.reduce(
-              (innerState, reducer) => reducer(innerState, action, ...rest),
-              state)
+      reducerList => function reduceChain(state, action, ...rest) {
+        return reducerList.reduce(
+            (innerState, reducer) => reducer.call(this, innerState, action, ...rest),
+            state,
+        );
+      }
   ));
 }
 
@@ -88,6 +90,29 @@ export default function createRootReducer ({
     });
   }
 
+  function mainReduce (state = Map(), action) {
+    const mainLogEventer = this || reducerContext.logEventer;
+    try {
+      if (mainLogEventer.getDebugLevel() >= reduceLogThreshold) {
+        const time = action.timeStamp;
+        const minor = action.typeName ? `${action.typeName} ` : "";
+        mainLogEventer.logEvent(`Reducing @${time} ${action.type} ${minor}${
+            dumpify(action.commandId, 7, "...")} ${JSON.stringify(omit(action,
+                ["timeStamp", "type", "typeName", "id", "passages", "parentPassage", "bard"]))
+            .slice(0, 380)
+        }`);
+      }
+      const reducer = reducerByActionType[action.type];
+      if (reducer) return reducer.call(this, state, action);
+      mainLogEventer.warnEvent(
+          `WARNING: While reducing, no reducer for action type ${action.type}, ignoring`);
+      return state;
+    } catch (error) {
+      throw mainLogEventer.wrapErrorEvent(error, `mainReduce(${action.type}, ${action.commandId})`,
+          "\n\taction:", action,
+          "\n\tthis:", this);
+    }
+  }
   /**
    * Reduces given action as a sub-action with the appropriate reducer.
    * Note: passes 'this' as a third argument for the reducer.
@@ -115,7 +140,7 @@ export default function createRootReducer ({
         }
       }
       const reducer = reducerByActionType[action.type];
-      if (reducer) return reducer(state, action, this);
+      if (reducer) return reducer.call(this, state, action);
       reducerContext.subLogger.error(`${getReducerName()
           }: ERROR: While sub-reducing, no reducer for action type ${action.type}, ignoring`);
       return state;
@@ -123,26 +148,6 @@ export default function createRootReducer ({
       throw wrapError(error, `During ${getReducerName()}\n .subReduce(), with:`,
           "\n\taction:", action,
           "\n\tthis:", this);
-    }
-  }
-  function mainReduce (state = Map(), action) {
-    if (reducerContext.logger.log) {
-      reducerContext.logger.log(`${getReducerName()}: Reducing @${action.timeStamp} ${action.type
-          } ${dumpify(action.id, 40, "...")}:${action.typeName} ${
-          JSON.stringify(omit(action,
-              ["timeStamp", "type", "typeName", "id", "passages", "parentPassage", "bard"]))
-          .slice(0, 380)
-      }`);
-    }
-    try {
-      const reducer = reducerByActionType[action.type];
-      if (reducer) return reducer(state, action, this);
-      reducerContext.logger.error(`${getReducerName()
-          }: Warning: While reducing, no reducer for action type ${action.type}, ignoring`);
-      return state;
-    } catch (error) {
-      throw wrapError(error, `During ${getReducerName()}\n .mainReduce(), with:`,
-          "\n\taction:", action);
     }
   }
   return reducerContext;
