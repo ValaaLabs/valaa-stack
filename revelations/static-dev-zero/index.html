@@ -27,10 +27,10 @@
     <script>
       document.addEventListener(
           "DOMContentLoaded",
-          (function (inspireClientPromise) {
+          (function getOnContentLoaded (inspireClientPromise) {
             return function () {
-              inspireClientPromise.then(function (inspireClient) {
-                inspireClient.createAndConnectViewsToDOM({
+              inspireClientPromise.then(function createViews (inspireClient) {
+                var views = inspireClient.createAndConnectViewsToDOM({
                   inspireMain: {
                     name: "Inspire Main",
                     size: { width: window.innerWidth, height: window.innerHeight, scale: 1 },
@@ -39,11 +39,15 @@
                     rootPartitionURI: inspireClient.revelation.directPartitionURI,
                   },
                 });
+                Object.keys(views).forEach(function (key) {
+                  Promise.resolve(views[key]).then(function (view) { window[key] = view; });
+                });
               });
             };
           })(createInspireClient(
               "valaa-inspire.revelation.json",
               {
+                verbosity: 1,
                 directPartitionURI: (new URLSearchParams(document.location.search.substring(1)))
                     .get("partition") || undefined
               }

@@ -27,6 +27,7 @@ export type Revelation = string | any;
 // If given object is a string uses it as the URL for an XHR request and returns the response,
 // otherwise returns the given object itself.
 export function expose (object: Revelation) {
+  if (typeof object === "function") return object();
   if (typeof object !== "string") return object;
   return request({ url: object });
 }
