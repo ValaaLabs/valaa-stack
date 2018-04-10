@@ -8,7 +8,7 @@ import Follower from "~/valaa-prophet/api/Follower";
 import type Prophecy from "~/valaa-prophet/api/Prophecy";
 import type PartitionConnection from "~/valaa-prophet/api/PartitionConnection";
 
-import { Logger, LogEventGenerator } from "~/valaa-tools";
+import { LogEventGenerator } from "~/valaa-tools";
 
 export type ClaimResult = {
   prophecy: Prophecy;
@@ -50,8 +50,8 @@ export default class Prophet extends LogEventGenerator {
   _upstream: Prophet;
   _followers: Follower;
 
-  constructor ({ name, logger, upstream }: { name: any, logger: Logger, upstream: any }) {
-    super({ name, logger });
+  constructor ({ upstream, ...rest }: Object) {
+    super({ ...rest });
     this._upstream = upstream;
     this._followers = new Map();
   }

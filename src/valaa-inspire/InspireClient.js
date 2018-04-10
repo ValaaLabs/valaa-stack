@@ -23,7 +23,6 @@ import InspireView from "~/valaa-inspire/InspireView";
 import { registerVidgets } from "~/valaa-inspire/ui/vidget";
 import { Revelation, expose } from "~/valaa-inspire/Revelation";
 
-import { createForwardLogger } from "~/valaa-tools/Logger";
 import { getDatabaseAPI } from "~/valaa-tools/indexedDB/getRealDatabaseAPI";
 import { arrayBufferFromBase64, invariantify, LogEventGenerator, valaaUUID } from "~/valaa-tools";
 
@@ -348,11 +347,11 @@ export default class InspireClient extends LogEventGenerator {
           },
         });
         const lastEventId = connection.getLastAuthorizedEventId();
-        console.log("narrating", String(partitionURI), "from", lastEventId);
+        console.log("narrating", String(partitionURI), "from", eventId, lastEventId);
         if ((typeof eventId !== "undefined") && (eventId > lastEventId)) {
           const { events, medias } = await expose(logs);
           ([eventLog, mediaInfos] = await Promise.all([expose(events), expose(medias)]));
-          connection.narrateEventLog({ eventLog, firstEventId: lastEventId + 1 });
+          await connection.narrateEventLog({ eventLog, firstEventId: lastEventId + 1 })/**/;
         }
         return connection;
       }

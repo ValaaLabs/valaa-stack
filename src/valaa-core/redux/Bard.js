@@ -1,5 +1,5 @@
 // @flow
-import { GraphQLSchema, GraphQLObjectType } from "graphql/type";
+import { GraphQLObjectType } from "graphql/type";
 import { Map } from "immutable";
 import cloneDeep from "lodash/cloneDeep";
 
@@ -172,7 +172,10 @@ export default class Bard extends Resolver {
   debugId () {
     const action = this.passage || this.story;
     if (!action) return super.debugId();
-    return `${this.constructor.name}(${action.type} ${action.id}:${action.typeName})`;
+    const description = action.id
+        ? ` ${action.typeName} ${String(action.id).slice(0, 11)}...`
+        : "";
+    return `${super.debugId()}(${action.type}${description})`;
   }
 
   beginStory (store: Object, action: Object) {

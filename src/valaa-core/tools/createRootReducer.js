@@ -19,7 +19,7 @@ function mergeActionReducers (reducers, context) {
           (list, reducer) => (list || []).concat([reducer])),
       {});
   return Object.freeze(mapValues(reducerListsByActionType,
-      reducerList => function reduceChain(state, action, ...rest) {
+      reducerList => function reduceChain (state, action, ...rest) {
         return reducerList.reduce(
             (innerState, reducer) => reducer.call(this, innerState, action, ...rest),
             state,
@@ -89,11 +89,11 @@ export default function createRootReducer ({
       if (mainLogEventer.getDebugLevel() >= reduceLogThreshold) {
         const time = action.timeStamp;
         const minor = action.typeName ? `${action.typeName} ` : "";
-        mainLogEventer.logEvent(`Reducing @${time} ${action.type} ${minor}${
-            dumpify(action.commandId, 7, "...")} ${JSON.stringify(omit(action,
-                ["timeStamp", "type", "typeName", "id", "passages", "parentPassage", "bard"]))
-            .slice(0, 380)
-        }`);
+        mainLogEventer.logEvent(
+            `Reducing @${time} ${action.type} ${minor}${dumpify(action.commandId, 40, "...")}`,
+            `\n\t${JSON.stringify(omit(action,
+                    ["timeStamp", "type", "typeName", "id", "passages", "parentPassage", "bard"]))
+                .slice(0, 380)}`);
       }
       const reducer = reducerByActionType[action.type];
       if (reducer) return reducer.call(this, state, action);
@@ -117,13 +117,12 @@ export default function createRootReducer ({
     const subLogEventer = this || reducerContext.logEventer;
     try {
       if (subLogEventer.getDebugLevel() >= subReduceLogThreshold) {
-        const time = action.timeStamp;
         let minor = action.typeName ? `${action.typeName} ` : "";
-        if (action.id) minor = `${minor} ${dumpify(action.id, 40, "...")}`;
-        subLogEventer.logEvent(`Sub-reducing @${time} ${action.type} ${minor}${JSON.stringify(omit(
-            action, ["timeStamp", "type", "typeName", "id", "passages", "parentPassage", "bard"]))
-                .slice(0, 380)
-        }`);
+        if (action.id) minor = `${minor}${dumpify(action.id, 40, "...")}`;
+        subLogEventer.logEvent(
+            `Sub-reducing ${action.type} ${minor}`,
+            `\n\t${JSON.stringify(omit(action,
+                ["type", "typeName", "id", "passages", "parentPassage", "bard"])).slice(0, 380)}`);
       }
       if (action.story && action.story.isBeingUniversalized) {
         // Offers limited protection against programming errors for generated passages especially.

@@ -3,7 +3,7 @@
 import { addStackFrameToError } from "~/valaa-core/VALK/StackTrace";
 
 import JSXInterpreter from "~/valaa-engine/interpreter/JSXInterpreter";
-import VALEK, { Kuery } from "~/valaa-engine/VALEK";
+import VALEK from "~/valaa-engine/VALEK";
 
 import { transpileValaaScript } from "~/valaa-script";
 

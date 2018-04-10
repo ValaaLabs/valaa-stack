@@ -5,7 +5,8 @@ import { createValaaURI } from "~/valaa-core/tools/PartitionURI";
 import { VRef } from "~/valaa-core/ValaaReference";
 
 import PartitionConnection from "~/valaa-prophet/api/PartitionConnection";
-import type { NarrateOptions, MediaInfo, RetrieveMediaContent } from "~/valaa-prophet/api/Prophet";
+import type Prophet, { NarrateOptions, MediaInfo, RetrieveMediaContent }
+    from "~/valaa-prophet/api/Prophet";
 import ScribePartitionConnection from "~/valaa-prophet/prophet/ScribePartitionConnection";
 
 import { dumpObject, invariantifyNumber, thenChainEagerly } from "~/valaa-tools";
@@ -122,8 +123,8 @@ export default class OraclePartitionConnection extends PartitionConnection {
       this._isConnected = true;
       if (this.getDebugLevel()) {
         this.warnEvent("\n\tDone initializing connection with options", initialNarrateOptions,
-            ", with initial narration result:", ret,
-            "and with remote media retrieval status:", onConnectData.mediaRetrievalStatus);
+            "\n\tinitial narration:", ret,
+            "\n\tmedia retrievals:", onConnectData.mediaRetrievalStatus);
       }
       return ret;
     } catch (error) {

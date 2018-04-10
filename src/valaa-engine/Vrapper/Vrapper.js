@@ -572,7 +572,7 @@ export default class Vrapper extends Cog {
   }
 
   getSelfAsHead (singularTransient: any = this.getTransient()) {
-    return packedSingular(singularTransient, this._typeName);
+    return packedSingular(singularTransient, this._typeName || "ResourceStub");
   }
 
   getLexicalScope () {

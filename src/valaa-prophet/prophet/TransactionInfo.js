@@ -26,8 +26,10 @@ export default class TransactionInfo {
     this.resultPromises = [];
     transaction.transactionDepth = 1;
     transaction.corpus = transaction.corpus.fork();
+    transactionCounter += 1;
+    this.transactionClaimDescription = `tx#${transactionCounter} sub-claim`;
     transaction.corpus.setName(
-        `${transaction.corpus.getName()}/Transaction#${transactionCounter += 1}`);
+        `${transaction.corpus.getName()}/Transaction#${transactionCounter}`);
   }
 
   isCommittable () {
@@ -53,7 +55,7 @@ export default class TransactionInfo {
   setCustomCommand (customCommandCandidate: any, context: string) {
     if (typeof customCommandCandidate === "undefined") return;
     invariantify(typeof this.customCommand === "undefined",
-        `While ${context} '${this.corpus.getName()
+        `While ${context} '${this.transaction.corpus.getName()
             }' trying to override an existing customCommand`,
         "\n\tin transactionInfo:", this,
         "\n\toverriding custom command candidate:", customCommandCandidate);
@@ -63,8 +65,8 @@ export default class TransactionInfo {
   claim (restrictedCommand: Command): ClaimResult {
     try {
       if (!this.restrictedActions) {
-        throw new Error(`Transaction '${this.corpus.getName()}' has already been ${
-                this.finalTransactedLike ? "committed" : "aborted"
+        throw new Error(`Transaction '${this.transaction.corpus.getName()}' has already been ${
+                this.finalRestrictedTransactedLike ? "committed" : "aborted"
             }, when trying to add an action to it`);
       }
       // What goes on here is an incremental construction and universalisation of a TRANSACTED
@@ -75,10 +77,14 @@ export default class TransactionInfo {
       this.restrictedActions.push(restrictedCommand);
 
       const previousState = this.transaction.state;
-      const story = this.transaction.corpus.dispatch({
+      // This is an awkward way to incrementally construct the transacted.
+      // Maybe generators could somehow be useful here?
+      this.latestUniversalTransacted = {
         ...this.transacted,
         actions: [createUniversalizableCommand(restrictedCommand)],
-      });
+      };
+      const story = this.transaction.corpus.dispatch(
+          this.latestUniversalTransacted, this.transactionClaimDescription);
       this.storyPassages.push(story.passages[0]);
       Object.assign(this.universalPartitions, story.partitions);
 
@@ -93,7 +99,8 @@ export default class TransactionInfo {
         getFinalEvent: () => result,
       };
     } catch (error) {
-      throw this.transaction.wrapErrorEvent(error, `transaction.claim(${this.corpus.getName()})`,
+      throw this.transaction.wrapErrorEvent(error,
+          `transaction.claim(${this.transaction.corpus.getName()})`,
           "\n\trestrictedCommand:", ...dumpObject(restrictedCommand),
       );
     }
@@ -103,8 +110,8 @@ export default class TransactionInfo {
     let command;
     try {
       if (!this.restrictedActions) {
-        throw new Error(`Transaction '${this.corpus.getName()}' has already been ${
-                this.finalTransactedLike ? "committed" : "aborted"
+        throw new Error(`Transaction '${this.transaction.corpus.getName()}' has already been ${
+                this.finalRestrictedTransactedLike ? "committed" : "aborted"
             }, when trying to commit it again`);
       }
       this.setCustomCommand(commitCustomCommand, "committing transaction");
@@ -113,20 +120,21 @@ export default class TransactionInfo {
       this.transacted.actions = this.restrictedActions;
       this.restrictedActions = null;
 
-      this.finalTransactedLike = !this.customCommand
+      this.finalRestrictedTransactedLike = !this.customCommand
           ? this.transacted
           : this.customCommand(this.transacted);
-      if (!this.customCommand && !this.finalTransactedLike.actions.length) {
-        const universalNoOpCommand = createUniversalizableCommand(this.finalTransactedLike);
+      if (!this.customCommand && !this.finalRestrictedTransactedLike.actions.length) {
+        const universalNoOpCommand = createUniversalizableCommand(
+            this.finalRestrictedTransactedLike);
         universalNoOpCommand.partitions = {};
         return {
           prophecy: new Prophecy(universalNoOpCommand, undefined, undefined,
-              this.finalTransactedLike),
+              this.finalRestrictedTransactedLike),
           getFinalEvent () { return universalNoOpCommand; },
         };
       }
       const result = this.transaction.prophet.claim(
-          this.finalTransactedLike, { transactionInfo: this });
+          this.finalRestrictedTransactedLike, { transactionInfo: this });
 
       Promise.resolve(result.getFinalEvent()).then(
         // TODO(iridian): Implement returning results. What should they be anyway?
@@ -138,15 +146,16 @@ export default class TransactionInfo {
       this.commitResult = result;
       return result;
     } catch (error) {
-      throw this.transaction.wrapErrorEvent(error, `transaction(${this.corpus.getName()}).commit()`,
+      throw this.transaction.wrapErrorEvent(error,
+        `transaction(${this.transaction.corpus.getName()}).commit()`,
           "\n\tcommand:", ...dumpObject(command),
       );
     }
   }
 
   abort () {
-    if (!this.restrictedActions && this.finalTransactedLike) {
-      throw new Error(`Transaction '${this.corpus.getName()
+    if (!this.restrictedActions && this.finalRestrictedTransactedLike) {
+      throw new Error(`Transaction '${this.transaction.corpus.getName()
           }' has already been committed, when trying to abort it`);
     }
     this.restrictedActions = null;
@@ -175,11 +184,14 @@ export default class TransactionInfo {
     if (!this.isFastForwardFrom(previousState)) return undefined;
     targetCorpus.reinitialize(this.stateAfter);
     // this.logEvent(`Committed '${transactionInfo.name}'`, story);
-    const story = createPassageFromAction({
-      ...this.finalTransactedLike,
+
+    const universalTransactedLike = {
+      ...this.latestUniversalTransacted,
+      ...this.finalRestrictedTransactedLike,
       actions: this.storyPassages.map(passage => getActionFromPassage(passage)),
       partitions: this.universalPartitions,
-    });
+    };
+    const story = createPassageFromAction(universalTransactedLike);
     story.passages = this.storyPassages;
     return story;
   }

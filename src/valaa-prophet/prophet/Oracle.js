@@ -8,11 +8,9 @@ import { MissingPartitionConnectionsError } from "~/valaa-core/tools/denormalize
 import Prophet, { ClaimResult, NarrateOptions } from "~/valaa-prophet/api/Prophet";
 import Prophecy from "~/valaa-prophet/api/Prophecy";
 
-import AuthorityNexus from "~/valaa-prophet/prophet/AuthorityNexus";
 import OraclePartitionConnection from "~/valaa-prophet/prophet/OraclePartitionConnection";
-import type Scribe from "~/valaa-prophet/prophet/Scribe";
 
-import { dumpObject, invariantifyObject, Logger, thenChainEagerly } from "~/valaa-tools";
+import { dumpObject, invariantifyObject, thenChainEagerly } from "~/valaa-tools";
 
 /**
  * Oracle is the central hub for routing blob content and metadata streams between remote partition
@@ -44,9 +42,8 @@ export default class Oracle extends Prophet {
     }
   };
 
-  constructor ({ name, logger, scribe, authorityNexus }:
-      { name: string, logger: Logger, scribe: Scribe, authorityNexus: AuthorityNexus }) {
-    super({ name, logger, upstream: scribe });
+  constructor ({ scribe, authorityNexus, ...rest }: Object) {
+    super({ ...rest, upstream: scribe });
     this._authorityNexus = authorityNexus;
     this._partitionConnections = {};
   }

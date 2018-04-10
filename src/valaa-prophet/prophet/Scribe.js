@@ -45,8 +45,8 @@ export default class Scribe extends Prophet {
   _totalCommandCount: number;
   databaseAPI: DatabaseAPI;
 
-  constructor ({ name, logger, commandCountCallback, databaseAPI }: Object) {
-    super({ name, logger, upstream: null });
+  constructor ({ commandCountCallback, databaseAPI, ...rest }: Object) {
+    super({ upstream: null, ...rest });
     this._mediaTypes = {};
     this._persistedMediaLookup = {};
     this._totalCommandCount = 0;
@@ -157,7 +157,8 @@ export default class Scribe extends Prophet {
     );
   }
 
-  _persistBlobContent (buffer: ArrayBuffer, blobId: string, initialPersistRefCount = 0): ?Promise<any> {
+  _persistBlobContent (buffer: ArrayBuffer, blobId: string, initialPersistRefCount: number = 0):
+      ?Promise<any> {
     invariantifyObject(buffer, "_persistBlobContent.buffer",
         { instanceof: ArrayBuffer, allowEmpty: true });
     invariantifyString(blobId, "_persistBlobContent.blobId");

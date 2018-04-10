@@ -40,14 +40,27 @@ export default class Corpus extends Bard {
     this.reinitialize(initialState);
   }
 
-  dispatch (action: Action) {
+  dispatch (action: Action, description: string) {
+    const prevName = this.getName();
     try {
+      this.setName(!action.partitions
+          ? `${description}`
+          : `${description}: ${
+              Object.entries(action.partitions)
+                  .map(([id, info]) => `${id.slice(0, 11)}...[${info.eventId}]}`)
+                  .join(", ")
+              }`);
+      if (this.getDebugLevel()) {
+        this.logEvent("dispatch:", ...dumpObject(action));
+      }
       return this._dispatch(action, this);
     } catch (error) {
       throw this.wrapErrorEvent(error, `dispatch()`,
           "\n\taction:", ...dumpObject(action),
           "\n\tthis:", ...dumpObject(this),
       );
+    } finally {
+      this.setName(prevName);
     }
   }
 

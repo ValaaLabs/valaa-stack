@@ -58,7 +58,7 @@ export default class FalseProphet extends Prophet {
   claim (restrictedCommand: Command, { timed, transactionInfo } = {}): ClaimResult {
     invariantifyString(restrictedCommand.type, "restrictedCommand.type, with restrictedCommand:",
         { restrictedCommand });
-    const prophecy = this._fabricateProphecy(restrictedCommand, timed, transactionInfo);
+    const prophecy = this._fabricateProphecy(restrictedCommand, "claim", timed, transactionInfo);
     // this.warnEvent("\n\tclaim", restrictedCommand.commandId, restrictedCommand,
     //    ...this._dumpStatus());
     let getBackendFinalEvent;
@@ -106,7 +106,8 @@ export default class FalseProphet extends Prophet {
     if (this._prophecyByCommandId[universalCommand.commandId]) return undefined; // deduplicates
     // this.warnEvent("\n\trepeatClaim", universalCommand.commandId, universalCommand,
     //    ...this._dumpStatus());
-    const prophecy = this._fabricateProphecy(universalCommand);
+    const prophecy = this._fabricateProphecy(universalCommand,
+        `re-claim ${universalCommand.commandId.slice(0, 11)}...`);
     this._revealProphecyToAllFollowers(prophecy);
     return prophecy;
   }
@@ -166,8 +167,8 @@ export default class FalseProphet extends Prophet {
    * @param  {type} prophecy  an command to go upstream
    * @returns {type}          description
    */
-  _fabricateProphecy (action: Action, timed: ?AuthorizedEvent = undefined,
-      transactionInfo?: TransactionInfo) {
+  _fabricateProphecy (action: Action, dispatchDescription: string,
+      timed: ?AuthorizedEvent = undefined, transactionInfo?: TransactionInfo) {
     const restrictedCommand = isRestrictedCommand(action) ? action : undefined;
     try {
       const previousState = this.getState();
@@ -179,8 +180,9 @@ export default class FalseProphet extends Prophet {
               "\n\trestrictedTransacted:", action);
         }
         story = this.corpus.dispatch(restrictedCommand
-              ? createUniversalizableCommand(restrictedCommand)
-              : action);
+                ? createUniversalizableCommand(restrictedCommand)
+                : action,
+            dispatchDescription);
       }
       const prophecy = new Prophecy(
           story, this.getState(), previousState, restrictedCommand, timed);
@@ -188,7 +190,7 @@ export default class FalseProphet extends Prophet {
       this._addProphecy(prophecy);
       return prophecy;
     } catch (error) {
-      throw this.wrapErrorEvent(error, `_fabricateProphecy()`,
+      throw this.wrapErrorEvent(error, `_fabricateProphecy(${dispatchDescription})`,
           "\n\taction:", action,
           "\n\ttimed:", timed);
     }
@@ -201,7 +203,7 @@ export default class FalseProphet extends Prophet {
     // TODO(iridian): After migration to zero missing commandId should be at create warnings
     let prophecy = truthId && this._prophecyByCommandId[truthId];
     if (!prophecy) {
-      prophecy = this._fabricateProphecy(authorizedEvent);
+      prophecy = this._fabricateProphecy(authorizedEvent, `event ${truthId.slice(0, 11)}...`);
       this._revealProphecyToAllFollowers(prophecy);
     }
     prophecy.isTruth = true;
@@ -321,7 +323,7 @@ export default class FalseProphet extends Prophet {
         // universalisableCommand = { ...Object.getPrototypeOf(oldProphecy.story) };
         // delete universalisableCommand.partitions;
       }
-      const reformedProphecy = this._fabricateProphecy(universalisableCommand);
+      const reformedProphecy = this._fabricateProphecy(universalisableCommand, "reform");
       const softConflict = this._checkForSoftConflict(oldProphecy, reformedProphecy);
       if (softConflict) {
         oldProphecy.conflictReason = softConflict;

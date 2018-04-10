@@ -46,8 +46,6 @@ export default class Resolver extends LogEventGenerator {
     return this.schema.getType(typeName);
   }
 
-  debugId (): string { return `${this.constructor.name}()`; }
-
   state: State;
 
   getState () { return this.state; }

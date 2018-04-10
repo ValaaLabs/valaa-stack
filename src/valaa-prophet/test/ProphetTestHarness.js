@@ -121,7 +121,7 @@ export function createOracle (scribe: Scribe) {
   const authorityNexus = new AuthorityNexus();
   authorityNexus.addSchemePlugin(valaaLocalSchemePlugin);
   authorityNexus.addSchemePlugin(valaaTransientSchemePlugin);
-  authorityNexus.addSchemePlugin(valaaTestSchemePlugin)
+  authorityNexus.addSchemePlugin(valaaTestSchemePlugin);
   return new Oracle({
     name: "Test Oracle",
     authorityNexus,
