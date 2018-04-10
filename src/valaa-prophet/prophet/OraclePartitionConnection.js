@@ -87,7 +87,9 @@ export default class OraclePartitionConnection extends PartitionConnection {
 
       ret = await localNarrationProcess;
 
-      const remoteNarrationProcess = remoteConnection && ((async () =>
+      const remoteNarrationProcess = remoteConnection
+          && !initialNarrateOptions.dontRemoteNarrate
+          && ((async () =>
         (await remoteConnection).narrateEventLog(
             { firstEventId: this._lastAuthorizedEventId + 1 }))());
 

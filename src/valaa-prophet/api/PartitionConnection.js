@@ -115,6 +115,14 @@ export default class PartitionConnection extends LogEventGenerator {
     return this._upstreamConnection.narrateEventLog(options);
   }
 
+  getLastAuthorizedEventId () {
+    return this._upstreamConnection.getLastAuthorizedEventId();
+  }
+
+  getLastCommandEventId () {
+    return this._upstreamConnection.getLastCommandEventId();
+  }
+
   /**
    * Returns the media content if it is immediately synchronously available or a Promise if the
    * content is asynchronously available. Throws directly if the content is not available at all or

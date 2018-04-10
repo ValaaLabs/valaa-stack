@@ -2,6 +2,7 @@
 
 import { Map as ImmutableMap } from "immutable";
 
+import { VRef } from "~/valaa-core/ValaaReference";
 import { createPartitionURI } from "~/valaa-core/tools/PartitionURI";
 import { denoteValaaBuiltinWithSignature } from "~/valaa-core/VALK";
 import createRootReducer from "~/valaa-core/tools/createRootReducer";
@@ -24,7 +25,7 @@ import { Revelation, expose } from "~/valaa-inspire/Revelation";
 
 import { createForwardLogger } from "~/valaa-tools/Logger";
 import { getDatabaseAPI } from "~/valaa-tools/indexedDB/getRealDatabaseAPI";
-import { base64Decode, invariantify, LogEventGenerator, valaaUUID } from "~/valaa-tools";
+import { arrayBufferFromBase64, invariantify, LogEventGenerator, valaaUUID } from "~/valaa-tools";
 
 const DEFAULT_ACTION_VERSION = process.env.DEFAULT_ACTION_VERSION || "0.1";
 
@@ -180,6 +181,8 @@ export default class InspireClient extends LogEventGenerator {
 
   async _proselytizeScribe (revelation: Object): Promise<Scribe> {
     let scribeOptions;
+    let buffers;
+    const client = this;
     try {
       this._commandCountListeners = new Map();
       scribeOptions = {
@@ -191,14 +194,10 @@ export default class InspireClient extends LogEventGenerator {
       };
       const scribe = await new Scribe(scribeOptions);
       await scribe.initialize();
-      if (revelation.blobs) {
-        let buffers;
-        const blobs = await expose(revelation.blobs);
-        if (blobs) {
-          await scribe.precacheBlobs(blobs, async (blobId: string) => {
-            if (!buffers) buffers = await expose(revelation.buffers);
-            return base64Decode(buffers[blobId]);
-          });
+      for (const [blobId, blobInfo] of Object.entries((await expose(revelation.blobs)) || {})) {
+        const info = await expose(blobInfo);
+        if (info.persistRefCount !== 0) {
+          await scribe.preCacheBlob(blobId, await expose(blobInfo), readRevelationBlobContent);
         }
       }
       this.warnEvent(`Proselytized Scribe '${scribe.debugId()}'`,
@@ -211,6 +210,18 @@ export default class InspireClient extends LogEventGenerator {
       throw this.wrapErrorEvent(error, "proselytizeScribe",
           "\n\tscribeOptions:", scribeOptions,
           "\n\trevelation:", revelation);
+    }
+    async function readRevelationBlobContent (blobId: string) {
+      if (!buffers) buffers = await expose(revelation.buffers);
+      const opaqueBuffer = buffers[blobId];
+      if (typeof opaqueBuffer === "undefined") {
+        client.errorEvent("Could not locate precached content for blob", blobId,
+            "from revelation buffers", buffers);
+        return undefined;
+      }
+      const content = await expose(buffers[blobId]);
+      if (typeof content.base64 !== "undefined") return arrayBufferFromBase64(content.base64);
+      return content;
     }
   }
 
@@ -320,9 +331,34 @@ export default class InspireClient extends LogEventGenerator {
       this.warnEvent(`Narrated revelation with ${prologues.length} prologues`,
           "\n\tprologue partitions:",
               `'${prologues.map(({ partitionURI }) => String(partitionURI)).join("', '")}'`);
-      const ret = await Promise.all(prologues.map(this._narratePrologue));
+      const ret = await Promise.all(prologues.map(async ({ partitionURI, eventId, logs }: any) => {
+        let eventLog;
+        let mediaInfos;
+        const connection = await this.falseProphet.acquirePartitionConnection(partitionURI, {
+          dontRemoteNarrate: true,
+          retrieveMediaContent (mediaId: VRef, mediaInfo: Object) {
+            // Blob wasn't found in cache.
+            // Return undefined if the requested blob id doesn't match the latest known blob id
+            // for this media to silently ignore this retrieve request: the actual request will
+            // come later during the narration.
+            if (mediaInfo.blobId !== mediaInfos[mediaId.rawId()].mediaInfo.blobId) return undefined;
+            // Otherwise this is the request for last known blob, which should have been precached.
+            throw new Error(`Cannot find the latest blob of media "${mediaInfo.name
+                }" during prologue narration, with blob id "${mediaInfo.blobId}" `);
+          },
+        });
+        const lastEventId = connection.getLastAuthorizedEventId();
+        console.log("narrating", String(partitionURI), "from", lastEventId);
+        if ((typeof eventId !== "undefined") && (eventId > lastEventId)) {
+          const { events, medias } = await expose(logs);
+          ([eventLog, mediaInfos] = await Promise.all([expose(events), expose(medias)]));
+          connection.narrateEventLog({ eventLog, firstEventId: lastEventId + 1 });
+        }
+        return connection;
+      }
+      ));
       this.warnEvent(`Acquired active connections for all revelation prologue partitions:`,
-          "\n\tconnections:", ret.map(connection => [connection.debugId()/* , connection */]));
+          "\n\tconnections:", ret.map(connection => [connection.debugId()]));
       return ret;
     } catch (error) {
       throw this.wrapErrorEvent(error, "narratePrologue",
@@ -334,17 +370,15 @@ export default class InspireClient extends LogEventGenerator {
   async _loadRevelationEntryPartitionAndPrologues (revelation: Object) {
     const ret = [];
     try {
-      for (const [partitionURI, { commandId, eventId, content }]
-          of (Object.entries(await expose(revelation.partitions) || {}): any)) {
-        ret.push({
-          partitionURI: createPartitionURI(partitionURI), commandId, eventId, content,
-        });
+      for (const [uri, entry] of (Object.entries(await expose(revelation.partitions) || {}): any)) {
+        const { commandId, eventId, logs } = await expose(entry);
+        ret.push({ partitionURI: createPartitionURI(uri), commandId, eventId, logs });
       }
       if (revelation.directPartitionURI) {
         ret.push({
           partitionURI: createPartitionURI(revelation.directPartitionURI),
-          eventLog: [],
           isNewPartition: false,
+          logs: { commands: [], events: [] },
         });
       } else {
         // These are not obsolete yet, but temporarily disabled.
@@ -407,15 +441,5 @@ export default class InspireClient extends LogEventGenerator {
           "\n\trevelation.postPrologueEventPaths:", revelation.postPrologueEventPaths,
       );
     }
-  }
-
-  _narratePrologue = async ({ partitionURI, eventLog, isNewPartition }) => {
-    /*
-    this.falseProphet.acquirePartitionConnection(partitionURI, {
-      eventLog,
-      retrieveMediaContent: undefined,
-      createNewPartition: isNewPartition,
-    });
-    */
   }
 }

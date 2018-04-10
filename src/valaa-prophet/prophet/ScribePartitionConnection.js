@@ -56,10 +56,11 @@ export default class ScribePartitionConnection extends PartitionConnection {
     this._isFrozen = false;
   }
 
+  getLastAuthorizedEventId () { return this._eventLogInfo.lastEventId; }
+  getLastCommandEventId () { return this._commandQueueInfo.lastEventId; }
+
   _getFirstAuthorizedEventId () { return this._eventLogInfo.firstEventId; }
-  _getLastAuthorizedEventId () { return this._eventLogInfo.lastEventId; }
   _getFirstCommandEventId () { return this._commandQueueInfo.firstEventId; }
-  _getLastCommandEventId () { return this._commandQueueInfo.lastEventId; }
 
   async connect () {
     // TODO(iridian): Implement initialNarrateOptions
@@ -102,7 +103,7 @@ export default class ScribePartitionConnection extends PartitionConnection {
   _notifyProphetOfCommandCount () {
     this._prophet.setConnectionCommandCount(this.partitionURI().toString(),
         Math.max(0,
-            (this._getLastCommandEventId() + 1) - this._getFirstCommandEventId()));
+            (this.getLastCommandEventId() + 1) - this._getFirstCommandEventId()));
   }
 
   disconnect () {
@@ -122,9 +123,9 @@ export default class ScribePartitionConnection extends PartitionConnection {
         : this._getFirstAuthorizedEventId();
     const lastEventId = typeof options.lastEventId !== "undefined"
         ? options.lastEventId
-        : Math.max(this._getLastAuthorizedEventId(), this._getLastCommandEventId());
+        : Math.max(this.getLastAuthorizedEventId(), this.getLastCommandEventId());
 
-    const eventLastEventId = Math.min(this._getLastAuthorizedEventId(), lastEventId);
+    const eventLastEventId = Math.min(this.getLastAuthorizedEventId(), lastEventId);
     const eventList = firstEventId > eventLastEventId
         ? []
         : (await this._readEvents({ firstEventId, lastEventId: eventLastEventId })) || [];
@@ -132,7 +133,7 @@ export default class ScribePartitionConnection extends PartitionConnection {
     const commandList = (!options.commandCallback || (commandFirstEventId > lastEventId))
         ? []
         : (await this._readCommands({ firstEventId: commandFirstEventId, lastEventId })) || [];
-    const commandQueueLength = (this._getLastCommandEventId() + 1)
+    const commandQueueLength = (this.getLastCommandEventId() + 1)
         - this._getFirstCommandEventId();
     if ((this._commandQueueInfo.commandIds.length !== commandQueueLength)
         && (commandList.length === commandQueueLength)
@@ -147,8 +148,8 @@ export default class ScribePartitionConnection extends PartitionConnection {
   }
 
   claimCommandEvent (command: Command, retrieveMediaContent: RetrieveMediaContent): number {
-    if (this._getFirstCommandEventId() <= this._getLastAuthorizedEventId()) {
-      this._setCommandQueueFirstEventId(this._getLastAuthorizedEventId() + 1);
+    if (this._getFirstCommandEventId() <= this.getLastAuthorizedEventId()) {
+      this._setCommandQueueFirstEventId(this.getLastAuthorizedEventId() + 1);
     }
     const commandEventId = this._addCommandsToQueue([command]);
     /*
@@ -178,7 +179,7 @@ export default class ScribePartitionConnection extends PartitionConnection {
     const discardedCommands = firstEventId - this._getFirstCommandEventId();
     this._commandQueueInfo.firstEventId = firstEventId;
 
-    if (this._getFirstCommandEventId() <= this._getLastCommandEventId()) {
+    if (this._getFirstCommandEventId() <= this.getLastCommandEventId()) {
       this._commandQueueInfo.commandIds.splice(0, discardedCommands);
     } else {
       this._commandQueueInfo.lastEventId = this._getFirstCommandEventId() - 1;
@@ -194,15 +195,15 @@ export default class ScribePartitionConnection extends PartitionConnection {
     }
     this._commandQueueInfo.lastEventId += commands.length;
     this._notifyProphetOfCommandCount();
-    return this._getLastCommandEventId();
+    return this.getLastCommandEventId();
   }
 
   async recordTruth ({ event, eventId }: Object, preAuthorizeCommand: () => any) {
-    if (eventId <= this._getLastAuthorizedEventId()) return false;
+    if (eventId <= this.getLastAuthorizedEventId()) return false;
     try {
-      invariantify(eventId === this._getLastAuthorizedEventId() + 1,
+      invariantify(eventId === this.getLastAuthorizedEventId() + 1,
           `eventID race, expected confirmed truth eventId to be lastEventId + 1 === ${
-              this._getLastAuthorizedEventId() + 1}, but got ${eventId} instead`);
+              this.getLastAuthorizedEventId() + 1}, but got ${eventId} instead`);
       const { firstEventId: firstCommandId, lastEventId: lastCommandId, commandIds }
           = this._commandQueueInfo;
       let purgedCommands;
@@ -225,7 +226,7 @@ export default class ScribePartitionConnection extends PartitionConnection {
       if (this._getFirstCommandEventId() < newCommandQueueFirstEventId) {
         this._setCommandQueueFirstEventId(newCommandQueueFirstEventId);
       }
-      if (this._getFirstCommandEventId() > this._getLastCommandEventId()) {
+      if (this._getFirstCommandEventId() > this.getLastCommandEventId()) {
         this.setIsFrozen(event.type === "FROZEN");
       }
 
@@ -266,8 +267,8 @@ export default class ScribePartitionConnection extends PartitionConnection {
 
   createEventFinalizers (pendingAuthorizedEvent: Object, eventId: number,
       retrieveMediaContent: RetrieveMediaContent): Promise<any> {
-    const shouldRetrieveMedias = (eventId > this._getLastAuthorizedEventId())
-        && (eventId > this._getLastCommandEventId());
+    const shouldRetrieveMedias = (eventId > this.getLastAuthorizedEventId())
+        && (eventId > this.getLastCommandEventId());
     return this._reprocessAction(pendingAuthorizedEvent,
         shouldRetrieveMedias && (retrieveMediaContent || this._throwOnMediaContentRetrieveRequest));
   }
