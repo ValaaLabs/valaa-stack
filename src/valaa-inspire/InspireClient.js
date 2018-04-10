@@ -44,7 +44,7 @@ export default class InspireClient extends LogEventGenerator {
       // indexeddb and keep the landing page revelation minimal; whatever is most efficient.
       this.revelation = await this._interpretRevelation(revelation);
 
-      this.setDebugLevel(this.revelation.logLevel || 0);
+      this.setDebugLevel(this.revelation.verbosity || 0);
 
       this.nexus = await this._establishAuthorityNexus(this.revelation, schemePlugins);
 

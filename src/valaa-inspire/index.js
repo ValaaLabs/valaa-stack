@@ -6,7 +6,9 @@ import "babel-polyfill";
 import injectTapEventPlugin from "react-tap-event-plugin";
 
 import InspireClient from "~/valaa-inspire/InspireClient";
-import { getGlobal, Logger, outputError, request } from "~/valaa-tools";
+import { expose } from "~/valaa-inspire/Revelation";
+
+import { isPromise, getGlobal, Logger, outputError } from "~/valaa-tools";
 
 import { schemePlugin as valaaLocalSchemePlugin } from "~/scheme-valaa-local";
 import { schemePlugin as valaaTransientSchemePlugin } from "~/scheme-valaa-transient";
@@ -21,14 +23,18 @@ injectTapEventPlugin();
 const logger = new Logger();
 const createInspireClientGlobalName = "createInspireClient";
 
-export async function createInspireClient (revelation: string) {
+export default createInspireClient;
+
+export async function createInspireClient (revelation: string, revelationOverrides: Object) {
   let ret;
   try {
     logger.warn(`Starting Inspire Client init sequence in environment (${
         String(process.env.NODE_ENV)}), loading revelation`, revelation);
     ret = new InspireClient({ name: "main", logger });
 
-    await ret.initialize(revelation || "project.manifest.json", { schemePlugins });
+    await ret.initialize(
+        _combineOverridesLazily(revelation || "project.manifest.json", revelationOverrides),
+        { schemePlugins });
 
     getGlobal().inspireClient = ret;
     ret.warnEvent(`InspireClient set to window.inspireClient as`, ret);
@@ -40,8 +46,34 @@ export async function createInspireClient (revelation: string) {
   }
 }
 
-export default createInspireClient;
-
 if (window) {
   window[createInspireClientGlobalName] = createInspireClient;
+}
+
+function _combineOverridesLazily (base: any, overrides: any) {
+  return (!isPromise(base) && !isPromise(overrides))
+      ? _override(base, overrides)
+      : (async () => _callAll(await _override(await base, await overrides)));
+}
+
+async function _callAll (callableMaybe: Function | any): any {
+  return (typeof callableMaybe !== "function") ? callableMaybe : _callAll(await callableMaybe());
+}
+
+function _override (base: Object, overrides: Object) {
+  if (typeof overrides === "undefined") return base;
+  if ((typeof overrides !== "object") || (overrides === null) || (base === null)) return overrides;
+  // If base is a string and override an object
+  if (typeof base !== "object") {
+    const actualBase = expose(base);
+    if (actualBase === base) return overrides;
+    return _combineOverridesLazily(actualBase, overrides);
+  }
+  const ret = { ...base };
+  for (const [key, override] of Object.entries(overrides)) {
+    ret[key] = (typeof ret[key] === "undefined")
+        ? override
+        : _combineOverridesLazily(ret[key], override);
+  }
+  return ret;
 }
