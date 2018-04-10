@@ -7725,7 +7725,7 @@
             "name": "note",
             "value": {
                 "typeName": "Literal",
-                "value": ""Project" is probably an abandonned development path"
+                "value": "\"Project\" is probably an abandonned development path"
             }
         },
         "type": "CREATED",
