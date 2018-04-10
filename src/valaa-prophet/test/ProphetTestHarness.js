@@ -71,7 +71,7 @@ export default class ProphetTestHarness extends ScriptTestHarness {
   createCorpus () {
     const corpus = super.createCorpus();
     this.prophet = new FalseProphet({
-      name: "Test FalseProphet", logger: this.logger, schema: this.schema, corpus,
+      name: "Test FalseProphet", schema: this.schema, corpus, logger: this.getLogger(),
     });
     return corpus;
   }
@@ -81,7 +81,7 @@ export default class ProphetTestHarness extends ScriptTestHarness {
       prophet: this.prophet,
       schema: this.schema,
       debugLevel: this.getDebugLevel(),
-      logger: this,
+      logger: this.getLogger(),
       packFromHost: value => (value instanceof OrderedMap ? value.get("id") : value),
       unpackToHost: value => {
         if (!(value instanceof OrderedMap)) return value;

@@ -21,12 +21,11 @@ let counter = 0;
 
 export class LogEventGenerator {
   _logger: Logger | Object;
-  _name: string | { name: string };
+  _name: string;
   _debugLevel: ?number;
 
   constructor ({ name = `unnamed#${++counter}`, logger, debugLevel }: {
-    name?: string | { name: string }, // object form allows name to be temporarily changed
-    logger?: Logger, debugLevel?: number
+    name?: string, logger?: Logger, debugLevel?: number
   } = {}) {
     this._logger = logger || console;
     this._debugLevel = debugLevel || 0;
@@ -34,7 +33,7 @@ export class LogEventGenerator {
   }
 
   getLogger (): Logger | Object { return this._logger; }
-  getName (): string { return (this._name && this._name.name) || this._name; }
+  getName (): string { return this._name; }
   setName (name: any) { this._name = name; }
 
   getDebugLevel () { return this._debugLevel; }

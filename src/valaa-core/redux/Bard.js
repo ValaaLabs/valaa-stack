@@ -114,7 +114,7 @@ export function createBardReducer (bardOperation: (bard: Bard) => State,
  * 4. universalizes a command, by validating and extends a command action before it's sent upstream
  *
  * A Bard object itself contains as fields:
- * 1. reducer context: .schema and .logger
+ * 1. reducer context: .schema and ._logger
  * 2. bard context: .state, .story, .passage, .subReduce
  * 3. output data: .passages, .preCommands
  * 4. operation-specific data as operations are free to use the bard as a blackboard.

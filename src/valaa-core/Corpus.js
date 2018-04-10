@@ -1,12 +1,13 @@
-import { invariantifyObject, invariantifyFunction } from "~/valaa-tools/invariantify";
-import { createStore, applyMiddleware } from "redux";
+// @flow
 
-import Valker from "~/valaa-core/VALK/Valker";
+import { invariantifyObject, invariantifyFunction } from "~/valaa-tools/invariantify";
+
+import type { Action } from "~/valaa-core/command";
+import Bard from "~/valaa-core/redux/Bard";
 import layoutByObjectField from "~/valaa-core/tools/denormalized/layoutByObjectField";
 
-import wrapError, { dumpObject } from "~/valaa-tools/wrapError";
+import { dumpObject } from "~/valaa-tools/wrapError";
 
-let corpusIndex = 0;
 
 /**
  * Bards in general and Corpus in specific are responsibile for managing incoming actions and
@@ -26,8 +27,7 @@ export default class Corpus extends Bard {
     invariantifyFunction(reduce, "reduce");
     invariantifyFunction(subReduce, "subReduce");
     invariantifyObject(initialState, "initialState", { allowUndefined: true });
-    invariantifyObject(nameContainer, "name", { allowUndefined: true });
-    super(schema, debug, logger, packFromHost, unpackToHost, builtinSteppers);
+    super({ schema, debugLevel, logger, subReduce: subReduce || reduce });
     // TODO(iridian): These indirections are spaghetti. Simplify.
     this.reduce = reduce;
     this._dispatch = middlewares.reduceRight(
@@ -37,9 +37,6 @@ export default class Corpus extends Bard {
           corpus.updateState(newState);
           return action;
         });
-    this.reducer = reducer;
-    this.nameContainer = nameContainer || { name: `Unnamed Corpus #${++corpusIndex}` };
-    this.storeCreator = !middleware ? createStore : applyMiddleware(...middleware)(createStore);
     this.reinitialize(initialState);
   }
 
@@ -64,10 +61,6 @@ export default class Corpus extends Bard {
   }
 
   fork (overrides) {
-    if (overrides && overrides.nameOverride) {
-      invariantifyObject(this.nameContainer,
-          "nameContainer must exist when fork.nameOverride specified");
-    }
     const ret = super.fork(overrides);
     ret.reinitialize(this.getState());
     return ret;

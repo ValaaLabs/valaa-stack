@@ -71,7 +71,7 @@ export function isPacked (value: any) {
  * }
  * @returns
  */
-export function run (head: any, kuery: any, options: VALKOptions = {}) {
+export function run (head: any, kuery: any, options: Object = {}) {
   return (new Valker(options.schema, options.debug, options.logger, options.packFromHost,
           options.unpackToHost, options.builtinSteppers))
       .run(head, kuery, options);

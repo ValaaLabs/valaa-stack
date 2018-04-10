@@ -174,12 +174,12 @@ export default class LivePropsAssistant extends UIComponent {
 
   _wrapInValaaExceptionProcessor (callback: Function, name: string) {
     const component = this;
-    return function processValaaExceptions (...args: any[]) {
+    const ret = function handleCallbackExceptions (...args: any[]) {
       try {
         return callback.call(this, ...args);
       } catch (error) {
         const connectingMissingPartitions = tryConnectToMissingPartitionsAndThen(error,
-            () => processValaaExceptions(...args));
+            () => handleCallbackExceptions(...args));
         if (connectingMissingPartitions) return connectingMissingPartitions;
         const finalError = wrapError(error,
             `Exception caught in ${component.debugId()})\n .props.${name}, with:`,
@@ -194,6 +194,8 @@ export default class LivePropsAssistant extends UIComponent {
       }
       return undefined;
     };
+    Object.defineProperty(ret, "name", { value: `handleExceptionsOf_${name}` });
+    return ret;
   }
 }
 
@@ -255,7 +257,7 @@ export function tryWrapInLivePropsAssistant (component: UIComponent, element: Ob
       console.error("DEPRECATED: props.kuery",
           "\n\tprefer: props.valaaScope.focus",
           "\n\talternatively for Valaa components: props.focus",
-          "\n\tin component:", component.debugId());
+          "\n\tin component:", component.debugId(), component);
       delete _obtainLiveElementProps().kuery;
       assistantPropsOptions = {
         name, parentUIContext: component.getUIContext(), kuery: props.kuery

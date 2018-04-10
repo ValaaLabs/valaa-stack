@@ -32,12 +32,11 @@ import { dumpObject, Forkable, invariantify, invariantifyString, LogEventGenerat
  */
 @Forkable
 export default class Resolver extends LogEventGenerator {
-  constructor (memberValues: ?Object) {
-    super({
-      name: (memberValues && memberValues.name) || "Resolver",
-      logger: (memberValues && memberValues.logger),
-    });
-    if (memberValues) Object.assign(this, memberValues);
+  constructor (options: ?Object) {
+    if (!options.name) options.name = "Resolver";
+    super(options);
+    this.state = options.state;
+    this.schema = options.schema;
   }
 
   schema: GraphQLSchema;
@@ -100,7 +99,7 @@ export default class Resolver extends LogEventGenerator {
         // Ghost, inactive or fail
         object = this.fork().tryGoToTransientOfId(idVRef, typeName);
       }
-      invariantify(object, `Could not bind to ${rawId}:${typeName}`,
+      invariantify(object, `Can't find ${rawId}:${typeName} in corpus`,
           "\n\twhile trying to bind id:", id);
       const boundId = object.get("id");
       if (boundId.isInactive() && !boundId.partitionURI() && idVRef.partitionURI()) {
@@ -215,7 +214,7 @@ export default class Resolver extends LogEventGenerator {
           `goToTransientOfRawId(${rawId}:${this.typeName}/${String(ghostPath) || ""})`,
           "\n\trequire:", require,
           "\n\tghostPath:", String(ghostPath),
-          "\n\tresolver:", this,
+          "\n\tthis:", this,
       );
     }
   }
