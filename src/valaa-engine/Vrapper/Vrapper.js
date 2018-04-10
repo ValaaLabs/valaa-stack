@@ -537,7 +537,7 @@ export default class Vrapper extends Cog {
     if (this.transientStaledIn) {
       this.updateTransient(null,
           getObjectTransient(this.transientStaledIn, this.getId(),
-              options.typeName || this.getTypeName(options)));
+              (options && options.typeName) || this.getTypeName(options)));
     }
     return this._transient;
   }

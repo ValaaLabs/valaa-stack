@@ -22,8 +22,8 @@ import { LogEventGenerator, wrapError, dumpObject } from "~/valaa-tools";
  * @extends {LogEventGenerator}
  */
 export default class Cog extends LogEventGenerator {
-  constructor ({ name, logger, engine, parent }: Object) {
-    super({ name, logger: logger || (engine && engine.getLogger()) });
+  constructor ({ name, engine, parent, logger, debugLevel }: Object) {
+    super({ name, debugLevel, logger: logger || (engine && engine.getLogger()) });
     if (engine) this.engine = engine;
     if (parent) this.parent = parent;
   }

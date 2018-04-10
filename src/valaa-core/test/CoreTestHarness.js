@@ -83,50 +83,34 @@ export default class CoreTestHarness extends LogEventGenerator {
     }
   }
 
-  createTestLogger (logger: Logger = console) {
-    function dumpifyLogValue (v) { return !v || typeof v !== "object" ? v : dumpify(v); }
-    return {
-      log: !this.getDebugLevel()
-          ? () => {}
-          : (...params) => logger.log(...(params.map(dumpifyLogValue))),
-      warn: (...params) => logger.warn(...(params.map(dumpifyLogValue))),
-      error: (...params) => {
-        logger.log(...(params.map(dumpifyLogValue)));
-        throw new Error(params.map(dumpifyLogValue).join(", "));
-      },
-    };
-  }
-
   createCorpus () {
-    const reducerName = { name: `${this.getName()} Reducer` };
     const { schema, validators, mainReduce, subReduce } = createRootReducer(Object.freeze({
       ...this.ContentAPI,
-      logger: this.createTestLogger(),
+      logEventer: this,
       ...(this.reducerOptions || {}),
     }));
     return new Corpus(Object.freeze({
-      nameContainer: reducerName,
+      name: `${this.getName()} Corpus`,
       initialState: OrderedMap(),
-      middlewares: this._createTestMiddlewares({ schema, validators, subReduce }),
+      middlewares: this._createTestMiddlewares({ schema, validators }),
       reduce: mainReduce,
       subReduce,
       schema,
-      debug: this.getDebugLevel(),
-      logger,
+      debugLevel: this.getDebugLevel(),
+      logger: this.getLogger(),
       // stubify all unpacked Transient's when packing: this causes them to autorefresh
       ...(this.corpusOptions || {}),
     }));
   }
 
-  createTestMiddleware ({ schema, validators, logger, subReduce }) {
+  _createTestMiddlewares ({ schema, validators }) {
     const previousId = valaaUUID();
     const defaultCommandVersion = DEFAULT_ACTION_VERSION;
-    const bardName = { name: `Test Bard` };
     return [
       createProcessCommandVersionMiddleware(defaultCommandVersion),
       createProcessCommandIdMiddleware(previousId, schema),
       createValidateActionMiddleware(validators),
-      createBardMiddleware({ name: bardName, schema, logger, subReduce }),
+      createBardMiddleware(),
     ];
   }
 

@@ -34,15 +34,14 @@ export default class ValaaEngine extends Cog {
   _mediaInterpreters: Array<MediaInterpreter>;
   _defaultMediaInterpreter: MediaInterpreter;
 
-  constructor ({ name, logger, prophet, timeDilation = 1.0, debug }: Object) {
-    super({ name: `${name}/Engine`, logger });
+  constructor ({ name, logger, prophet, timeDilation = 1.0, debugLevel }: Object) {
+    super({ name: `${name}/Engine`, logger, debugLevel });
     this.engine = this;
     this.prophet = prophet;
     this.cogs = new Set();
     this._vrappers = new Map();
     this._prophecyHandlerRoot = new Map();
     this._prophecyHandlerRoot.set("rawId", this._vrappers);
-    this.debug = debug || 0;
 
     this.addCog(this);
     this.motor = new Motor({ engine: this, name: `${name}/Motor`, prophet, timeDilation });
@@ -374,7 +373,7 @@ export default class ValaaEngine extends Cog {
 
   revealProphecy (prophecy) {
     const { passage, timed, state, previousState } = prophecy;
-    if (this.debug || timed) {
+    if (this.getDebugLevel() || timed) {
       this.logEvent(`revealProphecy`, eventTypeString(passage),
           (timed ? `@ ${timed.startTime || "|"}->${timed.time}:` : ":"),
           dumpify(omit(passage, ["parentPassage", "passages", "type"])));

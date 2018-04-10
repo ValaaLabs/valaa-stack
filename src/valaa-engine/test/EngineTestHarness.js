@@ -33,9 +33,9 @@ export default class EngineTestHarness extends ProphetTestHarness {
     super(options);
     this.engine = new ValaaEngine({
       name: "Test ValaaEngine",
-      logger: this.logger,
+      logger: this.getLogger(),
       prophet: this.prophet,
-      debug: this.getDebugLevel(),
+      debugLevel: this.getDebugLevel(),
     });
 
     const Valaa = injectScriptAPIToScope(this.engine.getRootScope(),

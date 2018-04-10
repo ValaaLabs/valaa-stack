@@ -15,8 +15,6 @@ let transactionCounter = 0;
 export default class TransactionInfo {
   constructor (transaction: Transaction, customCommand: Object) {
     this.transaction = transaction;
-    this.name = transaction.corpus.nameContainer
-        && `${transaction.corpus.nameContainer.name}/Transaction#${transactionCounter += 1}`;
     this.stateBefore = transaction.getState();
     this.stateAfter = null;
     // restrictedActions is set to null when the transaction has been committed.
@@ -55,7 +53,7 @@ export default class TransactionInfo {
   setCustomCommand (customCommandCandidate: any, context: string) {
     if (typeof customCommandCandidate === "undefined") return;
     invariantify(typeof this.customCommand === "undefined",
-        `While ${context} '${this.name
+        `While ${context} '${this.corpus.getName()
             }' trying to override an existing customCommand`,
         "\n\tin transactionInfo:", this,
         "\n\toverriding custom command candidate:", customCommandCandidate);
@@ -65,7 +63,7 @@ export default class TransactionInfo {
   claim (restrictedCommand: Command): ClaimResult {
     try {
       if (!this.restrictedActions) {
-        throw new Error(`Transaction '${this.name}' has already been ${
+        throw new Error(`Transaction '${this.corpus.getName()}' has already been ${
                 this.finalTransactedLike ? "committed" : "aborted"
             }, when trying to add an action to it`);
       }
@@ -95,7 +93,7 @@ export default class TransactionInfo {
         getFinalEvent: () => result,
       };
     } catch (error) {
-      throw this.transaction.wrapErrorEvent(error, `transaction.claim(${this.name})`,
+      throw this.transaction.wrapErrorEvent(error, `transaction.claim(${this.corpus.getName()})`,
           "\n\trestrictedCommand:", ...dumpObject(restrictedCommand),
       );
     }
@@ -105,7 +103,7 @@ export default class TransactionInfo {
     let command;
     try {
       if (!this.restrictedActions) {
-        throw new Error(`Transaction '${this.name}' has already been ${
+        throw new Error(`Transaction '${this.corpus.getName()}' has already been ${
                 this.finalTransactedLike ? "committed" : "aborted"
             }, when trying to commit it again`);
       }
@@ -140,7 +138,7 @@ export default class TransactionInfo {
       this.commitResult = result;
       return result;
     } catch (error) {
-      throw this.transaction.wrapErrorEvent(error, `transaction(${this.name}).commit()`,
+      throw this.transaction.wrapErrorEvent(error, `transaction(${this.corpus.getName()}).commit()`,
           "\n\tcommand:", ...dumpObject(command),
       );
     }
@@ -148,7 +146,7 @@ export default class TransactionInfo {
 
   abort () {
     if (!this.restrictedActions && this.finalTransactedLike) {
-      throw new Error(`Transaction '${this.name
+      throw new Error(`Transaction '${this.corpus.getName()
           }' has already been committed, when trying to abort it`);
     }
     this.restrictedActions = null;

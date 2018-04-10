@@ -141,7 +141,7 @@ export default class ValaaScope extends UIComponent {
             || this.getUIContextValue(this.getValaa().Lens.lensProperty))) {
       if (props.lensName) {
         console.error("DEPRECATED: props.lensName\n\tprefer: props.lensProperty",
-            "\n\tin component:", this.debugId());
+            "\n\tin component:", this.debugId(), this);
       }
       focusResource = focus;
     }

@@ -235,7 +235,7 @@ export default function injectLensObjects (Valaa: Object, rootScope: Object,
       () => (context: Object, component: UIComponent) => {
         console.error("DEPRECATED: Valaa.Lens.fallbackLens",
             "\n\tprefer: Valaa.Lens.lensPropertyNotFoundLens",
-            "\n\tin component:", component.debugId());
+            "\n\tin component:", component.debugId(), component);
         return Valaa.Lens.lensPropertyNotFoundLens;
       });
   createLensRoleSymbol("childrenLens",

@@ -84,16 +84,22 @@ export default class InspireClient extends LogEventGenerator {
     for (const [viewName, viewConfig] of Object.entries(viewConfigs)) {
       this.warnEvent(`createView({ name: '${viewConfig.name}', size: ${
             JSON.stringify(viewConfig.size)} })`);
-      const engine = new ValaaEngine({
+      const engineOptions = {
         name: `${viewConfig.name} Engine`,
         logger: this.getLogger(),
         prophet: this.falseProphet,
         revelation: this.revelation,
-      });
+      };
+      const engine = new ValaaEngine(engineOptions);
       engine.setRootScopeEntry("inspireClient", this);
+      this.warnEvent(`Started ValaaEngine ${engine.debugId()}`,
+          ...(!this.getDebugLevel() ? [] : [", with:",
+            "\n\tengineOptions:", engineOptions,
+            "\n\tengine:", engine,
+          ]));
 
       const Valaa = injectScriptAPIToScope(engine.getRootScope(), engine.getHostObjectDescriptors(),
-          this.discourse.getSchema());
+          engine.discourse.getSchema());
       let RemoteAuthorityURI;
       let getPartitionIndexEntityCall;
       if (!viewConfig.defaultAuthorityURI) {
@@ -122,6 +128,11 @@ export default class InspireClient extends LogEventGenerator {
       };
       ret[viewName] = new InspireView({ engine, name: `${viewConfig.name} View` })
           .initialize(viewConfig);
+      this.warnEvent(`Opened InspireView ${viewName}`,
+          ...(!this.getDebugLevel() ? [] : [", with:",
+            "\n\tviewConfig:", viewConfig,
+            "\n\tview:", ret[viewName],
+          ]));
     }
     return ret;
   }
@@ -146,33 +157,39 @@ export default class InspireClient extends LogEventGenerator {
   }
 
   async _establishAuthorityNexus (revelation: Object, schemePlugins: Object[]) {
-    const name = { name: "Inspire AuthorityNexus" };
-    let authorityConfigs;
+    let nexusOptions;
     try {
-      authorityConfigs = await expose(revelation.authorityConfigs);
-      const nexus = new AuthorityNexus({ name, authorityConfigs });
+      nexusOptions = {
+        name: "Inspire AuthorityNexus",
+        authorityConfigs: await expose(revelation.authorityConfigs)
+      };
+      const nexus = new AuthorityNexus(nexusOptions);
       for (const plugin of schemePlugins) nexus.addSchemePlugin(plugin);
-      this.warnEvent(`Established AuthorityNexus '${nexus.debugId()}'`);
+      this.warnEvent(`Established AuthorityNexus '${nexus.debugId()}'`,
+          ...(!this.getDebugLevel() ? [] : [", with:",
+            "\n\toptions:", nexusOptions,
+            "\n\tnexus:", nexus,
+          ]));
       return nexus;
     } catch (error) {
       throw this.wrapErrorEvent(error, "establishAuthorityNexus",
-          "\n\trevelation.authorityConfigs:", revelation.authorityConfigs,
+          "\n\tnexusOptions:", nexusOptions,
           "\n\tschemePlugins:", schemePlugins);
     }
   }
 
   async _proselytizeScribe (revelation: Object): Promise<Scribe> {
+    let scribeOptions;
     try {
       this._commandCountListeners = new Map();
-      const name = { name: "Inspire Scribe" };
-      const scribeOptions = await expose(revelation.scribe);
-      const scribe = await new Scribe({
-        name,
+      scribeOptions = {
+        name: "Inspire Scribe",
         logger: this.getLogger(),
         databaseAPI: getDatabaseAPI(),
         commandCountCallback: this._updateCommandCount,
-        ...scribeOptions,
-      });
+        ...await expose(revelation.scribe),
+      };
+      const scribe = await new Scribe(scribeOptions);
       await scribe.initialize();
       if (revelation.blobs) {
         let buffers;
@@ -184,13 +201,15 @@ export default class InspireClient extends LogEventGenerator {
           });
         }
       }
-      this.warnEvent(`Proselytized Scribe '${scribe.debugId()}', with:`,
-          "\n\tscribeOptions:", scribeOptions,
-          "\n\tscribe:", scribe,
-      );
+      this.warnEvent(`Proselytized Scribe '${scribe.debugId()}'`,
+          ...(!this.getDebugLevel() ? [] : [", with:",
+            "\n\tscribeOptions:", scribeOptions,
+            "\n\tscribe:", scribe,
+          ]));
       return scribe;
     } catch (error) {
       throw this.wrapErrorEvent(error, "proselytizeScribe",
+          "\n\tscribeOptions:", scribeOptions,
           "\n\trevelation:", revelation);
     }
   }
@@ -212,20 +231,22 @@ export default class InspireClient extends LogEventGenerator {
 
   async _summonOracle (revelation: Object, authorityNexus: AuthorityNexus, scribe: Scribe):
       Promise<Prophet> {
+    let oracleOptions;
     try {
-      const name = { name: "Inspire Oracle" };
-      const oracleOptions = await expose(revelation.oracle);
-      const oracle = new Oracle({
-        name,
+      oracleOptions = {
+        name: "Inspire Oracle",
         logger: this.getLogger(),
         debugLevel: 1,
         authorityNexus,
         scribe,
-        ...oracleOptions,
-      });
-      this.warnEvent(`Created Oracle ${oracle.debugId()}, with:`,
-      //    "\n\toracle:", oracle
-      );
+        ...await expose(revelation.oracle),
+      };
+      const oracle = new Oracle(oracleOptions);
+      this.warnEvent(`Created Oracle ${oracle.debugId()}`,
+          ...(!this.getDebugLevel() ? [] : [", with:",
+            "\n\toracleOptions:", oracleOptions,
+            "\n\toracle:", oracle,
+          ]));
       return oracle;
     } catch (error) {
       throw this.wrapErrorEvent(error, "summonOracle",
@@ -236,19 +257,12 @@ export default class InspireClient extends LogEventGenerator {
 
   async _incorporateCorpus (revelation: Object) {
     const name = "Inspire Corpus";
-    const nameContainer = { name };
-    const reducerOptions = await expose(revelation.reducer);
-    const { schema, validators, logger, mainReduce, subReduce } = createRootReducer({
+    const reducerOptions = {
       ...EngineContentAPI, // schema, validators, reducers
-      reducerName: nameContainer,
-      logger: createForwardLogger({
-        name, target: this.getLogger(), enableLog: this.getDebugLevel() >= 1,
-      }),
-      subLogger: createForwardLogger({
-        name, target: this.getLogger(), enableLog: this.getDebugLevel() >= 2,
-      }),
-      ...reducerOptions,
-    });
+      logEventer: this,
+      ...await expose(revelation.reducer),
+    };
+    const { schema, validators, mainReduce, subReduce } = createRootReducer(reducerOptions);
 
     // FIXME(iridian): Create the deterministic-id schema. Now random.
     const previousId = valaaUUID();
@@ -257,7 +271,7 @@ export default class InspireClient extends LogEventGenerator {
       createProcessCommandVersionMiddleware(defaultCommandVersion),
       createProcessCommandIdMiddleware(previousId, schema),
       createValidateActionMiddleware(validators),
-      createBardMiddleware({ name: { name: "Inspire Bard" }, schema, subReduce }),
+      createBardMiddleware(),
     ];
 
     const corpusOptions = {
@@ -265,7 +279,7 @@ export default class InspireClient extends LogEventGenerator {
       reduce: mainReduce,
       subReduce,
       initialState: new ImmutableMap(),
-      logger: this,
+      logger: this.getLogger(),
       ...await expose(revelation.corpus),
     };
     return new Corpus(corpusOptions);
@@ -273,25 +287,27 @@ export default class InspireClient extends LogEventGenerator {
 
   async _proselytizeFalseProphet (revelation: Object, corpus: Corpus, upstream: Prophet):
       Promise<Prophet> {
+    let falseProphetOptions;
     try {
-      const name = { name: "Inspire FalseProphet" };
-      const falseProphetOptions = await expose(revelation.falseProphet);
-      const falseProphet = new FalseProphet({
-        name,
+      falseProphetOptions = {
+        name: "Inspire FalseProphet",
         corpus,
         upstream,
         schema: EngineContentAPI.schema,
         logger: this.getLogger(),
-        ...falseProphetOptions,
-      });
-      this.warnEvent(`Proselytized FalseProphet ${falseProphet.debugId()}, with:`,
-          "\n\trevelation.falseProphet:", revelation.falseProphet,
-      //    "\n\tfalse prophet:", falseProphet
+        ...await expose(revelation.falseProphet),
+      };
+      const falseProphet = new FalseProphet(falseProphetOptions);
+      this.warnEvent(`Proselytized FalseProphet ${falseProphet.debugId()}`,
+          ...(!this.getDebugLevel() ? [] : [", with:",
+            "\n\tfalseProphetOptions:", falseProphetOptions,
+            "\n\tfalseProphet:", falseProphet,
+          ]),
       );
       return falseProphet;
     } catch (error) {
       throw this.wrapErrorEvent(error, "proselytizeFalseProphet",
-          "\n\trevelation:", revelation,
+          "\n\tfalseProphetOptions:", falseProphetOptions,
           "\n\tupstream:", upstream);
     }
   }
@@ -301,8 +317,9 @@ export default class InspireClient extends LogEventGenerator {
     try {
       this.warnEvent(`Narrating revelation prologues`);
       prologues = await this._loadRevelationEntryPartitionAndPrologues(revelation);
-      this.warnEvent(`Narrated revelation prologue with ${prologues.length} entry points:`,
-          "\n\t:", `'${prologues.map(({ partitionURI }) => String(partitionURI)).join("', '")}'`);
+      this.warnEvent(`Narrated revelation with ${prologues.length} prologues`,
+          "\n\tprologue partitions:",
+              `'${prologues.map(({ partitionURI }) => String(partitionURI)).join("', '")}'`);
       const ret = await Promise.all(prologues.map(this._narratePrologue));
       this.warnEvent(`Acquired active connections for all revelation prologue partitions:`,
           "\n\tconnections:", ret.map(connection => [connection.debugId()/* , connection */]));
