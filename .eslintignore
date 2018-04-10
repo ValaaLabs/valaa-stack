@@ -1,8 +1,7 @@
 dist
 script
-engine
+revelations
 webpack.config.js
 **/node_modules/**
-dist
 **/lots-of-puts/**
 karma.conf.js

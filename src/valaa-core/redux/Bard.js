@@ -1,5 +1,5 @@
 // @flow
-import { GraphQLSchema, GraphQLObjectType } from "graphql/type";
+import { GraphQLObjectType } from "graphql/type";
 import { Map } from "immutable";
 import cloneDeep from "lodash/cloneDeep";
 

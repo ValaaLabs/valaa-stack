@@ -11,6 +11,7 @@
     "build": "cross-conf-env cross-env NODE_PATH=$NODE_PATH:$npm_package_config_modulepaths webpack ",
     "dev": "TARGET_ENV=local cross-conf-env npm run dev-webpack $npm_package_config_defaultrevelation",
     "dev-webpack": "cross-conf-env cross-env NODE_PATH=$NODE_PATH:$npm_package_config_modulepaths webpack-dev-server --inline --progress --open --host 0.0.0.0 --content-base ",
+    "eslint": "eslint .",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "lint": "npm run eslint",
     "start": "cross-conf-env npm run dev-webpack $npm_package_config_defaultrevelation",
@@ -66,6 +67,7 @@
     "uuid": "^2.0.2",
     "valaa-core": "file:src/valaa-core",
     "valaa-prophet": "file:src/valaa-prophet",
+    "valaa-script": "file:src/valaa-script",
     "valaa-tools": "file:src/valaa-tools"
   },
   "devDependencies": {

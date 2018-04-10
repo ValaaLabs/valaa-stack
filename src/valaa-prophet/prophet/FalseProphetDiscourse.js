@@ -13,7 +13,7 @@ import Prophet, { ClaimResult } from "~/valaa-prophet/api/Prophet";
 
 import TransactionInfo from "~/valaa-prophet/prophet/TransactionInfo";
 
-import { createId, Logger, invariantify } from "~/valaa-tools";
+import { createId, invariantify } from "~/valaa-tools";
 
 export default class FalseProphetDiscourse extends Discourse {
   follower: Follower;

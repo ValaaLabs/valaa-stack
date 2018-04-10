@@ -15,14 +15,17 @@ Valaa Stack is open source software released under an
 
 Undergoing reorganization.
 
-Once done, valaa-manager (`valma`) can be used to deploy a local web
-server which can serve an initial developer targeted landing page
-(inside a `revelation`). This contains the Valaa javascript client
-runtime (`Inspire`) and the main editor partition (`Zero`) as
-preloaded `ValaaSpace` content. While this local Zero is primarily
-aimed at developing in a local browser context (backed by `IndexedDB`)
-it nevertheless is fundamentally fully capable of connecting and
-manipulating to remote authority content when properly authenticated.
+For limited functionality, with npm installed run
+```
+npm install
+npm start
+```
+
+This launches a local webpack-based http server at 0.0.0.0:8080 which
+serves a static zero editor setup through the `Inspire` application
+stream gateway. No remote plugins are integrated yet so all content
+created is persisted in the browser IndexedDB only at the moment.
+
 
 ## Overview
 

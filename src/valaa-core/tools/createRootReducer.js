@@ -19,7 +19,7 @@ function mergeActionReducers (reducers, context) {
           (list, reducer) => (list || []).concat([reducer])),
       {});
   return Object.freeze(mapValues(reducerListsByActionType,
-      reducerList => function reduceChain(state, action, ...rest) {
+      reducerList => function reduceChain (state, action, ...rest) {
         return reducerList.reduce(
             (innerState, reducer) => reducer.call(this, innerState, action, ...rest),
             state,

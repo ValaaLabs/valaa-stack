@@ -81,7 +81,6 @@ export default class AuthorityNexus extends LogEventGenerator {
   _createAuthorityProphet (authorityURI: URL): Prophet {
     let schemePlugin;
     let authorityConfig;
-    let ret;
     try {
       schemePlugin = this.getSchemePlugin(authorityURI.protocol.slice(0, -1));
       authorityConfig = this._authorityConfigs[String(authorityURI)];

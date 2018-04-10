@@ -23,7 +23,6 @@ import InspireView from "~/valaa-inspire/InspireView";
 import { registerVidgets } from "~/valaa-inspire/ui/vidget";
 import { Revelation, expose } from "~/valaa-inspire/Revelation";
 
-import { createForwardLogger } from "~/valaa-tools/Logger";
 import { getDatabaseAPI } from "~/valaa-tools/indexedDB/getRealDatabaseAPI";
 import { arrayBufferFromBase64, invariantify, LogEventGenerator, valaaUUID } from "~/valaa-tools";
 

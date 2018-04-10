@@ -157,7 +157,8 @@ export default class Scribe extends Prophet {
     );
   }
 
-  _persistBlobContent (buffer: ArrayBuffer, blobId: string, initialPersistRefCount = 0): ?Promise<any> {
+  _persistBlobContent (buffer: ArrayBuffer, blobId: string, initialPersistRefCount: number = 0):
+      ?Promise<any> {
     invariantifyObject(buffer, "_persistBlobContent.buffer",
         { instanceof: ArrayBuffer, allowEmpty: true });
     invariantifyString(blobId, "_persistBlobContent.blobId");
