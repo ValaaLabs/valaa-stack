@@ -854,21 +854,19 @@ function capture (valker: Valker, head: any, scope: ?Object,
 
 function _stepTheVAKON (valker, thisArgument, vakon, callScope, capturingValker: ?Valker) {
   let ret;
-  const transaction = valker.acquireTransaction();
+  let transaction = valker.acquireTransaction();
   try {
-    let activeValker = valker;
     if (capturingValker && capturingValker.hasOwnProperty("_sourceInfo")) {
-      activeValker = Object.create(valker);
-      activeValker._sourceInfo = capturingValker._sourceInfo;
+      transaction = Object.create(transaction);
+      transaction._sourceInfo = capturingValker._sourceInfo;
     }
-    ret = activeValker.tryUnpack(
-        activeValker.advance(thisArgument, vakon, callScope, true));
+    ret = transaction.tryUnpack(
+        transaction.advance(thisArgument, vakon, callScope, true));
   } catch (error) {
-    if (transaction) transaction.abort();
-    throw (capturingValker || valker).addVALKRuntimeErrorStackFrame(
-        valker.wrapErrorEvent(error,
-            `call/advance (valk caller with active valker)`,
-            "\n\ttransaction:", ...dumpObject(transaction),
+    transaction.abort();
+    throw transaction.addVALKRuntimeErrorStackFrame(
+        transaction.wrapErrorEvent(error,
+            `call/advance (valk caller with active valker), unwinding transaction`,
             "\n\tthis:", ...dumpObject(thisArgument),
             "\n\tcallee vakon:", ...dumpKuery(vakon),
             "\n\tscope:", ...dumpObject(callScope)),
@@ -876,20 +874,18 @@ function _stepTheVAKON (valker, thisArgument, vakon, callScope, capturingValker:
     );
   }
 
-  if (transaction) {
-    try {
-      transaction.releaseTransaction();
-    } catch (error) {
-      throw (capturingValker || valker).addVALKRuntimeErrorStackFrame(
-          transaction.wrapErrorEvent(error,
-            `call/releaseTransaction (valk caller with active valker)`,
-            "\n\tthis:", ...dumpObject(thisArgument),
-            "\n\tcallee vakon:", ...dumpKuery(vakon),
-            "\n\tscope:", ...dumpObject(callScope),
-            "\n\tret:", ...dumpObject(ret)),
-          vakon,
-      );
-    }
+  try {
+    transaction.releaseTransaction();
+  } catch (error) {
+    throw transaction.addVALKRuntimeErrorStackFrame(
+        transaction.wrapErrorEvent(error,
+          `call/releaseTransaction (valk caller with active valker)`,
+          "\n\tthis:", ...dumpObject(thisArgument),
+          "\n\tcallee vakon:", ...dumpKuery(vakon),
+          "\n\tscope:", ...dumpObject(callScope),
+          "\n\tret:", ...dumpObject(ret)),
+        vakon,
+    );
   }
   return ret;
 }

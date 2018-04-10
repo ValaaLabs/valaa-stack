@@ -104,7 +104,7 @@ inheritance which recursively inherits the sub-components of the
 prototype as transparent but selectively modifiable `ghosts`.
 Provides referential integrity to the resource model via `couplings`.
 
-- depends: `valaa-tools`, `redux`, `immutable`
+- depends: `valaa-tools`, `immutable`
 - exports: `Corpus`, `Command`, `VALK`, `CoreContentAPI`
 - ValaaSpace: `Resource`, `ResourceStub`, `Blob`, `Partition`
 - concepts: `ghost instancing`, `partitions`, `couplings`

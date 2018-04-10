@@ -279,7 +279,7 @@ export default class ScribePartitionConnection extends PartitionConnection {
         "retrieveMediaContent",
         "\n\tdata not found in local blob cache and no remote content retriever is specified",
         ...(this.isLocal() || this.isTransient()
-            ? ["local/transient partitions don't have remote storage backing"] : []),
+            ? ["\n\tlocal/transient partitions don't have remote storage backing"] : []),
         "\n\tmediaInfo:", ...dumpObject(mediaInfo));
   }
 
