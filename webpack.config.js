@@ -54,7 +54,8 @@ module.exports = {
     // esprima-fb is deprecated) but in practice VSX transformation relies on the custom
     // modifications of the locally expanded jsx-transform
     new webpack.ContextReplacementPlugin(/source-map/, /$^/),
-    ...(isLocal ? [] : [new UglifyJSPlugin({
+  ].concat((isLocal ? [] : [
+    new UglifyJSPlugin({
       parallel: true,
       sourceMap: !isProduction,
       uglifyOptions: {
@@ -75,8 +76,8 @@ module.exports = {
         ie8: false,
         safari10: false,
       }
-    })]),
-  ],
+    })
+  ])),
   module: {
     rules: [
       { test: /\.js$/, exclude: /node_modules/, loader: "babel-loader" },
