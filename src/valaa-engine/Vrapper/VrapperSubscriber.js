@@ -642,6 +642,8 @@ function liveTypeof (subscriber: VrapperSubscriber, head: any, kueryVAKON: Array
       : performFullDefaultProcess;
 }
 
+const toProperty = {};
+
 function liveMember (subscriber: VrapperSubscriber, head: any, kueryVAKON: Array<any>,
     scope: any, evaluateKuery: boolean, isProperty: boolean) {
   const containerVAKON = kueryVAKON[2];
@@ -685,7 +687,10 @@ function liveMember (subscriber: VrapperSubscriber, head: any, kueryVAKON: Array
       if (!descriptor.writable || !descriptor.kuery) return performDefaultGet;
       return subscriber._processKuery(container, descriptor.kuery, scope, true);
     }
-    vProperty = subscriber._run(container, VALEK.property(propertyName), scope);
+    vProperty = subscriber._run(container,
+        toProperty[propertyName]
+            || (toProperty[propertyName] = VALEK.property(propertyName).toVAKON()),
+        scope);
     if (!vProperty && isProperty) {
       subscriber._processKuery(container, "properties", scope);
       return undefined;

@@ -592,6 +592,7 @@ export interface ThisExpression extends Expression { type: "ThisExpression"; }
 export function parseThisExpression (transpiler: Transpiler, ast: ThisExpression,
     options: Object): Kuery {
   if (options.headIsThis) return transpiler.VALK();
+  options.surroundingFunction.requireScopeThis = true;
   return transpiler.VALK().fromThis();
 }
 
@@ -898,7 +899,8 @@ export function parseCallExpression (transpiler: Transpiler, ast: CallExpression
   let callee;
   let this_;
   try {
-    args = transpiler.argumentsFromArray(ast.arguments, options);
+    const argumentOptions = !options.headIsThis ? options : { ...options, headIsThis: false };
+    args = transpiler.argumentsFromArray(ast.arguments, argumentOptions);
     // Check $-escaped explicit valk kueries
 
     ({ escapedKuery, stepName } = extractEscapedKueryFromCallExpression(transpiler, ast, options));
@@ -941,12 +943,6 @@ export function makeComponentsForCallExpression (transpiler: Transpiler, ast: Ca
     stem = transpiler.VALK();
     callee = transpiler.kueryFromAst(ast.callee, options);
     this_ = transpiler.VALK().fromScope();
-  } else if (options.surroundingFunction.topLevel) {
-    stem = transpiler.VALK().setScopeValues(
-        ["__calleeThis", transpiler.kueryFromAst(ast.callee.object, options)]);
-    callee = transpiler.VALK().fromScope("__calleeThis")
-        .propertyValue(propertyNameKueryFromMember(transpiler, ast.callee, options));
-    this_ = transpiler.VALK().fromScope("__calleeThis");
   } else {
     stem = transpiler.kueryFromAst(ast.callee.object, options);
     callee = transpiler.VALK().propertyValue(

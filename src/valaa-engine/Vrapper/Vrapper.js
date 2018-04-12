@@ -1075,26 +1075,40 @@ export default class Vrapper extends Cog {
     let mime;
     try {
       const activeTypeName = typeName || this.getTypeName(options);
-      invariantify(this.hasInterface("Media"),
-          "Vrapper._extractMediaInterpretation only available for objects with Media interface",
-          "\n\ttype:", activeTypeName,
-          "\n\tobject:", this);
-      ({ mediaInfo, mime } = this._resolveMediaInfo(Object.create(options)));
+      if (activeTypeName !== "Media") {
+        invariantify(this.hasInterface("Media"),
+            "Vrapper._extractMediaInterpretation only available for objects with Media interface",
+            "\n\ttype:", activeTypeName,
+            "\n\tobject:", this);
+      }
+      const transientOptions = Object.create(options);
+      transientOptions.mostMaterialized = true;
+      const mostMaterializedTransient = this.getTransient(transientOptions);
+
       // Interpretation instances are cached by transient and flushed if it changes via adding or
       // removing of properties, change of mediaType etc. This does _not_ include the change of
       // Media property values themselves as they don't affect the Media transient itself.
       // TODO(iridian): Re-evaluate this if ever we end up having Media properties affect the
       // interpretation. In that case the change of a property should flush this cache.
-      const thisTransient = this.getTransient(Object.create(options));
       let transientInterpretations = (this._extractedMediaInterpretations
-          || (this._extractedMediaInterpretations = new WeakMap()))
-          .get(thisTransient);
-      const cachedInterpretation = transientInterpretations && transientInterpretations[mime];
-      if (cachedInterpretation) {
-        return (options.immediate !== false)
-            ? cachedInterpretation
-            : Promise.resolve(cachedInterpretation);
+              || (this._extractedMediaInterpretations = new WeakMap()))
+          .get(mostMaterializedTransient);
+      if (transientInterpretations) {
+        if (!options.mediaInfo) {
+          mime = options.mime || "";
+        } else {
+          ({ mediaInfo, mime } = this._resolveMediaInfo(Object.create(options)));
+        }
+        const cachedInterpretation = transientInterpretations[mime];
+        if (cachedInterpretation
+            && (mime || !options.mimeFallback
+                || (cachedInterpretation === transientInterpretations[options.mimeFallback]))) {
+          return (options.immediate !== false)
+              ? cachedInterpretation
+              : Promise.resolve(cachedInterpretation);
+        }
       }
+      if (!mediaInfo) ({ mediaInfo, mime } = this._resolveMediaInfo(Object.create(options)));
       let content = options.content;
       if (typeof content === "undefined") {
         content = this._withPartitionConnectionChainEagerly(Object.create(options),
@@ -1121,9 +1135,15 @@ export default class Vrapper extends Cog {
       const newInterpretation = this.engine.interpretMediaContent(
           content, vScope, mediaInfo, options);
       if (!transientInterpretations) {
-        this._extractedMediaInterpretations.set(thisTransient, transientInterpretations = {});
+        this._extractedMediaInterpretations
+            .set(mostMaterializedTransient, transientInterpretations = {});
       }
       transientInterpretations[mime] = newInterpretation;
+      if (!options.mediaInfo && !options.mime
+          && (!options.mimeFallback || (mime === options.mimeFallback))) {
+        // Set default interpretation lookup
+        transientInterpretations[""] = newInterpretation;
+      }
       return newInterpretation;
     } catch (error) {
       throw this.wrapErrorEvent(error,
