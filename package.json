@@ -1,5 +1,5 @@
 {
-  "name": "@valaa/valaa-vault",
+  "name": "@valaa/vault",
   "version": "0.30.0-prerelease",
   "config": {
     "defaultrevelation": "revelations/static-dev-zero",
@@ -65,10 +65,10 @@
     "text-encoding": "^0.6.4",
     "url-search-params": "^0.10.0",
     "uuid": "^2.0.2",
-    "valaa-core": "file:src/valaa-core",
-    "valaa-prophet": "file:src/valaa-prophet",
-    "valaa-script": "file:src/valaa-script",
-    "valaa-tools": "file:src/valaa-tools"
+    "@valaa/core": "file:src/valaa-core",
+    "@valaa/prophet": "file:src/valaa-prophet",
+    "@valaa/script": "file:src/valaa-script",
+    "@valaa/tools": "file:src/valaa-tools"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",

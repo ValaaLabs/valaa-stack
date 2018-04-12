@@ -1,5 +1,5 @@
 {
-  "name": "valaa-inspire",
+  "name": "@valaa/inspire",
   "version": "0.30.0-prerelease",
   "description": "Valaa Inspire application gateway",
   "main": "index.js",
@@ -19,7 +19,7 @@
     "react-contextmenu": "^2.6.5",
     "react-dom": "^16.2.0",
     "react-tap-event-plugin": "^3.0.2",
-    "valaa-engine": "^0.30.0-prerelease"
+    "@valaa/engine": "^0.30.0-prerelease"
   },
   "devDependencies": {},
   "peerDependencies": {

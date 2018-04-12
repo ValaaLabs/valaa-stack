@@ -1,5 +1,5 @@
 {
-  "name": "valaa-tools",
+  "name": "@valaa/tools",
   "version": "0.30.0-prerelease",
   "description": "Valaa Tools API",
   "main": "index.js",

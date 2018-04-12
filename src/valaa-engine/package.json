@@ -1,5 +1,5 @@
 {
-  "name": "valaa-engine",
+  "name": "@valaa/engine",
   "version": "0.30.0-prerelease",
   "description": "Valaa Engine API and Schema",
   "main": "index.js",
@@ -11,7 +11,7 @@
     "jstransform": "^11.0.3",
     "lodash": "^4.17.2",
     "react": "^16.2.0",
-    "valaa-prophet": "^0.30.0-prerelease"
+    "@valaa/prophet": "^0.30.0-prerelease"
   },
   "devDependencies": {},
   "peerDependencies": {

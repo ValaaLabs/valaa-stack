@@ -1,5 +1,5 @@
 {
-  "name": "valaa-script",
+  "name": "@valaa/script",
   "version": "0.30.0-prerelease",
   "description": "Valaa Script API, schema",
   "main": "index.js",
@@ -7,7 +7,7 @@
   "license": "MIT",
   "dependencies": {
     "acorn": "^5.0.3",
-    "valaa-core": "^0.30.0-prerelease"
+    "@valaa/core": "^0.30.0-prerelease"
   },
   "devDependencies": {},
   "peerDependencies": {
