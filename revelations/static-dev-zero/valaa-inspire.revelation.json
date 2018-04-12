@@ -14,12 +14,6 @@
       "eventId": 326,
       "logs": "partitions/lcl-493ab7ff-3b66-4d75-8b16-4e4010f43c8a.json"
     },
-    "valaa-local:?id=lcl-5ec10e50-5f97-408f-ae44-246812cf6116": {
-      "name": "Zero temp login",
-      "commandId": 0,
-      "eventId": 121,
-      "logs": "partitions/lcl-5ec10e50-5f97-408f-ae44-246812cf6116.json"
-    },
     "valaa-local:?id=lcl-0a494baa-a45e-4ae6-8f6f-be2ef222f45b": {
       "name": "Zero homes",
       "commandId": 0,

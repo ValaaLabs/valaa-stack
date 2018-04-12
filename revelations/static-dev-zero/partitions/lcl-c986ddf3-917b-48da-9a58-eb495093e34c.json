@@ -261,7 +261,7 @@
         "sets": {
             "value": {
                 "typeName": "Identifier",
-                "reference": ["lcl-da8b6a77-537a-47fa-8a1a-a288f94b0218"]
+                "reference": ["lcl-4615128e-9531-4ab8-9f6e-10ff12aa25a3"]
             }
         },
         "commandId": "lcl-09e8f9b8-d434-4311-9200-d28a50513474"
@@ -296,16 +296,6 @@
         },
         "type": "CREATED",
         "commandId": "lcl-f57525f2-67ba-4e4e-bc92-84b04ad3788a"
-    }, {
-        "typeName": "Relation",
-        "id": ["lcl-48740714-099b-41bc-ace8-64b789416216", null, null, "valaa-local:?id=lcl-c986ddf3-917b-48da-9a58-eb495093e34c"],
-        "initialState": {
-            "name": "login_partition",
-            "owner": ["lcl-c986ddf3-917b-48da-9a58-eb495093e34c", "relations", null, "valaa-local:?id=lcl-c986ddf3-917b-48da-9a58-eb495093e34c"],
-            "target": ["lcl-5ec10e50-5f97-408f-ae44-246812cf6116", null, null, "valaa-local:?id=lcl-5ec10e50-5f97-408f-ae44-246812cf6116"]
-        },
-        "type": "CREATED",
-        "commandId": "lcl-48740714-099b-41bc-ace8-64b789416216"
     }],
     "type": "TRANSACTED",
     "version": "0.1",
@@ -340,17 +330,6 @@
             }
         },
         "commandId": "lcl-a87115be-2c67-40b2-bb63-8456af371937"
-    }, {
-        "id": ["lcl-d87d7f1e-0345-4ffe-97b5-8564cb6b8ab8", null, null, "valaa-local:?id=lcl-c986ddf3-917b-48da-9a58-eb495093e34c"],
-        "typeName": "Property",
-        "type": "FIELDS_SET",
-        "sets": {
-            "value": {
-                "typeName": "Identifier",
-                "reference": ["lcl-48740714-099b-41bc-ace8-64b789416216"]
-            }
-        },
-        "commandId": "lcl-189ac6aa-6af1-4b72-b222-652831a0dd0e"
     }],
     "type": "TRANSACTED",
     "version": "0.1",
