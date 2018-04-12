@@ -591,7 +591,7 @@ export interface ThisExpression extends Expression { type: "ThisExpression"; }
 // A `this` expression.
 export function parseThisExpression (transpiler: Transpiler, ast: ThisExpression,
     options: Object): Kuery {
-  if (options.suppressThisFromCallers) return transpiler.VALK();
+  if (options.headIsThis) return transpiler.VALK();
   return transpiler.VALK().fromThis();
 }
 
@@ -920,18 +920,20 @@ export function parseCallExpression (transpiler: Transpiler, ast: CallExpression
   }
 }
 
-export function extractEscapedKueryFromCallExpression (transpiler, ast, options) {
+export function extractEscapedKueryFromCallExpression (transpiler: Transpiler, ast: CallExpression,
+    options: Object) {
   return (ast.callee.type === "Identifier" && ast.callee.name[0] === "$")
-  ? { escapedKuery: transpiler.VALK(), stepName: ast.callee.name.slice(1) }
-      : (ast.callee.type === "MemberExpression" && (ast.callee.property.name || "")[0] === "$")
-  ? {
-    escapedKuery: transpiler.kueryFromAst(ast.callee.object, options),
-    stepName: ast.callee.property.name.slice(1)
-  }
+      ? { escapedKuery: transpiler.VALK(), stepName: ast.callee.name.slice(1) }
+    : (ast.callee.type === "MemberExpression" && (ast.callee.property.name || "")[0] === "$")
+        ? {
+          escapedKuery: transpiler.kueryFromAst(ast.callee.object, options),
+          stepName: ast.callee.property.name.slice(1)
+        }
       : { escapedKuery: undefined, stepName: undefined };
 }
 
-export function makeComponentsForCallExpression (transpiler, ast, options) {
+export function makeComponentsForCallExpression (transpiler: Transpiler, ast: CallExpression,
+    options: Object) {
   let stem;
   let callee;
   let this_;

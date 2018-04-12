@@ -143,7 +143,7 @@ export default class ReactRoot extends React.Component {
         const rootSheet = getImplicitMediaInterpretation(this[VSSStyleSheetSymbol],
             "VSS.rootStyleSheet", {
               transaction: reactRoot.props.vUIRoot.engine.discourse,
-              fallbackMime: "text/css",
+              mimeFallback: "text/css",
             });
         const contextSheet = rootSheet
             && reactRoot.getVssSheet(rootSheet, this.reactComponent).classes;

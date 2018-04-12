@@ -525,19 +525,23 @@ export default class Vrapper extends Cog {
     }
   }
 
-  getTransient (options: ?{ state?: Object, transaction?: Transaction, typeName?: string }) {
+  getTransient (options: ?{
+    state?: Object, transaction?: Transaction, typeName?: string, mostMaterialized?: boolean
+  }) {
     const explicitState = options &&
         (options.state || (options.transaction && options.transaction.getState()));
     if (explicitState) {
       const typeName = options.typeName || this.getTypeName(options);
       return explicitState.getIn([typeName, this.getRawId()])
           // Immaterial ghost.
-          || getObjectTransient(options.state || options.transaction, this._objectId, typeName);
+          || getObjectTransient(options.state || options.transaction, this._objectId, typeName,
+              undefined, undefined, options.mostMaterialized);
     }
     if (this.transientStaledIn) {
       this.updateTransient(null,
           getObjectTransient(this.transientStaledIn, this.getId(),
-              (options && options.typeName) || this.getTypeName(options)));
+              (options && options.typeName) || this.getTypeName(options), undefined, undefined,
+              options && options.mostMaterialized));
     }
     return this._transient;
   }

@@ -162,7 +162,8 @@ export default class Resolver extends LogEventGenerator {
     return this.tryGoToTransientOfId(id, typeName, true, true);
   }
 
-  tryGoToTransientOfId (id: IdData, typeName: string, require?: boolean, nonGhostLookup?: boolean) {
+  tryGoToTransientOfId (id: IdData, typeName: string, require?: boolean, nonGhostLookup?: boolean,
+      mostMaterialized?: boolean) {
     invariantifyString(typeName, "goToTransientOfId.typeName");
     this.objectId = id;
     if (!this.objectId) {
@@ -171,7 +172,7 @@ export default class Resolver extends LogEventGenerator {
     }
     const [rawId, , ghostPath] = expandIdDataFrom(id);
     const ret = this.tryGoToTransientOfRawId(rawId, typeName, false,
-        nonGhostLookup ? undefined : ghostPath);
+        nonGhostLookup ? undefined : ghostPath, mostMaterialized);
     if (ret) return ret;
     this.objectId = this.tryBindToInactivePartitionObjectId(id);
     if (this.objectId) {
@@ -187,7 +188,7 @@ export default class Resolver extends LogEventGenerator {
   }
 
   tryGoToTransientOfRawId (rawId: RawId, typeName?: string, require?: boolean = false,
-      ghostPath?: GhostPath) {
+      ghostPath?: GhostPath, mostMaterialized?: boolean) {
     try {
       if (typeName) this.setTypeName(typeName);
       this.objectTransient = this.getTransientFromTypeTable(rawId);
@@ -197,6 +198,10 @@ export default class Resolver extends LogEventGenerator {
           if (!this.goToMostInheritedMaterializedTransient(ghostPath, require)) {
             this.objectId = this.tryBindToInactivePartitionObjectId(ghostPath);
             return (this.objectTransient = null);
+          }
+          if (mostMaterialized) {
+            this.objectId = null;
+            return this.objectTransient;
           }
           this.objectTransient = createImmaterialTransient(rawId, ghostPath, this.objectTransient);
         } else if (require) {

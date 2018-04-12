@@ -29,8 +29,7 @@ describe("CREATED/DUPLICATED", () => {
     const harness = createCoreTestHarness({ debug: 0 }, createBlockA, [
       destroyed({ id: "A_child1" }),
     ]);
-    expect(getObjectTransient(
-            harness.getState(), "A_child1", "Resource", undefined, undefined, false))
+    expect(getObjectTransient(harness.getState(), "A_child1", "Resource", undefined, false))
         .toEqual(null);
   });
 

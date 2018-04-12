@@ -182,6 +182,7 @@ export default class VrapperSubscriber extends SimpleData {
     const options: any = this._valkOptions;
     const debug = options.debug;
     let ret;
+    let scope;
     try {
       if (debug) {
         options.debug = (debug > 2) ? debug - 2 : undefined;
@@ -193,9 +194,9 @@ export default class VrapperSubscriber extends SimpleData {
             "\n", " ".repeat(options.debug), "kuery:", ...dumpKuery(this._subscribedKuery),
         );
       }
+      scope = this._valkScope() ? Object.create(this._valkScope()) : {};
       const packedValue = this._processKuery(this._subscribedHead, this._subscribedKuery,
-          this._valkScope() ? Object.create(this._valkScope()) : {},
-          (typeof onComplete !== "undefined"));
+          scope, (typeof onComplete !== "undefined"));
       if (onComplete) {
         ret = this._emitter.engine.discourse.unpack(packedValue);
         onComplete(ret);
@@ -209,7 +210,7 @@ export default class VrapperSubscriber extends SimpleData {
       throw wrapError(error, `During ${this.debugId()}\n .retryProcessKuery(), with:`,
           "\n\thead:", ...dumpObject(this._subscribedHead),
           "\n\tkuery:", ...dumpKuery(this._subscribedKuery),
-          "\n\tscope:", ...dumpObject(this._valkScope()));
+          "\n\tscope:", ...dumpObject(scope));
     } finally {
       if (debug) {
         console.log(" ".repeat(options.debug),

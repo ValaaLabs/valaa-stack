@@ -13,10 +13,10 @@ import { wrapError } from "~/valaa-tools";
  * ghostPath :Map<hostPrototypeRawId, [ghostHostId, optional<ghostId>]>
  */
 export default function getObjectTransient (stateOrResolver: State, idData: IdData,
-    typeName: string, logger: Object = console, objectTable: ?Object, require: boolean = true):
-        Transient {
+    typeName: string, logger: Object = console, require: boolean = true,
+    mostMaterialized: ?boolean): Transient {
   try {
-    const ret = tryObjectTransient(stateOrResolver, idData, typeName, logger, objectTable);
+    const ret = tryObjectTransient(stateOrResolver, idData, typeName, logger, mostMaterialized);
     if (!ret && require) throw new Error(`Object ${String(idData)} resolved to falsy`);
     return ret;
   } catch (error) {
@@ -45,10 +45,10 @@ export default function getObjectTransient (stateOrResolver: State, idData: IdDa
  * @returns {Transient}
  */
 export function tryObjectTransient (stateOrResolver: State, idData: IdData, typeName: string,
-    logger: Object): Transient {
+    logger: Object, mostMaterialized: ?boolean): Transient {
   if (!idData) return undefined;
   const resolver = stateOrResolver.goToTransientOfId
       ? stateOrResolver
       : new Resolver({ state: stateOrResolver, logger });
-  return resolver.tryGoToTransientOfId(idData, typeName);
+  return resolver.tryGoToTransientOfId(idData, typeName, false, undefined, mostMaterialized);
 }

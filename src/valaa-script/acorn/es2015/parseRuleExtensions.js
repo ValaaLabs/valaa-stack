@@ -150,7 +150,7 @@ export function parseArrowFunctionExpression (transpiler: Transpiler, ast: Arrow
     ...options,
     surroundingFunction: { topLevel: false, hoists: [] }, // List of 'var' names to hoist.
     contextRuleOverrides: { ...options.contextRuleOverrides, ...es5.functionContextRuleOverrides },
-    suppressThisFromCallers: true,
+    headIsThis: true,
   };
   const body = transpiler.kueryFromAst(ast.body, functionOptions);
   const paramDeclarations = es5.scopeSettersFromParamDeclarators(transpiler, ast, functionOptions);

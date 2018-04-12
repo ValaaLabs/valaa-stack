@@ -831,19 +831,19 @@ function capture (valker: Valker, head: any, scope: ?Object,
       callScope.arguments = args;
       if (this && this.__callerValker__) {
         // Direct valk caller with an active valker.
-        return _stepTheVAKON(this.__callerValker__, this, capturedVAKON, callScope, valker);
+        return _advanceCapture(this.__callerValker__, this, capturedVAKON, callScope, valker);
       }
-      return _valkTheVAKON(valker, this || capturedScope.this, capturedVAKON, callScope, valker);
+      return _runCapture(valker, this || capturedScope.this, capturedVAKON, callScope, valker);
     };
     ret._capturedScope = capturedScope;
   } else {
     ret = function callerWithNoCapture (...args: any[]) {
       if (this && this.__callerValker__) {
         // Direct valk caller with an active valker.
-        return _stepTheVAKON(this.__callerValker__, this, capturedVAKON, { arguments: args },
+        return _advanceCapture(this.__callerValker__, this, capturedVAKON, { arguments: args },
             valker);
       }
-      return _valkTheVAKON(valker, this || {}, capturedVAKON, { arguments: args }, valker);
+      return _runCapture(valker, this || {}, capturedVAKON, { arguments: args }, valker);
     };
   }
   ret._valker = valker;
@@ -852,7 +852,7 @@ function capture (valker: Valker, head: any, scope: ?Object,
   return ret;
 }
 
-function _stepTheVAKON (valker, thisArgument, vakon, callScope, capturingValker: ?Valker) {
+function _advanceCapture (valker, thisArgument, vakon, callScope, capturingValker: ?Valker) {
   let ret;
   let transaction = valker.acquireTransaction();
   try {
@@ -890,7 +890,7 @@ function _stepTheVAKON (valker, thisArgument, vakon, callScope, capturingValker:
   return ret;
 }
 
-function _valkTheVAKON (valker, thisArgument, vakon, callScope, capturingValker: Valker) {
+function _runCapture (valker, thisArgument, vakon, callScope, capturingValker: Valker) {
   // TODO(iridian): Undocumented dependency on transaction semi-internal details
   const actualValker = (valker.transactionDepth && !valker.isActiveTransaction())
       // There is no active transaction so we are the outermost caller.
@@ -912,7 +912,7 @@ function _valkTheVAKON (valker, thisArgument, vakon, callScope, capturingValker:
     } else {
       opName = `call/run (non-valk caller as outermost context)`;
       const connectingMissingPartitions = tryConnectToMissingPartitionsAndThen(error,
-          () => _valkTheVAKON(valker, thisArgument, vakon, callScope, capturingValker));
+          () => _runCapture(valker, thisArgument, vakon, callScope, capturingValker));
       if (connectingMissingPartitions) return connectingMissingPartitions;
     }
     throw capturingValker.addVALKRuntimeErrorStackFrame(
