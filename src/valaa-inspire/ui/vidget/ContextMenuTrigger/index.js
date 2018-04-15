@@ -5,7 +5,7 @@ import { ContextMenuTrigger } from "react-contextmenu";
 import UIComponent from "~/valaa-inspire/ui/base/UIComponent";
 
 export default class ValaaContextMenuTrigger extends UIComponent {
-  renderUIComponent () {
+  preRenderFocus () {
     if (!this.props.menuContent) {
       throw Error("ContextMenuTrigger needs the menu to be passed via 'menuContent' property");
     }
@@ -25,7 +25,7 @@ export default class ValaaContextMenuTrigger extends UIComponent {
 }
 
 export class DefaultContextMenuTrigger extends UIComponent {
-  renderUIComponent () {
+  preRenderFocus () {
     return (
       <div onContextMenu={this.defaultContextMenu}>
         {this.props.children}

@@ -8,7 +8,7 @@ import VALEK, { literal } from "~/valaa-engine/VALEK";
 
 @Presentable(require("./presentation").default, "ExpressionFieldEditor")
 export default class ExpressionFieldEditor extends FieldEditor {
-  renderUIComponent () {
+  preRenderFocus () {
     return (<input
       {...this.presentation("expressionFieldEditor")}
       type="text"

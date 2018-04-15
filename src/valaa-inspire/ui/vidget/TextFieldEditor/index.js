@@ -6,7 +6,7 @@ import FieldEditor from "~/valaa-inspire/ui/base/FieldEditor";
 
 @Presentable(require("./presentation").default, "TextFieldEditor")
 export default class TextFieldEditor extends FieldEditor {
-  renderUIComponent () {
+  preRenderFocus () {
     return (<input
       {...this.presentation("textFieldEditor")}
       type="text"

@@ -159,7 +159,8 @@ export default class ValaaScope extends UIComponent {
       this.setState({ lensComponent: this.renderLensRole("fallbackLens") });
     } else if (!(lens instanceof Vrapper) || !lens.hasInterface("Media")) {
       this.setState({
-        lensComponent: React.createElement(ValaaScope, { ...props, focus: lens }, props.children),
+        lensComponent: React.createElement(ValaaScope, { ...props, focus: lens },
+            ...this.arrayFromValue(props.children)),
       });
     } else {
       this.attachKuerySubscriber("ValaaScope.lensComponent",
@@ -186,7 +187,7 @@ export default class ValaaScope extends UIComponent {
     }
   }
 
-  renderProcessedUIComponent (focus: any) {
+  renderFocus (focus: any) {
     // TODO(iridian): Fix this uggo hack where ui-context content is updated at render.
     if (this.props.hasOwnProperty("styleSheet")) {
       this.setUIContextValue(VSSStyleSheetSymbol, this.props.styleSheet);
@@ -245,7 +246,7 @@ export default class ValaaScope extends UIComponent {
 
   renderObjectAsValaaScope (object: any) {
     return React.createElement(ValaaScope, this.childProps("noscope", object, { ...object }),
-        this.props.children);
+        ...this.arrayFromValue(this.props.children));
   }
 }
 

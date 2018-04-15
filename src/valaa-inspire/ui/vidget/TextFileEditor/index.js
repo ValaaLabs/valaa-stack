@@ -23,7 +23,7 @@ import { beaumpify } from "~/valaa-tools";
 
 @Presentable(require("./presentation").default, "TextFileEditor")
 export default class TextFileEditor extends MediaContentEditor {
-  renderUIComponent () {
+  preRenderFocus () {
     return (
       <div
         onKeyDown={this.onKeyDown} onKeyUp={this.onKeyUp} style={{ width: "100%", height: "100%" }}

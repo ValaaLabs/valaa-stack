@@ -24,7 +24,7 @@ export default class InspireClientStatus extends UIComponent {
     super._detachSubscribers();
   }
 
-  renderUIComponent () {
+  preRenderFocus () {
     return (
       <div {...this.presentation("root")}>
         <span

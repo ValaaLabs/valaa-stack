@@ -96,7 +96,7 @@ export default class UIComponent extends React.Component {
 
   constructor (props: any, context: any) {
     if (!tryWrapInLivePropsAssistant) {
-      ({ tryWrapInLivePropsAssistant, wrapInLivePropsAssistant } = require("./LivePropsAssistant"));
+      ({ tryWrapInLivePropsAssistant, wrapInLivePropsAssistant } = require("./LiveProps"));
       ValaaScope = require("../../vidget/ValaaScope").default;
     }
     super(props, context);
@@ -456,12 +456,12 @@ export default class UIComponent extends React.Component {
   }
 
   // Returns a fully expanded presentation map or entry at componentPath
-  presentation (componentPath: any, { initial, extraContext = {}, baseContext, group }:
-      { initial?: Object, extraContext?: Object, baseContext?: Object, group?: any } = {}) {
+  presentation (componentPath: any, { initial, extraContext = {}, baseContext }:
+      { initial?: Object, extraContext?: Object, baseContext?: Object } = {}) {
     return presentationExpander(
         this,
         componentPath,
-        initial || { key: `-${componentPath}${typeof group !== "undefined" ? `/${group}` : ""}>` },
+        initial || { key: `-${componentPath}>` },
         extraContext,
         baseContext || this.getUIContext());
   }
@@ -480,7 +480,7 @@ export default class UIComponent extends React.Component {
    * @param {any} { index, head, kuery }
    */
   childProps (name: string, options:
-      { group?: any, index?: any, kuery?: Kuery, head?: any, focus?: any, context?: Object } = {},
+      { index?: any, kuery?: Kuery, head?: any, focus?: any, context?: Object } = {},
       initialProps: Object = this.presentation(name, { extraContext: options.context })) {
     try {
       const parentUIContext = this.getUIContext();
@@ -715,7 +715,7 @@ export default class UIComponent extends React.Component {
     );
   }
 
-  renderProcessedUIComponent (focus: any) {
+  renderFocus (focus: any) {
     if (this.renderUIComponent) {
       const prePostProcess = this.renderUIComponent(focus);
       let ret = this.tryRenderLens(prePostProcess, "renderRoot");
@@ -752,7 +752,7 @@ export default class UIComponent extends React.Component {
           }
           if (lens instanceof Kuery) {
             const subName = `${lensName}-kuery`;
-            // Delegates the kuery resolution to LivePropsAssistant.
+            // Delegates the kuery resolution to LiveProps.
             return wrapInLivePropsAssistant(this,
                 React.createElement(UIComponent,
                     this.childProps(subName, {}, { overrideLens: [lens] })),
@@ -852,7 +852,7 @@ export default class UIComponent extends React.Component {
   // converts into a valid react element tree. Pre-rendering is
   // Post-processing phase must always succeed; any conversions in this stage are thus by nature
   // local and immediate in nature. Biggest responsibility is converting inspire elements which
-  // have live props (props with contained Kuery objects) inside LivePropsAssistant elements.
+  // have live props (props with contained Kuery objects) inside LiveProps elements.
   render () {
     if (this._errorMessage || this._checkForInfiniteRecursion()) {
       return this._renderError(this._errorMessage);
@@ -881,7 +881,7 @@ export default class UIComponent extends React.Component {
           switch ((typeof focus === "object") && (focus instanceof Vrapper)
               ? focus.getPhase() : "") {
             default: {
-              ret = this.renderProcessedUIComponent(focus);
+              ret = this.renderFocus(focus);
               break;
             }
             case "Inactive":
@@ -948,7 +948,7 @@ export function isUIComponentElement (element: any) {
 }
 
 export function uiComponentProps (options: {
-        name?: string, index?: any, group?: any, uiContext?: Object,
+        name?: string, index?: any, uiContext?: Object,
         parentUIContext?: Object, focus?: any, head?: any, kuery?: any
       } = {},
       props?: Object = {}) {
@@ -1018,38 +1018,38 @@ function _tryRenderLensRole (component: Object, rootName: string,
   }
   try {
     if (component.props.hasOwnProperty(actualRoleName)) {
-      const lensInProps = component.props[actualRoleName];
-      if (typeof lensInProps === "undefined") {
+      const lensFromProps = component.props[actualRoleName];
+      if (typeof lensFromProps === "undefined") {
         throw new Error(`Render role props.${actualRoleName
             } is specified but its value is undefined`);
       }
-      const ret = component.renderLens(lensInProps, rootName);
+      const ret = component.renderLens(lensFromProps, rootName);
       /*
       if (component.getFocus().getRawId() === "ff1fcf82-08b9-4daf-9c9b-398e0f036414") {
         console.log(component.debugId(), `_tryRenderLensRole(${rootName}): props[${
-            actualRoleName}] =`, typeof lensInProps, lensInProps, ret);
+            actualRoleName}] =`, typeof lensFromProps, lensFromProps, ret);
       }
       */
       return ret;
     }
-    const lensInUIContext = actualRoleSymbol && component.getUIContextValue(actualRoleSymbol);
-    if (typeof lensInUIContext !== "undefined") {
-      const ret = component.renderLens(lensInUIContext, rootName);
+    const lensFromUIContext = actualRoleSymbol && component.getUIContextValue(actualRoleSymbol);
+    if (typeof lensFromUIContext !== "undefined") {
+      const ret = component.renderLens(lensFromUIContext, rootName);
       /*
       if (component.getFocus().getRawId() === "ff1fcf82-08b9-4daf-9c9b-398e0f036414") {
         console.log(component.debugId(), `_tryRenderLensRole(${rootName
-            }): uiContext[${actualRoleName}] =`, typeof lensInUIContext, lensInUIContext, ret);
+            }): uiContext[${actualRoleName}] =`, typeof lensFromUIContext, lensFromUIContext, ret);
       }
       */
       return ret;
     }
-    const lensInReactContext = component.context[actualRoleName];
-    if (typeof lensInReactContext !== "undefined") {
-      const ret = component.renderLens(lensInReactContext, rootName);
+    const lensFromReactContext = component.context[actualRoleName];
+    if (typeof lensFromReactContext !== "undefined") {
+      const ret = component.renderLens(lensFromReactContext, rootName);
       /*
       if (component.getFocus().getRawId() === "ff1fcf82-08b9-4daf-9c9b-398e0f036414") {
         console.log(component.debugId(), `_tryRenderLensRole(${rootName
-            }): context[${actualRoleName}] =`, typeof lensInReactContext, lensInReactContext,
+            }): context[${actualRoleName}] =`, typeof lensFromReactContext, lensFromReactContext,
                 ret);
       }
       */

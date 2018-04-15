@@ -92,14 +92,14 @@ export default class UIContext extends UIComponent {
     };
   }
 
-  renderUIComponent (focus: Object) {
+  preRenderFocus (focus: Object) {
     if (!this.state.active) return null;
     const uiRootElement = this.createUIRootElement(focus);
     return uiRootElement;
   }
 
   createUIRootElement (focus: Object) {
-    const renderedChildren = super.renderProcessedUIComponent(focus);
+    const renderedChildren = super.renderFocus(focus);
     const defaultJSXElement = this.state.fallbackLens
         && <ValaaScope {...this.childProps("uiRootDefault")} activeLens={LENS`fallbackLens`} />;
     return (renderedChildren && defaultJSXElement)

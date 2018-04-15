@@ -16,7 +16,7 @@ export default class ValaaContextMenu extends UIComponent {
     // do magic
   }
 
-  renderUIComponent (focus: any) {
+  preRenderFocus (focus: any) {
     return (
       <ContextMenu
         id={this.getMenuId(focus)}

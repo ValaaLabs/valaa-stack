@@ -142,7 +142,7 @@ export default class LinkFieldEditor extends UIComponent {
     this.forceUpdate();
   }
 
-  renderUIComponent () {
+  preRenderFocus () {
     const dataListID = `datalist_${this.getFocus().getRawId()}`;
     return (
       <div>

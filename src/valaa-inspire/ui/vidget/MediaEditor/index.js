@@ -10,7 +10,7 @@ import { mediaTypeFromFilename } from "~/valaa-tools/MediaTypeData";
 
 @Presentable(require("./presentation").default, "MediaEditor")
 export default class MediaEditor extends UIComponent {
-  renderUIComponent (focus: any) {
+  preRenderFocus (focus: any) {
     const mediaType = focus.get(VALEK.to("mediaType").nullable().select(["type", "subtype"]))
         || mediaTypeFromFilename(focus.get("name"));
     if (!mediaType) return <p>Cannot determine media type for file {`'${focus.get("name")}'`}</p>;
