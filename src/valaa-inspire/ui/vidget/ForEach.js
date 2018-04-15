@@ -25,29 +25,17 @@ export default class ForEach extends UIComponent {
     });
   }
 
-  renderUIComponent (focus: any) {
-    const EntryUIComponent = this.props.EntryUIComponent || UIComponent;
-    const children = (focus || EMPTY).map((entry, forIndex) => {
-      const propsOptions = {
-        parentUIContext: this.getUIContext(),
-        focus: entry,
-        index: forIndex,
-        context: { forIndex },
-      };
-      const initialProps = { ...(this.props.entryProps || {}) };
-      return React.createElement(
-          EntryUIComponent,
-          this.props.entryKeys
-              ? this.childProps(this.props.entryKeys[forIndex] || "", propsOptions,
-                  initialProps)
-              : uiComponentProps(propsOptions, initialProps),
-          this.props.children);
-    });
-    if (!this.props.RootElement && !this.props.rootProps) return children;
-    return React.createElement(
-        this.props.RootElement || "div",
-        this.props.rootProps || {},
-        ...children,
+  renderFocus (focus: any) {
+    const renderedChildren = this.renderFocusAsSequence(
+        focus,
+        this.props.EntryUIComponent,
+        this.props.entryProps,
+        this.props.entryKeys && ((entry, index) => (this.props.entryKeys[index] || "")));
+    if (!this.props.RootElement && !this.props.rootProps) return renderedChildren;
+    return this.renderLens(
+        React.createElement(
+            this.props.RootElement || "div", this.props.rootProps || {}, ...renderedChildren),
+        "customForEachRoot",
     );
   }
 

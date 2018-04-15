@@ -214,7 +214,7 @@ export default class ValaaScope extends UIComponent {
     }
 
     if (Array.isArray(focus)) {
-      return this.renderSequence(focus);
+      return this.renderFocusAsSequence(focus, this.props.forEach, ValaaScope);
     }
 
     if (Object.getPrototypeOf(focus) === Object.prototype) {
@@ -233,15 +233,6 @@ export default class ValaaScope extends UIComponent {
       return this.renderLensRole("downloadingLens");
     }
     return this.renderLens(this.state.lensComponent, "lensComponent");
-  }
-
-  renderSequence (sequence: any) {
-    // focus comes from props, here.
-    return sequence.map((focus, index) =>
-        React.createElement(ValaaScope,
-            this.childProps(`sequence[${index}]`, { focus },
-                this.props.forEach ? { ...this.props.forEach } : {}),
-            this.props.children));
   }
 
   renderObjectAsValaaScope (object: any) {

@@ -725,6 +725,20 @@ export default class UIComponent extends React.Component {
       return ret;
     }
     return this.renderLensSequence(this.props.children);
+
+  renderFocusAsSequence (foci: any[], EntryElement: Object = UIComponent, entryProps: Object = {},
+      keyFromFocus: (focus: any, index: number) => string) {
+    return (foci || []).map((focus, forIndex) => {
+      const key = keyFromFocus
+          ? keyFromFocus(focus, forIndex)
+          : createComponentKey(this.getUIContextValue("key") || "-", focus, forIndex);
+      const props = {
+        ...entryProps, key, focus, parentUIContext: this.getUIContext(), context: { forIndex },
+      };
+      return wrapInLivePropsAssistant(this,
+          React.createElement(EntryElement, props, ...this.arrayFromValue(this.props.children)),
+          key);
+    });
   }
 
   renderLens (lens: any, lensName: string) {
