@@ -399,18 +399,19 @@ export default class OraclePartitionConnection extends PartitionConnection {
   // In latter case forwards the result received from authority to Scribe for caching.
   readMediaContent (mediaId: VRef, mediaInfo?: MediaInfo): any {
     let ret;
+    let actualInfo;
     try {
-      const actualMediaInfo = mediaInfo || this.getScribeConnection().getMediaInfo(mediaId);
-      if (!actualMediaInfo.blobId && !actualMediaInfo.sourceURL) {
+      actualInfo = mediaInfo || this.getScribeConnection().getMediaInfo(mediaId);
+      if (!actualInfo.blobId && !actualInfo.sourceURL) {
         return undefined;
       }
       ret = super.readMediaContent(mediaId, mediaInfo);
       if (typeof ret !== "undefined") return ret;
-      if (!actualMediaInfo.blobId) {
-        const sourceURI = createValaaURI(actualMediaInfo.sourceURL);
+      if (!actualInfo.blobId) {
+        const sourceURI = createValaaURI(actualInfo.sourceURL);
         // TODO(iridian): Implement schema-based request forwarding to remote authorities
         // TODO(iridian): Implement straight mediaInfo.sourceURL retrieval if the field is
-        // present, using actualMediaInfo.type/subtype as the request ContentType.
+        // present, using actualInfo.type/subtype as the request ContentType.
         throw new Error(`direct retrieval not implemented for mediaInfo.sourceURL '${
             sourceURI.toString()}'`);
       }
@@ -418,16 +419,19 @@ export default class OraclePartitionConnection extends PartitionConnection {
         throw new Error(`Could not locate media content in Scribe and ${
           ""}OraclePartitionConnection._retrieveRemoteMediaContent is not defined`);
       }
-      ret = this._retrieveRemoteMediaContent(mediaId, actualMediaInfo);
-      // Store the content to Scribe as well (but not remote): dont wait for completion
-      thenChainEagerly(ret, (content) =>
-          this.prepareBlob(content, actualMediaInfo, { noRemotePersist: true }));
-      return ret;
-    } catch (error) {
-      throw this.wrapErrorEvent(error, `readMediaContent(${
-              (mediaInfo && mediaInfo.name) ? `'${mediaInfo.name}'` : `unnamed media`})`,
+      ret = this._retrieveRemoteMediaContent(mediaId, actualInfo);
+    } catch (error) { throw onError.call(this, error); }
+    // Store the content to Scribe as well (but not remote): dont wait for completion
+    thenChainEagerly(ret,
+        (content) => this.prepareBlob(content, actualInfo, { noRemotePersist: true }),
+        onError.bind(this));
+    return ret;
+    function onError (error) {
+      return this.wrapErrorEvent(error, `readMediaContent(${
+              (actualInfo && actualInfo.name)
+                  ? `'${actualInfo.name}'` : `unnamed media`})`,
           "\n\tmediaId:", mediaId,
-          "\n\tmediaInfo:", mediaInfo,
+          "\n\tactualMediaInfo:", actualInfo,
           "\n\tresult candidate:", ret);
     }
   }
@@ -436,16 +440,16 @@ export default class OraclePartitionConnection extends PartitionConnection {
   getMediaURL (mediaId: VRef, mediaInfo?: MediaInfo): any {
     let ret;
     try {
-      const actualMediaInfo = mediaInfo || this.getScribeConnection().getMediaInfo(mediaId);
-      if (!actualMediaInfo.blobId) {
+      const actualInfo = mediaInfo || this.getScribeConnection().getMediaInfo(mediaId);
+      if (!actualInfo.blobId) {
         return undefined;
       }
       ret = super.getMediaURL(mediaId, mediaInfo);
       if (typeof ret !== "undefined") return ret;
-      if (!actualMediaInfo.blobId) {
-        const sourceURI = createValaaURI(actualMediaInfo.sourceURL);
+      if (!actualInfo.blobId) {
+        const sourceURI = createValaaURI(actualInfo.sourceURL);
         if (sourceURI.protocol === "http:" || sourceURI.protocol === "https:") {
-          return actualMediaInfo.sourceURL;
+          return actualInfo.sourceURL;
         }
         // TODO(iridian): Implement schema-based request forwarding to remote authorities
         throw new Error(`schema-based mediaInfo.sourceURL's not implemented, got '${
@@ -456,7 +460,7 @@ export default class OraclePartitionConnection extends PartitionConnection {
         throw new Error(`OraclePartitionConnection has no remote authority connection specified ${
             ""} and could not locate local media URL from Scribe`);
       }
-      return remoteConnection.getMediaURL(mediaId, actualMediaInfo);
+      return remoteConnection.getMediaURL(mediaId, actualInfo);
     } catch (error) {
       throw this.wrapErrorEvent(error, `getMediaURL(${
               (mediaInfo && mediaInfo.name) ? `'${mediaInfo.name}'` : `unnamed media`})`,

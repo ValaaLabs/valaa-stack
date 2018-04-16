@@ -236,26 +236,29 @@ export default class Oracle extends Prophet {
     const ret = [];
     for (const blobId of Object.keys(command.addedBlobReferences || {})) {
       for (const { referrerId } of command.addedBlobReferences[blobId]) {
+        let entry;
         try {
           const partitionRawId = getPartitionRawIdFrom(referrerId.partitionURI());
-          const entry = this._partitionConnections[partitionRawId];
+          entry = this._partitionConnections[partitionRawId];
           invariantifyObject(entry, `partitionConnections[${partitionRawId}]`);
-          const persistProcess = thenChainEagerly(entry.pendingConnection || entry.connection,
-              (connectedConnection) => {
-                const remote = connectedConnection.getDependentConnection("remoteUpstream");
-                return remote && remote.getContentPersistProcess(blobId);
-              });
-          if (persistProcess) ret.push(persistProcess);
-        } catch (error) {
-          throw this.wrapErrorEvent(error, "_getOngoingRemoteContentPersistProcesses",
+        } catch (error) { throw onError.call(this, blobId, referrerId, error); }
+        const persistProcess = thenChainEagerly(entry.pendingConnection || entry.connection,
+            (connectedConnection) => {
+              const remote = connectedConnection.getDependentConnection("remoteUpstream");
+              return remote && remote.getContentPersistProcess(blobId);
+            },
+            onError.bind(this, blobId, referrerId));
+        if (persistProcess) ret.push(persistProcess);
+      }
+    }
+    return ret;
+    function onError (blobId, referrerId, error) {
+      return this.wrapErrorEvent(error, "_getOngoingRemoteContentPersistProcesses",
               "\n\tcurrent referrerId:", ...dumpObject(referrerId),
               "\n\tcurrent blobId:", ...dumpObject(blobId),
               "\n\tret (so far):", ...dumpObject(ret),
               "\n\tcommand:", ...dumpObject(command));
-        }
-      }
     }
-    return ret;
   }
 
   _resolveCommandPartitionDatas (operation: { command: Command, authorities: any }) {

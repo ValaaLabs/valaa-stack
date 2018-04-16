@@ -452,36 +452,38 @@ export default class ScribePartitionConnection extends PartitionConnection {
   // Otherwise throws an error.
   readMediaContent (mediaId: VRef, mediaInfo?: MediaInfo): any {
     const mediaEntry = this._getMediaEntry(mediaId, false);
-    const onError = (error) => this.wrapErrorEvent(error, `readMediaContent(${
-              mediaInfo && mediaInfo.name ? `'${mediaInfo.name}'` : `unnamed media`}`,
-          "\n\tmediaId:", mediaId,
-          "\n\tmediaInfo:", ...dumpObject(mediaInfo),
-          "\n\tmediaEntry:", ...dumpObject(mediaEntry),
-          "\n\tthis:", ...dumpObject(this));
+    let actualInfo = mediaInfo;
     try {
-      const actualMediaInfo = mediaInfo || (mediaEntry && mediaEntry.mediaInfo);
-      if (!actualMediaInfo) throw new Error(`No media info found for ${mediaId}`);
+      if (!actualInfo) {
+        actualInfo = mediaEntry && mediaEntry.mediaInfo;
+        if (!actualInfo) throw new Error(`No media info found for ${mediaId}`);
+      }
       // Only return cached in-memory nativeContent if its id matches the requested id.
       if (mediaEntry
           && (typeof mediaEntry.nativeContent !== "undefined")
-          && (actualMediaInfo.blobId === mediaEntry.mediaInfo.blobId)) {
+          && (actualInfo.blobId === mediaEntry.mediaInfo.blobId)) {
         return mediaEntry.nativeContent;
       }
-      const blobId = actualMediaInfo.blobId;
-      if (!blobId) return undefined;
-      const bufferCandidate = this._prophet.readBlobContent(blobId);
-      return thenChainEagerly(bufferCandidate,
-          (buffer) => {
-            if (!buffer) return undefined;
-            const nativeContent = nativeObjectFromBufferAndMediaInfo(buffer, actualMediaInfo);
-            if (mediaEntry && (blobId === mediaEntry.mediaInfo.blobId)) {
-              mediaEntry.nativeContent = nativeContent;
-            }
-            return nativeContent;
-          },
-          onError);
-    } catch (error) {
-      throw onError(error);
+      if (!actualInfo.blobId) return undefined;
+    } catch (error) { throw onError.call(this, error); }
+    return thenChainEagerly(
+        this._prophet.readBlobContent(actualInfo.blobId),
+        (buffer) => {
+          if (!buffer) return undefined;
+          const nativeContent = nativeObjectFromBufferAndMediaInfo(buffer, actualInfo);
+          if (mediaEntry && (actualInfo.blobId === mediaEntry.mediaInfo.blobId)) {
+            mediaEntry.nativeContent = nativeContent;
+          }
+          return nativeContent;
+        },
+        onError.bind(this));
+    function onError (error) {
+      return this.wrapErrorEvent(error, `readMediaContent(${
+              actualInfo && actualInfo.name ? `'${actualInfo.name}'` : `unnamed media`}`,
+          "\n\tmediaId:", mediaId,
+          "\n\tactualMediaInfo:", ...dumpObject(actualInfo),
+          "\n\tmediaEntry:", ...dumpObject(mediaEntry),
+          "\n\tthis:", ...dumpObject(this));
     }
   }
 

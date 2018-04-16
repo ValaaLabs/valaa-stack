@@ -393,24 +393,24 @@ export default class VrapperSubscriber extends SimpleData {
   _valkScope () { return this._valkOptions.scope; }
 
   _sendUpdate (fieldUpdate: FieldUpdate) {
-    try {
-      thenChainEagerly(fieldUpdate.value(), (value) => {
+    thenChainEagerly(undefined, [
+      () => fieldUpdate.value(),
+      (value) => {
         fieldUpdate._value = value;
         this.callback(fieldUpdate, this);
-      });
-    } catch (error) {
-      throw wrapError(error, `During ${this.debugId(fieldUpdate.valkOptions())
-              }\n ._sendUpdate(), with:`,
-          "\n\tsubscriber:", this.subscriber,
-          "\n\temitter:", fieldUpdate.emitter(),
-          "\n\tfieldUpdate:", fieldUpdate._prophecy && fieldUpdate._prophecy.passage,
-          `\n\tfilter ${this._subscribedFieldName ? "fieldName"
-              : this._subscribedFieldFilter ? "filter"
-              : "kuery"}:`,
-              this._subscribedFieldName || this._subscribedFieldFilter || this._subscribedKuery,
-          "\n\tfieldUpdate:", fieldUpdate,
-          "\n\tthis:", this);
-    }
+      },
+    ], error => wrapError(error, `During ${this.debugId(fieldUpdate.valkOptions())
+            }\n ._sendUpdate(), with:`,
+        "\n\tsubscriber:", this.subscriber,
+        "\n\temitter:", fieldUpdate.emitter(),
+        "\n\tfieldUpdate:", fieldUpdate._prophecy && fieldUpdate._prophecy.passage,
+        `\n\tfilter ${this._subscribedFieldName ? "fieldName"
+            : this._subscribedFieldFilter ? "filter"
+            : "kuery"}:`,
+            this._subscribedFieldName || this._subscribedFieldFilter || this._subscribedKuery,
+        "\n\tfieldUpdate:", fieldUpdate,
+        "\n\tthis:", this)
+    );
   }
 
   _addStackFrameToError (error: Error, sourceVAKON: any) {

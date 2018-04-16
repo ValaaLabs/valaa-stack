@@ -1,15 +1,21 @@
+// @flow
+
 import isPromise from "~/valaa-tools/isPromise";
+import wrapError, { dumpObject } from "~/valaa-tools/wrapError";
 
 /**
- * Chains head through the given function chain 'eagerly', resolving all promises along the way.
- * Functionally follows following code:
+ * Resolves the chain of then-operations eagerly ie. synchronously if possible.
+ * If any of the intermediate steps is a promise, the whole operation behaves like so:
  *
- * return functionChain.reduce(async (accum, f) => f(await accum), initialValue)
+ * return functionChain.reduce(async (intermediate, f) => f(await intermediate), initialValue)
  *
- * 'Eagerly' means that if no promises are encountered at any step then the whole evaluation is
- * done synchronously and return value is immediately available, like with following code:
+ * Otherwise thenChainEagerly returns the result synchronously, like so:
  *
- * return functionChain.reduce((accum, f) => f(accum), initialValue)
+ * return functionChain.reduce((intermediate, f) => f(intermediate), initialValue)
+ *
+ * Additionally, if any of the steps throws (synchronously or asynchronously) the thrown error is
+ * wrapped with context information. Additionally if onRejected is given it will be called with
+ * the wrapped error and its result value thrown.
  *
  * Rationale: in Valaa codebase there are pathways which sometimes need to work synchronously and
  * sometimes asynchronously, depending on what data can be known to be cached or not.
@@ -26,22 +32,33 @@ import isPromise from "~/valaa-tools/isPromise";
  * @param {any} head
  * @param {any} callbacks
  */
-export default function thenChainEagerly (initialValue, functionChain: Function | Function[],
-    onRejected?: Function) {
+export default function thenChainEagerly (initialValue: any,
+    functionChain: Function | Function[] = [], onRejected?: Function) {
   return thenChainEagerlyList(initialValue,
       Array.isArray(functionChain) ? functionChain : [functionChain],
       onRejected, 0);
 }
 
-export function thenChainEagerlyList (initialValue, functionChain, onRejected, startIndex = 0) {
+export function thenChainEagerlyList (initialValue: any, functionChain: Function[],
+    onRejected: ?Function, startIndex: number = 0) {
   let head = initialValue;
-  for (let currentIndex = startIndex; currentIndex < functionChain.length; ++currentIndex) {
-    if (isPromise(head)) {
-      return head.then(resolvedHead => thenChainEagerlyList(
-          functionChain[currentIndex](resolvedHead), functionChain, onRejected, currentIndex + 1),
-          onRejected && (rejectedHead => onRejected(rejectedHead)));
+  let currentIndex = startIndex;
+  try {
+    for (; !isPromise(head); ++currentIndex) {
+      if (currentIndex >= functionChain.length) return head;
+      head = functionChain[currentIndex](head);
     }
-    head = functionChain[currentIndex](head);
+  } catch (error) {
+    const wrappedError = wrapError(error, `During thenChainEagerly step #${currentIndex}`,
+        "\n\thead:", ...dumpObject(head),
+        "\n\tcurrent function:", functionChain[currentIndex],
+        "\n\tfunctionChain:", ...dumpObject(functionChain));
+    throw (onRejected && onRejected(wrappedError)) || wrappedError;
   }
-  return head;
+  return head.then(
+      value => (currentIndex >= functionChain.length
+          ? value
+          : thenChainEagerlyList(
+              functionChain[currentIndex](value), functionChain, onRejected, currentIndex + 1)),
+      error => (onRejected && onRejected(error)));
 }
