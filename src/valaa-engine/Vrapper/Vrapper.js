@@ -36,7 +36,8 @@ import { createModuleGlobal } from "~/valaa-engine/interpreter/importFromString"
 import _FieldUpdate from "~/valaa-engine/Vrapper/FieldUpdate";
 import _VrapperSubscriber from "~/valaa-engine/Vrapper/VrapperSubscriber";
 import evaluateToCommandData from "~/valaa-engine/Vrapper/evaluateToCommandData";
-import { defaultOwnerCoupledField } from "~/valaa-engine/ValaaSpaceAPI/Valaa/injectSchemaTypeBindings";
+import { defaultOwnerCoupledField } from
+    "~/valaa-engine/ValaaSpaceAPI/Valaa/injectSchemaTypeBindings";
 
 import { dumpify, dumpObject, invariantify, invariantifyObject, invariantifyString, isPromise,
     thenChainEagerly, outputError, wrapError } from "~/valaa-tools";

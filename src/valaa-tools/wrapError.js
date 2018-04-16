@@ -8,14 +8,17 @@ if (typeof window !== "undefined") window.beaumpify = beaumpify;
 export function dumpObject (value) {
   const ret = [];
   if (value && (typeof value === "object")) {
-    const denormalized = Iterable.isKeyed(value) ? value
-        : Iterable.isKeyed(value._singular) ? value._singular
-        : null;
-    const name = denormalized && denormalized.get("name");
-    if (name) ret.push(`'${name}'`);
-    const dumpifiable = value._singular ? value
-        : Iterable.isKeyed(value) && value.get("id");
-    if (dumpifiable) ret.push(String(dumpifiable));
+    if (typeof value.debugId === "function") ret.push(`'${value.debugId()}'`);
+    else {
+      const denormalized = Iterable.isKeyed(value) ? value
+          : Iterable.isKeyed(value._singular) ? value._singular
+          : null;
+      const name = denormalized && denormalized.get("name");
+      if (name) ret.push(`'${name}'`);
+      const dumpifiable = value._singular ? value
+          : Iterable.isKeyed(value) && value.get("id");
+      if (dumpifiable) ret.push(String(dumpifiable));
+    }
   }
   ret.push(debugObject(value));
   return ret;

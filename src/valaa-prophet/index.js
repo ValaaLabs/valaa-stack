@@ -1,14 +1,16 @@
+// @flow
+
 /* eslint-disable */
-export const Discourse = require("./api/Discourse").default;
-export const Follower = require("./api/Follower").default;
-export const PartitionConnection = require("./api/PartitionConnection").default;
-export const Prophecy = require("./api/Prophecy").default;
-export const Prophet = require("./api/Prophet").default;
+export { default as Discourse } from "./api/Discourse";
+export { default as Follower } from "./api/Follower";
+export { default as PartitionConnection } from "./api/PartitionConnection";
+export { default as Prophecy } from "./api/Prophecy";
+export { default as Prophet } from "./api/Prophet";
 export type Transaction = Object;
 
-export const AuthorityNexus = require("./prophet/AuthorityNexus").default;
-export const FalseProphet = require("./prophet/FalseProphet").default;
-export const FalseProphetDiscourse = require("./prophet/FalseProphetDiscourse").default;
-export const Oracle = require("./prophet/Oracle").default;
-export const Scribe = require("./prophet/Scribe").default;
-export const ScribePartitionConnection = require("./prophet/ScribePartitionConnection").default;
+export { default as AuthorityNexus } from "./prophet/AuthorityNexus";
+export { default as FalseProphet } from "./prophet/FalseProphet";
+export { default as FalseProphetDiscourse } from "./prophet/FalseProphetDiscourse";
+export { default as Oracle } from "./prophet/Oracle";
+export { default as Scribe } from "./prophet/Scribe";
+export { default as ScribePartitionConnection } from "./prophet/ScribePartitionConnection";

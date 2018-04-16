@@ -11,7 +11,7 @@ import Describable, { describableInterface } from "~/valaa-core/schema/Describab
 import ResourceStub from "~/valaa-core/schema/ResourceStub";
 import Resource from "~/valaa-core/schema/Resource";
 
-import Relation from "~/valaa-prophet/schema/Relation";
+import Relation from "~/valaa-script/schema/Relation";
 import Scope, { scopeInterface } from "~/valaa-script/schema/Scope";
 
 const INTERFACE_DESCRIPTION = "entity";

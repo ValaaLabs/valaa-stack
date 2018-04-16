@@ -1,7 +1,6 @@
 // @flow
 
-import getImplicitMediaInterpretation
-    from "~/valaa-engine/interpreter/getImplicitMediaInterpretation";
+import getImplicitMediaInterpretation from "~/valaa-engine/Vrapper/getImplicitMediaInterpretation";
 
 export default function getImplicitCallable (calleeCandidate: any, roleName: string,
     options: Object = {}) {

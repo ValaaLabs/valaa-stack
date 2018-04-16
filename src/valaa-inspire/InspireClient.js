@@ -390,7 +390,6 @@ export default class InspireClient extends LogEventGenerator {
             invariantifyString(snapshotPath,
                 "revelation.snapshotEventPaths[1]: snapshot event path");
             const snapshotEvent = await request({ url: snapshotPath });
-            convertLegacyCommandInPlace(snapshotEvent);
             this.warnEvent(`Located legacy partition '${partitionURIString}' snapshot event at '${
                 snapshotPath}'`, "\n\tsnapshot event:", snapshotEvent);
             const partitionURI = createPartitionURI(partitionURIString);
@@ -409,7 +408,6 @@ export default class InspireClient extends LogEventGenerator {
           /*
           // Legacy revelation.
           const initialEvent = await request({ url: revelation.initialEventPath });
-          convertLegacyCommandInPlace(initialEvent);
           const initialCreateEntityEvent = initialEvent.actions && initialEvent.actions[0];
           invariantifyString(initialCreateEntityEvent && initialCreateEntityEvent.typeName,
               "legacy entry point missing: first event is not an Entity CREATED",

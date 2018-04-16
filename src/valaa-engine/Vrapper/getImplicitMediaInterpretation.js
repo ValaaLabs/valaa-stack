@@ -1,9 +1,10 @@
+// @flow
+
+import Vrapper from "~/valaa-engine/Vrapper";
+
 export default function getImplicitMediaInterpretation (candidate: any, opName: string,
     options: any) {
-  if (!candidate || (typeof candidate !== "object")
-      || typeof candidate.extractValue === "undefined") {
-    return candidate;
-  }
+  if (!(candidate instanceof Vrapper)) return candidate;
   if (options && options.deprecated) {
     const candidateName = candidate.get("name", Object.create(options));
     console.error("DEPRECATED: implicit media interpretation when performing", opName, "against",

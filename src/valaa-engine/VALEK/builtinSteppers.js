@@ -7,7 +7,7 @@ import { tryLiteral, /* tryFullLiteral,*/ tryUnpackLiteral }
 import valaaScriptBuiltinSteppers from "~/valaa-script/VALSK/builtinSteppers";
 
 import Vrapper from "~/valaa-engine/Vrapper";
-import getImplicitCallable from "~/valaa-engine/interpreter/getImplicitCallable";
+import getImplicitCallable from "~/valaa-engine/Vrapper/getImplicitCallable";
 
 // import { createNativeIdentifier } from "~/valaa-script/denormalized/nativeIdentifier";
 

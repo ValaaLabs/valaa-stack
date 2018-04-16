@@ -49,7 +49,8 @@ export default class UIContext extends UIComponent {
           // UIContext always waits for the fallbackLens context to be available before setting it
           // for the children.
           thenChainEagerly(
-              (fallbackLens instanceof Vrapper) && fallbackLens.hasInterface("Media")
+              (fallbackLens instanceof Vrapper)
+                  && fallbackLens.hasInterface("Media")
                   && fallbackLens.mediaContent({ mimeFallback: "text/vsx" }),
               (content) => {
                 this.setState({ fallbackLens, active: true });

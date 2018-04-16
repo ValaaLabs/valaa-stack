@@ -13,6 +13,3 @@ export const getAllMediaInterpreters = () => [
   new JSXInterpreter(),
   new VSXInterpreter(),
 ];
-
-export { default as getImplicitMediaInterpretation } from "./getImplicitMediaInterpretation";
-export { default as getImplicitCallable } from "./getImplicitCallable";

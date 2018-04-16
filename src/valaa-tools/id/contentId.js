@@ -28,36 +28,6 @@ function _arrayBufferFromStringAndMediaInfo (text: string, mediaInfo?: Object) {
   return utf8ArrayBufferFromString(text);
 }
 
-const _applicationTextSubtypes = {
-  valaascript: true,
-  "x-javascript": true,
-  javascript: true,
-  ecmascript: true,
-  vsx: true,
-  jsx: true,
-};
-
-function _isTextType ({ type, subtype }) {
-  if (type === "text") return true;
-  if (type === "application") return _applicationTextSubtypes[subtype];
-  return false;
-}
-
-export function nativeObjectFromBufferAndMediaInfo (buffer: ArrayBuffer, mediaInfo?:
-    { type?: string, subtype?: string, name?: string
-  /* TODO(iridian): any other types we'd need for
-    https://html.spec.whatwg.org/multipage/parsing.html#determining-the-character-encoding ?
-  */ }) {
-  // TODO(iridian): This is a quick hack for common types: we should really obey the above practice.
-  if (!mediaInfo) return buffer;
-  if (_isTextType(mediaInfo)) {
-    const text = stringFromUTF8ArrayBuffer(buffer);
-    if (mediaInfo.subtype === "json") return JSON.parse(text);
-    return text;
-  }
-  return buffer;
-}
-
 export function stringFromUTF8ArrayBuffer (buffer: ArrayBuffer): string {
   return _stringFromArrayBuffer("utf-8", buffer);
 }

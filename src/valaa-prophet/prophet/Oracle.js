@@ -92,11 +92,12 @@ export default class Oracle extends Prophet {
       if (entry) {
         entry.connection.acquireConnection();
         if (!options.eventLog) return entry.pendingConnection;
-        const ret = thenChainEagerly(entry.pendingConnection, fullConnection => {
-          fullConnection.narrateEventLog(options);
-          ret.fullConnection = fullConnection;
-          return fullConnection;
-        });
+        const ret = thenChainEagerly(entry.pendingConnection,
+            fullConnection => {
+              fullConnection.narrateEventLog(options);
+              ret.fullConnection = fullConnection;
+              return fullConnection;
+            });
         return ret;
       }
       if (options.dontCreateNewConnection) return undefined;

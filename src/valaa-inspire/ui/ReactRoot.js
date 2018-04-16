@@ -4,7 +4,7 @@ import preset from "jss-preset-default";
 import jss, { SheetsManager } from "jss";
 
 import VALEK from "~/valaa-engine/VALEK";
-import { getImplicitMediaInterpretation } from "~/valaa-engine/interpreter";
+import { getImplicitMediaInterpretation } from "~/valaa-engine/Vrapper";
 
 import { uiComponentProps, VSSStyleSheetSymbol } from "~/valaa-inspire/ui/base/UIComponent";
 import { unthunkRepeat } from "~/valaa-inspire/ui/helper/thunk";

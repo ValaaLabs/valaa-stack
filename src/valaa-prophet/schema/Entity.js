@@ -10,7 +10,7 @@ import Resource from "~/valaa-core/schema/Resource";
 
 import Scope from "~/valaa-script/schema/Scope";
 
-import Relatable, { relatableInterface } from "~/valaa-prophet/schema/Relatable";
+import Relatable, { relatableInterface } from "~/valaa-script/schema/Relatable";
 
 const OBJECT_DESCRIPTION = "scene";
 

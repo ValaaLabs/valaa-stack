@@ -6,8 +6,6 @@ export { default as valaaUUID } from "./id/valaaUUID";
 export { base64FromArrayBuffer, arrayBufferFromBase64, base64Encode, base64Decode } from "./base64";
 
 export const bufferAndContentIdFromNative = require("./id/contentId").bufferAndContentIdFromNative;
-export const nativeObjectFromBufferAndMediaInfo =
-    require("./id/contentId").nativeObjectFromBufferAndMediaInfo;
 
 export const stringFromUTF8ArrayBuffer = require("./id/contentId").stringFromUTF8ArrayBuffer;
 export const stringFromUTF16LEArrayBuffer = require("./id/contentId").stringFromUTF16LEArrayBuffer;

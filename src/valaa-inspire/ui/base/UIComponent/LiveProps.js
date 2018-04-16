@@ -7,8 +7,7 @@ import { asyncConnectToPartitionsIfMissingAndRetry, tryConnectToMissingPartition
     from "~/valaa-core/tools/denormalized/partitions";
 import { Kuery } from "~/valaa-core/VALK";
 
-import { FieldUpdate } from "~/valaa-engine/Vrapper";
-import getImplicitCallable from "~/valaa-engine/interpreter/getImplicitCallable";
+import { FieldUpdate, getImplicitCallable } from "~/valaa-engine/Vrapper";
 
 import ValaaScope from "~/valaa-inspire/ui/vidget/ValaaScope";
 import { isThunk } from "~/valaa-inspire/ui/helper/thunk";
@@ -103,7 +102,7 @@ export default class LiveProps extends UIComponent {
         nextProps.liveProps !== this.props.liveProps);
   }
 
-  renderFocus (focus: any) {
+  renderFocus (/* focus: any */) {
     if (this.props.liveProps) {
       let pendingProps;
       const livePropValues = this.state.livePropValues || OrderedMap();

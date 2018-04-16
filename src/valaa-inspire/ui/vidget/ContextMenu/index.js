@@ -2,8 +2,7 @@
 import React from "react";
 import { ContextMenu, MenuItem, SubMenu } from "react-contextmenu";
 
-import getImplicitCallable from "~/valaa-engine/interpreter/getImplicitCallable";
-import Vrapper from "~/valaa-engine/Vrapper";
+import Vrapper, { getImplicitCallable } from "~/valaa-engine/Vrapper";
 
 import UIComponent from "~/valaa-inspire/ui/base/UIComponent";
 import VALEK from "~/valaa-engine/VALEK";
