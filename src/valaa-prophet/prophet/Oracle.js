@@ -13,16 +13,16 @@ import OraclePartitionConnection from "~/valaa-prophet/prophet/OraclePartitionCo
 import { dumpObject, invariantifyObject, thenChainEagerly } from "~/valaa-tools";
 
 /**
- * Oracle is the central hub for routing blob content and metadata streams between remote partition
+ * Oracle is the central hub for routing content and metadata streams between remote partition
  * authorities and the local caches, both upstream and downstream.
  *
  * 1. Provides downstream multi-partition event synchronization and deduplication by gating
  * individual partition event downstreams until all partitions reach the same point.
  *
- * 2. Provides media blob pre-caching by gating downstream events until any associated blob content
+ * 2. Provides media blob pre-caching by gating downstream events until all required blob content
  * has been retrieved and stored in scribe.
  *
- * 3. Provides upstream media command gating by making sure associated blob content is stored in
+ * 3. Provides upstream media command gating by making sure all associated blob content is stored in
  * corresponding remote storage before letting the commands go further upstream.
  *
  * 4. Provides offline mode handling through scribe.

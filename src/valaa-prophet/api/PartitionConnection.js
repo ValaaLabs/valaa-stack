@@ -139,6 +139,21 @@ export default class PartitionConnection extends LogEventGenerator {
   }
 
   /**
+   * Returns the media content if it is immediately synchronously available or a Promise if the
+   * content is asynchronously available. Throws directly if the content is not available at all or
+   * indirectly through the Promise in situations like timeouts.
+   *
+   * @param {VRef} mediaId
+   * @param {MediaInfo} mediaInfo
+   * @returns
+   *
+   * @memberof ValaaEngine
+   */
+  decodeMediaContent (mediaId: VRef, mediaInfo?: MediaInfo): any {
+    return this._upstreamConnection.decodeMediaContent(mediaId, mediaInfo);
+  }
+
+  /**
    * Returns a URL for given mediaId pair which can be used in html context for retrieving media
    * content.
    *

@@ -87,37 +87,40 @@ the Prophet that provided the connection it manages four types of information st
 
 ## 2. *Media*s and *Entity*s as files and folders
 
-### 2.3. Media processing stages
+### 2.3. Media interpretation process
 
-The three media stages: download, interpret and integrate are specified below, even as the 
-integration is not implemented by valaa-prophet.
+Media interpretation is the process of retrieving content and converting it to a representation that
+is useful for users. It is split into three stages: *retrieve* octet stream, *decode* as object
+representation and *integrate* in use site context.
 
-#### 2.3.1. Blob fetch - octet stream download or cache hit
-These octet sequences are identified by a blobId, which is a content hash of the octets. Their 
-in-memory representation is shared between all consumers inside the same execution environment. 
+#### 2.3.1. Blob *retrieve* yields an ArrayBuffer via network download, cache hit, etc. 
+Persisted octet sequences are typically identified by their *blobId*, a well-defined content hash of 
+the whole octet sequence (and nothing else). Their in-memory representation is shared between all 
+consumers inside the same execution environment. 
 
-#### 2.3.2. Blob content is interpreted as a Media based on mime
-The octet streams are interpreted by specific interpreter plugins associated with the mime type of
-the content. The result of this interpretation can be anything from the octet stream itself, through
-a text string into fully blown complex, fully typed javascript composite objects. The resulting 
-interpretation must universal and immutable, however, so that like the octet content it can be 
-shared and reused (keyed by string \`${mime}:${blobId}\`).
+#### 2.3.2. Content ArrayBuffer is *decoded* into immutable, cacheable object representation based on mime
+The octet stream is decoded by decoder plugins associated with the requested mime type into some
+runtime object representation. This object representation can range anything from a flat text 
+decoding, through a complex javascript composite object representation into a full-blown component 
+with rich, asynchronous API's for accessing the content piece-meal. The requirement is that the 
+resulting dedoded object must be shareable and reusable between different consumers in unspecified 
+contexts. This implies that the decoded object should be immutable or provide an immutable API.
 
-##### 2.3.2.1. media type "application/valaascript" interpretation
-The application/valaascript interpreter transpiles the octet stream into a *module program Kuery*. 
+##### 2.3.2.1. decoding "application/valaascript" 
+The application/valaascript decoder transpiles the octet stream into a *module program Kuery*. 
 This Kuery contains the rules for setting up an ES6-like module exports. The kuery can thus be 
 shared between different integration contexts (different ghosts of the same base media in different 
 instances, etc.)
 
-#### 2.3.2.2. media type "application/javascript" interpretation
-The application/javascript interpreter wraps the octet stream text into a native function.
+#### 2.3.2.2. decoding "application/javascript"
+The application/javascript decoder wraps the octet stream text into a native function.
 This function accepts a contextual global scope object as an argument, and when called sets up
 an ES6-like module exports based on the octet content interpreted as a javascript module. Like with
 other interpretations, this outermost native function will be shared between contexts.
 
-#### 2.3.3. Integration binds a complex interpretation into a context
+#### 2.3.3. Decoded representation is *integrated* into a specific context
 
-#### 2.3.3.1. media type "application/valaascript" integration
+#### 2.3.3.1. integrating "application/valaascript"
 When the kuery is valked against a resource and some context the valk result is an object with
 ES6-style bindings of the exported symbols as the object properties.
 
@@ -127,7 +130,7 @@ TODO(iridian): Define this precisely. Consult an [analysis of CommonJS and ES Mo
 [ES6 exports immutable bindings, not values](https://github.com/rauschma/module-bindings-demo) 
 for some starting inspiration. 
 
-#### 2.3.3.2. media type "application/javascript" integration
+#### 2.3.3.2. integrating  "application/javascript"
 The contextual global scope for the integration is a javascript global host object associated with 
 the context resource.
 

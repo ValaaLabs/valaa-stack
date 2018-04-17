@@ -17,6 +17,8 @@ import { schemePlugin as valaaTestSchemePlugin } from "~/valaa-prophet/test/sche
 import { schemePlugin as valaaLocalSchemePlugin } from "~/scheme-valaa-local";
 import { schemePlugin as valaaTransientSchemePlugin } from "~/scheme-valaa-transient";
 
+import * as Decoders from "~/valaa-prophet/decoders";
+
 import { getDatabaseAPI } from "~/valaa-tools/indexedDB/getFakeDatabaseAPI";
 import { openDB } from "~/valaa-tools/html5/InMemoryIndexedDBUtils";
 
@@ -101,6 +103,11 @@ export function createScribe (commandCountCallback: any) {
     commandCountCallback,
   });
   ret.initialize();
+  for (const Decoder: any of Object.values(Decoders)) {
+    if (Decoder.mediaTypes) {
+      ret.getDecoderArray().addDecoder(new Decoder());
+    }
+  }
   return ret;
 }
 

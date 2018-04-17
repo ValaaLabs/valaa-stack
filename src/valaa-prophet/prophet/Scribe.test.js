@@ -71,7 +71,7 @@ describe("Scribe", () => {
         connection.getLastCommandEventId());
   });
 
-  const mediaContents = [
+  const textMediaContents = [
     "Hello world",
     "",
     "abcdefghijklmnopqrstuvwxyzäöåABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÅøØæÆ¤§½",
@@ -86,7 +86,7 @@ describe("Scribe", () => {
     const connection = await scribe.acquirePartitionConnection(uri, {});
     const sharedDB = await openDB(sharedURI);
 
-    for (const mediaContent of mediaContents) {
+    for (const mediaContent of textMediaContents) {
       const preparedBlob = connection.prepareBlob(mediaContent, "Some media");
       const blobId = await preparedBlob.persistProcess;
 
@@ -99,6 +99,29 @@ describe("Scribe", () => {
       const restoredBuffer = await getFromDB(sharedDB, "buffers", blobId);
       const restoredContent = stringFromUTF8ArrayBuffer(restoredBuffer.buffer);
       expect(restoredContent).toEqual(mediaContent);
+    }
+  });
+
+  const structuredMediaContents = [
+    [`"Hello world"`, { name: "hello.txt", type: "text", subtype: "plain" }, `"Hello world"`],
+    [`"Hello world"`, { name: "hello.txt", type: "text", subtype: "whatevs" }, `"Hello world"`],
+    [`"Hello world"`, { name: "hello.json", type: "application", subtype: "json" }, "Hello world"],
+    [`{ "a": 10 }`, { name: "a10.json", type: "application", subtype: "json" }, { a: 10 }],
+  ];
+
+  it("decodes blob buffers based on media type", async () => {
+    const scribe = createScribe();
+    await scribe.initialize();
+    const uri = createPartitionURI(URI);
+
+    const connection = await scribe.acquirePartitionConnection(uri, {});
+    const sharedDB = await openDB(sharedURI);
+
+    for (const [bufferContent, mediaInfo, expectedDecoding] of structuredMediaContents) {
+      const preparedBlob = connection.prepareBlob(bufferContent);
+      const blobId = await preparedBlob.persistProcess;
+      const decoding = await connection.decodeMediaContent(undefined, { blobId, ...mediaInfo });
+      expect(decoding).toEqual(expectedDecoding);
     }
   });
 

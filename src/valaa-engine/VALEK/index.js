@@ -78,28 +78,28 @@ export function expressionFromOperation (operation: any) {
  * @returns {Kuery}
  */
 export function VS (texts: string[], ...variables: any[]): Kuery {
-  let text = "";
+  let source = "";
   let i = 0;
   try {
     for (; i !== texts.length; ++i) {
-      text += texts[i];
+      source += texts[i];
       if (i < variables.length) {
-        text += String(variables[i]);
+        source += String(variables[i]);
       }
     }
     const sourceInfo = {
       phase: "VS-tag transpilation",
-      content: text,
+      source,
       mediaName: undefined,
       sourceMap: new Map(),
     };
-    return transpileValaaScript(text, VALEK, { sourceInfo, sourceType: "body" });
+    return transpileValaaScript(source, VALEK, { sourceInfo, sourceType: "body" });
   } catch (error) {
     throw wrapError(error, `During VS literal tag, with:`,
         "\n\ttexts:", ...texts,
         "\n\tvariables:", ...variables,
         "\n\titeration:", i,
-        "\n\taccumulated text:", text);
+        "\n\tsource:", source);
   }
 }
 

@@ -153,7 +153,7 @@ REST lambdas and the AWS mqtt IoT as event pub-sub.
 Provides the live proxies (`Vrappers`) to ValaaSpace resources with
 `ValaaEngine`. Completes the modifcation and transaction frameworks
 with the ability to create commands with the proxy objects. Provides
-Media content interpreter framework, which allows converting
+Media content decoder framework, which allows converting
 ValaaScript content inside ValaaSpace into executable code. This also
 allows integrating existing javascript code through ValaaScript
 seamless integration. Converts events into subscriber callbacks calls.

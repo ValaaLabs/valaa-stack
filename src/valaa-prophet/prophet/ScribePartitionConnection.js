@@ -6,12 +6,15 @@ import { VRef, obtainVRef, getRawIdFrom } from "~/valaa-core/ValaaReference";
 import PartitionConnection from "~/valaa-prophet/api/PartitionConnection";
 import { MediaInfo, NarrateOptions, RetrieveMediaContent } from "~/valaa-prophet/api/Prophet";
 
-import { bufferAndContentIdFromNative, nativeObjectFromBufferAndMediaInfo, invariantify,
-    invariantifyString, dumpObject, thenChainEagerly } from "~/valaa-tools";
+import DecoderArray from "~/valaa-prophet/prophet/DecoderArray";
+
+import { bufferAndContentIdFromNative, invariantify, invariantifyString, dumpObject,
+    thenChainEagerly } from "~/valaa-tools";
 import { type DatabaseAPI } from "~/valaa-tools/indexedDB/databaseAPI";
 
 import IndexedDBWrapper from "~/valaa-tools/html5/IndexedDBWrapper";
 import { encodeDataURI } from "~/valaa-tools/html5/urlEncode";
+import { stringFromUTF8ArrayBuffer } from "~/valaa-tools/id/contentId";
 
 export default class ScribePartitionConnection extends PartitionConnection {
   _processEvent: () => void;
@@ -54,6 +57,10 @@ export default class ScribePartitionConnection extends PartitionConnection {
     this._commandQueueInfo = { firstEventId: 0, lastEventId: -1, commandIds: [] };
     this.databaseAPI = options.databaseAPI;
     this._isFrozen = false;
+    this._decoderArray = new DecoderArray({
+      name: `Decoders of ${this.getName()}`,
+      fallbackArray: this.getProphet().getDecoderArray(),
+    });
   }
 
   getLastAuthorizedEventId () { return this._eventLogInfo.lastEventId; }
@@ -470,7 +477,7 @@ export default class ScribePartitionConnection extends PartitionConnection {
         this._prophet.readBlobContent(actualInfo.blobId),
         (buffer) => {
           if (!buffer) return undefined;
-          const nativeContent = nativeObjectFromBufferAndMediaInfo(buffer, actualInfo);
+          const nativeContent = _nativeObjectFromBufferAndMediaInfo(buffer, actualInfo);
           if (mediaEntry && (actualInfo.blobId === mediaEntry.mediaInfo.blobId)) {
             mediaEntry.nativeContent = nativeContent;
           }
@@ -487,6 +494,38 @@ export default class ScribePartitionConnection extends PartitionConnection {
     }
   }
 
+  decodeMediaContent (mediaId: VRef, mediaInfo?: MediaInfo): any {
+    let actualInfo = mediaInfo;
+    let decoder;
+    let name = "unknown media";
+    try {
+      if (!actualInfo) {
+        const mediaEntry = this._getMediaEntry(mediaId, false);
+        actualInfo = mediaEntry && mediaEntry.mediaInfo;
+        if (!actualInfo) throw new Error(`No media info found for ${mediaId}`);
+      }
+      if (!actualInfo.blobId) return undefined;
+      name = actualInfo.name ? `'${actualInfo.name}'` : `unnamed media`;
+      decoder = this._decoderArray.findDecoder(actualInfo);
+      if (!decoder) {
+        throw new Error(`Can't find decoder for ${actualInfo.type}/${actualInfo.subtype} in ${
+            this.getName()}`);
+      }
+    } catch (error) { throw onError.call(this, error); }
+    return thenChainEagerly(
+        this._prophet.decodeBlobContent(
+            actualInfo.blobId, decoder, { mediaName: name, partitionName: this.getName() }),
+        undefined,
+        onError.bind(this));
+    function onError (error) {
+      return this.wrapErrorEvent(error, `decodeMediaContent(${name}`,
+          "\n\tmediaId:", mediaId,
+          "\n\tactualMediaInfo:", ...dumpObject(actualInfo),
+          "\n\tthis:", ...dumpObject(this));
+    }
+  }
+
+
   getMediaURL (mediaId: VRef, mediaInfo?: MediaInfo): any {
     const mediaEntry = this._getMediaEntry(mediaId);
     try {
@@ -500,7 +539,7 @@ export default class ScribePartitionConnection extends PartitionConnection {
         if (!blobId) return undefined;
         const bufferCandidate = this._prophet.tryGetCachedBlobContent(blobId);
         nativeContent = bufferCandidate &&
-            nativeObjectFromBufferAndMediaInfo(bufferCandidate, mediaInfo || mediaEntry.mediaInfo);
+            _nativeObjectFromBufferAndMediaInfo(bufferCandidate, mediaInfo || mediaEntry.mediaInfo);
         if (blobId === mediaEntry.mediaInfo.blobId) {
           mediaEntry.nativeContent = nativeContent;
         }
@@ -775,3 +814,33 @@ export default class ScribePartitionConnection extends PartitionConnection {
     }
   }
 }
+
+function _nativeObjectFromBufferAndMediaInfo (buffer: ArrayBuffer, mediaInfo?:
+    { type?: string, subtype?: string, name?: string
+  /* TODO(iridian): any other types we'd need for
+    https://html.spec.whatwg.org/multipage/parsing.html#determining-the-character-encoding ?
+  */ }) {
+  // TODO(iridian): This is a quick hack for common types: we should really obey the above practice.
+  if (!mediaInfo) return buffer;
+  if (_isTextType(mediaInfo)) {
+    const text = stringFromUTF8ArrayBuffer(buffer);
+    if (mediaInfo.subtype === "json") return JSON.parse(text);
+    return text;
+  }
+  return buffer;
+}
+
+function _isTextType ({ type, subtype }: { type: string, subtype: string }) {
+  if (type === "text") return true;
+  if (type === "application") return _applicationTextSubtypes[subtype];
+  return false;
+}
+
+const _applicationTextSubtypes: any = {
+  valaascript: true,
+  "x-javascript": true,
+  javascript: true,
+  ecmascript: true,
+  vsx: true,
+  jsx: true,
+};

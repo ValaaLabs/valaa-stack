@@ -7,7 +7,7 @@ type VALKSourceInfo = {
   phase: string,
   partitionName: string,
   mediaName: string,
-  content: string,
+  source: string,
   sourceMap: Object,
 }
 
@@ -24,7 +24,7 @@ export function addStackFrameToError (error: Error, sourceObject: Object,
     sourceInfo: Object): Error {
   if (!sourceInfo) return error;
   invariantifyString(sourceInfo.mediaName, "(!sourceInfo || sourceInfo.mediaName)");
-  invariantifyString(sourceInfo.content, "(!sourceInfo || sourceInfo.content)");
+  invariantifyString(sourceInfo.source, "(!sourceInfo || sourceInfo.source)");
   invariantifyObject(sourceInfo.sourceMap, "(!sourceInfo || sourceInfo.sourceMap)", {});
   const stackFrame = { sourceObject, sourceInfo };
   // TODO(iridian): fix hack: grep wrapError.js outputError for "sourceStackFrames"
@@ -89,11 +89,11 @@ export function parseErrorMessagesFromStackTrace (stackTrace: VALKStackTrace) {
     latestError.repeats = 0;
     latestError.lineInfo = `line ${start.line}, column ${start.column} ${mediaInfoString}`;
     // Create a descriptive string describing the location of the problem
-    if (!frame.sourceInfo.content) {
+    if (!frame.sourceInfo.source) {
       latestError.messages = [`<no source available>`];
     } else {
       // Get the relevant source snippet
-      const sourceLines = frame.sourceInfo.content.split("\n");
+      const sourceLines = frame.sourceInfo.source.split("\n");
       const snippetLines = sourceLines.slice(start.line - 1, end.line);
       if (snippetLines.length === 1) {
         // Creates an underline line for single-line errors

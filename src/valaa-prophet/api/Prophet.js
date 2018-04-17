@@ -135,7 +135,7 @@ export default class Prophet extends LogEventGenerator {
   }
 
   /**
-   * Returns the blob content for given blobId as an ArrayBuffer if it is locally available,
+   * Returns the blob buffer for given blobId as an ArrayBuffer if it is locally available,
    * undefined otherwise.
    *
    * @param {string} blobId

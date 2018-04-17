@@ -3,6 +3,7 @@
 /* eslint-disable */
 export { default as Discourse } from "./api/Discourse";
 export { default as Follower } from "./api/Follower";
+export { default as MediaDecoder } from "./api/MediaDecoder";
 export { default as PartitionConnection } from "./api/PartitionConnection";
 export { default as Prophecy } from "./api/Prophecy";
 export { default as Prophet } from "./api/Prophet";

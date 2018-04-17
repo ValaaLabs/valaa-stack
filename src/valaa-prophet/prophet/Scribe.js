@@ -3,13 +3,26 @@
 import type { PartitionURI } from "~/valaa-core/tools/PartitionURI";
 
 import Prophet, { NarrateOptions } from "~/valaa-prophet/api/Prophet";
+import type MediaDecoder from "~/valaa-prophet/api/MediaDecoder";
+
+import DecoderArray from "~/valaa-prophet/prophet/DecoderArray";
 import ScribePartitionConnection from "~/valaa-prophet/prophet/ScribePartitionConnection";
 
 import IndexedDBWrapper from "~/valaa-tools/html5/IndexedDBWrapper";
 
-import { dumpObject, invariantifyObject, invariantifyString } from "~/valaa-tools";
+import { dumpObject, invariantifyObject, invariantifyString, thenChainEagerly }
+    from "~/valaa-tools";
 import type { DatabaseAPI } from "~/valaa-tools/indexedDB/databaseAPI";
 
+type BlobInfo = {
+  blobId: string, // db primary key for "blobs" and "buffers"
+  persistRefCount: number, // db-backed in "blobs"
+  byteLength: number, // db-backed in "blobs"
+  inMemoryRefCount: number, // not db-backed
+  buffer: ?ArrayBuffer, // db-backed in "buffers" but not always in memory
+  decodings?: WeakMap<MediaDecoder, any>,
+  persistProcess: ?Promise<any>,
+};
 
 /**
  * Scribe handles all localhost-based Blob and Media operations.
@@ -26,16 +39,7 @@ import type { DatabaseAPI } from "~/valaa-tools/indexedDB/databaseAPI";
  */
 export default class Scribe extends Prophet {
   _sharedDb: IndexedDBWrapper;
-  _blobLookup: {
-    [blobId: string]: {
-      blobId: string, // db primary key for "blobs" and "buffers"
-      persistRefCount: number, // db-backed in "blobs"
-      byteLength: number, // db-backed in "blobs"
-      inMemoryRefCount: number, // not db-backed
-      buffer: ?ArrayBuffer, // db-backed in "buffers" but not always in memory
-      persistProcess: ?Promise<any>,
-    }
-  };
+  _blobLookup: { [blobId: string]: BlobInfo; };
   _mediaTypes: { [mediaTypeId: string]: { type: string, subtype: string, parameters: any }};
 
   // Contains the media infos for most recent action for which media retrieval is successful and
@@ -53,6 +57,10 @@ export default class Scribe extends Prophet {
     this._partitionCommandCounts = {};
     this._commandCountCallback = commandCountCallback;
     this.databaseAPI = databaseAPI;
+    this._decoderArray = new DecoderArray({
+      name: `Decoders of ${this.getName()}`,
+      logger: this.getLogger(),
+    });
   }
 
   // Idempotent: returns a promise until the initialization is complete. await on it.
@@ -60,6 +68,8 @@ export default class Scribe extends Prophet {
     if (!this._blobLookup) this._blobLookup = this._initializeContentLookup();
     return this._blobLookup;
   }
+
+  getDecoderArray () { return this._decoderArray; }
 
   async _initializeContentLookup () {
     this._sharedDb = new IndexedDBWrapper("valaa-shared-content",
@@ -123,9 +133,10 @@ export default class Scribe extends Prophet {
       initialNarrateOptions: NarrateOptions): ScribePartitionConnection {
     // Oracle does connection caching and sharing, no need to have a connections structure here.
     const ret = new ScribePartitionConnection({
-      prophet: this, partitionURI,
+      prophet: this,
+      partitionURI,
       processEvent: initialNarrateOptions.callback,
-      databaseAPI: this.databaseAPI
+      databaseAPI: this.databaseAPI,
     });
     await ret.connect(initialNarrateOptions);
     return ret;
@@ -157,6 +168,28 @@ export default class Scribe extends Prophet {
     );
   }
 
+  decodeBlobContent (blobId: string, decoder: MediaDecoder, contextInfo: Object) {
+    const blobInfo: Object = this._blobLookup[blobId || ""];
+    if (!blobInfo) return undefined;
+    const cacheHit = blobInfo.decodings && blobInfo.decodings.get(decoder);
+    if (cacheHit) return cacheHit;
+    return thenChainEagerly(this.readBlobContent(blobId), [
+      (buffer) => (typeof buffer === "undefined"
+          ? undefined
+          : decoder.decode(buffer, contextInfo)),
+      (decoding) => {
+        if (typeof decoding !== "undefined") {
+          if (!blobInfo.decodings) blobInfo.decodings = new WeakMap();
+          blobInfo.decodings.set(decoder, decoding);
+        }
+        return decoding;
+      },
+    ], error => this.wrapErrorEvent(error, `decodeBlobContent(${blobId}, ${
+            decoder.getName()})`,
+        "\n\tdecoder:", ...dumpObject(decoder),
+        "\n\tcontext info:", ...dumpObject(contextInfo)));
+  }
+
   _persistBlobContent (buffer: ArrayBuffer, blobId: string, initialPersistRefCount: number = 0):
       ?Promise<any> {
     invariantifyObject(buffer, "_persistBlobContent.buffer",
@@ -165,8 +198,8 @@ export default class Scribe extends Prophet {
     let blobInfo = this._blobLookup[blobId];
     if (blobInfo && blobInfo.persistRefCount) return blobInfo.persistProcess;
     // Initiate write (set persistProcess so eventual commands using the blobId can wait
-    // before being accepted) but leave the content ref count to zero. Even if the content is
-    // never actually attached with a metadata, zero-refcount blobs can be cleared from storage at
+    // before being accepted) but leave the blob persist refcount to zero. Even if the blob is
+    // never actually attached to a metadata, zero-refcount blobs can be cleared from storage at
     // next _initializeContentLookup.
     blobInfo = this._blobLookup[blobId] = {
       blobId,
@@ -209,6 +242,7 @@ export default class Scribe extends Prophet {
     const blobInfo = this._blobLookup[blobId];
     if (blobInfo && !--blobInfo.inMemoryRefCount) {
       delete blobInfo.buffer;
+      delete blobInfo.decodings;
     }
   }
 

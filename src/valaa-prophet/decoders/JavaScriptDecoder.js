@@ -1,7 +1,27 @@
+// @flow
+
+import MediaDecoder from "~/valaa-prophet/api/MediaDecoder";
+
 import { wrapError } from "~/valaa-tools";
 
+export default class JavaScriptDecoder extends MediaDecoder {
+  static mediaTypes = [
+    { type: "application", subtype: "javascript" },
+    { type: "application", subtype: "x-javascript" },
+    { type: "application", subtype: "javascript" },
+    { type: "application", subtype: "ecmascript" },
+  ];
+
+  decode (buffer: ArrayBuffer): Function {
+    const source = this.stringFromBuffer(buffer);
+    return function _integrateNativeProgram (globalObject: Object) {
+      return _importFromString(source, globalObject).exports;
+    };
+  }
+}
+
 // TODO: investigate eval alternatives
-export default function importFromString (source: string, explicitModuleGlobal?: Object) {
+export function _importFromString (source: string, explicitModuleGlobal?: Object) {
   try {
     const moduleGlobal = explicitModuleGlobal || createModuleGlobal();
     // Emulate node -style module import system for js files.
@@ -18,7 +38,7 @@ ${source}
     delete moduleGlobal.module;
     return { global: moduleGlobal, exports };
   } catch (error) {
-    throw wrapError(error, `During importFromString(), with:`,
+    throw wrapError(error, `During _importFromString(), with:`,
         "\n\tsource:", { source });
   }
 }
