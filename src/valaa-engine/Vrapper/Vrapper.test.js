@@ -146,7 +146,7 @@ describe("Vrapper", () => {
     });
   });
 
-  describe("Vrapper media interpreter integration", () => {
+  describe("Vrapper media decoder integration", () => {
     let testVrapper;
 
     beforeEach(() => {
@@ -187,10 +187,11 @@ describe("Vrapper", () => {
       });
     });
 
-    describe("extractMediaInterpretation", () => {
+    describe("Media interpretation", () => {
       let mediaTypeUsed;
-      const mockInterpretMediaContent = (content, vOwner, mediaType) => {
+      const mockIntegrateDecoding = (decoding, vOwner, mediaType) => {
         mediaTypeUsed = mediaType;
+        return decoding;
       };
 
       let testVrapperMediaInfo;
@@ -198,8 +199,8 @@ describe("Vrapper", () => {
         testVrapperMediaInfo = {
           name: "file.vs", type: "meta", subtype: "data",
         };
-        testVrapper.engine.interpretMediaContent = mockInterpretMediaContent;
-        testVrapper.mediaContent = (() => "");
+        testVrapper.engine._integrateDecoding = mockIntegrateDecoding;
+        testVrapper.interpretContent = (() => "");
         testVrapper.hasInterface = () => true;
         testVrapper.get = function (kuery) {
           if (kuery === Vrapper.toMediaInfoFields) return ({ ...testVrapperMediaInfo });
@@ -213,40 +214,40 @@ describe("Vrapper", () => {
           typeName: "Tag",
           tagURI: "tag:valaa.com,2017-07-21-date:mediaType#application/javascript"
         });
-        testVrapper._extractMediaInterpretation({
-          content: "", mediaInfo: { type: "application", subtype: "javascript" },
+        testVrapper._obtainMediaInterpretation({
+          decoding: "", mediaInfo: { type: "application", subtype: "javascript" },
         }, testVrapper);
         expect(mediaTypeUsed.type).toEqual("application");
         expect(mediaTypeUsed.subtype).toEqual("javascript");
 
-        testVrapper._extractMediaInterpretation({ content: "", mime: "text/plain" },
+        testVrapper._obtainMediaInterpretation({ decoding: "", mime: "text/plain" },
             testVrapper);
         expect(mediaTypeUsed.type).toEqual("text");
         expect(mediaTypeUsed.subtype).toEqual("plain");
 
-        testVrapper._extractMediaInterpretation({ content: "" }, testVrapper);
+        testVrapper._obtainMediaInterpretation({ decoding: "" }, testVrapper);
         expect(mediaTypeUsed.type).toEqual("meta");
         expect(mediaTypeUsed.subtype).toEqual("data");
-        testVrapper._extractMediaInterpretation({ content: "", mimeFallback: "fall/back" },
+        testVrapper._obtainMediaInterpretation({ decoding: "", mimeFallback: "fall/back" },
             testVrapper);
         expect(mediaTypeUsed.type).toEqual("meta");
         expect(mediaTypeUsed.subtype).toEqual("data");
 
         testVrapperMediaInfo.type = "";
         testVrapperMediaInfo.subtype = "";
-        testVrapper._extractMediaInterpretation({ content: "" }, testVrapper);
+        testVrapper._obtainMediaInterpretation({ decoding: "" }, testVrapper);
         expect(mediaTypeUsed.type).toEqual("application");
         expect(mediaTypeUsed.subtype).toEqual("valaascript");
-        testVrapper._extractMediaInterpretation({ content: "", mimeFallback: "fall/back" },
+        testVrapper._obtainMediaInterpretation({ decoding: "", mimeFallback: "fall/back" },
             testVrapper);
         expect(mediaTypeUsed.type).toEqual("application");
         expect(mediaTypeUsed.subtype).toEqual("valaascript");
 
         testVrapperMediaInfo.name = "file";
-        testVrapper._extractMediaInterpretation({ content: "" }, testVrapper);
+        testVrapper._obtainMediaInterpretation({ decoding: "" }, testVrapper);
         expect(mediaTypeUsed.type).toEqual("application");
         expect(mediaTypeUsed.subtype).toEqual("octet-stream");
-        testVrapper._extractMediaInterpretation({ content: "", mimeFallback: "fall/back" },
+        testVrapper._obtainMediaInterpretation({ decoding: "", mimeFallback: "fall/back" },
             testVrapper);
         expect(mediaTypeUsed.type).toEqual("fall");
         expect(mediaTypeUsed.subtype).toEqual("back");

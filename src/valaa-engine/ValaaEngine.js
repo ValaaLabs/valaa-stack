@@ -21,19 +21,11 @@ import Cog, { executeHandlers } from "~/valaa-engine/Cog";
 import Motor from "~/valaa-engine/Motor";
 import Vrapper from "~/valaa-engine/Vrapper";
 import evaluateToCommandData from "~/valaa-engine/Vrapper/evaluateToCommandData";
+import integrateDecoding from "~/valaa-engine/Vrapper/integrateDecoding";
 
 import { createId, dumpify, outputCollapsedError, wrapError } from "~/valaa-tools";
 
-import { getAllMediaInterpreters } from "~/valaa-engine/interpreter";
-import PlainTextMediaInterpreter from "~/valaa-engine/interpreter/PlainTextMediaInterpreter";
-
-import type MediaInterpreter from "~/valaa-engine/interpreter/MediaInterpreter";
-
 export default class ValaaEngine extends Cog {
-
-  _mediaInterpreters: Array<MediaInterpreter>;
-  _defaultMediaInterpreter: MediaInterpreter;
-
   constructor ({ name, logger, prophet, timeDilation = 1.0, debugLevel }: Object) {
     super({ name: `${name}/Engine`, logger, debugLevel });
     this.engine = this;
@@ -46,9 +38,6 @@ export default class ValaaEngine extends Cog {
     this.addCog(this);
     this.motor = new Motor({ engine: this, name: `${name}/Motor`, prophet, timeDilation });
     this.addCog(this.motor);
-
-    this._defaultMediaInterpreter = new PlainTextMediaInterpreter();
-    this._mediaInterpreters = getAllMediaInterpreters();
     this.discourse = this._connectWithProphet(prophet);
 
     this._hostObjectDescriptors = new Map();
@@ -75,15 +64,6 @@ export default class ValaaEngine extends Cog {
     });
     ret.setBuiltinSteppers(engineBuiltinSteppers);
     return ret;
-  }
-
-  interpretMediaContent (content: any, vScope: Vrapper,
-      mediaInfo: { type: string, subtype: string }, options: VALKOptions = {}) {
-    let interpreter = this._mediaInterpreters.find(i => i.canInterpret(mediaInfo));
-    if (!interpreter) {
-      interpreter = this._defaultMediaInterpreter;
-    }
-    return interpreter.interpret(content, vScope, mediaInfo, options);
   }
 
   getSelfAsHead () {
@@ -447,4 +427,8 @@ export default class ValaaEngine extends Cog {
   setPaused (value = true) { return this.motor.setPaused(value); }
   getTimeDilation () { return this.motor.getTimeDilation(); }
   setTimeDilation (timeDilation) { return this.motor.setTimeDilation(timeDilation); }
+
+  _integrateDecoding (...rest: any[]) {
+    return integrateDecoding(...rest);
+  }
 }

@@ -776,7 +776,7 @@ export default class UIComponent extends React.Component {
             const blocker = lens.activate();
             if (blocker) return blocker;
             if (lens.hasInterface("Media")) {
-              return this.renderLens(lens.mediaContent(), `${lensName}-media`);
+              return this.renderLens(lens.interpretContent(), `${lensName}-media`);
             }
             console.error("DEPRECATED, SUBJECT TO CHANGE:",
                 "VSX notation `{focus.foo}` sets focus.foo as the new focus, for now",

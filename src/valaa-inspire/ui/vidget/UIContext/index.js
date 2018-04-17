@@ -51,10 +51,10 @@ export default class UIContext extends UIComponent {
           thenChainEagerly(
               (fallbackLens instanceof Vrapper)
                   && fallbackLens.hasInterface("Media")
-                  && fallbackLens.mediaContent({ mimeFallback: "text/vsx" }),
-              (content) => {
+                  && fallbackLens.interpretContent({ mimeFallback: "text/vsx" }),
+              (lensMediaContent) => {
                 this.setState({ fallbackLens, active: true });
-                this.outputDiagnostic(content, fallbackLens);
+                this.outputDiagnostic(lensMediaContent, fallbackLens);
               });
         } else {
           invariantify(typeof this.context.fallbackLens !== "undefined",

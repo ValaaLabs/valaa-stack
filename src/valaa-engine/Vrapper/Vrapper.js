@@ -27,12 +27,12 @@ import isResourceType from "~/valaa-core/tools/graphql/isResourceType";
 import { ValaaPrimitive } from "~/valaa-script";
 
 import { Discourse, Transaction, PartitionConnection, Prophecy } from "~/valaa-prophet";
+import { createModuleGlobal } from "~/valaa-prophet/decoders/JavaScriptDecoder";
 
 import VALEK, { Valker, Kuery, dumpKuery, expressionFromValue } from "~/valaa-engine/VALEK";
 
 import Cog, { extractMagicMemberEventHandlers } from "~/valaa-engine/Cog";
 import debugId from "~/valaa-engine/debugId";
-import { createModuleGlobal } from "~/valaa-engine/interpreter/importFromString";
 import _FieldUpdate from "~/valaa-engine/Vrapper/FieldUpdate";
 import _VrapperSubscriber from "~/valaa-engine/Vrapper/VrapperSubscriber";
 import evaluateToCommandData from "~/valaa-engine/Vrapper/evaluateToCommandData";
@@ -954,7 +954,7 @@ export default class Vrapper extends Cog {
         case "Property":
           return this.extractPropertyValue(options, vExplicitOwner);
         case "Media":
-          return this._extractMediaInterpretation(options, vExplicitOwner, typeName);
+          return this._obtainMediaInterpretation(options, vExplicitOwner, typeName);
         default:
       }
       return this;
@@ -1040,7 +1040,7 @@ export default class Vrapper extends Cog {
     return { ret: target, valueEntry };
   }
 
-  _extractedMediaInterpretations: WeakMap<Object, { [mime: string]: Object }>;
+  _mediaInterpretations: WeakMap<Object, { [mime: string]: Object }>;
 
   static toMediaInfoFields = VALK.fromVAKON({
     blobId: ["content", false, "blobId"],
@@ -1074,14 +1074,14 @@ export default class Vrapper extends Cog {
     return { mediaInfo, mime };
   }
 
-  _extractMediaInterpretation (options: VALKOptions, vExplicitOwner: ?Vrapper, typeName: ?string) {
+  _obtainMediaInterpretation (options: VALKOptions, vExplicitOwner: ?Vrapper, typeName: ?string) {
     let mediaInfo;
     let mime;
     try {
       const activeTypeName = typeName || this.getTypeName(options);
       if (activeTypeName !== "Media") {
         invariantify(this.hasInterface("Media"),
-            "Vrapper._extractMediaInterpretation only available for objects with Media interface",
+            "Vrapper._obtainMediaInterpretation only available for objects with Media interface",
             "\n\ttype:", activeTypeName,
             "\n\tobject:", this);
       }
@@ -1089,69 +1089,68 @@ export default class Vrapper extends Cog {
       transientOptions.mostMaterialized = true;
       const mostMaterializedTransient = this.getTransient(transientOptions);
 
-      // Interpretation instances are cached by transient and flushed if it changes via adding or
-      // removing of properties, change of mediaType etc. This does _not_ include the change of
-      // Media property values themselves as they don't affect the Media transient itself.
+      // Integrations are cached by transient and thus flushed if it changes via adding or removing
+      // of properties, change of mediaType etc. This does _not_ include the change of Media
+      // property values themselves as they don't affect the Media transient itself. The change of
+      // decoders will also not refresh the caches.
       // TODO(iridian): Re-evaluate this if ever we end up having Media properties affect the
       // interpretation. In that case the change of a property should flush this cache.
-      let transientInterpretations = (this._extractedMediaInterpretations
-              || (this._extractedMediaInterpretations = new WeakMap()))
-          .get(mostMaterializedTransient);
-      if (transientInterpretations) {
+      let interpretationsByMime: Object =
+          (this._mediaInterpretations || (this._mediaInterpretations = new WeakMap()))
+              .get(mostMaterializedTransient);
+      if (interpretationsByMime) {
         if (!options.mediaInfo) {
           mime = options.mime || "";
         } else {
           ({ mediaInfo, mime } = this._resolveMediaInfo(Object.create(options)));
         }
-        const cachedInterpretation = transientInterpretations[mime];
+        const cachedInterpretation = interpretationsByMime[mime];
         if (cachedInterpretation
             && (mime || !options.mimeFallback
-                || (cachedInterpretation === transientInterpretations[options.mimeFallback]))) {
+                || (cachedInterpretation === interpretationsByMime[options.mimeFallback]))) {
           return (options.immediate !== false)
               ? cachedInterpretation
               : Promise.resolve(cachedInterpretation);
         }
       }
       if (!mediaInfo) ({ mediaInfo, mime } = this._resolveMediaInfo(Object.create(options)));
-      let content = options.content;
-      if (typeof content === "undefined") {
-        content = this._withPartitionConnectionChainEagerly(Object.create(options),
-            connection => connection.readMediaContent(this.getId(options), mediaInfo));
-        if ((options.immediate === true) && isPromise(content)) {
-          throw new Error(`Media content not immediately available for '${
+      let decoding = options.decoding;
+      if (typeof decoding === "undefined") {
+        decoding = this._withPartitionConnectionChainEagerly(Object.create(options),
+            connection => connection.decodeMediaContent(this.getId(options), mediaInfo));
+        if ((options.immediate === true) && isPromise(decoding)) {
+          throw new Error(`Media interpretation not immediately available for '${
               (mediaInfo && mediaInfo.name) || "<unnamed>"}'`);
         }
-        if ((options.immediate === false) || isPromise(content)) {
+        if ((options.immediate === false) || isPromise(decoding)) {
           return (async () => {
-            options.content = await content;
+            options.decoding = await decoding;
             options.immediate = true;
-            return this._extractMediaInterpretation(options, vExplicitOwner, activeTypeName);
+            return this._obtainMediaInterpretation(options, vExplicitOwner, activeTypeName);
           })();
         }
-        // else: content is immediately available and immediate !== false. Proceed to
-        // interpretation and caching.
+        // else: decoding is immediately available and immediate !== false. Proceed to integration.
       }
       let vScope = vExplicitOwner || this.get("owner", Object.create(options));
       while (vScope && !vScope.hasInterface("Scope")) {
         vScope = vScope.get("owner", Object.create(options));
       }
       if (!vScope) vScope = this;
-      const newInterpretation = this.engine.interpretMediaContent(
-          content, vScope, mediaInfo, options);
-      if (!transientInterpretations) {
-        this._extractedMediaInterpretations
-            .set(mostMaterializedTransient, transientInterpretations = {});
+      const interpretation = this.engine._integrateDecoding(decoding, vScope, mediaInfo, options);
+      if (!interpretationsByMime) {
+        this._mediaInterpretations
+            .set(mostMaterializedTransient, interpretationsByMime = {});
       }
-      transientInterpretations[mime] = newInterpretation;
+      interpretationsByMime[mime] = interpretation;
       if (!options.mediaInfo && !options.mime
           && (!options.mimeFallback || (mime === options.mimeFallback))) {
-        // Set default interpretation lookup
-        transientInterpretations[""] = newInterpretation;
+        // Set default integration lookup
+        interpretationsByMime[""] = interpretation;
       }
-      return newInterpretation;
+      return interpretation;
     } catch (error) {
       throw this.wrapErrorEvent(error,
-          `extractMediaInterpretation('${this.get("name", options)}' as ${String(mime)})`,
+          `_obtainMediaInterpretation('${this.get("name", options)}' as ${String(mime)})`,
           "\n\tid:", this.getId(options).toString(),
           "\n\toptions:", ...dumpObject(options),
           "\n\tvExplicitOwner:", ...dumpObject(vExplicitOwner),
@@ -1221,9 +1220,9 @@ export default class Vrapper extends Cog {
           "Vrapper.blobContent only available for objects of Blob type",
           "\n\ttype:", this._typeName,
           "\n\tobject:", this);
-      const content = this.engine.prophet.tryGetCachedBlobContent(this.getRawId());
-      if (typeof content !== "undefined") return content;
-      throw new Error(`Cannot locate Blob content directly from caches (with id '${
+      const buffer = this.engine.prophet.tryGetCachedBlobContent(this.getRawId());
+      if (typeof buffer !== "undefined") return buffer;
+      throw new Error(`Cannot locate Blob buffer directly from caches (with id '${
           this.getRawId()}'`);
     } catch (error) {
       throw wrapError(error, `During ${this.debugId()}\n .blobContent()`);
@@ -1266,22 +1265,25 @@ export default class Vrapper extends Cog {
   }
 
   /**
-   * Eagerly returns the content of this Media. The return type based on requested media type:
-   * structured data like JSON is returned as native javascript objects and so on.
-   * TODO(iridian): Clarify this further.
-   * If the content is not immediately available or if the partition of the Media is not
+   * Eagerly returns an interpretation of this Media with optionally provided media type. Returns
+   * a fully integrated decoding associated with this resource and the provided media type.
+   *
+   * If the interpretation is not immediately available or if the partition of the Media is not
    * acquired, returns a promise for acquiring the partition and performing this operation instead.
+   *
+   * If options.immediate equals true and this would return a promise, throws instead.
+   * If options.immediate equals false always returns a promise.
    *
    * @param {VALKOptions} [options={}]
    * @returns
    *
    * @memberof Vrapper
    */
-  mediaContent (options: VALKOptions = {}) { return this._extractMediaInterpretation(options); }
+  interpretContent (options: VALKOptions = {}) { return this._obtainMediaInterpretation(options); }
 
   /**
-   * Eagerly updates the Media content cache entry with given blobContent, creates a new Blob for it
-   * and returns the Blob id.
+   * Eagerly updates the Blob cache entry with given content, creates a new Blob for it and returns
+   * the Blob id.
    * If the partition of the Media is not acquired, returns a promise for acquiring the partition
    * and performing this operation instead.
    * TODO(iridian): This is quite a sucky API. It was deviced to work nicely with LinkField toValue
@@ -1809,6 +1811,7 @@ const applicatorCreators = {
   blobContent: createApplicatorWithOptionsThird,
   mediaURL: createApplicatorWithOptionsFirst,
   mediaContent: createApplicatorWithOptionsFirst,
+  interpretContent: createApplicatorWithOptionsFirst,
   prepareBlob: createApplicatorWithOptionsSecond,
   updateMediaContent: createApplicatorWithOptionsSecond,
   recurseMaterializedFieldResources: createApplicatorWithOptionsSecond,

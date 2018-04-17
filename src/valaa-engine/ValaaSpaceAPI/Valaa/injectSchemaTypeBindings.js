@@ -643,7 +643,7 @@ export default function injectSchemaTypeBindings (Valaa: Object, scope: Object) 
     [scope.Media.immediateContent]: denoteValaaKueryFunction(
         `returns the Media content if it is immediately available.`
     )(function immediateContent (options: any) {
-      return VALEK.mediaContent({
+      return VALEK.interpretContent({
         immediate: true,
         mediaInfo: Vrapper.toMediaInfoFields,
         ...(options || {}),
@@ -652,7 +652,17 @@ export default function injectSchemaTypeBindings (Valaa: Object, scope: Object) 
     [scope.Media.readContent]: denoteValaaKueryFunction(
         `returns a promise to the Media content.`
     )(function readContent (options: any) {
-      const ret = VALEK.mediaContent({
+      const ret = VALEK.interpretContent({
+        immediate: false,
+        mediaInfo: Vrapper.toMediaInfoFields,
+        ...(options || {}),
+      }).toVAKON();
+      return ret;
+    }),
+    [scope.Media.interpretContent]: denoteValaaKueryFunction(
+        `returns a promise to the Media content.`
+    )(function interpretContent (options: any) {
+      const ret = VALEK.interpretContent({
         immediate: false,
         mediaInfo: Vrapper.toMediaInfoFields,
         ...(options || {}),

@@ -239,6 +239,10 @@ export default class EngineKuery extends ValaaScriptKuery {
     return this.call(this._root.toMethod("mediaContent"), null, options);
   }
 
+  interpretContent (options: Kuery = {}) {
+    return this.call(this._root.toMethod("interpretContent"), null, options);
+  }
+
   prepareBlob (blobContent: any, options: Kuery = {}) {
     return this.call(this._root.toMethod("prepareBlob"), null, blobContent, options);
   }

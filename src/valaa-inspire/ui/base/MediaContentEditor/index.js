@@ -13,7 +13,7 @@ export default class MediaContentEditor extends UIComponent {
       super.attachSubscribers(focus, props);
       this.attachKuerySubscriber(`FileEditor.content`, focus,
           VALEK.if(VALEK.toMediaContentField(),
-              { then: VALEK.mediaContent({ mime: "text/plain" }) }),
+              { then: VALEK.interpretContent({ mime: "text/plain" }) }),
               { onUpdate: this.onContentUpdate, scope: this.getUIContext() });
     } catch (error) {
       throw wrapError(error, `During ${this.debugId()}\n .attachSubscribers(), with:`,

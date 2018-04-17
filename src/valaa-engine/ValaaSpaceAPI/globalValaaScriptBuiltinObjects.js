@@ -2,6 +2,9 @@ import { vRef } from "~/valaa-core/ValaaReference";
 import VALEK from "~/valaa-engine/VALEK";
 import { asyncRequest } from "~/valaa-tools";
 
+// TODO(iridian): I think this is dead code. Verify and remove or at least deprecate, using
+// accessor properties which output warnings but return the concrete values below.
+
 export default {
   vRef,
   setField: VALEK.setField(VALEK.fromScope("$1"), VALEK.fromScope("$2")),
@@ -16,6 +19,7 @@ export default {
   blobContent: VALEK.blobContent(VALEK.fromScope("$1"), VALEK.fromScope("$2")),
   mediaURL: VALEK.mediaURL(),
   mediaContent: VALEK.mediaContent(),
+  interpretContent: VALEK.interpretContent(VALEK.fromScope("$1")),
   prepareBlob: VALEK.prepareBlob(VALEK.fromScope("$1"), VALEK.fromScope("$1")),
 
   asyncRequest,

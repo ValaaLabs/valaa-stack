@@ -167,7 +167,7 @@ export default class ValaaScope extends UIComponent {
           lens, VALEK.toMediaContentField(), { onUpdate: async () => {
             try {
               if (this.state.focusResource !== focus) return false;
-              const lensComponent = await lens.mediaContent({ mimeFallback: "text/vsx" });
+              const lensComponent = await lens.interpretContent({ mimeFallback: "text/vsx" });
               this.setState({ lensComponent });
               return undefined;
             } catch (error) {
