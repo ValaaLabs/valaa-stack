@@ -19,7 +19,7 @@ import EngineContentAPI from "~/valaa-engine/EngineContentAPI";
 import engineExtendValaaSpace from "~/valaa-engine/ValaaSpace";
 
 import InspireView from "~/valaa-inspire/InspireView";
-import { registerVidgets } from "~/valaa-inspire/ui/vidget";
+import { registerVidgets } from "~/valaa-inspire/ui";
 import type { Revelation } from "~/valaa-inspire/Revelation";
 import inspireExtendValaaSpace from "~/valaa-inspire/ValaaSpace";
 

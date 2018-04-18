@@ -5,7 +5,7 @@ import React from "react";
 
 import Vrapper from "~/valaa-engine/Vrapper";
 // FIXME(iridian): Removes cross-dependency to valaa-inspire
-import UIComponent from "~/valaa-inspire/ui/base/UIComponent";
+import UIComponent from "~/valaa-inspire/ui/UIComponent";
 
 export default function injectLensObjects (Valaa: Object, rootScope: Object,
     hostObjectDescriptors: Object) {

@@ -173,7 +173,7 @@ export default class Bard extends Resolver {
     const action = this.passage || this.story;
     if (!action) return super.debugId();
     const description = action.id
-        ? ` ${action.typeName} ${String(action.id).slice(0, 11)}...`
+        ? ` ${action.typeName} ${String(action.id).slice(0, 13)}...`
         : "";
     return `${super.debugId()}(${action.type}${description})`;
   }

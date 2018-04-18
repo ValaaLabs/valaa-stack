@@ -9,8 +9,8 @@ import { MediaDecoder } from "~/valaa-prophet";
 
 import VALEK, { Kuery, EngineKuery, VS } from "~/valaa-engine/VALEK";
 
-import { LENS } from "~/valaa-inspire/ui/base/UIComponent";
-import vidgets from "~/valaa-inspire/ui/vidget";
+import { LENS } from "~/valaa-inspire/ui/UIComponent";
+import vidgets from "~/valaa-inspire/ui";
 import _jsxTransformFromString from "~/valaa-inspire/decoders/_jsxTransformFromString";
 
 import notThatSafeEval from "~/valaa-tools/notThatSafeEval";

@@ -345,7 +345,7 @@ export default class Valker extends Resolver {
       if (Array.isArray(container)) {
         const entry = container[index];
         nextHead = this.tryPack(entry);
-        if (scope) scope.index = index;
+        // if (scope) scope.index = index;
       } else {
         const indexedImmutable = (Iterable.isIndexed(container) && container)
             || (OrderedMap.isOrderedMap(container) && container.toIndexedSeq())
@@ -360,7 +360,7 @@ export default class Valker extends Resolver {
         } else {
           throw new Error(`Cannot index non-array, non-indexable container object with ${index}`);
         }
-        if (scope) scope.index = index;
+        // if (scope) scope.index = index;
       }
       return nextHead;
     } catch (error) {

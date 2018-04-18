@@ -637,7 +637,7 @@ function map (valker: Valker, head: any, scope: ?Object, mapStep: any, nonFinalS
 
   sequence.forEach((entry, index) => {
     const entryHead = !head._sequence ? valker.tryPack(entry) : entry;
-    mapScope.index = index;
+    // mapScope.index = index;
     try {
       const result = valker._builtinSteppers["§->"](valker, entryHead, mapScope, mapStep);
       ret.push(valker.tryUnpack(result));
@@ -663,7 +663,7 @@ function filter (valker: Valker, head: any, scope: ?Object, filterStep: any,
 
   sequence.forEach((entry, index) => {
     const entryHead = isPackedSequence ? entry : valker.tryPack(entry);
-    filterScope.index = index;
+    // filterScope.index = index;
     try {
       const result = valker._builtinSteppers["§->"](valker, entryHead, filterScope, filterStep);
       if (result) ret.push(isPackedSequence ? valker.tryUnpack(entry) : entry);

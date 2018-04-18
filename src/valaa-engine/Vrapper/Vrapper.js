@@ -1050,7 +1050,7 @@ export default class Vrapper extends Cog {
     subtype: ["mediaType", false, "subtype"],
   });
 
-  _resolveMediaInfo (options: VALKOptions) {
+  resolveMediaInfo (options: VALKOptions) {
     let mediaInfo = options && options.mediaInfo && { ...options.mediaInfo };
     function setMediaInfoMIME (mime) {
       const split = mime.split("/");
@@ -1102,7 +1102,7 @@ export default class Vrapper extends Cog {
         if (!options.mediaInfo) {
           mime = options.mime || "";
         } else {
-          ({ mediaInfo, mime } = this._resolveMediaInfo(Object.create(options)));
+          ({ mediaInfo, mime } = this.resolveMediaInfo(Object.create(options)));
         }
         const cachedInterpretation = interpretationsByMime[mime];
         if (cachedInterpretation
@@ -1113,7 +1113,7 @@ export default class Vrapper extends Cog {
               : Promise.resolve(cachedInterpretation);
         }
       }
-      if (!mediaInfo) ({ mediaInfo, mime } = this._resolveMediaInfo(Object.create(options)));
+      if (!mediaInfo) ({ mediaInfo, mime } = this.resolveMediaInfo(Object.create(options)));
       let decoding = options.decoding;
       if (typeof decoding === "undefined") {
         decoding = this._withPartitionConnectionChainEagerly(Object.create(options),
@@ -1251,7 +1251,7 @@ export default class Vrapper extends Cog {
           "Vrapper.mediaURL only available for objects with Media interface",
           "\n\ttype:", this._typeName,
           "\n\tobject:", this);
-      ({ mediaInfo } = this._resolveMediaInfo(Object.create(options)));
+      ({ mediaInfo } = this.resolveMediaInfo(Object.create(options)));
       const ret = this._withPartitionConnectionChainEagerly(Object.create(options), connection =>
           connection.getMediaURL(this.getId(options), mediaInfo));
       if (typeof options.immediate !== "undefined") {

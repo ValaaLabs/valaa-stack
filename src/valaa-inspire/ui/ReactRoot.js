@@ -6,10 +6,10 @@ import jss, { SheetsManager } from "jss";
 import VALEK from "~/valaa-engine/VALEK";
 import { getImplicitMediaInterpretation } from "~/valaa-engine/Vrapper";
 
-import { uiComponentProps, VSSStyleSheetSymbol } from "~/valaa-inspire/ui/base/UIComponent";
-import { unthunkRepeat } from "~/valaa-inspire/ui/helper/thunk";
-import vidgets from "~/valaa-inspire/ui/vidget";
-import ValaaScope from "~/valaa-inspire/ui/vidget/ValaaScope";
+import { uiComponentProps, VSSStyleSheetSymbol } from "~/valaa-inspire/ui/UIComponent";
+import { unthunkRepeat } from "~/valaa-inspire/ui/thunk";
+import vidgets from "~/valaa-inspire/ui";
+import ValaaScope from "~/valaa-inspire/ui/ValaaScope";
 
 import { dumpObject, invariantifyString, traverse, wrapError, valaaHash } from "~/valaa-tools";
 
@@ -23,7 +23,7 @@ export default class ReactRoot extends React.Component {
     children: PropTypes.object,
     vUIRoot: PropTypes.object,
     lensProperty: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
-    inspireCSS: PropTypes.object,
+    // inspireCSS: PropTypes.object,
   };
 
   static childContextTypes = {
@@ -33,14 +33,13 @@ export default class ReactRoot extends React.Component {
     releaseVssSheets: PropTypes.func,
     lensContext: PropTypes.object,
     lensProperty: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
-    lensDefaultCSSClass: PropTypes.string,
     fallbackLens: PropTypes.any,
   };
 
   constructor (props, context) {
     super(props, context);
     this.cssRoot = {
-      Inspire: this.props.inspireCSS,
+      // Inspire: this.props.inspireCSS,
     };
   }
 
@@ -59,7 +58,6 @@ export default class ReactRoot extends React.Component {
       releaseVssSheets: this.releaseVssSheets,
       lensContext: { ...vidgets, Math },
       lensProperty: this.props.lensProperty,
-      lensDefaultCSSClass: "Inspire.lensDefaultContainer",
       fallbackLens: <div>No lens found in Valaa Resource named {VALEK.toField("name")}</div>,
     };
   }
