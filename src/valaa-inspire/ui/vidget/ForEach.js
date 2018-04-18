@@ -2,11 +2,9 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-import UIComponent, { uiComponentProps } from "~/valaa-inspire/ui/base/UIComponent";
+import UIComponent from "~/valaa-inspire/ui/base/UIComponent";
 
 import { invariantifyArray } from "~/valaa-tools/invariantify";
-
-const EMPTY = [];
 
 export default class ForEach extends UIComponent {
   static propTypes = {

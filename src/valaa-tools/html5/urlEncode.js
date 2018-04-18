@@ -1,6 +1,6 @@
 export function encodeDataURI (unicodeString: string, type:
     string = "text", subtype: string = "plain") {
-  return `data:${type}/${subtype};charset=UTF-8;base64,${base64FromUnicode(content)}`;
+  return `data:${type}/${subtype};charset=UTF-8;base64,${base64FromUnicode(unicodeString)}`;
 }
 
 export function base64FromUnicode (unicodeString: string) {

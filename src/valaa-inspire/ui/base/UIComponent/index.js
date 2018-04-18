@@ -716,15 +716,15 @@ export default class UIComponent extends React.Component {
   }
 
   renderFocus (focus: any) {
-    if (this.renderUIComponent) {
-      const prePostProcess = this.renderUIComponent(focus);
-      let ret = this.tryRenderLens(prePostProcess, "renderRoot");
-      if (typeof ret === "undefined") {
-        ret = (typeof prePostProcess === "object") ? prePostProcess : <span>{prePostProcess}</span>;
-      }
-      return ret;
-    }
-    return this.renderLensSequence(this.props.children);
+    if (!this.preRenderFocus) return this.renderLensSequence(this.props.children);
+    const preRendered = this.preRenderFocus(focus);
+    const ret = this.tryRenderLens(preRendered, "renderRoot");
+    if (typeof ret !== "undefined") return ret;
+    if (typeof preRendered === "object") return preRendered;
+    const key = this.getUIContextValue("key");
+    if (key) return <span key={key}>{preRendered}</span>;
+    return <span>{preRendered}</span>;
+  }
 
   renderFocusAsSequence (foci: any[], EntryElement: Object = UIComponent, entryProps: Object = {},
       keyFromFocus: (focus: any, index: number) => string) {
@@ -765,7 +765,7 @@ export default class UIComponent extends React.Component {
             return tryWrapInLiveProps(this, lens, lensName);
           }
           if (lens instanceof Kuery) {
-            const subName = `${lensName}-kuery`;
+            const subName = `kuery-${lensName}`;
             // Delegates the kuery resolution to LiveProps.
             return wrapInLiveProps(this,
                 React.createElement(UIComponent,
@@ -776,7 +776,7 @@ export default class UIComponent extends React.Component {
             const blocker = lens.activate();
             if (blocker) return blocker;
             if (lens.hasInterface("Media")) {
-              return this.renderLens(lens.interpretContent(), `${lensName}-media`);
+              return this.renderLens(lens.interpretContent(), `media-${lensName}`);
             }
             console.error("DEPRECATED, SUBJECT TO CHANGE:",
                 "VSX notation `{focus.foo}` sets focus.foo as the new focus, for now",
@@ -785,13 +785,13 @@ export default class UIComponent extends React.Component {
                 "as a _lens_, WITHOUT changing the focus.",
                 "\n\tin component:", this.debugId(), this);
             return React.createElement(ValaaScope,
-                this.childProps(`${lensName}-legacy-focus`, { focus: lens }, {}));
+                this.childProps(`legacy-focus-${lensName}`, { focus: lens }, {}));
           }
           if (Array.isArray(lens)) {
             let ret; // remains undefined if no entry tryRenderLens makes any changes
             let hasPromise;
             for (let i = 0; i !== lens.length; ++i) {
-              const processedEntry = this.tryRenderLens(lens[i], `${lensName}-${i}`);
+              const processedEntry = this.tryRenderLens(lens[i], `${i}-${lensName}`);
               if (typeof processedEntry !== "undefined") {
                 if (isPromise(processedEntry)) hasPromise = true;
                 if (!ret) ret = lens.slice(0, i);
@@ -802,7 +802,7 @@ export default class UIComponent extends React.Component {
             return ret;
           }
           if (Object.getPrototypeOf(lens) === Object.prototype) {
-            const subName = `${lensName}-noscope`;
+            const subName = `noscope-${lensName}`;
             return wrapInLiveProps(this,
                 React.createElement(ValaaScope, this.childProps(subName, {}, { ...lens })),
                 subName);
@@ -844,7 +844,7 @@ export default class UIComponent extends React.Component {
   tryRenderLensSequence (sequence: any, array: any[] = this.arrayFromValue(sequence)) {
     let ret;
     for (let i = 0; i !== array.length; ++i) {
-      const processedChild = this.tryRenderLens(array[i], `child-${String(i)}`);
+      const processedChild = this.tryRenderLens(array[i], `#${String(i)}`);
       if (typeof processedChild !== "undefined") {
         if (!ret) ret = array.slice(0, i);
         ret.push(processedChild);
@@ -982,11 +982,12 @@ export function uiComponentProps (options: {
     if (typeof options.kuery !== "undefined") props.kuery = options.kuery;
   }
   props.context = options.context || {};
-  props.context.key = props.key = props.context.key
-      || createComponentKey(typeof focus !== "undefined"
-              ? focus
-              : getScopeValue(props.uiContext || props.parentUIContext, "focus"),
-          options.name || "", options);
+  if (!props.context.key) {
+    props.context.key = createComponentKey(options.name || "",
+        focus || getScopeValue(props.uiContext || props.parentUIContext, "focus"),
+        options.index);
+  }
+  props.key = props.context.key;
   return props;
 }
 
@@ -1000,20 +1001,18 @@ export function uiComponentProps (options: {
  * @param {any} name
  * @returns
  */
-export function createComponentKey (focus: any, name: string,
-    { group = "-", index }: any): Object {
-  const uniqueId = (typeof index === "undefined")
-      && (focus instanceof Vrapper) && focus.getRawId();
+export function createComponentKey (name: string, focus: any, index?: any): string {
+  const uniqueId = (focus instanceof Vrapper) && focus.getRawId();
   // Principle here is that if an entry has an uniqueId ie. a singular resource focus, then
   // combination of name, groupIndex and the uniqueId is enough to identify the element.
   // This means that for a particular name+groupIndex combination no two child components can have
   // the same focus. This is useful for lists with unique resources as entries, but which might
   // change order over time.
-  // If focus is not a resource, the combination of element, name and group is used and
+  // If focus is not a resource, the combination of element, name is used and
   // must fully identify the component.
   return uniqueId
-      ? `-${name}/${group}>-@${uniqueId}`
-      : `-${name}/${group}>-#${typeof index !== "undefined" ? index : "-"}`;
+      ? `${name}-@${uniqueId}`
+      : `${name}-#${typeof index !== "undefined" ? index : "-"}`;
 }
 
 function _tryRenderLensRole (component: Object, rootName: string,

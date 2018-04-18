@@ -5,8 +5,7 @@ import { createValaaURI } from "~/valaa-core/tools/PartitionURI";
 import { VRef } from "~/valaa-core/ValaaReference";
 
 import PartitionConnection from "~/valaa-prophet/api/PartitionConnection";
-import type Prophet, { NarrateOptions, MediaInfo, RetrieveMediaContent }
-    from "~/valaa-prophet/api/Prophet";
+import { NarrateOptions, MediaInfo, RetrieveMediaContent } from "~/valaa-prophet/api/Prophet";
 import ScribePartitionConnection from "~/valaa-prophet/prophet/ScribePartitionConnection";
 
 import { dumpObject, invariantifyNumber, thenChainEagerly } from "~/valaa-tools";

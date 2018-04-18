@@ -12,8 +12,7 @@ import createProcessCommandVersionMiddleware from
 import { createBardMiddleware } from "~/valaa-core/redux/Bard";
 import Corpus from "~/valaa-core/Corpus";
 
-import { AuthorityNexus, FalseProphet, Oracle, Prophet, Scribe, MediaDecoder }
-    from "~/valaa-prophet";
+import { AuthorityNexus, FalseProphet, Oracle, Prophet, Scribe } from "~/valaa-prophet";
 
 import ValaaEngine from "~/valaa-engine/ValaaEngine";
 import EngineContentAPI from "~/valaa-engine/EngineContentAPI";

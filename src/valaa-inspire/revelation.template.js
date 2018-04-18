@@ -31,14 +31,14 @@ function schemePlugins () {
     createAuthorityProphet: undefined,
   };
 }
-
+/*
 function decoders () {
   return {
     mediaTypes: arrayOf({ type: "", subtype: "" }),
     decode: undefined,
   };
 }
-
+*/
 function authorityConfigs () {
   return {
     type: "",

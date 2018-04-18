@@ -115,7 +115,6 @@ describe("Scribe", () => {
     const uri = createPartitionURI(URI);
 
     const connection = await scribe.acquirePartitionConnection(uri, {});
-    const sharedDB = await openDB(sharedURI);
 
     for (const [bufferContent, mediaInfo, expectedDecoding] of structuredMediaContents) {
       const preparedBlob = connection.prepareBlob(bufferContent);
