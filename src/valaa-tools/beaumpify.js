@@ -1,6 +1,6 @@
 import dumpify from "~/valaa-tools/dumpify";
 
-const beautify = require("js-beautify").js_beautify;
+// const beautify = require("js-beautify").js_beautify;
 
 /**
  * dumpify wrapped in beautify
@@ -12,6 +12,6 @@ const beautify = require("js-beautify").js_beautify;
  * @returns
  */
 export default function beaumpify (value, { slice, sliceSuffix, ...beautifyOptions } = {}) {
-  const dumpified = dumpify(value, slice, sliceSuffix);
-  return dumpified ? beautify(dumpified, { ...beautifyOptions }) : "undefined";
+  return dumpify(value, slice, sliceSuffix);
+  // return dumpified ? beautify(dumpified, { ...beautifyOptions }) : "undefined";
 }

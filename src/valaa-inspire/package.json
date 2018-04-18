@@ -8,7 +8,6 @@
   "dependencies": {
     "babel-polyfill": "^6.9.1",
     "brace": "^0.9.1",
-    "draft-js": "^0.10.5",
     "immutable": "~3.7.4",
     "jss": "^8.1.0",
     "jss-css": "^3.0.0",
