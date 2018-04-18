@@ -21,7 +21,7 @@ import injectScriptAPIToScope from "~/valaa-engine/ValaaSpaceAPI";
 
 import InspireView from "~/valaa-inspire/InspireView";
 import { registerVidgets } from "~/valaa-inspire/ui/vidget";
-import { Revelation, expose } from "~/valaa-inspire/Revelation";
+import type { Revelation } from "~/valaa-inspire/Revelation";
 
 import { getDatabaseAPI } from "~/valaa-tools/indexedDB/getRealDatabaseAPI";
 import { arrayBufferFromBase64, invariantify, LogEventGenerator, valaaUUID } from "~/valaa-tools";
@@ -30,7 +30,7 @@ const DEFAULT_ACTION_VERSION = process.env.DEFAULT_ACTION_VERSION || "0.1";
 
 
 export default class InspireClient extends LogEventGenerator {
-  async initialize (revelation: Revelation, { schemePlugins }: Object = {}): Object {
+  async initialize (revelation: Revelation) {
     try {
       // Process the initially served landing page and extract the initial Valaa configuration
       // ('revelation') from it. The revelation might be device/locality specific.
@@ -45,25 +45,24 @@ export default class InspireClient extends LogEventGenerator {
 
       this.setDebugLevel(this.revelation.verbosity || 0);
 
-      this.nexus = await this._establishAuthorityNexus(this.revelation, schemePlugins);
+      this.nexus = await this._establishAuthorityNexus(revelation);
 
       // Create a connector (the 'scribe') to the locally backed event log / blob indexeddb cache
       // ('scriptures') based on the revelation.
-      this.scribe = await this._proselytizeScribe(this.revelation);
+      this.scribe = await this._proselytizeScribe(revelation);
 
       // Create the stream router ('oracle') which uses scribe as its direct upstream, but which
       // manages the remote authority connections.
-      this.oracle = await this._summonOracle(this.revelation, this.nexus, this.scribe);
+      this.oracle = await this._summonOracle(revelation, this.nexus, this.scribe);
 
-      this.corpus = await this._incorporateCorpus(this.revelation);
+      this.corpus = await this._incorporateCorpus(revelation);
 
       // Create the the main in-memory false prophet using the stream router as its upstream.
-      this.falseProphet = await this._proselytizeFalseProphet(
-            this.revelation, this.corpus, this.oracle);
+      this.falseProphet = await this._proselytizeFalseProphet(revelation, this.corpus, this.oracle);
 
       // Locate entry point event log (prologue), make it optimally available through scribe,
       // narrate it with false prophet and get the false prophet connection for it.
-      this.prologueConnections = await this._narratePrologues(this.revelation, this.scribe,
+      this.prologueConnections = await this._narratePrologues(revelation, this.scribe,
           this.falseProphet);
 
       this.entryPartitionConnection =
@@ -71,7 +70,7 @@ export default class InspireClient extends LogEventGenerator {
 
       registerVidgets();
       this.warnEvent(`initialize(): registered builtin Inspire vidgets`);
-      this.logEvent("InspireClient initialized, with revelation", this.revelation);
+      this.logEvent("InspireClient initialized, with revelation", revelation);
     } catch (error) {
       throw this.wrapErrorEvent(error, "initialize", "\n\tthis:", this);
     }
@@ -81,7 +80,7 @@ export default class InspireClient extends LogEventGenerator {
     [string]: { name: string, size: Object, defaultAuthorityURI: ?string }
   }) {
     const ret = {};
-    for (const [viewName, viewConfig] of Object.entries(viewConfigs)) {
+    for (const [viewName, viewConfig: Object] of Object.entries(viewConfigs)) {
       this.warnEvent(`createView({ name: '${viewConfig.name}', size: ${
             JSON.stringify(viewConfig.size)} })`);
       const engineOptions = {
@@ -148,23 +147,25 @@ export default class InspireClient extends LogEventGenerator {
    */
   async _interpretRevelation (revelation: Revelation): Object {
     try {
-      const ret = await expose(revelation);
-      this.warnEvent(`Interpreted revelation`, ret);
-      return ret;
+      this.warnEvent(`Interpreted revelation`, revelation);
+      return revelation;
     } catch (error) {
       throw this.wrapErrorEvent(error, "interpretRevelation", "\n\trevelation:", revelation);
     }
   }
 
-  async _establishAuthorityNexus (revelation: Object, schemePlugins: Object[]) {
+  async _establishAuthorityNexus (revelation: Object) {
     let nexusOptions;
     try {
       nexusOptions = {
         name: "Inspire AuthorityNexus",
-        authorityConfigs: await expose(revelation.authorityConfigs)
+        authorityConfigs: await revelation.authorityConfigs,
+        schemePlugins: await revelation.schemePlugins,
       };
       const nexus = new AuthorityNexus(nexusOptions);
-      for (const plugin of schemePlugins) nexus.addSchemePlugin(plugin);
+      for (const plugin of nexusOptions.schemePlugins) {
+        nexus.addSchemePlugin(plugin);
+      }
       this.warnEvent(`Established AuthorityNexus '${nexus.debugId()}'`,
           ...(!this.getDebugLevel() ? [] : [", with:",
             "\n\toptions:", nexusOptions,
@@ -173,8 +174,7 @@ export default class InspireClient extends LogEventGenerator {
       return nexus;
     } catch (error) {
       throw this.wrapErrorEvent(error, "establishAuthorityNexus",
-          "\n\tnexusOptions:", nexusOptions,
-          "\n\tschemePlugins:", schemePlugins);
+          "\n\tnexusOptions:", nexusOptions);
     }
   }
 
@@ -189,14 +189,14 @@ export default class InspireClient extends LogEventGenerator {
         logger: this.getLogger(),
         databaseAPI: getDatabaseAPI(),
         commandCountCallback: this._updateCommandCount,
-        ...await expose(revelation.scribe),
+        ...await revelation.scribe,
       };
       const scribe = await new Scribe(scribeOptions);
       await scribe.initialize();
-      for (const [blobId, blobInfo] of Object.entries((await expose(revelation.blobs)) || {})) {
-        const info = await expose(blobInfo);
+      for (const [blobId, blobInfo] of Object.entries((await revelation.blobs) || {})) {
+        const info = await blobInfo;
         if (info.persistRefCount !== 0) {
-          await scribe.preCacheBlob(blobId, await expose(blobInfo), readRevelationBlobContent);
+          await scribe.preCacheBlob(blobId, await blobInfo, readRevelationBlobContent);
         }
       }
       this.warnEvent(`Proselytized Scribe '${scribe.debugId()}'`,
@@ -211,16 +211,15 @@ export default class InspireClient extends LogEventGenerator {
           "\n\trevelation:", revelation);
     }
     async function readRevelationBlobContent (blobId: string) {
-      if (!buffers) buffers = await expose(revelation.buffers);
-      const opaqueBuffer = buffers[blobId];
-      if (typeof opaqueBuffer === "undefined") {
+      if (!buffers) buffers = await revelation.buffers;
+      if (typeof buffers[blobId] === "undefined") {
         client.errorEvent("Could not locate precached content for blob", blobId,
             "from revelation buffers", buffers);
         return undefined;
       }
-      const content = await expose(buffers[blobId]);
-      if (typeof content.base64 !== "undefined") return arrayBufferFromBase64(content.base64);
-      return content;
+      const container = await buffers[blobId];
+      if (typeof container.base64 !== "undefined") return arrayBufferFromBase64(container.base64);
+      return container;
     }
   }
 
@@ -249,7 +248,7 @@ export default class InspireClient extends LogEventGenerator {
         debugLevel: 1,
         authorityNexus,
         scribe,
-        ...await expose(revelation.oracle),
+        ...await revelation.oracle,
       };
       const oracle = new Oracle(oracleOptions);
       this.warnEvent(`Created Oracle ${oracle.debugId()}`,
@@ -270,7 +269,7 @@ export default class InspireClient extends LogEventGenerator {
     const reducerOptions = {
       ...EngineContentAPI, // schema, validators, reducers
       logEventer: this,
-      ...await expose(revelation.reducer),
+      ...await revelation.reducer,
     };
     const { schema, validators, mainReduce, subReduce } = createRootReducer(reducerOptions);
 
@@ -290,7 +289,7 @@ export default class InspireClient extends LogEventGenerator {
       subReduce,
       initialState: new ImmutableMap(),
       logger: this.getLogger(),
-      ...await expose(revelation.corpus),
+      ...await revelation.corpus,
     };
     return new Corpus(corpusOptions);
   }
@@ -305,7 +304,7 @@ export default class InspireClient extends LogEventGenerator {
         upstream,
         schema: EngineContentAPI.schema,
         logger: this.getLogger(),
-        ...await expose(revelation.falseProphet),
+        ...await revelation.falseProphet,
       };
       const falseProphet = new FalseProphet(falseProphetOptions);
       this.warnEvent(`Proselytized FalseProphet ${falseProphet.debugId()}`,
@@ -349,8 +348,8 @@ export default class InspireClient extends LogEventGenerator {
         const lastEventId = connection.getLastAuthorizedEventId();
         console.log("narrating", String(partitionURI), "from", eventId, lastEventId);
         if ((typeof eventId !== "undefined") && (eventId > lastEventId)) {
-          const { events, medias } = await expose(logs);
-          ([eventLog, mediaInfos] = await Promise.all([expose(events), expose(medias)]));
+          const { events, medias } = await logs;
+          ([eventLog, mediaInfos] = await Promise.all([events, medias]));
           await connection.narrateEventLog({ eventLog, firstEventId: lastEventId + 1 })/**/;
         }
         return connection;
@@ -369,13 +368,13 @@ export default class InspireClient extends LogEventGenerator {
   async _loadRevelationEntryPartitionAndPrologues (revelation: Object) {
     const ret = [];
     try {
-      for (const [uri, entry] of (Object.entries(await expose(revelation.partitions) || {}): any)) {
-        const { commandId, eventId, logs } = await expose(entry);
+      for (const [uri, entry] of (Object.entries((await revelation.partitions) || {}): any)) {
+        const { commandId, eventId, logs } = await entry;
         ret.push({ partitionURI: createPartitionURI(uri), commandId, eventId, logs });
       }
       if (revelation.directPartitionURI) {
         ret.push({
-          partitionURI: createPartitionURI(revelation.directPartitionURI),
+          partitionURI: createPartitionURI(await revelation.directPartitionURI),
           isNewPartition: false,
           logs: { commands: [], events: [] },
         });

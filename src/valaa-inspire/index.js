@@ -6,12 +6,18 @@ import "babel-polyfill";
 import injectTapEventPlugin from "react-tap-event-plugin";
 
 import InspireClient from "~/valaa-inspire/InspireClient";
-import { expose } from "~/valaa-inspire/Revelation";
+import { Revelation, combineRevelationsLazily } from "~/valaa-inspire/Revelation";
 
-import { isPromise, getGlobal, Logger, outputError } from "~/valaa-tools";
+import revelationTemplate from "~/valaa-inspire/revelation.template";
+
+import * as prophetDecoders from "~/valaa-prophet/decoders";
 
 import { schemePlugin as valaaLocalSchemePlugin } from "~/scheme-valaa-local";
 import { schemePlugin as valaaTransientSchemePlugin } from "~/scheme-valaa-transient";
+
+import { getGlobal, Logger, LogEventGenerator, outputError } from "~/valaa-tools";
+
+const logger = new Logger();
 
 const schemePlugins = [
   valaaLocalSchemePlugin,
@@ -20,60 +26,39 @@ const schemePlugins = [
 
 injectTapEventPlugin();
 
-const logger = new Logger();
 const createInspireClientGlobalName = "createInspireClient";
 
 export default createInspireClient;
 
-export async function createInspireClient (revelation: string, revelationOverrides: Object) {
+export async function createInspireClient (...revelations: Revelation[]) {
   let ret;
+  const revelationComponents = revelations.concat({ schemePlugins });
+  let combinedRevelation;
   try {
-    logger.warn(`Starting Inspire Client init sequence in environment (${
-        String(process.env.NODE_ENV)}), loading revelation`, revelation);
-    ret = new InspireClient({ name: "main", logger });
+    logger.warn(`Initializing Inspire Application Gateway in environment (${
+        String(process.env.NODE_ENV)}) by combining the revelation components`,
+        revelationComponents);
+    combinedRevelation = await combineRevelationsLazily(
+        revelationTemplate,
+        ...revelationComponents);
+    logger.warn(`  revelation combined as`, combinedRevelation);
 
-    await ret.initialize(
-        _combineOverridesLazily(revelation || "project.manifest.json", revelationOverrides),
-        { schemePlugins });
+    ret = new InspireClient({ name: combinedRevelation.name, logger });
+
+    await ret.initialize(combinedRevelation);
 
     getGlobal().inspireClient = ret;
     ret.warnEvent(`InspireClient set to window.inspireClient as`, ret);
     return ret;
   } catch (error) {
-    outputError((ret || logger).wrapErrorEvent(error, `createInspireClient(), with`,
-        "\n\trevelation:", revelation));
+    outputError((ret || new LogEventGenerator(logger)).wrapErrorEvent(error,
+        `createInspireClient(), with`,
+            "\n\trevelation components:", revelations,
+            "\n\tcombined revelation:", combinedRevelation));
     throw new Error("Failed to initialize Inspire Client. See message log for more details.");
   }
 }
 
 if (window) {
   window[createInspireClientGlobalName] = createInspireClient;
-}
-
-function _combineOverridesLazily (base: any, overrides: any) {
-  return (!isPromise(base) && !isPromise(overrides))
-      ? _override(base, overrides)
-      : (async () => _callAll(await _override(await base, await overrides)));
-}
-
-async function _callAll (callableMaybe: Function | any): any {
-  return (typeof callableMaybe !== "function") ? callableMaybe : _callAll(await callableMaybe());
-}
-
-function _override (base: Object, overrides: Object) {
-  if (typeof overrides === "undefined") return base;
-  if ((typeof overrides !== "object") || (overrides === null) || (base === null)) return overrides;
-  // If base is a string and override an object
-  if (typeof base !== "object") {
-    const actualBase = expose(base);
-    if (actualBase === base) return overrides;
-    return _combineOverridesLazily(actualBase, overrides);
-  }
-  const ret = { ...base };
-  for (const [key, override] of Object.entries(overrides)) {
-    ret[key] = (typeof ret[key] === "undefined")
-        ? override
-        : _combineOverridesLazily(ret[key], override);
-  }
-  return ret;
 }
