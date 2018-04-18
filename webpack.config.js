@@ -2,6 +2,7 @@ const webpack = require("webpack");
 const autoprefixer = require("autoprefixer");
 
 const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
+const CompressionPlugin = require("compression-webpack-plugin");
 
 // TODO(iridian): Figure out the clean and correct way to set up prod configuration; merely
 // running 'webpack -p' is not sufficient to enable isProduction, as -p only enables
@@ -37,16 +38,13 @@ module.exports = {
     publicPath: "/js/",
     filename: "valaa-inspire.js",
   },
-  externals: {
-    babylonjs: "BABYLON",
-  },
   node: {
     fs: "empty",
   },
   plugins: [
     new webpack.DefinePlugin({
       "process.env": {
-        NODE_ENV: JSON.stringify(process.env.NODE_ENV)
+        NODE_ENV: JSON.stringify(isProduction ? "production" : process.env.NODE_ENV)
       }
     }),
     // Silences a console warning due to amdefine/require, coming through jstransform dependency.
@@ -54,7 +52,7 @@ module.exports = {
     // esprima-fb is deprecated) but in practice VSX transformation relies on the custom
     // modifications of the locally expanded jsx-transform
     new webpack.ContextReplacementPlugin(/source-map/, /$^/),
-  ].concat((isLocal ? [] : [
+  ].concat(isLocal ? [] : [
     new UglifyJSPlugin({
       parallel: true,
       sourceMap: !isProduction,
@@ -76,8 +74,15 @@ module.exports = {
         ie8: false,
         safari10: false,
       }
-    })
-  ])),
+    }),
+    new CompressionPlugin({
+      asset: "[path].gz[query]",
+      algorithm: "gzip",
+      test: /\.js$|\.css$|\.html$/,
+      threshold: 10240,
+      minRatio: 0.8,
+    }),
+  ]),
   module: {
     rules: [
       { test: /\.js$/, exclude: /node_modules/, loader: "babel-loader" },
@@ -100,5 +105,7 @@ module.exports = {
   },
   devServer: {
     disableHostCheck: true,
+    compress: true,
   },
+  stats: {},
 };

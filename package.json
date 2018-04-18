@@ -10,6 +10,7 @@
   "scripts": {
     "build": "cross-conf-env cross-env NODE_PATH=$NODE_PATH:$npm_package_config_modulepaths webpack ",
     "dev": "TARGET_ENV=local cross-conf-env npm run dev-webpack $npm_package_config_defaultrevelation",
+    "prod": "TARGET_ENV=production cross-conf-env npm run dev-webpack $npm_package_config_defaultrevelation",
     "dev-webpack": "cross-conf-env cross-env NODE_PATH=$NODE_PATH:$npm_package_config_modulepaths webpack-dev-server --inline --progress --open --host 0.0.0.0 --content-base ",
     "eslint": "eslint .",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
@@ -81,6 +82,7 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
+    "compression-webpack-plugin": "^1.1.11",
     "cross-conf-env": "^1.1.2",
     "cross-env": "^5.0.0",
     "css-loader": "^0.26.1",
