@@ -24,7 +24,7 @@ import { Revelation, expose } from "~/valaa-inspire/Revelation";
 
 import { createForwardLogger } from "~/valaa-tools/Logger";
 import { getDatabaseAPI } from "~/valaa-tools/indexedDB/getRealDatabaseAPI";
-import { invariantify, LogEventGenerator, valaaUUID } from "~/valaa-tools";
+import { base64Decode, invariantify, LogEventGenerator, valaaUUID } from "~/valaa-tools";
 
 const DEFAULT_ACTION_VERSION = process.env.DEFAULT_ACTION_VERSION || "0.1";
 
@@ -174,6 +174,16 @@ export default class InspireClient extends LogEventGenerator {
         ...scribeOptions,
       });
       await scribe.initialize();
+      if (revelation.blobs) {
+        let buffers;
+        const blobs = await expose(revelation.blobs);
+        if (blobs) {
+          await scribe.precacheBlobs(blobs, async (blobId: string) => {
+            if (!buffers) buffers = await expose(revelation.buffers);
+            return base64Decode(buffers[blobId]);
+          });
+        }
+      }
       this.warnEvent(`Proselytized Scribe '${scribe.debugId()}', with:`,
           "\n\tscribeOptions:", scribeOptions,
           "\n\tscribe:", scribe,
@@ -293,13 +303,7 @@ export default class InspireClient extends LogEventGenerator {
       prologues = await this._loadRevelationEntryPartitionAndPrologues(revelation);
       this.warnEvent(`Narrated revelation prologue with ${prologues.length} entry points:`,
           "\n\t:", `'${prologues.map(({ partitionURI }) => String(partitionURI)).join("', '")}'`);
-      const ret = await Promise.all(prologues.map(({ partitionURI, eventLog, isNewPartition }) =>
-          falseProphet.acquirePartitionConnection(partitionURI, {
-            eventLog,
-            retrieveMediaContent: undefined,
-            createNewPartition: isNewPartition,
-          })
-      ));
+      const ret = await Promise.all(prologues.map(this._narratePrologue));
       this.warnEvent(`Acquired active connections for all revelation prologue partitions:`,
           "\n\tconnections:", ret.map(connection => [connection.debugId()/* , connection */]));
       return ret;
@@ -313,6 +317,12 @@ export default class InspireClient extends LogEventGenerator {
   async _loadRevelationEntryPartitionAndPrologues (revelation: Object) {
     const ret = [];
     try {
+      for (const [partitionURI, { commandId, eventId, content }]
+          of (Object.entries(await expose(revelation.partitions) || {}): any)) {
+        ret.push({
+          partitionURI: createPartitionURI(partitionURI), commandId, eventId, content,
+        });
+      }
       if (revelation.directPartitionURI) {
         ret.push({
           partitionURI: createPartitionURI(revelation.directPartitionURI),
@@ -380,5 +390,15 @@ export default class InspireClient extends LogEventGenerator {
           "\n\trevelation.postPrologueEventPaths:", revelation.postPrologueEventPaths,
       );
     }
+  }
+
+  _narratePrologue = async ({ partitionURI, eventLog, isNewPartition }) => {
+    /*
+    this.falseProphet.acquirePartitionConnection(partitionURI, {
+      eventLog,
+      retrieveMediaContent: undefined,
+      createNewPartition: isNewPartition,
+    });
+    */
   }
 }

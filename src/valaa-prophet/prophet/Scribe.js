@@ -53,7 +53,6 @@ export default class Scribe extends Prophet {
     this._partitionCommandCounts = {};
     this._commandCountCallback = commandCountCallback;
     this.databaseAPI = databaseAPI;
-    this.initialize();
   }
 
   // Idempotent: returns a promise until the initialization is complete. await on it.
@@ -98,6 +97,10 @@ export default class Scribe extends Prophet {
         `\n\tcleared ${clearedBuffers} buffers, releasing ${releasedBytes} bytes`);
     this._blobLookup = contentLookup;
     return contentLookup;
+  }
+
+  precacheBlobs (blobs, readBlobContent) {
+    this.errorEvent("preload not implemented yet");
   }
 
   _transaction (stores: Array<string>, mode: string = "readonly", opsCallback: Function) {

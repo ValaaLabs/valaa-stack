@@ -29,7 +29,7 @@ export class LogEventGenerator {
     logger?: Logger, debugLevel?: number
   } = {}) {
     this._logger = logger || console;
-    this._debugLevel = debugLevel;
+    this._debugLevel = debugLevel || 0;
     this._name = name;
   }
 
