@@ -7,7 +7,6 @@ import { createPartitionURI, getPartitionRawIdFrom } from "~/valaa-core/tools/Pa
 import Cog from "~/valaa-engine/Cog";
 import Vrapper from "~/valaa-engine/Vrapper";
 
-import * as InspireCSS from "~/valaa-inspire/ui/Inspire.css";
 import ReactRoot from "~/valaa-inspire/ui/ReactRoot";
 
 import { getGlobal } from "~/valaa-tools";
@@ -52,7 +51,6 @@ export default class InspireView extends Cog {
     this._reactRoot = (<ReactRoot
       vUIRoot={vUIRoot}
       lensProperty={["ROOT_LENS", "LENS", "EDITOR_LENS", "EDITOR_UI_JSX"]}
-      inspireCSS={InspireCSS}
     />);
     ReactDOM.render(this._reactRoot, this._rootElement);
   }

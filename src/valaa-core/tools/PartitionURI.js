@@ -13,10 +13,7 @@ import { invariantifyString, invariantifyObject } from "~/valaa-tools/";
  *     authority part must be empty, thus making this URI not a URL.
  *   - "valaa-local": partition is local to the client device but is persisted.
  *     authority part must be empty, thus making this URI not a URL.
- *   - "valaa-aws": partition is stored in some Valaa AWS backend. This backend is located at the
- *     location specified by the authority host part, making this partition URI a URL.
  *   Future candidate schemes:
- *   - "valaa-azure": same as valaa-aws, but for azure.
  *   - "valaa": partition location is not specified (authority part must be empty). The authority
  *     for this partition must be known by the surrounding context.
  *

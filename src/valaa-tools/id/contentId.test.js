@@ -38,7 +38,6 @@ describe("contentId module", () => {
   ];
 
   // Set these env variables to test using a big file.
-  // There are some here https://s3.console.aws.amazon.com/s3/buckets/valaa-test-data/?region=eu-west-1&tab=overview
   const bigFiles = (process.env.VALAA_TEST_BIG_FILE && process.env.VALAA_TEST_BIG_FILE_HASH) ? [
     { path: process.env.VALAA_TEST_BIG_FILE, hash: process.env.VALAA_TEST_BIG_FILE_HASH }
   ] : null;
