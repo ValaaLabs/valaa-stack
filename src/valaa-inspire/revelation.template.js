@@ -17,7 +17,7 @@ export default {
   falseProphet: { logLevel: 0 },
 
   authorityConfigs: dictionaryOf(authorityConfigs()),
-  partitions: dictionaryOf(partitionSnapshots()),
+  partitions: dictionaryOf(partitionInfos()),
   blobs: dictionaryOf(blobInfos()),
   buffers: dictionaryOf(bufferDatas()),
 };
@@ -54,7 +54,7 @@ function authorityConfigs () {
   };
 }
 
-function partitionSnapshots () {
+function partitionInfos () {
   return {
     name: "",
     commandId: NaN,
