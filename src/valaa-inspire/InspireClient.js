@@ -12,7 +12,8 @@ import createProcessCommandVersionMiddleware from
 import { createBardMiddleware } from "~/valaa-core/redux/Bard";
 import Corpus from "~/valaa-core/Corpus";
 
-import { AuthorityNexus, FalseProphet, Oracle, Prophet, Scribe } from "~/valaa-prophet";
+import { AuthorityNexus, FalseProphet, Oracle, Prophet, Scribe, MediaDecoder }
+    from "~/valaa-prophet";
 
 import ValaaEngine from "~/valaa-engine/ValaaEngine";
 import EngineContentAPI from "~/valaa-engine/EngineContentAPI";
@@ -183,6 +184,10 @@ export default class InspireClient extends LogEventGenerator {
           await scribe.preCacheBlob(blobId, await blobInfo, readRevelationBlobContent);
         }
       }
+      for (const decoder of await revelation.globalDecoders) {
+        scribe.getDecoderArray().addDecoder(decoder);
+      }
+
       this.warnEvent(`Proselytized Scribe '${scribe.debugId()}'`,
           ...(!this.getDebugLevel() ? [] : [", with:",
             "\n\tscribeOptions:", scribeOptions,

@@ -588,16 +588,16 @@ export default class Vrapper extends Cog {
     return this._lexicalScope || this.engine.getLexicalScope();
   }
 
-  getNativeGlobal () {
+  getNativeScope () {
     this.requireActive();
-    return this._nativeGlobal || this.engine.getNativeGlobal();
+    return this._nativeScope || this.engine.getNativeScope();
   }
 
   getHostGlobal () {
     this.requireActive();
     if (!this._hostGlobal) {
       this._hostGlobal = createModuleGlobal();
-      this._hostGlobal.Valaa = this._nativeGlobal;
+      this._hostGlobal.Valaa = this._nativeScope;
     }
     return this._hostGlobal;
   }
@@ -1704,10 +1704,10 @@ export default class Vrapper extends Cog {
       if (!this._lexicalScope) {
         this._lexicalScope = Object.create(parent.getLexicalScope());
         this._lexicalScope.this = this;
-        this._nativeGlobal = Object.create(parent.getNativeGlobal());
+        this._nativeScope = Object.create(parent.getNativeScope());
       } else {
         Object.setPrototypeOf(this._lexicalScope, parent.getLexicalScope());
-        Object.setPrototypeOf(this._nativeGlobal, parent.getNativeGlobal());
+        Object.setPrototypeOf(this._nativeScope, parent.getNativeScope());
       }
     }, new VrapperSubscriber().setSubscriberInfo(`Vrapper(${this.debugId()}).scope.owner`)
     ).triggerUpdate(options);
@@ -1736,7 +1736,7 @@ export default class Vrapper extends Cog {
             for (const propertyName of Object.keys(this._lexicalScope)) {
               if (this._lexicalScope[propertyName] === vActualAdd) {
                 delete this._lexicalScope[propertyName];
-                delete this._nativeGlobal[propertyName];
+                delete this._nativeScope[propertyName];
                 break;
               }
             }
@@ -1751,7 +1751,7 @@ export default class Vrapper extends Cog {
                 "\n\tfull Scope object:", ...dumpObject(this));
           }
           this._lexicalScope[newName] = vActualAdd;
-          Object.defineProperty(this._nativeGlobal, newName, {
+          Object.defineProperty(this._nativeScope, newName, {
             configurable: true,
             enumerable: true,
             get: () => vActualAdd.extractValue(undefined, this),
@@ -1771,7 +1771,7 @@ export default class Vrapper extends Cog {
         const propertyName = vActualRemove.get("name", update.previousStateOptions());
         if (this._lexicalScope[propertyName] === vActualRemove) {
           delete this._lexicalScope[propertyName];
-          delete this._nativeGlobal[propertyName];
+          delete this._nativeScope[propertyName];
         }
       });
     }, new VrapperSubscriber().setSubscriberInfo(`Vrapper(${this.debugId()}).properties`)

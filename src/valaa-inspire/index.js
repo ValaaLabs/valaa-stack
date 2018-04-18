@@ -11,6 +11,7 @@ import { Revelation, combineRevelationsLazily } from "~/valaa-inspire/Revelation
 import revelationTemplate from "~/valaa-inspire/revelation.template";
 
 import * as prophetDecoders from "~/valaa-prophet/decoders";
+import * as inspireDecoders from "~/valaa-inspire/decoders";
 
 import { schemePlugin as valaaLocalSchemePlugin } from "~/scheme-valaa-local";
 import { schemePlugin as valaaTransientSchemePlugin } from "~/scheme-valaa-transient";
@@ -24,6 +25,11 @@ const schemePlugins = [
   valaaTransientSchemePlugin,
 ];
 
+const globalDecoders = Object.values(Object.assign({},
+    prophetDecoders,
+    inspireDecoders,
+)).map((Decoder: Function) => new Decoder({ logger }));
+
 injectTapEventPlugin();
 
 const createInspireClientGlobalName = "createInspireClient";
@@ -32,7 +38,7 @@ export default createInspireClient;
 
 export async function createInspireClient (...revelations: Revelation[]) {
   let ret;
-  const revelationComponents = revelations.concat({ schemePlugins });
+  const revelationComponents = revelations.concat({ schemePlugins, globalDecoders });
   let combinedRevelation;
   try {
     logger.warn(`Initializing Inspire Application Gateway in environment (${

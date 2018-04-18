@@ -119,9 +119,7 @@ function _extendRevelation (base: Object, extension: Object) {
     ret = Object.create(Object.getPrototypeOf(base), Object.getOwnPropertyDescriptors(base));
     for (const [key_, value] of Object.entries(extension)) {
       key = key_;
-      const currentValue = typeof ret[key] !== "undefined"
-          ? ret[key]
-          : (valuePrototype && valuePrototype[key]);
+      const currentValue = typeof ret[key] !== "undefined" ? ret[key] : valuePrototype;
       if (typeof currentValue === "undefined") {
         ret[key] = value;
       } else {

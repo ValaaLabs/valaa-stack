@@ -1,7 +1,6 @@
 // @flow
 
 import type { MediaInfo } from "~/valaa-prophet/api/Prophet";
-// import type Vrapper from "~/valaa-engine/Vrapper";
 import type { VALKOptions } from "~/valaa-core/VALK";
 
 import { LogEventGenerator, stringFromUTF8ArrayBuffer } from "~/valaa-tools";
@@ -18,9 +17,11 @@ export default class MediaDecoder extends LogEventGenerator {
 
   constructor (options: Object = {}) {
     super(options);
-    ({ type: this.type, subtype: this.subtype } = this.constructor.mediaTypes[0]);
+    const { type, subtype } = this.constructor.mediaTypes[0];
+    this.type = type;
+    this.subtype = subtype;
     if (!options.name && this.constructor.mediaTypes.length) {
-      this.setName(`Decoder(${this.type}/${this.subtype})`);
+      this.setName(`Decoder(${type}/${subtype})`);
     }
     this._lookup = Object.freeze(this._prepareMediaTypeLookup());
   }

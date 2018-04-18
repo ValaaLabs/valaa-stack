@@ -59,7 +59,7 @@ function partitionSnapshots () {
     name: "",
     commandId: NaN,
     eventId: NaN,
-    logs: dictionaryOf({
+    logs: {
       commands: arrayOf(actions()),
       events: arrayOf(actions()),
       medias: dictionaryOf({
@@ -71,7 +71,7 @@ function partitionSnapshots () {
         isPersisted: null,
         isInMemory: null,
       }),
-    }),
+    },
   };
 }
 
@@ -85,10 +85,12 @@ function actions () {
       eventId: NaN,
       partitionAuthorityURI: "",
     }),
+    /*
     typeName: "",
     id: [],
     actions: [],
     initialState: {},
+    */
   };
 }
 

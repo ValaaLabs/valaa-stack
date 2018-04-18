@@ -105,7 +105,7 @@ export function createScribe (commandCountCallback: any) {
   ret.initialize();
   for (const Decoder: any of Object.values(Decoders)) {
     if (Decoder.mediaTypes) {
-      ret.getDecoderArray().addDecoder(new Decoder());
+      ret.getDecoderArray().addDecoder(new Decoder({ logger: ret.getLogger() }));
     }
   }
   return ret;

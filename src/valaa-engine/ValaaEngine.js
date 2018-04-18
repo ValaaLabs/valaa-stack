@@ -72,7 +72,7 @@ export default class ValaaEngine extends Cog {
 
   getRootScope () { return this._rootScope; }
   getLexicalScope () { return this.getRootScope(); }
-  getNativeGlobal () { return this.getRootScope(); }
+  getNativeScope () { return this.getRootScope(); }
   getHostObjectDescriptors () { return this._hostObjectDescriptors; }
   getHostObjectDescriptor (objectKey: any) { return this._hostObjectDescriptors.get(objectKey); }
 
