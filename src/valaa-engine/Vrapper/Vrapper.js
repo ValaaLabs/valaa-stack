@@ -37,7 +37,7 @@ import _FieldUpdate from "~/valaa-engine/Vrapper/FieldUpdate";
 import _VrapperSubscriber from "~/valaa-engine/Vrapper/VrapperSubscriber";
 import evaluateToCommandData from "~/valaa-engine/Vrapper/evaluateToCommandData";
 import { defaultOwnerCoupledField } from
-    "~/valaa-engine/ValaaSpaceAPI/Valaa/injectSchemaTypeBindings";
+    "~/valaa-engine/ValaaSpace/Valaa/injectSchemaTypeBindings";
 
 import { dumpify, dumpObject, invariantify, invariantifyObject, invariantifyString, isPromise,
     thenChainEagerly, outputError, wrapError } from "~/valaa-tools";
@@ -1230,9 +1230,13 @@ export default class Vrapper extends Cog {
   }
 
   /**
-   * Eagerly returns a URL for this content of this Media. The URI can be used in the local browser
-   * context to access the media content. If the partition of the Media is not acquired, returns
-   * a promise for acquiring the partition and performing this operation instead.
+   * Eagerly returns a URL for accessing the content of this Media with optionally provided media
+   * type. The content is a retrieved and decoded like described by the Media interpretation
+   * process. Unlike full interpretation the content is not integrated in any specific context.
+   * TODO(iridian): Should the integration be included as an option? How will the interpretation
+   * infrastructure be used outside VS/JS/VSX/JSX
+   * If the partition of the Media is not yet acquired, returns a promise which resolves to the URL
+   * after the corresponding partition is acquired.
    *
    * @param {VALKOptions} [options={}]
    * @returns
@@ -1324,9 +1328,8 @@ export default class Vrapper extends Cog {
     }
   }
 
-  updateMediaContent (content: any, options: VALKOptions = {}) {
-    console.error("DEPRECATED: Vrapper.updateMediaContent\n\tprefer:Vrapper.prepareBlob");
-    return this.prepareBlob(content, options);
+  updateMediaContent (/* content: any, options: VALKOptions = {} */) {
+    throw new Error("DEPRECATED: Vrapper.updateMediaContent\n\tprefer:Vrapper.prepareBlob");
   }
 
   recurseConnectedPartitionMaterializedFieldResources (fieldNames: Array<string>,

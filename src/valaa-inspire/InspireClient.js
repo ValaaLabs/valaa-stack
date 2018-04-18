@@ -17,7 +17,7 @@ import { AuthorityNexus, FalseProphet, Oracle, Prophet, Scribe, MediaDecoder }
 
 import ValaaEngine from "~/valaa-engine/ValaaEngine";
 import EngineContentAPI from "~/valaa-engine/EngineContentAPI";
-import engineExtendValaaSpace from "~/valaa-engine/ValaaSpaceAPI";
+import engineExtendValaaSpace from "~/valaa-engine/ValaaSpace";
 
 import InspireView from "~/valaa-inspire/InspireView";
 import { registerVidgets } from "~/valaa-inspire/ui/vidget";

@@ -8,7 +8,7 @@ import Vrapper from "~/valaa-engine/Vrapper";
 import {
   createHostPrototypeFieldDescriptor, createHostMaterializedFieldDescriptor,
   createHostFunctionDescriptor, createHostPropertyDescriptor,
-} from "~/valaa-engine/ValaaSpaceAPI/hostPropertyDescriptors";
+} from "~/valaa-engine/ValaaSpace/hostPropertyDescriptors";
 
 import { wrapError, dumpObject } from "~/valaa-tools";
 

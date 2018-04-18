@@ -1,6 +1,6 @@
 // @flow
 
-import createSymbolAliases from "~/valaa-engine/ValaaSpaceAPI/createSymbolAliases";
+import createSymbolAliases from "~/valaa-engine/ValaaSpace/createSymbolAliases";
 
 import injectLensObjects from "./injectLensObjects";
 

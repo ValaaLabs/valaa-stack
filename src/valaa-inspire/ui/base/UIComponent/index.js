@@ -20,8 +20,8 @@ import { invariantify, invariantifyObject, invariantifyFunction, isPromise, outp
 
 import { presentationExpander } from "./presentationHelpers";
 
-let tryWrapInLivePropsAssistant;
-let wrapInLivePropsAssistant;
+let tryWrapInLiveProps;
+let wrapInLiveProps;
 let ValaaScope;
 
 export const VSSStyleSheetSymbol = Symbol("VSS.StyleSheet");
@@ -95,8 +95,8 @@ export default class UIComponent extends React.Component {
   static stateCompareModesOnComponentUpdate = {}
 
   constructor (props: any, context: any) {
-    if (!tryWrapInLivePropsAssistant) {
-      ({ tryWrapInLivePropsAssistant, wrapInLivePropsAssistant } = require("./LiveProps"));
+    if (!tryWrapInLiveProps) {
+      ({ tryWrapInLiveProps, wrapInLiveProps } = require("./LiveProps"));
       ValaaScope = require("../../vidget/ValaaScope").default;
     }
     super(props, context);
@@ -735,7 +735,7 @@ export default class UIComponent extends React.Component {
       const props = {
         ...entryProps, key, focus, parentUIContext: this.getUIContext(), context: { forIndex },
       };
-      return wrapInLivePropsAssistant(this,
+      return wrapInLiveProps(this,
           React.createElement(EntryElement, props, ...this.arrayFromValue(this.props.children)),
           key);
     });
@@ -762,12 +762,12 @@ export default class UIComponent extends React.Component {
             return undefined;
           }
           if (React.isValidElement(lens)) {
-            return tryWrapInLivePropsAssistant(this, lens, lensName);
+            return tryWrapInLiveProps(this, lens, lensName);
           }
           if (lens instanceof Kuery) {
             const subName = `${lensName}-kuery`;
             // Delegates the kuery resolution to LiveProps.
-            return wrapInLivePropsAssistant(this,
+            return wrapInLiveProps(this,
                 React.createElement(UIComponent,
                     this.childProps(subName, {}, { overrideLens: [lens] })),
                 subName);
@@ -803,7 +803,7 @@ export default class UIComponent extends React.Component {
           }
           if (Object.getPrototypeOf(lens) === Object.prototype) {
             const subName = `${lensName}-noscope`;
-            return wrapInLivePropsAssistant(this,
+            return wrapInLiveProps(this,
                 React.createElement(ValaaScope, this.childProps(subName, {}, { ...lens })),
                 subName);
           }

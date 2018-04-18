@@ -8,7 +8,7 @@ import ValaaEngine from "~/valaa-engine/ValaaEngine";
 import type Vrapper from "~/valaa-engine/Vrapper";
 import Cog from "~/valaa-engine/Cog";
 import { builtinSteppers } from "~/valaa-engine/VALEK";
-import extendValaaSpace from "~/valaa-engine/ValaaSpaceAPI";
+import extendValaaSpace from "~/valaa-engine/ValaaSpace";
 
 import baseEventBlock from "~/valaa-engine/test/baseEventBlock";
 

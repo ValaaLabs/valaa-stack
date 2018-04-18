@@ -2,9 +2,9 @@ import { GraphQLObjectType, GraphQLSchema } from "graphql/type";
 
 import getTypeInterfaces from "~/valaa-core/tools/graphql/getTypeInterfaces";
 
-import createSymbolAliases from "~/valaa-engine/ValaaSpaceAPI/createSymbolAliases";
+import createSymbolAliases from "~/valaa-engine/ValaaSpace/createSymbolAliases";
 import { createHostFunctionDescriptor, createHostSymbolDescriptor }
-    from "~/valaa-engine/ValaaSpaceAPI/hostPropertyDescriptors";
+    from "~/valaa-engine/ValaaSpace/hostPropertyDescriptors";
 
 /**
  * Iterates over all Valaa host types and for each, iterates over all the fields of that type

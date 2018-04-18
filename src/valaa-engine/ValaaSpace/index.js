@@ -2,8 +2,8 @@
 
 import { GraphQLSchema } from "graphql/type";
 
-import extendObject from "~/valaa-engine/ValaaSpaceAPI/Object";
-import extendValaa from "~/valaa-engine/ValaaSpaceAPI/Valaa";
+import extendObject from "~/valaa-engine/ValaaSpace/Object";
+import extendValaa from "~/valaa-engine/ValaaSpace/Valaa";
 
 import globalEcmaScriptBuiltinObjects from "./globalEcmaScriptBuiltinObjects";
 import globalValaaScriptBuiltinObjects from "./globalValaaScriptBuiltinObjects";

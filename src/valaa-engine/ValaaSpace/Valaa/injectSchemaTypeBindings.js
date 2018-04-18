@@ -33,7 +33,7 @@ export default function injectSchemaTypeBindings (Valaa: Object, scope: Object) 
     name: "Resource",
     ".new": function new_ (valker: Valker, innerScope: ?Object, initialState: ?Object) {
       const actualInitialState = prepareInitialState(this, innerScope, initialState);
-      // TODO(iridian): Replace valker.follower with some builtinStep when moving ValaaSpaceAPI to
+      // TODO(iridian): Replace valker.follower with some builtinStep when moving ValaaSpace to
       // valaa-script. Now this relies on valker always being a FalseProphetDiscourse/transaction.
       const resource = valker.follower.create(this.name, actualInitialState,
           { transaction: valker });
@@ -173,7 +173,7 @@ export default function injectSchemaTypeBindings (Valaa: Object, scope: Object) 
             ""} allows spreading the duplicates to separate partitions (at least insofar a${
             ""} multi-partition command between said partitions is possible).`
     )(function recombine (...duplicationDirectives) {
-      // TODO(iridian): Replace valker.follower with some builtinStep when moving ValaaSpaceAPI to
+      // TODO(iridian): Replace valker.follower with some builtinStep when moving ValaaSpace to
       // valaa-script. Now this relies on valker always being a FalseProphetDiscourse/transaction.
       return this.__callerValker__.follower.recombine(duplicationDirectives,
           { transaction: this.__callerValker__ });

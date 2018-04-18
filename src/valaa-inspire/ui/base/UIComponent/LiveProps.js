@@ -176,7 +176,7 @@ export default class LiveProps extends UIComponent {
       newProps.key = this.getUIContextValue("key");
     }
     const element = React.createElement(elementType, newProps, ...children);
-    return wrapInLivePropsAssistant(
+    return wrapInLiveProps(
         this,
         !valaaScope
             ? element
@@ -212,8 +212,8 @@ export default class LiveProps extends UIComponent {
   }
 }
 
-export function wrapInLivePropsAssistant (component: UIComponent, element: Object, name?: string) {
-  const ret = tryWrapInLivePropsAssistant(component, element, name);
+export function wrapInLiveProps (component: UIComponent, element: Object, name?: string) {
+  const ret = tryWrapInLiveProps(component, element, name);
   return typeof ret !== "undefined" ? ret : element;
 }
 
@@ -227,7 +227,7 @@ export function wrapInLivePropsAssistant (component: UIComponent, element: Objec
  * @param {string} [name]
  * @returns
  */
-export function tryWrapInLivePropsAssistant (component: UIComponent, element: Object,
+export function tryWrapInLiveProps (component: UIComponent, element: Object,
     lensName?: string) {
   const { type, props, ref, key } = element;
   if ((type === LiveProps) || LiveProps.isPrototypeOf(type)) return undefined;
@@ -266,7 +266,7 @@ export function tryWrapInLivePropsAssistant (component: UIComponent, element: Ob
         if (key || lensName) newProps.key = key || lensName;
         if (!hasUIContext) newProps.parentUIContext = component.getUIContext();
         /*
-        console.log("tryWrapInLivePropsAssistant UIComponent", type.name, newProps,
+        console.log("tryWrapInLiveProps UIComponent", type.name, newProps,
             "\n\toriginal props:", props,
             "\n\toriginal element:", element,
             "\n\tparent component:", component);
@@ -309,16 +309,16 @@ export function tryWrapInLivePropsAssistant (component: UIComponent, element: Ob
       name: key || lensName,
       parentUIContext: component.getUIContext(),
     }, assistantProps);
-    // console.log("tryWrapInLivePropsAssistant LiveWrapper for", type.name, wrapperProps);
-    const NamedLivePropsAssistant = class NamedLivePropsAssistant extends LiveProps {};
-    Object.defineProperty(NamedLivePropsAssistant, "name", {
-      value: `LivePropsAssistant_${assistantProps.key}`,
+    // console.log("tryWrapInLiveProps LiveWrapper for", type.name, wrapperProps);
+    const NamedLiveProps = class NamedLiveProps extends LiveProps {};
+    Object.defineProperty(NamedLiveProps, "name", {
+      value: `LiveProps_${assistantProps.key}`,
     });
-    return React.createElement(NamedLivePropsAssistant, assistantProps,
+    return React.createElement(NamedLiveProps, assistantProps,
         ...component.arrayFromValue(props.children));
   } catch (error) {
     throw wrapError(error, `During ${component.debugId({ suppressKueries: true })
-            }\n .tryWrapInLivePropsAssistant(`,
+            }\n .tryWrapInLiveProps(`,
             typeof type === "function" ? type.name : type, `), with:`,
         "\n\telement.props:", props,
         "\n\telement.props.children:", props && props.children,

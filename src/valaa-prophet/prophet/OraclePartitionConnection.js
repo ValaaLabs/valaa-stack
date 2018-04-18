@@ -82,9 +82,9 @@ export default class OraclePartitionConnection extends PartitionConnection {
       // Handle step 1. of the acquirePartitionConnection optimistic full narration logic defined
       // in PartitionConnection.js and begin Start scribe event log narration (which is likely to
       // be I/O bound) in parallel to the authority proxy/connection creation.
-      const localNarrationProcess = this.narrateEventLog(initialNarrateOptions);
-
       const remoteConnection = this._connectToAuthorityProphet(onConnectData);
+
+      const localNarrationProcess = this.narrateEventLog(initialNarrateOptions);
 
       ret = await localNarrationProcess;
 
@@ -227,11 +227,11 @@ export default class OraclePartitionConnection extends PartitionConnection {
   }
 
   _connectToAuthorityProphet (onConnectData: Object) {
-    const authorityProphetCandidate = this._prophet._authorityNexus
+    this._authorityProphet = this._prophet._authorityNexus
         .obtainAuthorityProphetOfPartition(this.partitionURI());
-    if (!authorityProphetCandidate) return undefined;
-    return Promise.resolve(authorityProphetCandidate).then(async (authorityProphet: Prophet) => {
-      const remoteConnection = await authorityProphet
+    if (!this._authorityProphet) return undefined;
+    return (async () => {
+      const remoteConnection = await this._authorityProphet
           .acquirePartitionConnection(this.partitionURI(),
               { callback: this._onConfirmTruth.bind(this, "remoteUpstream"), noConnect: true });
       this.transferIntoDependentConnection("remoteUpstream", remoteConnection);
@@ -239,7 +239,7 @@ export default class OraclePartitionConnection extends PartitionConnection {
           = remoteConnection.readMediaContent.bind(remoteConnection);
       await remoteConnection.connect();
       return remoteConnection;
-    });
+    })();
   }
 
   async narrateEventLog (options: NarrateOptions = {}): Promise<any> {
