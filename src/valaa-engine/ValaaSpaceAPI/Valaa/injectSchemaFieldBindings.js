@@ -2,10 +2,9 @@ import { GraphQLObjectType, GraphQLSchema } from "graphql/type";
 
 import getTypeInterfaces from "~/valaa-core/tools/graphql/getTypeInterfaces";
 
+import createSymbolAliases from "~/valaa-engine/ValaaSpaceAPI/createSymbolAliases";
 import { createHostFunctionDescriptor, createHostSymbolDescriptor }
     from "~/valaa-engine/ValaaSpaceAPI/hostPropertyDescriptors";
-import createTopLevelSymbolAliases
-    from "~/valaa-engine/ValaaSpaceAPI/Valaa/createTopLevelSymbolAliases";
 
 /**
  * Iterates over all Valaa host types and for each, iterates over all the fields of that type
@@ -42,7 +41,7 @@ export default function injectSchemaFieldBindings (Valaa: Object,
       addHostFieldSymbolAndDescriptor(hostTypeDescriptor, typeIntro, typePropertyDescriptors,
           fieldName, fieldIntro);
     }
-    createTopLevelSymbolAliases(Valaa, hostTypeDescriptor);
+    createSymbolAliases(Valaa, hostTypeDescriptor);
   }
 }
 

@@ -21,10 +21,14 @@ import { wrapError, dumpObject } from "~/valaa-tools";
  * @param {Object} valaa
  * @returns
  */
-export default function createDecoratedObject (Valaa: Object,
-    hostObjectDescriptors: Map<any, Object>) {
-  const decoratedObject = function DecoratedObject (...rest) { return Object.call(this, ...rest); };
-  decoratedObject.prototype = Object.prototype;
+export default function extendObject (scope: Object, hostObjectDescriptors: Map<any, Object>,
+    Valaa: Object) {
+  const UndecoratedObject = scope.Object || Object;
+  scope.Object = function DecoratedObject (...rest) {
+    return UndecoratedObject.call(this, ...rest);
+  };
+  scope.Object.prototype = Object.prototype;
+
 
   function createArg0ValaaDispatcher (description: string, objectOperation: () => any,
       valaaOperation, valaaTypeOperation = objectOperation,
@@ -57,45 +61,45 @@ export default function createDecoratedObject (Valaa: Object,
     return ret;
   }
 
-  decoratedObject.is = createArg01ValaaDispatcher("", Object.is, isWithResource);
+  scope.Object.is = createArg01ValaaDispatcher("", Object.is, isWithResource);
 
-  decoratedObject.create = createArg0ValaaDispatcher("", Object.create, createWithResource);
-  decoratedObject.getPrototypeOf = createArg01ValaaDispatcher("", Object.getPrototypeOf,
+  scope.Object.create = createArg0ValaaDispatcher("", Object.create, createWithResource);
+  scope.Object.getPrototypeOf = createArg01ValaaDispatcher("", Object.getPrototypeOf,
       getPrototypeOfWithResource);
-  decoratedObject.setPrototypeOf = createArg01ValaaDispatcher("", Object.setPrototypeOf,
+  scope.Object.setPrototypeOf = createArg01ValaaDispatcher("", Object.setPrototypeOf,
       setPrototypeOfWithResource);
 
-  decoratedObject.assign = assignValaa;
-  decoratedObject.keys = createArg0ValaaDispatcher("", Object.keys, keysWithResource);
-  decoratedObject.values = createArg0ValaaDispatcher("", Object.values, valuesWithResource);
-  decoratedObject.entries = createArg0ValaaDispatcher("", Object.entries, entriesWithResource);
+  scope.Object.assign = assignValaa;
+  scope.Object.keys = createArg0ValaaDispatcher("", Object.keys, keysWithResource);
+  scope.Object.values = createArg0ValaaDispatcher("", Object.values, valuesWithResource);
+  scope.Object.entries = createArg0ValaaDispatcher("", Object.entries, entriesWithResource);
 
-  decoratedObject.isFrozen = createArg0ValaaDispatcher("", Object.isFrozen, isFrozenWithResource);
-  decoratedObject.freeze = createArg0ValaaDispatcher("", Object.freeze, freezeWithResource);
-  decoratedObject.isSealed = createArg0ValaaDispatcher("", Object.isSealed, isSealedWithResource);
-  decoratedObject.seal = createArg0ValaaDispatcher("", Object.seal, sealWithResource);
+  scope.Object.isFrozen = createArg0ValaaDispatcher("", Object.isFrozen, isFrozenWithResource);
+  scope.Object.freeze = createArg0ValaaDispatcher("", Object.freeze, freezeWithResource);
+  scope.Object.isSealed = createArg0ValaaDispatcher("", Object.isSealed, isSealedWithResource);
+  scope.Object.seal = createArg0ValaaDispatcher("", Object.seal, sealWithResource);
 
-  decoratedObject.isExtensible = createArg0ValaaDispatcher("", Object.isExtensible,
+  scope.Object.isExtensible = createArg0ValaaDispatcher("", Object.isExtensible,
       isExtensibleWithResource);
-  decoratedObject.preventExtensions = createArg0ValaaDispatcher("", Object.preventExtensions,
+  scope.Object.preventExtensions = createArg0ValaaDispatcher("", Object.preventExtensions,
       preventExtensionsWithResource);
 
-  decoratedObject.defineProperties = createArg0ValaaDispatcher("", Object.defineProperties,
+  scope.Object.defineProperties = createArg0ValaaDispatcher("", Object.defineProperties,
       definePropertiesWithResource);
-  decoratedObject.defineProperty = createArg0ValaaDispatcher("",
+  scope.Object.defineProperty = createArg0ValaaDispatcher("",
       Object.defineProperty, definePropertyWithResource,
       definePropertyWithBuiltin, definePropertyWithPrototype);
 
-  decoratedObject.getOwnPropertyDescriptor = createArg0ValaaDispatcher("",
+  scope.Object.getOwnPropertyDescriptor = createArg0ValaaDispatcher("",
       Object.getOwnPropertyDescriptor, getOwnPropertyDescriptorWithResource,
       getOwnPropertyDescriptorWithBuiltin, getOwnPropertyDescriptorWithPrototype);
-  decoratedObject.getOwnPropertyDescriptors = createArg0ValaaDispatcher("",
+  scope.Object.getOwnPropertyDescriptors = createArg0ValaaDispatcher("",
       Object.getOwnPropertyDescriptors, getOwnPropertyDescriptorsWithResource,
       getOwnPropertyDescriptorsWithBuiltin, getOwnPropertyDescriptorsWithPrototype);
-  decoratedObject.getOwnPropertyNames = createArg0ValaaDispatcher("",
+  scope.Object.getOwnPropertyNames = createArg0ValaaDispatcher("",
       Object.getOwnPropertyNames, getOwnPropertyNamesWithResource,
       getOwnPropertyNamesWithBuiltin, getOwnPropertyNamesWithPrototype);
-  decoratedObject.getOwnPropertySymbols = createArg0ValaaDispatcher("",
+  scope.Object.getOwnPropertySymbols = createArg0ValaaDispatcher("",
       Object.getOwnPropertySymbols, getOwnPropertySymbolsWithResource,
       getOwnPropertySymbolsWithBuiltin, getOwnPropertySymbolsWithPrototype);
 
@@ -416,5 +420,4 @@ export default function createDecoratedObject (Valaa: Object,
     // TODO(iridian): Might not work if symbols are polyfilled. Should!
     return Object.getOwnPropertySymbols(hostObjectPrototype);
   }
-  return decoratedObject;
 }

@@ -4,7 +4,6 @@ import { Map as ImmutableMap } from "immutable";
 
 import { VRef } from "~/valaa-core/ValaaReference";
 import { createPartitionURI } from "~/valaa-core/tools/PartitionURI";
-import { denoteValaaBuiltinWithSignature } from "~/valaa-core/VALK";
 import createRootReducer from "~/valaa-core/tools/createRootReducer";
 import createValidateActionMiddleware from "~/valaa-core/redux/middleware/validateAction";
 import createProcessCommandIdMiddleware from "~/valaa-core/redux/middleware/processCommandId";
@@ -17,11 +16,12 @@ import { AuthorityNexus, FalseProphet, Oracle, Prophet, Scribe } from "~/valaa-p
 
 import ValaaEngine from "~/valaa-engine/ValaaEngine";
 import EngineContentAPI from "~/valaa-engine/EngineContentAPI";
-import injectScriptAPIToScope from "~/valaa-engine/ValaaSpaceAPI";
+import engineExtendValaaSpace from "~/valaa-engine/ValaaSpaceAPI";
 
 import InspireView from "~/valaa-inspire/InspireView";
 import { registerVidgets } from "~/valaa-inspire/ui/vidget";
 import type { Revelation } from "~/valaa-inspire/Revelation";
+import inspireExtendValaaSpace from "~/valaa-inspire/ValaaSpace";
 
 import { getDatabaseAPI } from "~/valaa-tools/indexedDB/getRealDatabaseAPI";
 import { arrayBufferFromBase64, invariantify, LogEventGenerator, valaaUUID } from "~/valaa-tools";
@@ -97,34 +97,18 @@ export default class InspireClient extends LogEventGenerator {
             "\n\tengine:", engine,
           ]));
 
-      const Valaa = injectScriptAPIToScope(engine.getRootScope(), engine.getHostObjectDescriptors(),
-          engine.discourse.getSchema());
-      let RemoteAuthorityURI;
-      let getPartitionIndexEntityCall;
+      const rootScope = engine.getRootScope();
+      const hostDescriptors = engine.getHostObjectDescriptors();
+      engineExtendValaaSpace(rootScope, hostDescriptors, engine.discourse.getSchema());
       if (!viewConfig.defaultAuthorityURI) {
-        RemoteAuthorityURI = null;
-        getPartitionIndexEntityCall = function getPartitionIndexEntity () {
-          throw new Error(`Cannot locate partition index entity; Inspire view configuration${
-              ""} doesn't specify defaultAuthorityURI`);
-        };
+        inspireExtendValaaSpace(rootScope, hostDescriptors);
       } else {
-        // FIXME(iridian): Implement this.schemes - still missing.
         const defaultAuthorityConfig = this.schemes[viewConfig.defaultAuthorityURI];
         invariantify(defaultAuthorityConfig,
             `defaultAuthorityConfig missing when looking for default authority ${
-                  String(viewConfigs.defaultAuthorityURI)}`);
-        RemoteAuthorityURI = defaultAuthorityConfig.partitionAuthorityURI;
-        getPartitionIndexEntityCall = function getPartitionIndexEntity () {
-          return engine.tryVrapper(defaultAuthorityConfig.repositoryIndexId);
-        };
+                  String(viewConfig.defaultAuthorityURI)}`);
+        inspireExtendValaaSpace(rootScope, hostDescriptors, defaultAuthorityConfig, engine);
       }
-      Valaa.InspireClient = {
-        RemoteAuthorityURI,
-        LocalAuthorityURI: "valaa-local:",
-        getPartitionIndexEntity: denoteValaaBuiltinWithSignature(
-          `Returns the partition corresponding to the partition index.`
-        )(getPartitionIndexEntityCall),
-      };
       ret[viewName] = new InspireView({ engine, name: `${viewConfig.name} View` })
           .initialize(viewConfig);
       this.warnEvent(`Opened InspireView ${viewName}`,

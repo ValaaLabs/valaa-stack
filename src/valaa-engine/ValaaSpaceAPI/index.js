@@ -2,23 +2,21 @@
 
 import { GraphQLSchema } from "graphql/type";
 
-import createObject from "~/valaa-engine/ValaaSpaceAPI/Object";
-import createValaa from "~/valaa-engine/ValaaSpaceAPI/Valaa";
+import extendObject from "~/valaa-engine/ValaaSpaceAPI/Object";
+import extendValaa from "~/valaa-engine/ValaaSpaceAPI/Valaa";
 
 import globalEcmaScriptBuiltinObjects from "./globalEcmaScriptBuiltinObjects";
-import globalHTML5BuiltinObjects from "./globalHTML5BuiltinObjects";
 import globalValaaScriptBuiltinObjects from "./globalValaaScriptBuiltinObjects";
 
-export default function injectScriptAPIToScope (scope: Object,
+export default function extendValaaSpace (globalScope: Object,
     hostObjectDescriptors: Map<any, Object>, schema?: GraphQLSchema) {
   /**
    * Set the globals
    */
-  Object.assign(scope, globalEcmaScriptBuiltinObjects);
-  Object.assign(scope, globalHTML5BuiltinObjects);
-  Object.assign(scope, globalValaaScriptBuiltinObjects);
+  Object.assign(globalScope, globalEcmaScriptBuiltinObjects);
+  Object.assign(globalScope, globalValaaScriptBuiltinObjects);
 
-  scope.Valaa = createValaa(scope, hostObjectDescriptors, schema);
-  scope.Object = createObject(scope.Valaa, hostObjectDescriptors);
-  return scope.Valaa;
+  extendValaa(globalScope, hostObjectDescriptors, schema);
+  extendObject(globalScope, hostObjectDescriptors, globalScope.Valaa);
+  return globalScope.Valaa;
 }

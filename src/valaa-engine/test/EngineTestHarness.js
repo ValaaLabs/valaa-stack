@@ -8,7 +8,7 @@ import ValaaEngine from "~/valaa-engine/ValaaEngine";
 import type Vrapper from "~/valaa-engine/Vrapper";
 import Cog from "~/valaa-engine/Cog";
 import { builtinSteppers } from "~/valaa-engine/VALEK";
-import injectScriptAPIToScope from "~/valaa-engine/ValaaSpaceAPI";
+import extendValaaSpace from "~/valaa-engine/ValaaSpaceAPI";
 
 import baseEventBlock from "~/valaa-engine/test/baseEventBlock";
 
@@ -38,9 +38,10 @@ export default class EngineTestHarness extends ProphetTestHarness {
       debugLevel: this.getDebugLevel(),
     });
 
-    const Valaa = injectScriptAPIToScope(this.engine.getRootScope(),
-        this.engine.getHostObjectDescriptors(), this.schema);
-    Valaa.InspireClient = {
+    const rootScope = this.engine.getRootScope();
+    extendValaaSpace(rootScope, this.engine.getHostObjectDescriptors(), this.schema);
+    // TODOO(iridian): This should be in valaa-inspire, but there is no such thing.
+    rootScope.Valaa.InspireClient = {
       RemoteAuthorityURI: "valaa-testing:",
       LocalAuthorityURI: "valaa-local:",
     };
