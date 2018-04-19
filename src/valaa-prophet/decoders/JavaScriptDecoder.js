@@ -44,7 +44,6 @@ ${source}
 }
 
 let sharedGlobalProxy;
-let windowDescriptor;
 
 export function getSharedGlobal () {
   if (!sharedGlobalProxy) {
@@ -55,7 +54,7 @@ export function getSharedGlobal () {
 
 export function createModuleGlobal (explicitGlobalPrototype?: Object) {
   const ret = Object.create(explicitGlobalPrototype || getSharedGlobal());
-  Object.defineProperty(ret, "window", { ...windowDescriptor, value: ret });
+  Object.defineProperty(ret, "window", { get: () => ret });
   ret.self = ret;
   ret.global = ret;
   return ret;
@@ -67,7 +66,6 @@ function _createForwarder (object, target) {
   const forwarder = Object.create(prototype);
   Object.entries(Object.getOwnPropertyDescriptors(object)).forEach(([propertyName, descriptor]) => {
     if (propertyName === "window") {
-      windowDescriptor = descriptor;
       return;
     }
     const newDescriptor = { ...descriptor };
