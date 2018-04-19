@@ -62,8 +62,8 @@ module.exports = {
         parse: {},
         compress: isProduction && {},
         mangle: isProduction && {
-          keep_classnames: false,
-          keep_fnames: false,
+          keep_classnames: true,
+          keep_fnames: true,
         },
         output: {
           comments: false,

@@ -37,7 +37,7 @@ export default function integrateDecoding (decoding: any, vScope: Vrapper,
     mediaInfo: MediaInfo, options: VALKOptions) {
   return (typeof decoding === "function")
       ? _integrateNative(decoding, vScope, mediaInfo, options)
-      : (typeof decoding.toVAKON === "function")
+      : (decoding instanceof Kuery)
       ? _integrateKuery(decoding, vScope, mediaInfo, options)
       : decoding;
 }

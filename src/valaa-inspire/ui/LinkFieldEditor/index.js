@@ -2,11 +2,11 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-import UIComponent, { ReactPropTypesKueryIsRequired } from "~/valaa-inspire/ui/UIComponent";
+import UIComponent from "~/valaa-inspire/ui/UIComponent";
 import Presentable from "~/valaa-inspire/ui/Presentable";
 import FieldEditor from "~/valaa-inspire/ui/FieldEditor";
 import FieldUpdate from "~/valaa-engine/Vrapper/FieldUpdate";
-import VALEK, { pointer } from "~/valaa-engine/VALEK";
+import VALEK, { Kuery, pointer } from "~/valaa-engine/VALEK";
 import Vrapper from "~/valaa-engine/Vrapper";
 
 import { dumpObject, wrapError } from "~/valaa-tools";
@@ -16,8 +16,12 @@ export default class LinkFieldEditor extends UIComponent {
   static propTypes = {
     ...FieldEditor.propTypes,
     fieldName: PropTypes.string,
-    toCandidatesKuery: ReactPropTypesKueryIsRequired,
+    toCandidatesKuery: PropTypes.instanceOf(Kuery).isRequired,
   };
+  static noPostProcess = {
+    ...UIComponent.noPostProcess,
+    toCandidatesKuery: true,
+  }
 
   attachSubscribers (focus: any, props: Object) {
     try {

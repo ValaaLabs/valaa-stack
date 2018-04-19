@@ -92,7 +92,7 @@ export function executingInJest () {
 export function inBrowser () {
   // TODO(iridian): Properly differentiate between browser and jest environments.
   return window
-      && (!process || (process.env.NODE_ENV !== "production"))
+      && (true /* !process || (process.env.NODE_ENV !== "production") */)
       && !executingInJest();
 }
 

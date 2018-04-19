@@ -25,10 +25,6 @@ let wrapInLiveProps;
 let ValaaScope;
 
 export const VSSStyleSheetSymbol = Symbol("VSS.StyleSheet");
-export const ReactPropTypesKuery = PropTypes.instanceOf(Kuery);
-export const ReactPropTypesKueryIsRequired = PropTypes.instanceOf(Kuery).isRequired;
-ReactPropTypesKuery.noPropsInspirePostProcess = true;
-ReactPropTypesKueryIsRequired.noPropsInspirePostProcess = true;
 
 export function getScopeValue (scope: Object, name: string) {
   if (typeof scope === "undefined") return undefined;
@@ -72,7 +68,7 @@ export default class UIComponent extends React.Component {
     uiContext: PropTypes.object,
     parentUIContext: PropTypes.object,
     focus: PropTypes.any,
-    kuery: ReactPropTypesKuery,
+    kuery: PropTypes.instanceOf(Kuery),
     head: PropTypes.any, // obsolete alias for focus.
     locals: PropTypes.object,
     context: PropTypes.object,
@@ -81,6 +77,11 @@ export default class UIComponent extends React.Component {
     loadingLens: PropTypes.any,
     pendingLens: PropTypes.any,
   }
+  static noPostProcess = {
+    children: true,
+    kuery: true,
+  }
+
 
   static propsCompareModesOnComponentUpdate = {
     _presentation: "ignore",

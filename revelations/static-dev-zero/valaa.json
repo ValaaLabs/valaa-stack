@@ -1,0 +1,18 @@
+{
+    "name": "static-dev-zero",
+    "version": "0.30.0-prerelease",
+    "description": "Static Dev Zero Gateway",
+    "author": "Valaa Technologies Ltd.",
+    "license": "MIT",
+    "private": false,
+    "valaa": {
+        "type": "project",
+        "engine": {
+            "name": "@valaa/inspire",
+            "version": "0.30.0-prerelease"
+        },
+        "descriptions": {
+            "en-US": "Static Dev Zero Gateway"
+        }
+    }
+}

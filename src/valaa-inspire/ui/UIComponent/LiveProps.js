@@ -11,7 +11,7 @@ import { FieldUpdate, getImplicitCallable } from "~/valaa-engine/Vrapper";
 
 import ValaaScope from "~/valaa-inspire/ui/ValaaScope";
 import { isThunk } from "~/valaa-inspire/ui/thunk";
-import UIComponent, { ReactPropTypesKuery } from "~/valaa-inspire/ui/UIComponent";
+import UIComponent from "~/valaa-inspire/ui/UIComponent";
 
 import { isPromise, outputError, wrapError } from "~/valaa-tools";
 
@@ -50,7 +50,12 @@ export default class LiveProps extends UIComponent {
     elementType: PropTypes.any.isRequired,
     elementProps: PropTypes.object.isRequired,
     liveProps: PropTypes.object, // Must be Map
-    refKuery: ReactPropTypesKuery,
+    refKuery: PropTypes.instanceOf(Kuery),
+  }
+  static noPostProcess = {
+    ...UIComponent.noPostProcess,
+    liveProps: true,
+    refKuery: true,
   }
 
   constructor (props: any, context: any) {
@@ -165,6 +170,7 @@ export default class LiveProps extends UIComponent {
         return this.renderLensRole("delayedChildrenLens");
       }
     }
+    /*/ Only enable this section for debugging React key warnings; it will break react elsewhere
     let elementType = this.props.elementType;
     if (elementType === ValaaScope) {
       elementType = class Foo extends ValaaScope {};
@@ -172,6 +178,9 @@ export default class LiveProps extends UIComponent {
         value: `ValaaScope_${newProps.className || ""}${this.getUIContextValue("key")}`,
       });
     }
+    /*/
+    const elementType = this.props.elementType;
+    //*/
     if (!newProps.key) {
       newProps.key = this.getUIContextValue("key");
     }
@@ -240,9 +249,8 @@ export function tryWrapInLiveProps (component: UIComponent, element: Object,
   }
   try {
     for (const propName of Object.keys(props)) {
-      if (propName === "liveProps" || propName === "children") continue;
-      const propType = type.propTypes && type.propTypes[propName];
-      if (propType && propType.noPropsInspirePostProcess) continue;
+      if ((propName === "children")
+          || (type.noPostProcess && type.noPostProcess[propName])) continue;
       const newProp = _postProcessProp(
           props[propName], livePropLookup, liveProps, propName, component);
       if (typeof newProp !== "undefined") {
@@ -310,11 +318,13 @@ export function tryWrapInLiveProps (component: UIComponent, element: Object,
       parentUIContext: component.getUIContext(),
     }, assistantProps);
     // console.log("tryWrapInLiveProps LiveWrapper for", type.name, wrapperProps);
+    /* Only enable this section for debugging React key warnings; it will break react elsewhere
     const NamedLiveProps = class NamedLiveProps extends LiveProps {};
     Object.defineProperty(NamedLiveProps, "name", {
       value: `LiveProps_${assistantProps.key}`,
     });
-    return React.createElement(NamedLiveProps, assistantProps,
+    //*/
+    return React.createElement(LiveProps, assistantProps,
         ...component.arrayFromValue(props.children));
   } catch (error) {
     throw wrapError(error, `During ${component.debugId({ suppressKueries: true })

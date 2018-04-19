@@ -11,7 +11,7 @@ import dumpify from "~/valaa-tools/dumpify";
  * @param {any} sliceSuffix
  * @returns
  */
-export default function beaumpify (value, { slice, sliceSuffix, ...beautifyOptions } = {}) {
+export default function beaumpify (value, { slice, sliceSuffix } = {}) {
   return dumpify(value, slice, sliceSuffix);
   // return dumpified ? beautify(dumpified, { ...beautifyOptions }) : "undefined";
 }
