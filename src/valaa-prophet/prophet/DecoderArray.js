@@ -3,7 +3,7 @@
 import mergeWith from "lodash/mergeWith";
 
 import type { MediaInfo } from "~/valaa-prophet/api/Prophet";
-import { LogEventGenerator } from "~/valaa-tools";
+import { arrayFromAny, LogEventGenerator } from "~/valaa-tools";
 
 export default class DecoderArray extends LogEventGenerator {
   _decodersByType: ?{ [string]: { [string]: Object } };
@@ -20,7 +20,7 @@ export default class DecoderArray extends LogEventGenerator {
     mergeWith(this._decodersByType || (this._decodersByType = {}),
         decoder.getByMediaTypeLookup(),
         (targetEntry, sourceEntry) => ((Array.isArray(targetEntry) || Array.isArray(sourceEntry))
-            ? _asSequence(targetEntry).concat(_asSequence(sourceEntry))
+            ? arrayFromAny(targetEntry).concat(arrayFromAny(sourceEntry))
             : undefined));
   }
 
@@ -41,17 +41,11 @@ export default class DecoderArray extends LogEventGenerator {
   }
 
   _findByTypeAndSubType (mediaInfo: MediaInfo, type: string, subtype: string) {
-    for (const decodersBySubType of _asSequence(this._decodersByType[type])) {
-      for (const decoder of _asSequence(decodersBySubType[subtype])) {
+    for (const decodersBySubType of arrayFromAny(this._decodersByType[type] || undefined)) {
+      for (const decoder of arrayFromAny(decodersBySubType[subtype] || undefined)) {
         if (decoder.canDecode(mediaInfo)) return decoder;
       }
     }
     return undefined;
   }
-}
-
-function _asSequence (candidate: any) {
-  return (typeof candidate === "undefined") || (candidate === null) ? []
-      : Array.isArray(candidate) ? candidate
-      : [candidate];
 }

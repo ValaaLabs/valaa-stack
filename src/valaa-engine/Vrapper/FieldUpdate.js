@@ -6,7 +6,7 @@ import { Prophecy } from "~/valaa-prophet";
 import { isCreatedLike } from "~/valaa-core/command";
 
 import Vrapper from "~/valaa-engine/Vrapper";
-import Forkable from "~/valaa-tools/Forkable";
+import { arrayFromAny, Forkable } from "~/valaa-tools";
 
 @Forkable
 export default class FieldUpdate {
@@ -66,7 +66,7 @@ export default class FieldUpdate {
   actualAdds () {
     if (!this._prophecy || isCreatedLike(this._prophecy.passage)) {
       const value = this.value();
-      return value === null ? [] : Array.isArray(value) ? value : [value];
+      return arrayFromAny(value || undefined);
     } else if (this._prophecy.passage.actualAdds) {
       const ids = this._emitter._tryElevateFieldValueFrom(this._prophecy.state, this._fieldName,
           this._prophecy.passage.actualAdds.get(this._fieldName), this._vProphecyResource);
@@ -93,7 +93,7 @@ export default class FieldUpdate {
       // The first call in createFieldUpdate is useless as no actualAdds get made.
       // TODO(iridian): The non-pure kueries should be replaced with pure kueries?
       const value = this._emitter.do(this._fieldName, this.previousStateOptions());
-      return Array.isArray(value) ? value : [value];
+      return arrayFromAny(value || undefined);
     }
     return [];
   }

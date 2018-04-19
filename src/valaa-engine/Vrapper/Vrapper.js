@@ -39,8 +39,10 @@ import evaluateToCommandData from "~/valaa-engine/Vrapper/evaluateToCommandData"
 import { defaultOwnerCoupledField } from
     "~/valaa-engine/ValaaSpace/Valaa/injectSchemaTypeBindings";
 
-import { dumpify, dumpObject, invariantify, invariantifyObject, invariantifyString, isPromise,
-    thenChainEagerly, outputError, wrapError } from "~/valaa-tools";
+import { arrayFromAny, iterableFromAny, dumpify, dumpObject,
+  invariantify, invariantifyObject, invariantifyString,
+  isPromise, thenChainEagerly, outputError, wrapError,
+} from "~/valaa-tools";
 import { mediaTypeFromFilename } from "~/valaa-tools/MediaTypeData";
 
 export const FieldUpdate = _FieldUpdate;
@@ -661,9 +663,9 @@ export default class Vrapper extends Cog {
     let commandValue;
     try {
       const { transaction, id } = this._primeTransactionAndOptionsAndId(options);
-      commandValue = this._intoArray(evaluateToCommandData(value, options));
+      commandValue = evaluateToCommandData(value, options);
       return transaction.claim(addedToFields({ id, typeName: this._typeName },
-          { [fieldName]: commandValue },
+          { [fieldName]: arrayFromAny(commandValue || undefined) },
       ));
     } catch (error) {
       throw this.wrapErrorEvent(error, `addToField(${fieldName})`,
@@ -680,10 +682,11 @@ export default class Vrapper extends Cog {
     try {
       const { transaction, id } = this._primeTransactionAndOptionsAndId(options);
       commandValue = evaluateToCommandData(value, options);
-      if (commandValue !== null && !Array.isArray(commandValue)) commandValue = [commandValue];
-      return transaction.claim(removedFromFields({ id, typeName: this._typeName },
-          { [fieldName]: commandValue },
-      ));
+      return transaction.claim(removedFromFields({ id, typeName: this._typeName }, {
+        [fieldName]:
+            commandValue === null ? null
+                : arrayFromAny(commandValue)
+      } ));
     } catch (error) {
       throw this.wrapErrorEvent(error, `removeFromField(${fieldName})`,
           "\n\tfield name:", fieldName,
@@ -705,9 +708,13 @@ export default class Vrapper extends Cog {
     const addedValues = new Set(withValues);
     try {
       const { transaction, id } = this._primeTransactionAndOptionsAndId(options);
-      commandRemovedValues = this._intoArray(evaluateToCommandData(
-          replacedValues.filter(replacedValue => !addedValues.has(replacedValue)), options));
-      commandAddedValues = this._intoArray(evaluateToCommandData(withValues, options));
+      commandRemovedValues = arrayFromAny(
+          evaluateToCommandData(
+                  replacedValues.filter(replacedValue => !addedValues.has(replacedValue)), options)
+              || undefined);
+      commandAddedValues = arrayFromAny(
+          evaluateToCommandData(withValues, options)
+              || undefined);
       return transaction.claim(replacedWithinFields({ id, typeName: this._typeName },
           { [fieldName]: commandRemovedValues },
           { [fieldName]: commandAddedValues },
@@ -733,9 +740,6 @@ export default class Vrapper extends Cog {
     options.partitionURIString = partitionURI && partitionURI.toString();
     return { transaction, id };
   }
-
-  _intoArray (value: any) { return Array.isArray(value) ? value : [value]; }
-
 
   /**
    * Creates an object using this as sub-kuery head.
@@ -1365,11 +1369,8 @@ export default class Vrapper extends Cog {
     for (const fieldName of fieldNames) {
       const fieldValue = transient.get(fieldName);
       for (const fieldEntry of
-          (!fieldValue ? []
-              : (Array.isArray(fieldValue)
-                      || (Iterable.isIterable(fieldValue) && !(Iterable.isKeyed(fieldValue))))
-                  ? fieldValue
-              : [fieldValue])) {
+          (Iterable.isKeyed(fieldValue) ? [fieldValue]
+              : iterableFromAny(fieldValue || undefined))) {
         // TODO(iridian): Replace with tryRawIdFrom or similar
         const id = getRawIdFrom(fieldEntry);
         const typeName = id && state.getIn(["Resource", id]);
@@ -1827,8 +1828,7 @@ function createApplicatorWithNoOptions (vrapper: Vrapper, methodName: string) {
       return vrapper[methodName](...args);
     } catch (error) {
       throw wrapError(error, `During ${vrapper.debugId()}\n .getVALKMethod(${methodName}), with:`,
-          ...(Array.isArray(args) ? args : [args])
-              .reduce((accum, arg, index) =>
+          ...args.reduce((accum, arg, index) =>
                   accum.concat([`\n\targ#${index}:`]).concat(dumpify(arg)), []),
       );
     }

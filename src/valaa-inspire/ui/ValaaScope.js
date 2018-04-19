@@ -9,7 +9,7 @@ import Vrapper, { VrapperSubscriber } from "~/valaa-engine/Vrapper";
 import VALEK, { dumpObject } from "~/valaa-engine/VALEK";
 import UIComponent, { LENS, VSSStyleSheetSymbol } from "~/valaa-inspire/ui/UIComponent";
 
-import { outputError, wrapError } from "~/valaa-tools";
+import { arrayFromAny, outputError, wrapError } from "~/valaa-tools";
 
 /**
  * ValaaScope performs a semantically rich, context-aware render of its local UI focus according to
@@ -162,7 +162,7 @@ export default class ValaaScope extends UIComponent {
     } else if (!(lens instanceof Vrapper) || !lens.hasInterface("Media")) {
       this.setState({
         lensComponent: React.createElement(ValaaScope, { ...props, focus: lens },
-            ...this.arrayFromValue(props.children)),
+            ...arrayFromAny(props.children)),
       });
     } else {
       this.attachKuerySubscriber("ValaaScope.lensComponent",
@@ -239,7 +239,7 @@ export default class ValaaScope extends UIComponent {
 
   renderObjectAsValaaScope (object: any) {
     return React.createElement(ValaaScope, this.childProps("noscope", object, { ...object }),
-        ...this.arrayFromValue(this.props.children));
+        ...arrayFromAny(this.props.children));
   }
 }
 

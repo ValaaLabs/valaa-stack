@@ -7,6 +7,8 @@ import Vrapper from "~/valaa-engine/Vrapper";
 // FIXME(iridian): Removes cross-dependency to valaa-inspire
 import UIComponent from "~/valaa-inspire/ui/UIComponent";
 
+import { arrayFromAny } from "~/valaa-tools";
+
 export default function injectLensObjects (Valaa: Object, rootScope: Object,
     hostObjectDescriptors: Object) {
   Valaa.Lens = {};
@@ -206,7 +208,7 @@ export default function injectLensObjects (Valaa: Object, rootScope: Object,
             || component.context.lensProperty;
         if (lensProperty) {
           const focusLexicalScope = focus.getLexicalScope();
-          for (const propertyName of Array.isArray(lensProperty) ? lensProperty : [lensProperty]) {
+          for (const propertyName of arrayFromAny(lensProperty)) {
             if (focusLexicalScope.hasOwnProperty(propertyName)) {
               return focusLexicalScope[propertyName].extractValue();
             }

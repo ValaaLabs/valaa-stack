@@ -13,7 +13,7 @@ import ValaaScope from "~/valaa-inspire/ui/ValaaScope";
 import { isThunk } from "~/valaa-inspire/ui/thunk";
 import UIComponent from "~/valaa-inspire/ui/UIComponent";
 
-import { isPromise, outputError, wrapError } from "~/valaa-tools";
+import { arrayFromAny, isPromise, outputError, wrapError } from "~/valaa-tools";
 
 import { uiComponentProps, isUIComponentElement } from "./index";
 
@@ -158,7 +158,7 @@ export default class LiveProps extends UIComponent {
         newProps[propName] = this._wrapInValaaExceptionProcessor(newProps[propName], propName);
       }
     }
-    let children = this.arrayFromValue(this.props.children);
+    let children = arrayFromAny(this.props.children);
     const valaaScope = newProps.valaaScope;
     if (valaaScope) delete newProps.valaaScope;
     else if (!this.props.elementType.isUIComponent) {
@@ -279,7 +279,7 @@ export function tryWrapInLiveProps (component: UIComponent, element: Object,
             "\n\toriginal element:", element,
             "\n\tparent component:", component);
         */
-        return React.createElement(type, newProps, ...component.arrayFromValue(props.children));
+        return React.createElement(type, newProps, ...arrayFromAny(props.children));
       }
       // UIComponent with live props does its own path kuery management, Wrapper needs to only
       // manage the props.
@@ -303,7 +303,7 @@ export function tryWrapInLiveProps (component: UIComponent, element: Object,
       delete newProps.children;
       if (key || lensName) newProps.key = key || lensName;
       return React.createElement(type, newProps,
-          ...(processedChildren || component.arrayFromValue(props.children)));
+          ...(processedChildren || arrayFromAny(props.children)));
     } else {
       // non-UIComponent element with live props. Prepare live wrapper kuery options.
       // Because wrapper doesn't touch its uiContext we can forward our own to it.
@@ -324,8 +324,7 @@ export function tryWrapInLiveProps (component: UIComponent, element: Object,
       value: `LiveProps_${assistantProps.key}`,
     });
     //*/
-    return React.createElement(LiveProps, assistantProps,
-        ...component.arrayFromValue(props.children));
+    return React.createElement(LiveProps, assistantProps, ...arrayFromAny(props.children));
   } catch (error) {
     throw wrapError(error, `During ${component.debugId({ suppressKueries: true })
             }\n .tryWrapInLiveProps(`,

@@ -22,6 +22,8 @@ export const createId = require("./id/createId").default;
 
 export const derivedId = require("./id/derivedId").default;
 
+export { arrayFromAny, iterableFromAny } from "./sequenceFromAny";
+
 export const beaumpify = require("./beaumpify").default;
 
 export const dumpify = require("./dumpify").default;

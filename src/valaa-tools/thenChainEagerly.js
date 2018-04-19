@@ -1,7 +1,7 @@
 // @flow
 
 import isPromise from "~/valaa-tools/isPromise";
-import wrapError, { dumpObject } from "~/valaa-tools/wrapError";
+import { arrayFromAny, dumpObject, wrapError } from "~/valaa-tools";
 
 /**
  * Resolves the chain of then-operations eagerly ie. synchronously if possible.
@@ -33,10 +33,8 @@ import wrapError, { dumpObject } from "~/valaa-tools/wrapError";
  * @param {any} callbacks
  */
 export default function thenChainEagerly (initialValue: any,
-    functionChain: Function | Function[] = [], onRejected?: Function) {
-  return thenChainEagerlyList(initialValue,
-      Array.isArray(functionChain) ? functionChain : [functionChain],
-      onRejected, 0);
+    functionChain: void | Function | Function[], onRejected?: Function) {
+  return thenChainEagerlyList(initialValue, arrayFromAny(functionChain), onRejected, 0);
 }
 
 export function thenChainEagerlyList (initialValue: any, functionChain: Function[],
