@@ -686,7 +686,7 @@ export default class Vrapper extends Cog {
         [fieldName]:
             commandValue === null ? null
                 : arrayFromAny(commandValue)
-      } ));
+      }));
     } catch (error) {
       throw this.wrapErrorEvent(error, `removeFromField(${fieldName})`,
           "\n\tfield name:", fieldName,

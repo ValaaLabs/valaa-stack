@@ -29,7 +29,7 @@ export default class ReactRoot extends React.Component {
   static childContextTypes = {
     engine: PropTypes.object,
     css: PropTypes.func,
-    getVssSheet: PropTypes.func,
+    getVSSSheet: PropTypes.func,
     releaseVssSheets: PropTypes.func,
     lensContext: PropTypes.object,
     lensProperty: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
@@ -54,7 +54,7 @@ export default class ReactRoot extends React.Component {
           return className;
         })
         .join(" "),
-      getVssSheet: this.getVssSheet,
+      getVSSSheet: this.getVSSSheet,
       releaseVssSheets: this.releaseVssSheets,
       lensContext: { ...vidgets, Math },
       lensProperty: this.props.lensProperty,
@@ -86,7 +86,7 @@ export default class ReactRoot extends React.Component {
    * SheetsManager, making sure that each user only has 1 reference to a sheet.
    */
 
-  getVssSheet = (context: Object, user: Object) => {
+  getVSSSheet = (context: Object, user: Object) => {
     let sheetId = _sheetIds.get(context);
     if (!sheetId) {
       sheetId = valaaHash(context);
@@ -144,7 +144,7 @@ export default class ReactRoot extends React.Component {
               mimeFallback: "text/css",
             });
         const contextSheet = rootSheet
-            && reactRoot.getVssSheet(rootSheet, this.reactComponent).classes;
+            && reactRoot.getVSSSheet(rootSheet, this.reactComponent).classes;
         reactRoot._resolveVSSOption(this, ret, contextSheet, rest);
         return ret.data;
       } catch (error) {
@@ -189,7 +189,7 @@ export default class ReactRoot extends React.Component {
       } else {
         const newSheet = getImplicitMediaInterpretation(option, "VSS.option",
             { transaction: this.props.vUIRoot.engine.discourse, mime: "text/css" });
-        return this.getVssSheet(newSheet, localContext.reactComponent).classes;
+        return this.getVSSSheet(newSheet, localContext.reactComponent).classes;
       }
       return sheet;
     } catch (error) {

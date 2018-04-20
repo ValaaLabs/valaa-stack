@@ -183,7 +183,7 @@ export default class ValaaScope extends UIComponent {
               );
               outputError(finalError);
               this.enableError(finalError);
-              return this._renderError(finalError);
+              return false;
             }
           } });
     }

@@ -18,10 +18,10 @@ export default class InspireClientStatus extends UIComponent {
     }
   }
 
-  _detachSubscribers () {
+  detachSubscribers () {
     const inspireClient = this.getUIContextValue("inspireClient");
     if (inspireClient) inspireClient.setCommandCountListener(this);
-    super._detachSubscribers();
+    super.detachSubscribers();
   }
 
   preRenderFocus () {

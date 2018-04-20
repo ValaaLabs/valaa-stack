@@ -1,4 +1,5 @@
 // @flow
+
 import React from "react";
 import PropTypes from "prop-types";
 import { OrderedMap } from "immutable";
@@ -15,7 +16,7 @@ import UIComponent from "~/valaa-inspire/ui/UIComponent";
 
 import { arrayFromAny, isPromise, outputError, wrapError } from "~/valaa-tools";
 
-import { uiComponentProps, isUIComponentElement } from "./index";
+import { _wrapElementInLiveProps } from "./_renderOps";
 
 /* eslint-disable react/prop-types */
 
@@ -91,8 +92,8 @@ export default class LiveProps extends UIComponent {
     }
   }
 
-  _detachSubscribers () {
-    super._detachSubscribers();
+  detachSubscribers () {
+    super.detachSubscribers();
     this.setState({ livePropValues: null });
   }
 
@@ -170,22 +171,23 @@ export default class LiveProps extends UIComponent {
         return this.renderLensRole("delayedChildrenLens");
       }
     }
-    /*/ Only enable this section for debugging React key warnings; it will break react elsewhere
+    /* Only enable this section for debugging React key warnings; it will break react elsewhere
     let elementType = this.props.elementType;
     if (elementType === ValaaScope) {
-      elementType = class Foo extends ValaaScope {};
+      elementType = class DebugValaaScope extends ValaaScope {};
       Object.defineProperty(elementType, "name", {
         value: `ValaaScope_${newProps.className || ""}${this.getUIContextValue("key")}`,
       });
     }
     /*/
     const elementType = this.props.elementType;
+    // eslint-disable-next-line
     //*/
     if (!newProps.key) {
       newProps.key = this.getUIContextValue("key");
     }
     const element = React.createElement(elementType, newProps, ...children);
-    return wrapInLiveProps(
+    return _wrapElementInLiveProps(
         this,
         !valaaScope
             ? element
@@ -221,177 +223,3 @@ export default class LiveProps extends UIComponent {
   }
 }
 
-export function wrapInLiveProps (component: UIComponent, element: Object, name?: string) {
-  const ret = tryWrapInLiveProps(component, element, name);
-  return typeof ret !== "undefined" ? ret : element;
-}
-
-
-/**
- * If no name is provided then it means the component doesn't necessarily need one.
- *
- * @export
- * @param {UIComponent} component
- * @param {Object} element
- * @param {string} [name]
- * @returns
- */
-export function tryWrapInLiveProps (component: UIComponent, element: Object,
-    lensName?: string) {
-  const { type, props, ref, key } = element;
-  if ((type === LiveProps) || LiveProps.isPrototypeOf(type)) return undefined;
-  const liveProps = { currentIndex: 0 };
-  const livePropLookup = new Map(); // deduplicate identical kueries
-  let liveElementProps;
-  function _obtainLiveElementProps () {
-    if (!liveElementProps) liveElementProps = { ...props };
-    return liveElementProps;
-  }
-  try {
-    for (const propName of Object.keys(props)) {
-      if ((propName === "children")
-          || (type.noPostProcess && type.noPostProcess[propName])) continue;
-      const newProp = _postProcessProp(
-          props[propName], livePropLookup, liveProps, propName, component);
-      if (typeof newProp !== "undefined") {
-        _obtainLiveElementProps()[propName] = newProp;
-      }
-    }
-    if (ref && (ref instanceof Kuery)) {
-      // Rewrite ref kuery as refKuery so that LiveProps can evaluate it.
-      _obtainLiveElementProps().refKuery =
-          _postProcessProp(ref, livePropLookup, liveProps, "ref", component);
-    }
-    if (isUIComponentElement(element)) {
-      if (!liveElementProps) {
-        // If UIComponent has no live props and already has a uiContext/parentUIContext no
-        // processing is required now: The UIComponent does its own post-processing.
-        const hasUIContext = props.uiContext || props.parentUIContext;
-        if ((key || !lensName) && hasUIContext) return undefined;
-        // Otherwise provide the current component context as the parentUIContext for the component.
-        const newProps = { ...props };
-        delete newProps.children;
-        if (key || lensName) newProps.key = key || lensName;
-        if (!hasUIContext) newProps.parentUIContext = component.getUIContext();
-        /*
-        console.log("tryWrapInLiveProps UIComponent", type.name, newProps,
-            "\n\toriginal props:", props,
-            "\n\toriginal element:", element,
-            "\n\tparent component:", component);
-        */
-        return React.createElement(type, newProps, ...arrayFromAny(props.children));
-      }
-      // UIComponent with live props does its own path kuery management, Wrapper needs to only
-      // manage the props.
-    } else if (props.hasOwnProperty("kuery")) {
-      // Non-UIComponent elements which have specified a kuery need to be managed even if there are
-      // no live props.
-      throw new Error(`DEPRECATED: props.kuery\n\tprefer: props.valaaScope.focus${
-          ""}\n\talternatively for Valaa components: props.focus${
-          ""}\n\tin component: ${component.debugId()}`);
-      /*
-      delete _obtainLiveElementProps().kuery;
-      assistantPropsOptions = {
-        name, parentUIContext: component.getUIContext(), kuery: props.kuery
-      };
-      */
-    } else if (!liveElementProps) {
-      // non-UIComponent element with no live props: post-process its children directly here.
-      const processedChildren = component.tryRenderLensSequence(props.children);
-      if ((key || !lensName) && (typeof processedChildren === "undefined")) return undefined;
-      const newProps = { ...props };
-      delete newProps.children;
-      if (key || lensName) newProps.key = key || lensName;
-      return React.createElement(type, newProps,
-          ...(processedChildren || arrayFromAny(props.children)));
-    } else {
-      // non-UIComponent element with live props. Prepare live wrapper kuery options.
-      // Because wrapper doesn't touch its uiContext we can forward our own to it.
-    }
-    let assistantProps: any = { elementType: type, elementProps: liveElementProps };
-    if (liveProps.currentIndex) {
-      delete liveProps.currentIndex;
-      assistantProps.liveProps = liveProps;
-    }
-    assistantProps = uiComponentProps({
-      name: key || lensName,
-      parentUIContext: component.getUIContext(),
-    }, assistantProps);
-    // console.log("tryWrapInLiveProps LiveWrapper for", type.name, wrapperProps);
-    /* Only enable this section for debugging React key warnings; it will break react elsewhere
-    const NamedLiveProps = class NamedLiveProps extends LiveProps {};
-    Object.defineProperty(NamedLiveProps, "name", {
-      value: `LiveProps_${assistantProps.key}`,
-    });
-    //*/
-    return React.createElement(LiveProps, assistantProps, ...arrayFromAny(props.children));
-  } catch (error) {
-    throw wrapError(error, `During ${component.debugId({ suppressKueries: true })
-            }\n .tryWrapInLiveProps(`,
-            typeof type === "function" ? type.name : type, `), with:`,
-        "\n\telement.props:", props,
-        "\n\telement.props.children:", props && props.children,
-        "\n\tpropsKueries:", liveProps,
-        "\n\tlivePropLookup:", livePropLookup,
-    );
-  }
-}
-
-/**
- * Converts all VALK kuery objects in properties into kuery placeholder callback functions and
- * adds the kueries as entries to the new liveProps prop.
- * The kuery placeholder callback takes a livePropValues object which is a map from kueryId to a
- * value and returns from it the value corresponding to the kuery.
- *
- * @param {*} prop
- * @param {Object} livePropLookup
- * @param {Object} liveProps
- * @returns
- *
- * @memberof UIComponent
- */
-function _postProcessProp (prop: any, livePropLookup: Object, liveProps: Object,
-    name: string, component: UIComponent) {
-  if ((typeof prop !== "object") || (prop === null)) return undefined;
-  if (prop instanceof Kuery) {
-    let ret = livePropLookup.get(prop.kueryId());
-    if (typeof ret === "undefined") {
-      const liveKueryName = `props#${liveProps.currentIndex++}.${name}`;
-      liveProps[liveKueryName] = prop;
-      ret = function fetchLiveProp (livePropValues: OrderedMap) {
-        try {
-          return livePropValues.get(liveKueryName);
-        } catch (error) {
-          throw wrapError(error, `During fetchLiveProp(${liveKueryName}), with:`,
-              "\n\tkueryId:", ret.kueryId,
-              "\n\tname:", name,
-              "\n\tcomponent:", component.debugId());
-        }
-      };
-      ret.kueryId = prop.kueryId();
-      livePropLookup.set(prop.kueryId(), ret);
-    }
-    return ret;
-  }
-  if (!Array.isArray(prop)
-      && ((Object.getPrototypeOf(prop) !== Object.prototype) || React.isValidElement(prop))) {
-    // Only recurse plain arrays and objects.
-    return undefined;
-  }
-  let modifications: any;
-  for (const key of Object.keys(prop)) {
-    const postProcessedValue =
-        _postProcessProp(prop[key], livePropLookup, liveProps, name, component);
-    if (typeof postProcessedValue !== "undefined") {
-      (modifications || (modifications = new Map())).set(key, postProcessedValue);
-    }
-  }
-  if (!modifications) return undefined;
-  const ret = (livePropValues: OrderedMap) => {
-    const innerRet = Array.isArray(prop) ? [...prop] : { ...prop };
-    modifications.forEach((value: any, key: any) => { innerRet[key] = value(livePropValues); });
-    return innerRet;
-  };
-  ret.kueryId = true;
-  return ret;
-}

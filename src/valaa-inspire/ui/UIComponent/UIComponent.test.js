@@ -102,7 +102,7 @@ describe("vss", () => {
     value4: "hello"
   };
   const mockContext = {
-    getVssSheet: jest.fn(),
+    getVSSSheet: jest.fn(),
     uiContext: {
       foo: "wooo"
     }
@@ -116,13 +116,13 @@ describe("vss", () => {
         ...mockContext.uiContext
       }
     };
-    mockContext.getVssSheet.mockReturnValueOnce({ classes: mockClasses });
+    mockContext.getVSSSheet.mockReturnValueOnce({ classes: mockClasses });
   });
 
-  it("should call getVssSheet from the context with unthunked style data", () => {
+  it("should call getVSSSheet from the context with unthunked style data", () => {
     testComponent.getVssClasses({}, { test: "baz" });
-    expect(mockContext.getVssSheet.mock.calls[0][1]).toBe(testComponent);
-    expect(mockContext.getVssSheet.mock.calls[0][0]).toEqual({
+    expect(mockContext.getVSSSheet.mock.calls[0][1]).toBe(testComponent);
+    expect(mockContext.getVSSSheet.mock.calls[0][0]).toEqual({
       typeName: "Property",
       value: "wooo",
       value2: "baz",

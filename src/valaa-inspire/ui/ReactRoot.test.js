@@ -13,7 +13,7 @@ describe("UIContext", () => {
       expect(testRoot._vssSheetUsers).toBeDefined();
     });
 
-    describe("getVssSheet", () => {
+    describe("getVSSSheet", () => {
       beforeEach(() => {
         testRoot.componentWillMount();
       });
@@ -27,25 +27,25 @@ describe("UIContext", () => {
       const user3 = new User("user3");
 
       it("should create and return new sheets", () => {
-        const result = testRoot.getVssSheet(style1);
+        const result = testRoot.getVSSSheet(style1);
         expect(result).toBeDefined();
         expect(testRoot._vssSheetManager.sheets.length).toBe(1);
       });
 
       it("should not create duplicate sheets", () => {
-        testRoot.getVssSheet(style1, user1);
-        testRoot.getVssSheet(style1, user1);
-        testRoot.getVssSheet(style2, user1);
-        testRoot.getVssSheet(style2, user1);
-        testRoot.getVssSheet(style2, user1);
-        testRoot.getVssSheet(style2, user1);
+        testRoot.getVSSSheet(style1, user1);
+        testRoot.getVSSSheet(style1, user1);
+        testRoot.getVSSSheet(style2, user1);
+        testRoot.getVSSSheet(style2, user1);
+        testRoot.getVSSSheet(style2, user1);
+        testRoot.getVSSSheet(style2, user1);
         expect(testRoot._vssSheetManager.sheets.length).toBe(2); // style1 and style2
       });
 
       it("should update references for sheet users and detach sheets with no refs", () => {
-        testRoot.getVssSheet(style1, user1);
-        testRoot.getVssSheet(style1, user2);
-        testRoot.getVssSheet(style1, user3);
+        testRoot.getVSSSheet(style1, user1);
+        testRoot.getVSSSheet(style1, user2);
+        testRoot.getVSSSheet(style1, user3);
         testRoot._vssSheetManager.sheets[0].detach = jest.fn();
 
         testRoot.releaseVssSheets(user1);

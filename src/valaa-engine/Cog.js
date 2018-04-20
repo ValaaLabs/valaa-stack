@@ -61,7 +61,7 @@ export default class Cog extends LogEventGenerator {
       }
       return (options.transaction || this.engine.discourse).run(head, kuery, options);
     } catch (error) {
-      throw wrapError(error, `During ${this.debugId({ suppressKueries: true })}\n .run(), with:`,
+      throw wrapError(error, `During ${this.debugId()}\n .run(), with:`,
           "\n\thead:", ...dumpObject(head),
           "\n\tkuery:", ...dumpKuery(kuery),
           "\n\toptions:", ...dumpObject(options));
