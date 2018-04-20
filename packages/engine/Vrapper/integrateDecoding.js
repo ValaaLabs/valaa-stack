@@ -83,7 +83,11 @@ function _require (vScope: Vrapper, options: Object, importPath: string) {
     const scopeKey = steps[0];
     if ((scopeKey !== ".") && (scopeKey !== "..")) {
       nextHead = head.get(VALEK.identifierValue(scopeKey), Object.create(options));
-      if (steps.length === 1) return nextHead;
+      if (steps.length === 1) {
+        return (nextHead instanceof Vrapper)
+            ? nextHead.extractValue(options)
+            : nextHead;
+      }
       if (!(nextHead instanceof Vrapper)) {
         throw new Error(`Could not find a Resource at initial import scope lookup for '${
             scopeKey}' (with path "${steps.slice(1).join("/")}" still remaining)`);
