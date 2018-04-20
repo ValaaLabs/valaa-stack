@@ -95,8 +95,12 @@ export default class JSXDecoder extends MediaDecoder {
       LENS,
       VS,
       VALK: VALEK,
-      createElement: (...rest) => {
-        const element = React.createElement(...rest);
+      createElement: (type, props, ...rest) => {
+        const children = [].concat(...rest).map((child: any, index: number) =>
+            ((typeof child !== "object" || child === null || !child.type || child.key)
+                ? child
+                : React.cloneElement(child, { key: `#${index}-` }, child.props.children)));
+        const element = React.createElement(type, props, ...(children.length ? [children] : []));
         const infoedElement = Object.create(
             Object.getPrototypeOf(element),
             Object.getOwnPropertyDescriptors(element));

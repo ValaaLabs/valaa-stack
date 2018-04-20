@@ -11,7 +11,7 @@ import Vrapper from "~/valaa-engine/Vrapper";
 import { arrayFromAny, isPromise, wrapError } from "~/valaa-tools";
 
 import UIComponent, { isUIComponentElement } from "./UIComponent";
-import { uiComponentProps, _createComponentKey } from "./_propsOps";
+import { uiComponentProps } from "./_propsOps";
 
 /* eslint-disable react/prop-types */
 
@@ -180,17 +180,22 @@ export function _renderFocusAsSequence (component: UIComponent,
   // Wraps the focus entries EntryElement, which is UIComponent by default.
   // Rendering a sequence focus can't be just a foci.map(_renderFocus) because individual entries
   // might have pending kueries or content downloads.
+  const parentUIContext = component.getUIContext();
+  const parentKey = component.getUIContextValue("key") || "-";
   return arrayFromAny(foci).map((focus, forIndex) => {
-    const key = keyFromFocus
-        ? keyFromFocus(focus, forIndex)
-        : _createComponentKey(component.getUIContextValue("key") || "-", focus, forIndex);
     const props = {
-      ...entryProps, key, focus, parentUIContext: component.getUIContext(), context: { forIndex },
+      ...entryProps,
+      focus,
+      parentUIContext,
+      context: { forIndex, focusSequenceIndex: forIndex },
+      key: keyFromFocus ? keyFromFocus(focus, forIndex)
+        : (focus instanceof Vrapper) ? `@${focus.getRawId().slice(0, 13)}<-${parentKey}`
+        : `[${typeof forIndex !== "undefined" ? forIndex : "-"}]${parentKey}`,
     };
     return _wrapElementInLiveProps(
         component,
         React.createElement(EntryElement, props, ...arrayFromAny(component.props.children)),
-        key);
+        props.key);
   });
 }
 
@@ -312,6 +317,7 @@ let _LiveProps;
  */
 function _tryWrapElementInLiveProps (component: UIComponent, element: Object, lensName?: string) {
   const LiveProps = _LiveProps || (_LiveProps = require("./LiveProps").default);
+
   if ((element.type === LiveProps)
       || LiveProps.isPrototypeOf(element.type)) return undefined;
   const { type, props, ref, key } = element;
@@ -390,7 +396,7 @@ function _tryWrapElementInLiveProps (component: UIComponent, element: Object, le
       livePropsProps.liveProps = liveProps;
     }
     livePropsProps = uiComponentProps({
-      name: key || lensName,
+      name: key ? `live-${key}` : lensName,
       parentUIContext: component.getUIContext(),
     }, livePropsProps);
     // console.log("_tryWrapElementInLiveProps LiveWrapper for", type.name, wrapperProps);
@@ -470,3 +476,34 @@ function _postProcessProp (prop: any, livePropLookup: Object, liveProps: Object,
   ret.kueryId = true;
   return ret;
 }
+
+export function _validateElement () {
+  return; // validation disabled until needed
+}
+
+/*
+export function _validateElement (component: UIComponent, element: any) {
+  const faults = _recurseValidateElements(element);
+  if (faults) {
+    console.warn("Element validation failure in", component.debugId(), component,
+        "\n\tfaults:", faults);
+  }
+}
+
+function _recurseValidateElements (element: any) {
+  if (Array.isArray(element)) {
+    const faults = element.map(_recurseValidateElements);
+    return typeof faults.find(entry => typeof entry !== "undefined") !== "undefined"
+        ? faults
+        : undefined;
+  }
+  if (!React.isValidElement(element)) return undefined;
+  const ret = {};
+  if (typeof element.key === "undefined") ret.keyFault = "key missing";
+  const childFaults = _recurseValidateElements(element.children);
+  if (typeof childFaults !== "undefined") ret.childFaults = childFaults;
+  if (!Object.keys(ret).length) return undefined;
+  ret.element = element;
+  return ret;
+}
+*/

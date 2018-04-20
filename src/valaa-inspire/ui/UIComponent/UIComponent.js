@@ -26,7 +26,7 @@ import {
 } from "./_propsOps";
 import {
   _render, _renderFocus, _renderFocusAsSequence, _tryRenderLens, _tryRenderLensRole,
-  _tryRenderLensArray
+  _tryRenderLensArray, _validateElement,
 } from "./_renderOps";
 import {
   _getVSSClasses,
@@ -494,13 +494,17 @@ export default class UIComponent extends React.Component {
 
   render (): null | string | React.Element<any> | [] {
     let firstPassError;
+    let ret;
     try {
       if (!this._errorMessage && !_checkForInfiniteRenderRecursion(this)) {
-        return _render(this);
+        return (ret = _render(this));
       }
     } catch (error) {
       firstPassError = error;
+    } finally {
+      _validateElement(this, ret);
     }
+
     try {
       if (firstPassError) {
         const wrappedError = wrapError(firstPassError,
