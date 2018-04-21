@@ -92,7 +92,6 @@ export default class InspireClient extends LogEventGenerator {
         revelation: this.revelation,
       };
       const engine = new ValaaEngine(engineOptions);
-      engine.setRootScopeEntry("inspireClient", this);
       this.warnEvent(`Started ValaaEngine ${engine.debugId()}`,
           ...(!this.getDebugLevel() ? [] : [", with:",
             "\n\tengineOptions:", engineOptions,
@@ -111,6 +110,7 @@ export default class InspireClient extends LogEventGenerator {
                   String(viewConfig.defaultAuthorityURI)}`);
         inspireExtendValaaSpace(rootScope, hostDescriptors, defaultAuthorityConfig, engine);
       }
+      rootScope.Valaa.inspire = this;
       ret[viewName] = new InspireView({ engine, name: `${viewConfig.name} View` })
           .initialize(viewConfig);
       this.warnEvent(`Opened InspireView ${viewName}`,

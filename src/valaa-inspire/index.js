@@ -49,12 +49,12 @@ export async function createInspireClient (...revelations: Revelation[]) {
     ret = new InspireClient({ name: combinedRevelation.name, logger });
 
     await ret.initialize(combinedRevelation);
+    Valaa.inspire = ret;
     ret.warnEvent(`InspireClient set to window.Valaa.inspire as`, ret);
 
     while (delayedPlugins.length) await ret.attachPlugin(delayedPlugins.shift());
     Valaa.plugins = { push (plugin) { ret.attachPlugin(plugin); } };
 
-    getGlobal().inspireClient = ret;
     return ret;
   } catch (error) {
     outputError((ret || new LogEventGenerator(logger)).wrapErrorEvent(error,

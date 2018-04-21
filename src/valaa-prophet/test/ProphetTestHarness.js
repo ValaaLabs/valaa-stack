@@ -14,10 +14,11 @@ import { AuthorityNexus, FalseProphet, FalseProphetDiscourse, Oracle, Prophecy, 
 import ProphetTestAPI from "~/valaa-prophet/test/ProphetTestAPI";
 import { schemePlugin as valaaTestSchemePlugin } from "~/valaa-prophet/test/scheme-valaa-test";
 
-import { schemePlugin as valaaLocalSchemePlugin } from "~/scheme-valaa-local";
-import { schemePlugin as valaaTransientSchemePlugin } from "~/scheme-valaa-transient";
+import valaaLocalSchemePlugin from "~/valaa-prophet/schemes/valaa-local";
+import valaaTransientSchemePlugin from "~/valaa-prophet/schemes/valaa-transient";
 
-import * as Decoders from "~/valaa-prophet/decoders";
+import * as ValaaScriptDecoders from "~/valaa-script/decoders";
+import * as ToolsDecoders from "~/valaa-tools/decoders";
 
 import { getDatabaseAPI } from "~/valaa-tools/indexedDB/getFakeDatabaseAPI";
 import { openDB } from "~/valaa-tools/html5/InMemoryIndexedDBUtils";
@@ -103,7 +104,7 @@ export function createScribe (commandCountCallback: any) {
     commandCountCallback,
   });
   ret.initialize();
-  for (const Decoder: any of Object.values(Decoders)) {
+  for (const Decoder: any of Object.values({ ...ToolsDecoders, ...ValaaScriptDecoders })) {
     if (Decoder.mediaTypes) {
       ret.getDecoderArray().addDecoder(new Decoder({ logger: ret.getLogger() }));
     }

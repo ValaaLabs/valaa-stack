@@ -10,7 +10,7 @@ import { beaumpify } from "~/valaa-tools";
 export default class InspireClientStatus extends UIComponent {
   attachSubscribers (focus: any, props: Object) {
     super.attachSubscribers(focus, props);
-    const inspireClient = this.getUIContextValue("inspireClient");
+    const inspireClient = this.getValaa().inspire;
     if (inspireClient) {
       inspireClient.setCommandCountListener(this,
           (totalCommandCount: number, partitionCommandCounts: Object) =>
@@ -19,7 +19,7 @@ export default class InspireClientStatus extends UIComponent {
   }
 
   detachSubscribers () {
-    const inspireClient = this.getUIContextValue("inspireClient");
+    const inspireClient = this.getValaa().inspire;
     if (inspireClient) inspireClient.setCommandCountListener(this);
     super.detachSubscribers();
   }
