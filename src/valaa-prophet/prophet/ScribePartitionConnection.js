@@ -5,7 +5,6 @@ import { VRef, obtainVRef, getRawIdFrom } from "~/valaa-core/ValaaReference";
 
 import PartitionConnection from "~/valaa-prophet/api/PartitionConnection";
 import { MediaInfo, NarrateOptions, RetrieveMediaContent } from "~/valaa-prophet/api/Prophet";
-
 import DecoderArray from "~/valaa-prophet/prophet/DecoderArray";
 
 import { bufferAndContentIdFromNative, invariantify, invariantifyString, dumpObject,

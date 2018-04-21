@@ -3,11 +3,11 @@
 import type { PartitionURI } from "~/valaa-core/tools/PartitionURI";
 
 import Prophet, { NarrateOptions } from "~/valaa-prophet/api/Prophet";
-import type MediaDecoder from "~/valaa-prophet/api/MediaDecoder";
 
-import DecoderArray from "~/valaa-prophet/prophet/DecoderArray";
 import ScribePartitionConnection from "~/valaa-prophet/prophet/ScribePartitionConnection";
+import DecoderArray from "~/valaa-prophet/prophet/DecoderArray";
 
+import type MediaDecoder from "~/valaa-tools/MediaDecoder";
 import IndexedDBWrapper from "~/valaa-tools/html5/IndexedDBWrapper";
 
 import { dumpObject, invariantifyObject, invariantifyString, thenChainEagerly }

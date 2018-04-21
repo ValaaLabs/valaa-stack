@@ -1,6 +1,6 @@
 // @flow
 
-import MediaDecoder from "~/valaa-prophet/api/MediaDecoder";
+import MediaDecoder from "~/valaa-tools/MediaDecoder";
 
 import { wrapError } from "~/valaa-tools";
 

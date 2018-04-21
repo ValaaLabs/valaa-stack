@@ -1,10 +1,15 @@
 // @flow
 
-import CoreContentAPI from "./CoreContentAPI";
+import exportValaaPlugin from "~/valaa-tools/exportValaaPlugin";
+
+import ContentAPI from "./CoreContentAPI";
+
+export default exportValaaPlugin({ name: "valaa-core", ContentAPI });
+
 
 export {
-                                      CoreContentAPI,
-                    CoreContentAPI as ContentAPI,
+                                      ContentAPI,
+                        ContentAPI as CoreContentAPI,
 };
 export {
                            default as Corpus,

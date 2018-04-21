@@ -1,9 +1,9 @@
 // @flow
 
-export const schemePlugin = {
-  getURIScheme: () => "valaa-transient",
+export default {
+  getURIScheme: () => "valaa-local",
 
-  getAuthorityURIFromPartitionURI: () => `valaa-transient:`,
+  getAuthorityURIFromPartitionURI: () => `valaa-local:`,
 
   getInteractableURLFromAuthorityURI: () => null,
 

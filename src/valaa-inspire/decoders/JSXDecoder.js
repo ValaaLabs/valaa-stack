@@ -5,7 +5,7 @@ import React from "react";
 
 import { addStackFrameToError, SourceInfoTag } from "~/valaa-core/VALK/StackTrace";
 
-import { MediaDecoder } from "~/valaa-prophet";
+import { MediaDecoder } from "~/valaa-tools";
 
 import VALEK, { Kuery, EngineKuery, VS } from "~/valaa-engine/VALEK";
 

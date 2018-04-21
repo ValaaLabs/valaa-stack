@@ -1,10 +1,15 @@
 // @flow
 
-import EngineContentAPI from "./EngineContentAPI";
+import exportValaaPlugin from "~/valaa-tools/exportValaaPlugin";
+
+import ContentAPI from "./EngineContentAPI";
+
+export default exportValaaPlugin({ name: "valaa-engine", ContentAPI });
+
 
 export {
-                                      EngineContentAPI,
-                  EngineContentAPI as ContentAPI,
+                                      ContentAPI,
+                        ContentAPI as EngineContentAPI,
 };
 export {
                            default as VALEK,

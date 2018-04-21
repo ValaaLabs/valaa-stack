@@ -1,9 +1,18 @@
 // @flow
 
+import exportValaaPlugin from "./exportValaaPlugin";
+
+import * as decoders from "./decoders";
+
+export default exportValaaPlugin({ name: "valaa-tools", decoders });
+
+
 export { default as valaaHash } from "./id/valaaHash";
 export { default as valaaUUID } from "./id/valaaUUID";
 
 export { base64FromArrayBuffer, arrayBufferFromBase64, base64Encode, base64Decode } from "./base64";
+
+export { exportValaaPlugin };
 
 export const bufferAndContentIdFromNative = require("./id/contentId").bufferAndContentIdFromNative;
 
@@ -30,6 +39,8 @@ export const dumpify = require("./dumpify").default;
 
 export const Forkable = require("./Forkable").default;
 
+export { default as getGlobal } from "./getGlobal";
+
 export const immutate = require("./immutate").default;
 
 export const invariantify = require("./invariantify").default;
@@ -46,6 +57,8 @@ export const Logger = require("./Logger").default;
 export const LogEventGenerator = require("./Logger").LogEventGenerator;
 export const createForwardLogger = require("./Logger").createForwardLogger;
 
+export { default as MediaDecoder } from "./MediaDecoder";
+
 export const SimpleData = require("./SimpleData").default;
 
 export const thenChainEagerly = require("./thenChainEagerly").default;
@@ -53,7 +66,6 @@ export const thenChainEagerly = require("./thenChainEagerly").default;
 export const wrapError = require("./wrapError").default;
 export const dumpObject = require("./wrapError").dumpObject;
 export const inBrowser = require("./wrapError").inBrowser;
-export const getGlobal = require("./wrapError").getGlobal;
 export const outputError = require("./wrapError").outputError;
 export const outputCollapsedError = require("./wrapError").outputCollapsedError;
 export const request = require("./request").default;

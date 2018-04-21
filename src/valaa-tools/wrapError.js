@@ -96,13 +96,6 @@ export function inBrowser () {
       && !executingInJest();
 }
 
-export function getGlobal () {
-  return (typeof window !== "undefined") ? window
-    : (typeof global !== "undefined") ? global
-    : (typeof self !== "undefined") ? self
-    : ((() => { throw new Error("Cannot determine global object"); })());
-}
-
 export function outputError (error, counter = 0, header = "Exception caught",
     logger = errorLogger) {
   logger.error(`  ${header} (with ${(error.errorContexts || []).length} contexts):\n\n`,

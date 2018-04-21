@@ -1,10 +1,16 @@
 // @flow
 
-import ScriptContentAPI from "./ScriptContentAPI";
+import exportValaaPlugin from "~/valaa-tools/exportValaaPlugin";
+
+import ContentAPI from "./ScriptContentAPI";
+import * as decoders from "./decoders";
+
+export default exportValaaPlugin({ name: "valaa-script", ContentAPI, decoders });
+
 
 export {
-                                      ScriptContentAPI,
-                  ScriptContentAPI as ContentAPI
+                                      ContentAPI,
+                        ContentAPI as ScriptContentAPI
 };
 export {
                            default as transpileValaaScript,
@@ -25,4 +31,3 @@ export {
                                       BuiltinTypePrototype,
                                       ValaaPrimitive,
 } from "./VALSK/builtinSteppers";
-

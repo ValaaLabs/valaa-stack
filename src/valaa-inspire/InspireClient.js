@@ -60,6 +60,8 @@ export default class InspireClient extends LogEventGenerator {
       // Create the the main in-memory false prophet using the stream router as its upstream.
       this.falseProphet = await this._proselytizeFalseProphet(revelation, this.corpus, this.oracle);
 
+      await this._attachPlugins(revelation);
+
       // Locate entry point event log (prologue), make it optimally available through scribe,
       // narrate it with false prophet and get the false prophet connection for it.
       this.prologueConnections = await this._narratePrologues(revelation, this.scribe,
@@ -144,12 +146,8 @@ export default class InspireClient extends LogEventGenerator {
       nexusOptions = {
         name: "Inspire AuthorityNexus",
         authorityConfigs: await revelation.authorityConfigs,
-        schemePlugins: await revelation.schemePlugins,
       };
       const nexus = new AuthorityNexus(nexusOptions);
-      for (const plugin of nexusOptions.schemePlugins) {
-        nexus.addSchemePlugin(plugin);
-      }
       this.warnEvent(`Established AuthorityNexus '${nexus.debugId()}'`,
           ...(!this.getDebugLevel() ? [] : [", with:",
             "\n\toptions:", nexusOptions,
@@ -175,9 +173,6 @@ export default class InspireClient extends LogEventGenerator {
       };
       const scribe = await new Scribe(scribeOptions);
       await scribe.initialize();
-      for (const decoder of await revelation.globalDecoders) {
-        scribe.getDecoderArray().addDecoder(decoder);
-      }
 
       this.warnEvent(`Proselytized Scribe '${scribe.debugId()}'`,
           ...(!this.getDebugLevel() ? [] : [", with:",
@@ -287,6 +282,20 @@ export default class InspireClient extends LogEventGenerator {
       throw this.wrapErrorEvent(error, "proselytizeFalseProphet",
           "\n\tfalseProphetOptions:", falseProphetOptions,
           "\n\tupstream:", upstream);
+    }
+  }
+
+  async _attachPlugins (revelation: Object) {
+    for (const plugin of await revelation.plugins) this.attachPlugin(await plugin);
+  }
+
+  attachPlugin (plugin: Object) {
+    this.warnEvent(`Attaching plugin '${plugin.name}':`, plugin);
+    for (const schemePlugin of Object.values(plugin.schemes || {})) {
+      this.nexus.addSchemePlugin(schemePlugin);
+    }
+    for (const Decoder: any of Object.values(plugin.decoders || {})) {
+      this.scribe.getDecoderArray().addDecoder(new Decoder({ logger: this.getLogger() }));
     }
   }
 

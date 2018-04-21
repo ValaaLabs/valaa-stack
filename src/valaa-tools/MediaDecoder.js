@@ -1,9 +1,7 @@
 // @flow
 
-import type { MediaInfo } from "~/valaa-prophet/api/Prophet";
-import type { VALKOptions } from "~/valaa-core/VALK";
-
-import { LogEventGenerator, stringFromUTF8ArrayBuffer } from "~/valaa-tools";
+import { LogEventGenerator } from "~/valaa-tools/Logger";
+import { stringFromUTF8ArrayBuffer } from "~/valaa-tools/id/contentId";
 
 /**
  * Defines media decoder interface.
@@ -28,7 +26,7 @@ export default class MediaDecoder extends LogEventGenerator {
 
   getByMediaTypeLookup () { return this._lookup; }
 
-  canDecode ({ type, subtype }: MediaInfo): boolean {
+  canDecode ({ type, subtype }: Object): boolean {
     if (!this.constructor.mediaTypes.length) {
       throw new Error(`${this.constructor.name}.canDecode must be implemented if no ${
           this.constructor.name}.mediaTypes are specified`);
@@ -64,14 +62,6 @@ export default class MediaDecoder extends LogEventGenerator {
     // https://html.spec.whatwg.org/multipage/parsing.html#determining-the-character-encoding ?
     // There's also an rfc on this: https://tools.ietf.org/html/rfc6657
     return stringFromUTF8ArrayBuffer(buffer);
-  }
-
-  _getPartitionDebugName (vResource: any, options?: VALKOptions): string {
-    const connection = vResource.getPartitionConnection();
-    const vPartitionRoot = connection && vResource.engine.tryVrapper(connection.partitionRawId());
-    return (vPartitionRoot && vPartitionRoot.get("name", options))
-        || (connection && `${connection.partitionRawId().slice(0, 9)}...`)
-        || "";
   }
 
   _prepareMediaTypeLookup () {
