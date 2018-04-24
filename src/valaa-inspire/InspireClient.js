@@ -48,30 +48,35 @@ export default class InspireClient extends LogEventGenerator {
       // offline functionality. Alternatively the service worker can provide the event logs through
       // indexeddb and keep the landing page revelation minimal; whatever is most efficient.
       this.revelation = await this._interpretRevelation(revelation);
+      this.gatewayRevelation = await this.revelation.gateway;
+      if (this.gatewayRevelation.name) this.setName(await this.gatewayRevelation.name);
 
-      this.setDebugLevel(this.revelation.verbosity || 0);
+      this.setDebugLevel(this.gatewayRevelation.verbosity || 0);
 
-      this.nexus = await this._establishAuthorityNexus(revelation);
+      this.nexus = await this._establishAuthorityNexus(this.gatewayRevelation);
 
       // Create a connector (the 'scribe') to the locally backed event log / blob indexeddb cache
       // ('scriptures') based on the revelation.
-      this.scribe = await this._proselytizeScribe(revelation);
+      this.scribe = await this._proselytizeScribe(this.gatewayRevelation);
 
       // Create the stream router ('oracle') which uses scribe as its direct upstream, but which
       // manages the remote authority connections.
-      this.oracle = await this._summonOracle(revelation, this.nexus, this.scribe);
+      this.oracle = await this._summonOracle(this.gatewayRevelation, this.nexus, this.scribe);
 
-      this.corpus = await this._incorporateCorpus(revelation);
+      this.corpus = await this._incorporateCorpus(this.gatewayRevelation);
 
       // Create the the main in-memory false prophet using the stream router as its upstream.
-      this.falseProphet = await this._proselytizeFalseProphet(revelation, this.corpus, this.oracle);
+      this.falseProphet = await this._proselytizeFalseProphet(this.gatewayRevelation,
+          this.corpus, this.oracle);
 
-      await this._attachPlugins(revelation);
+      await this._attachPlugins(this.gatewayRevelation);
+
+      this.prologueRevelation = await this.revelation.prologue;
 
       // Locate entry point event log (prologue), make it optimally available through scribe,
       // narrate it with false prophet and get the false prophet connection for it.
-      this.prologueConnections = await this._narratePrologues(revelation, this.scribe,
-          this.falseProphet);
+      this.prologueConnections = await this._narratePrologues(this.prologueRevelation,
+          this.scribe, this.falseProphet);
 
       this.entryPartitionConnection =
           this.prologueConnections[this.prologueConnections.length - 1];
@@ -146,12 +151,12 @@ export default class InspireClient extends LogEventGenerator {
     }
   }
 
-  async _establishAuthorityNexus (revelation: Object) {
+  async _establishAuthorityNexus (gatewayRevelation: Object) {
     let nexusOptions;
     try {
       nexusOptions = {
         name: "Inspire AuthorityNexus",
-        authorityConfigs: await revelation.authorityConfigs,
+        authorityConfigs: await gatewayRevelation.authorityConfigs,
       };
       const nexus = new AuthorityNexus(nexusOptions);
       this.warnEvent(`Established AuthorityNexus '${nexus.debugId()}'`,
@@ -166,7 +171,7 @@ export default class InspireClient extends LogEventGenerator {
     }
   }
 
-  async _proselytizeScribe (revelation: Object): Promise<Scribe> {
+  async _proselytizeScribe (gatewayRevelation: Object): Promise<Scribe> {
     let scribeOptions;
     try {
       this._commandCountListeners = new Map();
@@ -175,7 +180,7 @@ export default class InspireClient extends LogEventGenerator {
         logger: this.getLogger(),
         databaseAPI: getDatabaseAPI(),
         commandCountCallback: this._updateCommandCount,
-        ...await revelation.scribe,
+        ...await gatewayRevelation.scribe,
       };
       const scribe = await new Scribe(scribeOptions);
       await scribe.initialize();
@@ -188,8 +193,7 @@ export default class InspireClient extends LogEventGenerator {
       return scribe;
     } catch (error) {
       throw this.wrapErrorEvent(error, "proselytizeScribe",
-          "\n\tscribeOptions:", scribeOptions,
-          "\n\trevelation:", revelation);
+          "\n\tscribeOptions:", scribeOptions);
     }
   }
 
@@ -208,7 +212,7 @@ export default class InspireClient extends LogEventGenerator {
     }
   }
 
-  async _summonOracle (revelation: Object, authorityNexus: AuthorityNexus, scribe: Scribe):
+  async _summonOracle (gatewayRevelation: Object, authorityNexus: AuthorityNexus, scribe: Scribe):
       Promise<Prophet> {
     let oracleOptions;
     try {
@@ -218,7 +222,7 @@ export default class InspireClient extends LogEventGenerator {
         debugLevel: 1,
         authorityNexus,
         scribe,
-        ...await revelation.oracle,
+        ...await gatewayRevelation.oracle,
       };
       const oracle = new Oracle(oracleOptions);
       this.warnEvent(`Created Oracle ${oracle.debugId()}`,
@@ -234,12 +238,12 @@ export default class InspireClient extends LogEventGenerator {
     }
   }
 
-  async _incorporateCorpus (revelation: Object) {
+  async _incorporateCorpus (gatewayRevelation: Object) {
     const name = "Inspire Corpus";
     const reducerOptions = {
       ...EngineContentAPI, // schema, validators, reducers
       logEventer: this,
-      ...await revelation.reducer,
+      ...await gatewayRevelation.reducer,
     };
     const { schema, validators, mainReduce, subReduce } = createRootReducer(reducerOptions);
 
@@ -259,12 +263,12 @@ export default class InspireClient extends LogEventGenerator {
       subReduce,
       initialState: new ImmutableMap(),
       logger: this.getLogger(),
-      ...await revelation.corpus,
+      ...await gatewayRevelation.corpus,
     };
     return new Corpus(corpusOptions);
   }
 
-  async _proselytizeFalseProphet (revelation: Object, corpus: Corpus, upstream: Prophet):
+  async _proselytizeFalseProphet (gatewayRevelation: Object, corpus: Corpus, upstream: Prophet):
       Promise<Prophet> {
     let falseProphetOptions;
     try {
@@ -274,7 +278,7 @@ export default class InspireClient extends LogEventGenerator {
         upstream,
         schema: EngineContentAPI.schema,
         logger: this.getLogger(),
-        ...await revelation.falseProphet,
+        ...await gatewayRevelation.falseProphet,
       };
       const falseProphet = new FalseProphet(falseProphetOptions);
       this.warnEvent(`Proselytized FalseProphet ${falseProphet.debugId()}`,
@@ -291,8 +295,8 @@ export default class InspireClient extends LogEventGenerator {
     }
   }
 
-  async _attachPlugins (revelation: Object) {
-    for (const plugin of await revelation.plugins) this.attachPlugin(await plugin);
+  async _attachPlugins (gatewayRevelation: Object) {
+    for (const plugin of await gatewayRevelation.plugins) this.attachPlugin(await plugin);
   }
 
   attachPlugin (plugin: Object) {
@@ -305,13 +309,13 @@ export default class InspireClient extends LogEventGenerator {
     }
   }
 
-  async _narratePrologues (revelation: Object) {
+  async _narratePrologues (prologueRevelation: Object) {
     let prologues;
     let buffers;
     const client = this;
     try {
       this.warnEvent(`Narrating revelation prologues`);
-      prologues = await this._loadRevelationEntryPartitionAndPrologues(revelation);
+      prologues = await this._loadRevelationEntryPartitionAndPrologues(prologueRevelation);
       this.warnEvent(`Narrated revelation with ${prologues.length} prologues`,
           "\n\tprologue partitions:",
               `'${prologues.map(({ partitionURI }) => String(partitionURI)).join("', '")}'`);
@@ -363,7 +367,7 @@ export default class InspireClient extends LogEventGenerator {
       return ret;
     } catch (error) {
       throw this.wrapErrorEvent(error, "narratePrologue",
-          "\n\trevelation:", revelation,
+          "\n\tprologue revelation:", prologueRevelation,
           "\n\tprologues:", prologues);
     }
     async function readRevelationBlobContent (blobId: string) {
@@ -379,24 +383,24 @@ export default class InspireClient extends LogEventGenerator {
     }
   }
 
-  async _loadRevelationEntryPartitionAndPrologues (revelation: Object) {
+  async _loadRevelationEntryPartitionAndPrologues (prologueRevelation: Object) {
     const ret = [];
     try {
-      for (const [uri, info] of (Object.entries((await revelation.partitions) || {}): any)) {
+      for (const [uri, info] of (Object.entries((await prologueRevelation.partitionInfos) || {}))) {
         ret.push({
           partitionURI: createPartitionURI(uri),
           info: await info,
         });
       }
-      if (revelation.directPartitionURI) {
+      if (prologueRevelation.rootPartitionURI) {
         ret.push({
-          partitionURI: createPartitionURI(await revelation.directPartitionURI),
+          partitionURI: createPartitionURI(await prologueRevelation.rootPartitionURI),
           isNewPartition: false,
           info: { commandId: -1, eventId: -1, logs: { commands: [], events: [] } },
         });
       } else {
         // These are not obsolete yet, but temporarily disabled.
-        if (Array.isArray(revelation.snapshotEventPaths)) {
+        if (Array.isArray(prologueRevelation.snapshotEventPaths)) {
           throw new Error("revelation.snapshotEventPaths temporarily disabled");
           /*
           for (const [partitionURIString, snapshotPath] of revelation.snapshotEventPaths) {
@@ -418,7 +422,7 @@ export default class InspireClient extends LogEventGenerator {
           }
           */
         }
-        if (revelation.initialEventPath) {
+        if (prologueRevelation.initialEventPath) {
           throw new Error("revelation.initialEventPath temporarily disabled");
           /*
           // Legacy revelation.
@@ -448,9 +452,7 @@ export default class InspireClient extends LogEventGenerator {
       return ret;
     } catch (error) {
       throw this.wrapErrorEvent(error, "loadRevelationEntryPartitionAndPrologues",
-          "\n\trevelation.snapshotEventPaths:", revelation.snapshotEventPaths,
-          "\n\trevelation.initialEventPath:", revelation.initialEventPath,
-          "\n\trevelation.postPrologueEventPaths:", revelation.postPrologueEventPaths,
+          "\n\tprologue revelation:", prologueRevelation,
       );
     }
   }

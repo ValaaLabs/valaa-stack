@@ -9,7 +9,7 @@ import { dumpObject, isPromise, request, wrapError } from "~/valaa-tools";
 //
 // Only properties which have a template value set can be deferred this way.
 //
-// As an example, the inspire revelation.buffers looks like:
+// As an example, the inspire revelation.blobBuffers looks like:
 // ```
 // {
 //   "somebobcontenthash": { "base64": "v0987c1r1bxa876a8s723f21=" },
@@ -19,7 +19,7 @@ import { dumpObject, isPromise, request, wrapError } from "~/valaa-tools";
 // ```
 // And the corresponding buffer template in revelation.template.js:
 // ```
-//   buffers: dictionaryOf({ base64: "" }),
+//   blobBuffers: dictionaryOf({ base64: "" }),
 // ```
 //
 // TODO(iridian): Figure if exposed string content could be wrapped inside a wrapper, ie. if in

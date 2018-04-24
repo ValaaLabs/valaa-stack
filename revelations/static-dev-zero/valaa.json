@@ -1,18 +1,21 @@
 {
-    "name": "static-dev-zero",
+  "name": "static-dev-zero",
+  "version": "0.30.0-prerelease",
+  "description": "Static Dev Zero",
+  "author": "Valaa Technologies Ltd.",
+  "license": "MIT",
+  "private": false,
+
+  "valaa": { "engine": { "name": "@valaa/inspire", "version": "0.30.0-prerelease" } },
+  "gateway": {
     "version": "0.30.0-prerelease",
-    "description": "Static Dev Zero Gateway",
-    "author": "Valaa Technologies Ltd.",
-    "license": "MIT",
-    "private": false,
-    "valaa": {
-        "type": "project",
-        "engine": {
-            "name": "@valaa/inspire",
-            "version": "0.30.0-prerelease"
-        },
-        "descriptions": {
-            "en-US": "Static Dev Zero Gateway"
-        }
-    }
+    "runtime": { "/": "valaa/inspire/valaa-inspire.js" },
+    "authorityConfigs": { "/": "valaa/authorityConfigs.json" }
+  },
+  "prologue": {
+    "rootPartitionURI": "valaa-local:?id=lcl-c986ddf3-917b-48da-9a58-eb495093e34c",
+    "partitionInfos": { "/": "valaa/partitionInfos.json" },
+    "blobInfos": { "/": "valaa/blobInfos.json" },
+    "blobBuffers": { "/": "valaa/blobBuffers.json" }
+  }
 }

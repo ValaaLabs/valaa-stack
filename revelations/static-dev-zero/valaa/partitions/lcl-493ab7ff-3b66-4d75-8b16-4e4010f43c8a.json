@@ -1,6 +1,6 @@
 {
-  "commands": [],
-  "events": [{
+  "commandQueue": [],
+  "eventLog": [{
     "actions": [{
         "typeName": "Entity",
         "id": ["lcl-493ab7ff-3b66-4d75-8b16-4e4010f43c8a", null, null, "valaa-local:?id=lcl-493ab7ff-3b66-4d75-8b16-4e4010f43c8a"],
@@ -20184,7 +20184,7 @@
         }
     }
   }],
-  "medias": {
+  "latestMediaInfos": {
     "lcl-01da2111-ef26-4e1a-9e6d-c95fb5e61462": {
         "mediaId": "lcl-01da2111-ef26-4e1a-9e6d-c95fb5e61462",
         "mediaInfo": {

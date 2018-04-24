@@ -1,6 +1,6 @@
 {
-  "commands": [],
-  "events": [{
+  "commandQueue": [],
+  "eventLog": [{
     "type": "CREATED",
     "version": "0.1",
     "commandId": "lcl-0a494baa-a45e-4ae6-8f6f-be2ef222f45b",
@@ -76,5 +76,5 @@
       }
     }]
   }],
-  "medias": {}
+  "latestMediaInfos": {}
 }

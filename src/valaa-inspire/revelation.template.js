@@ -1,29 +1,48 @@
 // @flow
 
-import { arrayOf, dictionaryOf } from "~/valaa-inspire/Revelation";
+import { arrayOf, dictionaryOf, deprecated } from "~/valaa-inspire/Revelation";
 
 export default {
-  clientName: "Inspire Application Gateway",
-  verbosity: 0,
+  name: "",
+  version: "",
+  description: "",
+  author: "",
+  license: "",
+  private: false,
+  valaa: deprecated({},
+      "DEPRECATED: Section revelation.valaa is deprecated\n\tprefer revelation.gateway"),
+  gateway: {
+    name: "@valaa/inspire",
+    version: "",
+    description: "Inspire - Valaa Browser Gateway",
+    runtime: "",
 
-  directPartitionURI: "",
+    verbosity: 0,
+    plugins: arrayOf(plugin()),
 
-  schemePlugins: arrayOf(schemePlugins()),
-  globalDecoders: [], // arrayOf(decoders()) doesn't play nice with full blown class instances yet.
-
-  oracle: { logLevel: 0 },
-  reducer: { logLevel: 0 },
-  corpus: { logLevel: 0 },
-  falseProphet: { logLevel: 0 },
-
-  authorityConfigs: dictionaryOf(authorityConfigs()),
-  partitions: dictionaryOf(partitionInfos()),
-  blobs: dictionaryOf(blobInfos()),
-  buffers: dictionaryOf(bufferDatas()),
+    authorityConfigs: dictionaryOf(authorityConfig()),
+    oracle: { logLevel: 0 },
+    reducer: { logLevel: 0 },
+    corpus: { logLevel: 0 },
+    falseProphet: { logLevel: 0 },
+  },
+  prologue: {
+    rootPartitionURI: "",
+    partitionInfos: dictionaryOf(partitionInfo()),
+    blobInfos: dictionaryOf(blobInfo()),
+    blobBuffers: dictionaryOf(blobBuffer()),
+  }
 };
 
 function plugin () {
   return {
+    ContentAPI: {
+      name: "",
+      schema: undefined,
+      mutations: undefined,
+      validators: undefined,
+      reducers: undefined,
+    },
     schemes: dictionaryOf(scheme()),
     decoders: dictionaryOf(decoder()),
   };
@@ -45,7 +64,8 @@ function decoder () {
     decode () {},
   };
 }
-function authorityConfigs () {
+
+function authorityConfig () {
   return {
     type: "",
     name: "",
@@ -60,15 +80,15 @@ function authorityConfigs () {
   };
 }
 
-function partitionInfos () {
+function partitionInfo () {
   return {
     name: "",
     commandId: NaN,
     eventId: NaN,
     logs: {
-      commands: arrayOf(actions()),
-      events: arrayOf(actions()),
-      medias: dictionaryOf({
+      commandQueue: arrayOf(action()),
+      eventLog: arrayOf(action()),
+      latestMediaInfos: dictionaryOf({
         mediaId: "",
         mediaInfo: {
           name: "",
@@ -81,7 +101,7 @@ function partitionInfos () {
   };
 }
 
-function actions () {
+function action () {
   return {
     type: "",
     version: "",
@@ -100,14 +120,14 @@ function actions () {
   };
 }
 
-function blobInfos () {
+function blobInfo () {
   return {
     byteLength: NaN,
     persistRefCount: NaN,
   };
 }
 
-function bufferDatas () {
+function blobBuffer () {
   return {
     base64: "",
   };
