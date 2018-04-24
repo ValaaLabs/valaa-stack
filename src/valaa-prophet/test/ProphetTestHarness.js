@@ -12,10 +12,9 @@ import { AuthorityNexus, FalseProphet, FalseProphetDiscourse, Oracle, Prophecy, 
     from "~/valaa-prophet";
 
 import ProphetTestAPI from "~/valaa-prophet/test/ProphetTestAPI";
-import { schemePlugin as valaaTestSchemePlugin } from "~/valaa-prophet/test/scheme-valaa-test";
-
-import valaaLocalSchemePlugin from "~/valaa-prophet/schemes/valaa-local";
-import valaaTransientSchemePlugin from "~/valaa-prophet/schemes/valaa-transient";
+import createValaaTestScheme from "~/valaa-prophet/test/scheme-valaa-test";
+import createValaaLocalScheme from "~/valaa-prophet/schemes/valaa-local";
+import createValaaTransientScheme from "~/valaa-prophet/schemes/valaa-transient";
 
 import * as ValaaScriptDecoders from "~/valaa-script/decoders";
 import * as ToolsDecoders from "~/valaa-tools/decoders";
@@ -127,9 +126,9 @@ export async function clearScribeDatabases (otherConnections: Object[] = []) {
 
 export function createOracle (scribe: Scribe) {
   const authorityNexus = new AuthorityNexus();
-  authorityNexus.addSchemePlugin(valaaLocalSchemePlugin);
-  authorityNexus.addSchemePlugin(valaaTransientSchemePlugin);
-  authorityNexus.addSchemePlugin(valaaTestSchemePlugin);
+  authorityNexus.addSchemePlugin(createValaaLocalScheme({ logger: scribe.getLogger() }));
+  authorityNexus.addSchemePlugin(createValaaTransientScheme({ logger: scribe.getLogger() }));
+  authorityNexus.addSchemePlugin(createValaaTestScheme({ logger: scribe.getLogger() }));
   return new Oracle({
     name: "Test Oracle",
     authorityNexus,

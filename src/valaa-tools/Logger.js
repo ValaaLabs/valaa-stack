@@ -59,7 +59,7 @@ export class LogEventGenerator {
     return this._logger.error(`${this.debugId()}:`, ...messagePieces);
   }
   wrapErrorEvent (error: Error, functionName: string, ...contexts: any[]) {
-    error.frameListClipDepth = 5;
+    if (typeof error === "object") error.frameListClipDepth = 5;
     return wrapError(error, `During ${this.debugId()}\n .${functionName}${
         contexts.length ? ", with:" : ""}`,
         ...contexts);

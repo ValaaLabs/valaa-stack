@@ -12,4 +12,4 @@ export default function createValaaTransientScheme (/* { logger } */) {
 
     createAuthorityProphet: () => null,
   };
-};
+}

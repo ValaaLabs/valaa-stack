@@ -3,6 +3,7 @@
 import mergeWith from "lodash/mergeWith";
 
 import type { MediaInfo } from "~/valaa-prophet/api/Prophet";
+import MediaDecoder from "~/valaa-tools/MediaDecoder";
 import { arrayFromAny, LogEventGenerator } from "~/valaa-tools";
 
 export default class DecoderArray extends LogEventGenerator {
@@ -16,12 +17,16 @@ export default class DecoderArray extends LogEventGenerator {
     this._fallbackArray = options.fallbackArray;
   }
 
-  addDecoder (decoder: Object) {
-    mergeWith(this._decodersByType || (this._decodersByType = {}),
-        decoder.getByMediaTypeLookup(),
-        (targetEntry, sourceEntry) => ((Array.isArray(targetEntry) || Array.isArray(sourceEntry))
-            ? arrayFromAny(targetEntry).concat(arrayFromAny(sourceEntry))
-            : undefined));
+  addDecoder (decoder: MediaDecoder) {
+    try {
+      mergeWith(this._decodersByType || (this._decodersByType = {}),
+          decoder.getByMediaTypeLookup(),
+          (targetEntry, sourceEntry) => ((Array.isArray(targetEntry) || Array.isArray(sourceEntry))
+              ? arrayFromAny(targetEntry).concat(arrayFromAny(sourceEntry))
+              : undefined));
+    } catch (error) {
+      throw this.wrapErrorEvent(error, "addDecoder(", decoder, ")");
+    }
   }
 
   findDecoder (mediaInfo: MediaInfo) {

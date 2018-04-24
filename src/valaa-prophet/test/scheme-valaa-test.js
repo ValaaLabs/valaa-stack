@@ -1,13 +1,15 @@
 // @flow
 
-export const schemePlugin = {
-  getURIScheme: () => "valaa-test",
+export default function createValaaTestScheme (/* { logger } */) {
+  return {
+    getURIScheme: () => "valaa-test",
 
-  getAuthorityURIFromPartitionURI: () => `valaa-test:`,
+    getAuthorityURIFromPartitionURI: () => `valaa-test:`,
 
-  getInteractableURLFromAuthorityURI: () => null,
+    getInteractableURLFromAuthorityURI: () => null,
 
-  createDefaultAuthorityConfig: (/* partitionURI: URL */) => {},
+    createDefaultAuthorityConfig: (/* partitionURI: URL */) => {},
 
-  createAuthorityProphet: () => null,
-};
+    createAuthorityProphet: () => null,
+  };
+}

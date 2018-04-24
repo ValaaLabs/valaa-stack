@@ -302,66 +302,22 @@ export default class InspireClient extends LogEventGenerator {
   attachPlugin (plugin: Object) {
     this.warnEvent(`Attaching plugin '${plugin.name}':`, plugin);
     for (const schemePlugin of Object.values(plugin.schemes || {})) {
-      this.nexus.addSchemePlugin(schemePlugin);
+      this.nexus.addSchemePlugin(this.callRevelation(schemePlugin));
     }
     for (const Decoder: any of Object.values(plugin.decoders || {})) {
-      this.scribe.getDecoderArray().addDecoder(new Decoder({ logger: this.getLogger() }));
+      this.scribe.getDecoderArray().addDecoder(this.callRevelation(Decoder));
     }
   }
 
   async _narratePrologues (prologueRevelation: Object) {
     let prologues;
-    let buffers;
-    const client = this;
     try {
       this.warnEvent(`Narrating revelation prologues`);
       prologues = await this._loadRevelationEntryPartitionAndPrologues(prologueRevelation);
       this.warnEvent(`Narrated revelation with ${prologues.length} prologues`,
           "\n\tprologue partitions:",
               `'${prologues.map(({ partitionURI }) => String(partitionURI)).join("', '")}'`);
-      const ret = await Promise.all(prologues.map(async ({ partitionURI, info }: any) => {
-        let eventLog;
-        let mediaInfos;
-        const connection = await this.falseProphet.acquirePartitionConnection(partitionURI, {
-          dontRemoteNarrate: true,
-          retrieveMediaContent (mediaId: VRef, mediaInfo: Object) {
-            // Blob wasn't found in cache.
-            // Return undefined if the requested blob id doesn't match the latest known blob id
-            // for this media to silently ignore this retrieve request: the actual request will
-            // come later during the narration.
-            if (mediaInfo.blobId !== mediaInfos[mediaId.rawId()].mediaInfo.blobId) return undefined;
-            // Otherwise this is the request for last known blob, which should have been precached.
-            throw new Error(`Cannot find the latest blob of media "${mediaInfo.name
-                }" during prologue narration, with blob id "${mediaInfo.blobId}" `);
-          },
-        });
-        if ((await info.commandId) >= 0) {
-          throw new Error("Command queues in revelation are not supported yet");
-        }
-        const eventId = await info.eventId;
-        const lastEventId = connection.getLastAuthorizedEventId();
-        if ((typeof eventId !== "undefined") && (eventId > lastEventId)) {
-          // If no event logs are replayed, we don't need to precache the blobs either, so we delay
-          // loading them up to this point.
-          this.blobs = this.blobs || ((async () => {
-            const resolvedBlobs = (await revelation.blobs) || {};
-            for (const [blobId, blobInfoMaybe] of Object.entries(resolvedBlobs || {})) {
-              const blobInfo = await blobInfoMaybe;
-              if (blobInfo.persistRefCount !== 0) {
-                await this.scribe.preCacheBlob(blobId, blobInfo, readRevelationBlobContent);
-              }
-            }
-            return (this.blobs = resolvedBlobs);
-          })());
-          await this.blobs;
-          const { events, medias } = await info.logs;
-          eventLog = await events;
-          mediaInfos = await medias;
-          await connection.narrateEventLog({ eventLog, firstEventId: lastEventId + 1 })/**/;
-        }
-        return connection;
-      }
-      ));
+      const ret = await Promise.all(prologues.map(this._connectAndNarratePrologue));
       this.warnEvent(`Acquired active connections for all revelation prologue partitions:`,
           "\n\tconnections:", ret.map(connection => [connection.debugId()]));
       return ret;
@@ -369,17 +325,6 @@ export default class InspireClient extends LogEventGenerator {
       throw this.wrapErrorEvent(error, "narratePrologue",
           "\n\tprologue revelation:", prologueRevelation,
           "\n\tprologues:", prologues);
-    }
-    async function readRevelationBlobContent (blobId: string) {
-      if (!buffers) buffers = await revelation.buffers;
-      if (typeof buffers[blobId] === "undefined") {
-        client.errorEvent("Could not locate precached content for blob", blobId,
-            "from revelation buffers", buffers);
-        return undefined;
-      }
-      const container = await buffers[blobId];
-      if (typeof container.base64 !== "undefined") return arrayBufferFromBase64(container.base64);
-      return container;
     }
   }
 
@@ -455,5 +400,66 @@ export default class InspireClient extends LogEventGenerator {
           "\n\tprologue revelation:", prologueRevelation,
       );
     }
+  }
+
+  _connectAndNarratePrologue = async ({ partitionURI, info }: any) => {
+    const connection = await this.falseProphet.acquirePartitionConnection(partitionURI, {
+      dontRemoteNarrate: true,
+      retrieveMediaContent, // this should be a parameter for narrateEventLog below
+    });
+    if ((await info.commandId) >= 0) {
+      throw new Error("Command queues in revelation are not supported yet");
+    }
+    const eventId = await info.eventId;
+    const lastEventId = connection.getLastAuthorizedEventId();
+    if ((typeof eventId === "undefined") || (eventId <= lastEventId)) return connection;
+    // If no event logs are replayed, we don't need to precache the blobs either, so we delay
+    // loading them up to this point.
+    await (this.blobInfos || (this.blobInfos = this._getBlobInfos()));
+
+    const logs = await info.logs;
+    const eventLog = await logs.eventLog;
+    const commandQueue = await logs.commandQueue;
+    if (commandQueue && commandQueue.length) {
+      throw new Error("commandQueue revelation not implemented yet");
+    }
+    const latestMediaInfos = await logs.latestMediaInfos;
+    await connection.narrateEventLog({ eventLog, firstEventId: lastEventId + 1 })/**/;
+    return connection;
+
+    function retrieveMediaContent (mediaId: VRef, mediaInfo: Object) {
+      if (!latestMediaInfos[mediaId.rawId()] ||
+          (mediaInfo.blobId !== latestMediaInfos[mediaId.rawId()].mediaInfo.blobId)) {
+        // Blob wasn't found in cache and the blobId doesn't match the latest known blobId for
+        // the requested media. The request for the latest blob should come later:
+        // Return undefined to silently ignore this request.
+        return undefined;
+      }
+      // Otherwise this is the request for last known blob, which should have been precached.
+      throw new Error(`Cannot find the latest blob of media "${mediaInfo.name
+          }" during prologue narration, with blob id "${mediaInfo.blobId}" `);
+    }
+  }
+
+  async _getBlobInfos () {
+    const readRevelationBlobContent = async (blobId: string) => {
+      const blobBuffers = await this.prologueRevelation.blobBuffers;
+      if (typeof blobBuffers[blobId] === "undefined") {
+        this.errorEvent("Could not locate precached content for blob", blobId,
+            "from revelation blobBuffers", blobBuffers);
+        return undefined;
+      }
+      const container = await blobBuffers[blobId];
+      if (typeof container.base64 !== "undefined") return arrayBufferFromBase64(container.base64);
+      return container;
+    };
+    const blobInfos = (await this.prologueRevelation.blobInfos) || {};
+    for (const [blobId, blobInfoMaybe] of Object.entries(blobInfos || {})) {
+      const blobInfo = await blobInfoMaybe;
+      if (blobInfo.persistRefCount !== 0) {
+        await this.scribe.preCacheBlob(blobId, blobInfo, readRevelationBlobContent);
+      }
+    }
+    return (this.blobInfos = blobInfos);
   }
 }
