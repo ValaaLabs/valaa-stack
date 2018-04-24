@@ -5,7 +5,7 @@ import ContextMenuTrigger, { DefaultContextMenuTrigger } from "./ContextMenuTrig
 // import ExpressionFieldEditor from "./ExpressionFieldEditor";
 import ForEach from "./ForEach";
 import If from "./If";
-import InspireClientStatus from "./InspireClientStatus";
+import InspireGatewayStatus from "./InspireGatewayStatus";
 // import LinkFieldEditor from "./LinkFieldEditor";
 import MediaEditor from "./MediaEditor";
 // import TextFieldEditor from "./TextFieldEditor";
@@ -23,7 +23,8 @@ const Vidgets = {
 //  ExpressionFieldEditor,
   ForEach,
   If,
-  InspireClientStatus,
+  InspireGatewayStatus,
+  InspireClientStatus: InspireGatewayStatus,
 //  LinkFieldEditor,
   MediaEditor,
 //  TextFieldEditor,

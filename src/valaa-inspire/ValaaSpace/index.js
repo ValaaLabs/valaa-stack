@@ -24,7 +24,7 @@ export default function extendValaaSpace (scope: Object, hostObjectDescriptors: 
     };
   }
 
-  scope.Valaa.InspireClient = {
+  scope.Valaa.InspireGateway = {
     RemoteAuthorityURI,
     LocalAuthorityURI: "valaa-local:",
     getPartitionIndexEntity: denoteValaaBuiltinWithSignature(

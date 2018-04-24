@@ -7,7 +7,7 @@ import injectTapEventPlugin from "react-tap-event-plugin";
 
 import { getURIQueryField } from "~/valaa-core/tools/PartitionURI";
 
-import InspireClient from "~/valaa-inspire/InspireClient";
+import InspireGateway from "~/valaa-inspire/InspireGateway";
 import { combineRevelationsLazily } from "~/valaa-inspire/Revelation";
 
 import revelationTemplate from "~/valaa-inspire/revelation.template";
@@ -45,7 +45,7 @@ export default (Valaa.createGateway = async function createGateway (...revelatio
     const gatewayPluginsRevelation = { gateway: { plugins: Valaa.plugins } };
     Valaa.plugins = { push (plugin) { delayedPlugins.push(plugin); } };
 
-    ret = new InspireClient({ name: "Uninitialized InspireClient", logger });
+    ret = new InspireGateway({ name: "Uninitialized InspireGateway", logger });
     ret.warnEvent(`Initializing in environment (${
         String(process.env.NODE_ENV)}) by combining`, ...revelations, gatewayPluginsRevelation);
 
@@ -58,7 +58,7 @@ export default (Valaa.createGateway = async function createGateway (...revelatio
 
     await ret.initialize(combinedRevelation);
     Valaa.gateway = ret;
-    ret.warnEvent(`InspireClient set to window.Valaa.gateway as`, ret);
+    ret.warnEvent(`InspireGateway set to window.Valaa.gateway as`, ret);
 
     while (delayedPlugins.length) await ret.attachPlugin(delayedPlugins.shift());
     Valaa.plugins = { push (plugin) { ret.attachPlugin(plugin); } };

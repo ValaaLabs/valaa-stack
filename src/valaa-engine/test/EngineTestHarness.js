@@ -41,7 +41,7 @@ export default class EngineTestHarness extends ProphetTestHarness {
     const rootScope = this.engine.getRootScope();
     extendValaaSpace(rootScope, this.engine.getHostObjectDescriptors(), this.schema);
     // TODOO(iridian): This should be in valaa-inspire, but there is no such thing.
-    rootScope.Valaa.InspireClient = {
+    rootScope.Valaa.InspireGateway = {
       RemoteAuthorityURI: "valaa-testing:",
       LocalAuthorityURI: "valaa-local:",
     };

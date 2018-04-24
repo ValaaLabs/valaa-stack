@@ -29,7 +29,7 @@ import { arrayBufferFromBase64, invariantify, LogEventGenerator, valaaUUID } fro
 const DEFAULT_ACTION_VERSION = process.env.DEFAULT_ACTION_VERSION || "0.1";
 
 
-export default class InspireClient extends LogEventGenerator {
+export default class InspireGateway extends LogEventGenerator {
 
   callRevelation (Type: Function | any) {
     if (typeof Type !== "function") return Type;
@@ -83,7 +83,7 @@ export default class InspireClient extends LogEventGenerator {
 
       registerVidgets();
       this.warnEvent(`initialize(): registered builtin Inspire vidgets`);
-      this.logEvent("InspireClient initialized, with revelation", revelation);
+      this.logEvent("InspireGateway initialized, with revelation", revelation);
     } catch (error) {
       throw this.wrapErrorEvent(error, "initialize", "\n\tthis:", this);
     }
@@ -140,7 +140,7 @@ export default class InspireClient extends LogEventGenerator {
    * @param {Object} rawRevelation
    * @returns
    *
-   * @memberof InspireClient
+   * @memberof InspireGateway
    */
   async _interpretRevelation (revelation: Revelation): Object {
     try {
