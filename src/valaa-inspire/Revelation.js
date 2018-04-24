@@ -40,6 +40,7 @@ export function expose (object: Revelation) {
 }
 
 export const EntryTemplate = Symbol("EntryTemplate");
+export const Deprecated = Symbol("Deprecated revelation option");
 
 export function dictionaryOf (valueTemplate: any) {
   const ret = {};
@@ -53,6 +54,11 @@ export function arrayOf (entryTemplate: any) {
   return ret;
 }
 
+export function deprecated (template: any, deprecationMessage: string) {
+  template[Deprecated] = deprecationMessage;
+  return template;
+}
+
 /**
  * Combines several revelations together, performing a lazy deep merge which resolves promises,
  * merges objects, concatenates arrays and replaces functions with their result values.
@@ -62,78 +68,145 @@ export function arrayOf (entryTemplate: any) {
  * @param {...any} extensionSets
  * @returns
  */
-export function combineRevelationsLazily (...revelations: any) {
-  return _keepCalling(_combineRevelationsLazily(...revelations));
+export function combineRevelationsLazily (gateway: Object, ...revelations: any) {
+  return _keepCalling(_combineRevelationsLazily(gateway, ...revelations));
 }
 
-function _combineRevelationsLazily (...revelations: any) {
+function _combineRevelationsLazily (gateway: Object, ...revelations: any) {
   return revelations.reduce(
       (current, extension) => ((isPromise(current) || isPromise(extension))
-          ? (async () => _keepCalling(_extendRevelation(await current, await extension)))
-          : _extendRevelation(current, extension)));
+          ? _markLazy(async () =>
+              _keepCalling(_extendRevelation(gateway, await current, await extension)))
+          : _extendRevelation(gateway, current, extension)));
 }
 
 function _keepCalling (callMeMaybe: Function | any): any {
-  return (typeof callMeMaybe === "function") ? _keepCalling(callMeMaybe())
-      : isPromise(callMeMaybe) ? callMeMaybe.then(_keepCalling)
-      : callMeMaybe;
+  try {
+    return _isLazy(callMeMaybe) ? _keepCalling(callMeMaybe())
+        : isPromise(callMeMaybe) ? callMeMaybe.then(_keepCalling)
+        : callMeMaybe;
+  } catch (error) {
+    throw wrapError(error, "During _keepCalling", { callMeMaybe });
+  }
 }
 
-function _extendRevelation (base: Object, extension: Object) {
+function _markLazy (func: Function) {
+  func._isLazy = true;
+  return func;
+}
+
+function _isLazy (candidate: Function | any) {
+  return (typeof candidate === "function") && candidate._isLazy;
+}
+
+function _extendRevelation (gateway: Object, base: Object, extension: Object,
+    validateeFieldName: ?string, extenderName: ?string) {
   let key;
   let ret;
   try {
-    if (typeof extension === "undefined") return (ret = base);
-    if ((typeof base === "undefined") || (extension === null)) return (ret = extension);
-    if ((typeof base === "function") || (typeof extension === "function")) {
-      return (ret = () => _combineRevelationsLazily(_keepCalling(base), _keepCalling(extension)));
+    if (typeof extension === "undefined") {
+      if (validateeFieldName) {
+        throw new Error(`Revelation extension '${extenderName}' is missing required base ${
+            typeof base} field '${validateeFieldName}'`);
+      }
+      return (ret = base);
+    }
+
+    if ((typeof base === "undefined") || (extension === null)) {
+      return (ret = extension);
+    }
+
+    if (_isLazy(base) || _isLazy(extension)) {
+      return (ret = _markLazy(() =>
+          _combineRevelationsLazily(gateway, _keepCalling(base), _keepCalling(extension))));
     }
     if (typeof extension === "object" && extension.url) {
-      return (ret = () => _combineRevelationsLazily(base, request(extension)));
+      return (ret = _markLazy(() =>
+          _combineRevelationsLazily(gateway, base, request(requestOptions))));
     }
-    if (base === null) return (ret = extension);
+
+    if (typeof extension === "function" && (!validateeFieldName || (typeof base === "function"))) {
+      if (typeof base !== "function") {
+        let result;
+        try {
+          result = gateway.callRevelation(extension, base);
+          ret = _extendRevelation(gateway, base, result);
+          if (typeof result !== "object") {
+            return ret;
+          }
+          for (const baseKey of Object.keys(base)) {
+            if ((typeof base[baseKey] !== "undefined") && !result.hasOwnProperty(baseKey)) {
+              _extendRevelation(gateway, base[baseKey], result[baseKey], baseKey, extension.name);
+            }
+          }
+          return (ret = result);
+        } catch (error) {
+          throw gateway.wrapErrorEvent(error,
+                  `_extendRevelation via extension '${extension.name}' call`,
+              "\n\tcall result:", result,
+              "\n\tbase:", base);
+        }
+      }
+      if (extension.name !== base.name) {
+        throw new Error(`Revelation function name mismatch: trying to override function '${
+            base.name}' with '${extension.name}'`);
+      }
+      return (ret = extension);
+    }
+
+    if (base === null) {
+      return (ret = extension);
+    }
 
     const baseType = Array.isArray(base) ? "array" : typeof base;
     const extensionType = Array.isArray(extension) ? "array" : typeof extension;
-    if (baseType !== extensionType) {
+    if ((typeof base === "object") && base[Deprecated]) {
+      gateway.warnEvent(base[Deprecated], "while extending", base, "with", extension);
+      if (extensionType !== "object") {
+        return (ret = extension);
+      }
+    } else if (baseType !== extensionType) {
       throw new Error(`Revelation type mismatch: trying to override an entry of type '${
           baseType}' with a value of type '${extensionType}'`);
+    } else if (typeof base !== "object") {
+      return (ret = extension); // non-array, non-object values are always overridden
     }
-    if (typeof base !== "object") return (ret = extension);
+
+    if (validateeFieldName) return undefined;
 
     const valuePrototype = base[EntryTemplate];
 
-    if (Array.isArray(base)) {
-      if (!valuePrototype) return (ret = [].concat(base, extension));
-      ret = [].concat(base);
-      for (const entry of [].concat(extension)) {
-        const combined = _combineRevelationsLazily(valuePrototype, entry);
-        key = ret.length;
-        ret.push(combined);
-        if (typeof combined === "function") {
-          _setPropertyToGetter(ret, key, combined);
+    if (!Array.isArray(base)) {
+      ret = Object.create(Object.getPrototypeOf(base), Object.getOwnPropertyDescriptors(base));
+      for (const [key_, value] of Object.entries(extension)) {
+        key = key_;
+        const currentValue = (typeof ret[key] !== "undefined") ? ret[key] : valuePrototype;
+        if (typeof currentValue === "undefined") {
+          ret[key] = value;
+        } else {
+          ret[key] = _combineRevelationsLazily(gateway, currentValue, value);
+          if (_isLazy(ret[key])) {
+            _setPropertyToGetter(ret, key, ret[key]);
+          }
         }
       }
-      return ret;
-    }
-    ret = Object.create(Object.getPrototypeOf(base), Object.getOwnPropertyDescriptors(base));
-    for (const [key_, value] of Object.entries(extension)) {
-      key = key_;
-      const currentValue = typeof ret[key] !== "undefined" ? ret[key] : valuePrototype;
-      if (typeof currentValue === "undefined") {
-        ret[key] = value;
-      } else {
-        const combined = _combineRevelationsLazily(currentValue, value);
-        if (typeof combined !== "function") {
-          ret[key] = combined;
-        } else {
-          _setPropertyToGetter(ret, key, combined);
+    } else if (!valuePrototype) {
+      ret = [].concat(base, extension);
+    } else {
+      ret = [].concat(base);
+      for (const entry of [].concat(extension)) {
+        key = ret.length;
+        ret.push(_combineRevelationsLazily(gateway, valuePrototype, entry));
+        if (_isLazy(ret[key])) {
+          _setPropertyToGetter(ret, key, ret[key]);
         }
       }
     }
     return ret;
   } catch (error) {
-    throw wrapError(error, "During _extendRevelation(), with:",
+    throw gateway.wrapErrorEvent(error, !extenderName
+            ? "_extendRevelation()"
+            : `validateField '${validateeFieldName}' of extender '${extenderName}' call`,
         "\n\tbase revelation:", ...dumpObject(base),
         "\n\textension revelation:", ...dumpObject(extension),
         ...(key ? ["\n\tresult key:", key] : []));

@@ -15,10 +15,11 @@ export default class MediaDecoder extends LogEventGenerator {
 
   constructor (options: Object = {}) {
     super(options);
-    const { type, subtype } = this.constructor.mediaTypes[0];
+    this.mediaTypes = this.constructor.mediaTypes;
+    const { type, subtype } = this.mediaTypes[0];
     this.type = type;
     this.subtype = subtype;
-    if (!options.name && this.constructor.mediaTypes.length) {
+    if (!options.name && this.mediaTypes.length) {
       this.setName(`Decoder(${type}/${subtype})`);
     }
     this._lookup = Object.freeze(this._prepareMediaTypeLookup());
@@ -27,7 +28,7 @@ export default class MediaDecoder extends LogEventGenerator {
   getByMediaTypeLookup () { return this._lookup; }
 
   canDecode ({ type, subtype }: Object): boolean {
-    if (!this.constructor.mediaTypes.length) {
+    if (!this.mediaTypes.length) {
       throw new Error(`${this.constructor.name}.canDecode must be implemented if no ${
           this.constructor.name}.mediaTypes are specified`);
     }
@@ -65,9 +66,9 @@ export default class MediaDecoder extends LogEventGenerator {
   }
 
   _prepareMediaTypeLookup () {
-    if (!this.constructor.mediaTypes.length) return { "": { "": [this] } };
+    if (!this.mediaTypes.length) return { "": { "": [this] } };
     const ret = {};
-    for (const mediaType of this.constructor.mediaTypes) {
+    for (const mediaType of this.mediaTypes) {
       const bySub = (ret[mediaType.type || ""] = (ret[mediaType.type || ""] || {}));
       (bySub[mediaType.subtype || ""] = (bySub[mediaType.subtype || ""] || [this]));
     }

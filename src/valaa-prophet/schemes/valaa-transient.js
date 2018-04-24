@@ -1,13 +1,15 @@
 // @flow
 
-export default {
-  getURIScheme: () => "valaa-transient",
+export default function createValaaTransientScheme (/* { logger } */) {
+  return {
+    getURIScheme: () => "valaa-transient",
 
-  getAuthorityURIFromPartitionURI: () => `valaa-transient:`,
+    getAuthorityURIFromPartitionURI: () => `valaa-transient:`,
 
-  getInteractableURLFromAuthorityURI: () => null,
+    getInteractableURLFromAuthorityURI: () => null,
 
-  createDefaultAuthorityConfig: (/* partitionURI: URL */) => {},
+    createDefaultAuthorityConfig: (/* partitionURI: URL */) => {},
 
-  createAuthorityProphet: () => null,
+    createAuthorityProphet: () => null,
+  };
 };

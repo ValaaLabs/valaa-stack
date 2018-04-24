@@ -30,6 +30,12 @@ const DEFAULT_ACTION_VERSION = process.env.DEFAULT_ACTION_VERSION || "0.1";
 
 
 export default class InspireClient extends LogEventGenerator {
+
+  callRevelation (Type: Function | any) {
+    if (typeof Type !== "function") return Type;
+    return new Type({ logger: this.getLogger() });
+  }
+
   async initialize (revelation: Revelation) {
     try {
       // Process the initially served landing page and extract the initial Valaa configuration

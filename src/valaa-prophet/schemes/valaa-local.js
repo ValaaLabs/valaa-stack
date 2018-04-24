@@ -1,13 +1,15 @@
 // @flow
 
-export default {
-  getURIScheme: () => "valaa-local",
+export default function createValaaLocalScheme (/* { logger } */) {
+  return {
+    getURIScheme: () => "valaa-local",
 
-  getAuthorityURIFromPartitionURI: () => `valaa-local:`,
+    getAuthorityURIFromPartitionURI: () => `valaa-local:`,
 
-  getInteractableURLFromAuthorityURI: () => null,
+    getInteractableURLFromAuthorityURI: () => null,
 
-  createDefaultAuthorityConfig: (/* partitionURI: URL */) => {},
+    createDefaultAuthorityConfig: (/* partitionURI: URL */) => {},
 
-  createAuthorityProphet: () => null,
-};
+    createAuthorityProphet: () => null,
+  };
+}

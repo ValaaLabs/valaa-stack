@@ -22,23 +22,29 @@ export default {
   buffers: dictionaryOf(bufferDatas()),
 };
 
-function schemePlugins () {
+function plugin () {
   return {
-    getURIScheme: undefined,
-    getAuthorityURIFromPartitionURI: undefined,
-    getInteractableURLFromAuthorityURI: undefined,
-    createDefaultAuthorityConfig: undefined,
-    createAuthorityProphet: undefined,
+    schemes: dictionaryOf(scheme()),
+    decoders: dictionaryOf(decoder()),
   };
 }
-/*
-function decoders () {
+
+function scheme () {
+  return {
+    getURIScheme () {},
+    getAuthorityURIFromPartitionURI () {},
+    getInteractableURLFromAuthorityURI () {},
+    createDefaultAuthorityConfig () {},
+    createAuthorityProphet () {},
+  };
+}
+
+function decoder () {
   return {
     mediaTypes: arrayOf({ type: "", subtype: "" }),
-    decode: undefined,
+    decode () {},
   };
 }
-*/
 function authorityConfigs () {
   return {
     type: "",
