@@ -34,8 +34,8 @@ module.exports = {
     "./src/valaa-inspire/index.js",
   ],
   output: {
-    path: __dirname + "/dist/public/js/",
-    publicPath: "/js/",
+    path: __dirname + "/dist/public/valaa/inspire/",
+    publicPath: "/",
     filename: "valaa-inspire.js",
   },
   node: {
@@ -104,6 +104,7 @@ module.exports = {
     ]
   },
   devServer: {
+    publicPath: "/valaa/inspire/",
     disableHostCheck: true,
     compress: true,
   },
