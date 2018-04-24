@@ -5,8 +5,10 @@
 import "babel-polyfill";
 import injectTapEventPlugin from "react-tap-event-plugin";
 
+import { getURIQueryField } from "~/valaa-core/tools/PartitionURI";
+
 import InspireClient from "~/valaa-inspire/InspireClient";
-import { Revelation, combineRevelationsLazily } from "~/valaa-inspire/Revelation";
+import { combineRevelationsLazily } from "~/valaa-inspire/Revelation";
 
 import revelationTemplate from "~/valaa-inspire/revelation.template";
 
@@ -19,38 +21,44 @@ injectTapEventPlugin();
 
 const logger = new Logger();
 
-const createInspireClientGlobalName = "createInspireClient";
+const Valaa = getGlobal().Valaa || (getGlobal().Valaa = {});
 
-export default createInspireClient;
+Valaa.getURIQueryField = getURIQueryField;
 
-export async function createInspireClient (...revelations: Revelation[]) {
+Valaa.createInspireGateway = function createInspireGateway (...revelations: any[]) {
+  const gatewayPromise = Valaa.createGateway(...revelations);
+  return new Promise(resolve =>
+      document.addEventListener("DOMContentLoaded", () => { resolve(gatewayPromise); }));
+};
+
+export default (Valaa.createGateway = async function createGateway (...revelations: any) {
   let ret;
-  let revelationComponents;
   let combinedRevelation;
   const delayedPlugins = [];
   try {
     exportValaaPlugin({ name: "valaa-inspire", decoders });
-    const Valaa = getGlobal().Valaa;
-    if (Valaa.inspire || (typeof Valaa.plugins === "function")) {
-      throw new Error("Valaa InspireClient already exists. There can be only one.");
+    if (Valaa.gateway) {
+      throw new Error(`Valaa.gateway already exists (${
+          Valaa.gateway.debugId()}). There can be only one.`);
     }
 
-    revelationComponents = revelations.concat({ plugins: Valaa.plugins });
-    logger.warn(`Initializing Inspire Application Gateway in environment (${
-        String(process.env.NODE_ENV)}) by combining`, revelationComponents);
-
+    const gatewayPluginsRevelation = { gateway: { plugins: Valaa.plugins } };
     Valaa.plugins = { push (plugin) { delayedPlugins.push(plugin); } };
 
-    combinedRevelation = await combineRevelationsLazily(
-        revelationTemplate,
-        ...revelationComponents);
-    logger.warn(`  revelation combined as`, combinedRevelation);
+    ret = new InspireClient({ name: "Uninitialized InspireClient", logger });
+    ret.warnEvent(`Initializing in environment (${
+        String(process.env.NODE_ENV)}) by combining`, ...revelations, gatewayPluginsRevelation);
 
-    ret = new InspireClient({ name: combinedRevelation.name, logger });
+    combinedRevelation = await combineRevelationsLazily(
+        ret,
+        revelationTemplate,
+        ...revelations,
+        gatewayPluginsRevelation);
+    ret.warnEvent(`  revelation combined as`, combinedRevelation);
 
     await ret.initialize(combinedRevelation);
-    Valaa.inspire = ret;
-    ret.warnEvent(`InspireClient set to window.Valaa.inspire as`, ret);
+    Valaa.gateway = ret;
+    ret.warnEvent(`InspireClient set to window.Valaa.gateway as`, ret);
 
     while (delayedPlugins.length) await ret.attachPlugin(delayedPlugins.shift());
     Valaa.plugins = { push (plugin) { ret.attachPlugin(plugin); } };
@@ -58,13 +66,9 @@ export async function createInspireClient (...revelations: Revelation[]) {
     return ret;
   } catch (error) {
     outputError((ret || new LogEventGenerator(logger)).wrapErrorEvent(error,
-        `createInspireClient(), with`,
+        `createInspireGateway(), with`,
             "\n\trevelation components:", revelations,
             "\n\tcombined revelation:", combinedRevelation));
     throw new Error("Failed to initialize Inspire Client. See message log for more details.");
   }
-}
-
-if (window) {
-  window[createInspireClientGlobalName] = createInspireClient;
-}
+});

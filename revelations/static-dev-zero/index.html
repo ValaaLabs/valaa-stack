@@ -15,44 +15,32 @@
             box-sizing: inherit;
           }
         </style>
-        <link rel="preload" href="js/url-search-params.js" as="script"/>
         <link rel="preload" href="valaa/inspire/valaa-inspire.js" as="script"/>
         <link rel="preload" href="valaa.json" as="fetch"/>
     </head>
 <body>
     <div id="static-dev-zero--main-container"></div>
     <!-- TODO: cdn.valaa.com? -->
-    <script src="js/url-search-params.js"></script>
     <script src="valaa/inspire/valaa-inspire.js"></script>
     <script>
-      document.addEventListener(
-          "DOMContentLoaded",
-          (function getOnContentLoaded (inspireClientPromise) {
-            return function () {
-              inspireClientPromise.then(function createViews (inspireClient) {
-                var views = inspireClient.createAndConnectViewsToDOM({
-                  inspireMain: {
-                    name: "Inspire Main",
-                    size: { width: window.innerWidth, height: window.innerHeight, scale: 1 },
-                    container: document.querySelector("#static-dev-zero--main-container"),
-                    rootId: "static-dev-zero--main-root",
-                    rootPartitionURI: inspireClient.revelation.directPartitionURI,
-                  },
-                });
-                Object.keys(views).forEach(function (key) {
-                  Promise.resolve(views[key]).then(function (view) { window[key] = view; });
-                });
-              });
-            };
-          })(createInspireClient(
-              { "url": "valaa-inspire.revelation.json" },
-              {
-                verbosity: 1,
-                directPartitionURI: (new URLSearchParams(document.location.search.substring(1)))
-                    .get("partition") || undefined
-              }
-          )),
-          false);
+      Valaa.createInspireGateway({ "/": "valaa.json" }, {
+        gateway: {
+          verbosity: 1,
+        },
+        prologue: {
+          rootPartitionURI: Valaa.getURIQueryField(document.location, "partition"),
+        },
+      }).then(function (inspireGateway) {
+        Valaa.views = inspireGateway.createAndConnectViewsToDOM({
+          inspireMain: {
+            name: "Inspire Main",
+            size: { width: window.innerWidth, height: window.innerHeight, scale: 1 },
+            container: document.querySelector("#static-dev-zero--main-container"),
+            rootId: "static-dev-zero--main-root",
+            rootPartitionURI: inspireGateway.revelation.prologue.rootPartitionURI,
+          },
+        });
+      });
     </script>
 </body>
 </html>

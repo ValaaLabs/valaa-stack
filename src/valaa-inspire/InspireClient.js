@@ -121,7 +121,7 @@ export default class InspireClient extends LogEventGenerator {
                   String(viewConfig.defaultAuthorityURI)}`);
         inspireExtendValaaSpace(rootScope, hostDescriptors, defaultAuthorityConfig, engine);
       }
-      rootScope.Valaa.inspire = this;
+      rootScope.Valaa.gateway = this;
       ret[viewName] = new InspireView({ engine, name: `${viewConfig.name} View` })
           .initialize(viewConfig);
       this.warnEvent(`Opened InspireView ${viewName}`,
