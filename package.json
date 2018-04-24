@@ -3,7 +3,7 @@
   "version": "0.30.0-prerelease",
   "config": {
     "defaultrevelation": "revelations/static-dev-zero",
-    "modulepaths": "valaa-core/node_modules:valaa-prophet/node_modules:valaa-script/node_modules:valaa-engine/node_modules:valaa-inspire/node_modules"
+    "modulepaths": "core/node_modules:prophet/node_modules:script/node_modules:engine/node_modules:inspire/node_modules"
   },
   "description": "Vault of Valaa open source tools and libraries. Expect this package to be split when the child components mature with more stable APIs and less cross-dependencies.",
   "main": "index.js",
@@ -33,7 +33,7 @@
     "verbose": true,
     "testRegex": ".*\\.test\\.js$",
     "moduleNameMapper": {
-      "\\.(css|less)$": "<rootDir>/src/valaa-tools/mocks/styleMock.js"
+      "\\.(css|less)$": "<rootDir>/src/tools/mocks/styleMock.js"
     },
     "transform": {
       ".*": "<rootDir>/node_modules/babel-jest"
@@ -64,10 +64,10 @@
     "text-encoding": "^0.6.4",
     "url-search-params": "^0.10.0",
     "uuid": "^2.0.2",
-    "@valaa/core": "file:src/valaa-core",
-    "@valaa/prophet": "file:src/valaa-prophet",
-    "@valaa/script": "file:src/valaa-script",
-    "@valaa/tools": "file:src/valaa-tools"
+    "@valaa/core": "file:src/core",
+    "@valaa/prophet": "file:src/prophet",
+    "@valaa/script": "file:src/script",
+    "@valaa/tools": "file:src/tools"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
