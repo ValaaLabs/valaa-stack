@@ -1,10 +1,8 @@
 // @flow
 
-// FIXME(iridian): Remove react dependency by moving injectLensObjects.js to valaa-inspire
 import React from "react";
 
 import Vrapper from "~/valaa-engine/Vrapper";
-// FIXME(iridian): Removes cross-dependency to valaa-inspire
 import UIComponent from "~/valaa-inspire/ui/UIComponent";
 
 import { arrayFromAny } from "~/valaa-tools";

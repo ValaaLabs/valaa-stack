@@ -11,7 +11,7 @@ module.exports = config => {
     ],
 
     proxies: {
-      "/valaa-inspire.revelation.json": "http://inspire.valaa.com/game/inspire-project/latest/valaa-inspire.revelation.json",
+      "/valaa.json": "http://inspire.valaa.com/game/inspire-project/latest/valaa.json",
       // FIXME(iridian): These are broken: inspire-project no longer exists as a path
       "/ui/vidget/": "http://inspire.valaa.com/game/inspire-project/latest/ui/vidget/"
     },

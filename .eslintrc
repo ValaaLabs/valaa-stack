@@ -87,6 +87,6 @@
     "no-warning-comments": ["warn", { "terms": ["fixme"], "location": "anywhere" }]
   },
   "settings": {
-    "import/resolver": "babel-root-import"
+    "import/resolver": "babel-plugin-root-import"
   }
 }

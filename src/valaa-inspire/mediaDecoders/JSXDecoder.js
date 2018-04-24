@@ -1,6 +1,5 @@
 // @flow
 
-// FIXME(iridian): Remove react dependency by moving JSX/VSXDecoder's to valaa-inspire
 import React from "react";
 
 import { addStackFrameToError, SourceInfoTag } from "~/valaa-core/VALK/StackTrace";

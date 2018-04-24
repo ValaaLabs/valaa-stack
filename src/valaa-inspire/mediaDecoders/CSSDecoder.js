@@ -1,6 +1,5 @@
 // @flow
 
-// FIXME(iridian): Remove jss-css dependency by moving CSSDecoder to valaa-inspire
 import css from "jss-css/lib/css";
 
 import { MediaDecoder } from "~/valaa-tools";

@@ -3,5 +3,4 @@ script
 revelations
 webpack.config.js
 **/node_modules/**
-**/lots-of-puts/**
 karma.conf.js
