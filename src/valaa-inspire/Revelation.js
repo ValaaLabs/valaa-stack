@@ -99,6 +99,13 @@ function _isLazy (candidate: Function | any) {
   return (typeof candidate === "function") && candidate._isLazy;
 }
 
+function _tryRequestOptions (candidate: any) {
+  if ((typeof candidate !== "object") || !candidate.hasOwnProperty("/")) return undefined;
+  const requestOptions = { ...candidate, url: candidate["/"] };
+  delete requestOptions["/"];
+  return requestOptions;
+}
+
 function _extendRevelation (gateway: Object, base: Object, extension: Object,
     validateeFieldName: ?string, extenderName: ?string) {
   let key;
@@ -120,7 +127,9 @@ function _extendRevelation (gateway: Object, base: Object, extension: Object,
       return (ret = _markLazy(() =>
           _combineRevelationsLazily(gateway, _keepCalling(base), _keepCalling(extension))));
     }
-    if (typeof extension === "object" && extension.url) {
+
+    const requestOptions = _tryRequestOptions(extension);
+    if (requestOptions) {
       return (ret = _markLazy(() =>
           _combineRevelationsLazily(gateway, base, request(requestOptions))));
     }
