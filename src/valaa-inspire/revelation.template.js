@@ -45,6 +45,7 @@ function plugin () {
     },
     schemeModules: dictionaryOf(schemeModule()),
     mediaDecoders: dictionaryOf(mediaDecoder()),
+    authorityConfigs: dictionaryOf(authorityConfig()),
   };
 }
 
@@ -67,9 +68,10 @@ function mediaDecoder () {
 
 function authorityConfig () {
   return {
+    authorityURI: "",
+    scheme: "",
     type: "",
     name: "",
-    partitionAuthorityURI: "",
     credentials: { accessKeyId: "", secretAccessKey: "", region: "", IdentityPoolId: "" },
     api: { endpoint: "", verifyEndpoint: "" },
     iot: { endpoint: "" },

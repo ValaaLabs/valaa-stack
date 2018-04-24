@@ -23,10 +23,16 @@ export default class AuthorityNexus extends LogEventGenerator {
     this._schemeModules[schemeModule.scheme] = schemeModule;
   }
 
+  addAuthorityConfig (authorityConfig: Object) {
+    invariantify(!this._schemeModules[authorityConfig.scheme],
+        `URI scheme '${authorityConfig.scheme}' module missing when trying to load authority${
+            ""} config for '${authorityConfig.authorityURI}'`);
+    this._authorityConfigs[String(authorityConfig.authorityURI)] = Object.freeze(authorityConfig);
   }
 
   getSchemeModule (uriScheme: string) {
     return this.getSchemeModule(uriScheme, { require: true });
+  }
 
   trySchemeModule (uriScheme: string, { require } = {}) {
     const ret = this._schemeModules[uriScheme];
@@ -91,7 +97,9 @@ export default class AuthorityNexus extends LogEventGenerator {
           throw new Error(`No Valaa authority config found for "${String(authorityURI)}"`);
         }
       }
-      return schemePlugin.createAuthorityProphet(authorityURI, authorityConfig, this);
+      return schemeModule.createAuthorityProphet({
+        authorityURI, authorityConfig, logger: this.getLogger(),
+      });
     } catch (error) {
       throw this.wrapErrorEvent(error, `createAuthorityProphet("${String(authorityURI)}")`,
           "\n\tschemeModule:", schemeModule,

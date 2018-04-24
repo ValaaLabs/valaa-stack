@@ -115,6 +115,7 @@ export default class InspireGateway extends LogEventGenerator {
       if (!viewConfig.defaultAuthorityURI) {
         inspireExtendValaaSpace(rootScope, hostDescriptors);
       } else {
+        // FIXME(iridian): Implement this.schemes - still missing.
         const defaultAuthorityConfig = this.schemes[viewConfig.defaultAuthorityURI];
         invariantify(defaultAuthorityConfig,
             `defaultAuthorityConfig missing when looking for default authority ${
@@ -303,6 +304,9 @@ export default class InspireGateway extends LogEventGenerator {
     this.warnEvent(`Attaching plugin '${plugin.name}':`, plugin);
     for (const schemeModule of Object.values(plugin.schemeModules || {})) {
       this.nexus.addSchemeModule(this.callRevelation(schemeModule));
+    }
+    for (const authorityConfig of Object.values(plugin.authorityConfigs || {})) {
+      this.nexus.addAuthorityConfig(authorityConfig);
     }
     for (const MediaDecoder_: any of Object.values(plugin.mediaDecoders || {})) {
       this.scribe.getDecoderArray().addDecoder(this.callRevelation(MediaDecoder_));
