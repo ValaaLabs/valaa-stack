@@ -17,7 +17,6 @@ export default function extendValaaSpace (scope: Object, hostObjectDescriptors: 
   };
 
   if (defaultAuthorityConfig) {
-    // FIXME(iridian): Implement this.schemes - still missing.
     RemoteAuthorityURI = defaultAuthorityConfig.partitionAuthorityURI;
     getPartitionIndexEntityCall = function getPartitionIndexEntity () {
       return engine.tryVrapper(defaultAuthorityConfig.repositoryIndexId);

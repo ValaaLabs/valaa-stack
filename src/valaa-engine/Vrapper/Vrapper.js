@@ -27,7 +27,7 @@ import isResourceType from "~/valaa-core/tools/graphql/isResourceType";
 import { ValaaPrimitive } from "~/valaa-script";
 
 import { Discourse, Transaction, PartitionConnection, Prophecy } from "~/valaa-prophet";
-import { createModuleGlobal } from "~/valaa-tools/decoders/JavaScriptDecoder";
+import { createModuleGlobal } from "~/valaa-tools/mediaDecoders/JavaScriptDecoder";
 
 import VALEK, { Valker, Kuery, dumpKuery, expressionFromValue } from "~/valaa-engine/VALEK";
 

@@ -5,9 +5,9 @@
 import exportValaaPlugin from "~/valaa-tools/exportValaaPlugin";
 
 import ContentAPI from "./ProphetContentAPI";
-import * as schemes from "./schemes";
+import schemeModules from "./schemeModules";
 
-export default exportValaaPlugin({ name: "valaa-prophet", ContentAPI, schemes });
+export default exportValaaPlugin({ name: "valaa-prophet", ContentAPI, schemeModules });
 
 
 export { default as Discourse } from "./api/Discourse";

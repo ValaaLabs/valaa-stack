@@ -2,7 +2,7 @@
 
 export default function createValaaTestScheme (/* { logger } */) {
   return {
-    getURIScheme: () => "valaa-test",
+    scheme: "valaa-test",
 
     getAuthorityURIFromPartitionURI: () => `valaa-test:`,
 

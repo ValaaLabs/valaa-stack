@@ -301,11 +301,11 @@ export default class InspireGateway extends LogEventGenerator {
 
   attachPlugin (plugin: Object) {
     this.warnEvent(`Attaching plugin '${plugin.name}':`, plugin);
-    for (const schemePlugin of Object.values(plugin.schemes || {})) {
-      this.nexus.addSchemePlugin(this.callRevelation(schemePlugin));
+    for (const schemeModule of Object.values(plugin.schemeModules || {})) {
+      this.nexus.addSchemeModule(this.callRevelation(schemeModule));
     }
-    for (const Decoder: any of Object.values(plugin.decoders || {})) {
-      this.scribe.getDecoderArray().addDecoder(this.callRevelation(Decoder));
+    for (const MediaDecoder_: any of Object.values(plugin.mediaDecoders || {})) {
+      this.scribe.getDecoderArray().addDecoder(this.callRevelation(MediaDecoder_));
     }
   }
 

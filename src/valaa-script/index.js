@@ -3,9 +3,9 @@
 import exportValaaPlugin from "~/valaa-tools/exportValaaPlugin";
 
 import ContentAPI from "./ScriptContentAPI";
-import * as decoders from "./decoders";
+import * as mediaDecoders from "./mediaDecoders";
 
-export default exportValaaPlugin({ name: "valaa-script", ContentAPI, decoders });
+export default exportValaaPlugin({ name: "valaa-script", ContentAPI, mediaDecoders });
 
 
 export {

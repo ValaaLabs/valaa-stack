@@ -43,14 +43,14 @@ function plugin () {
       validators: undefined,
       reducers: undefined,
     },
-    schemes: dictionaryOf(scheme()),
-    decoders: dictionaryOf(decoder()),
+    schemeModules: dictionaryOf(schemeModule()),
+    mediaDecoders: dictionaryOf(mediaDecoder()),
   };
 }
 
-function scheme () {
+function schemeModule () {
   return {
-    getURIScheme () {},
+    scheme: "",
     getAuthorityURIFromPartitionURI () {},
     getInteractableURLFromAuthorityURI () {},
     createDefaultAuthorityConfig () {},
@@ -58,7 +58,7 @@ function scheme () {
   };
 }
 
-function decoder () {
+function mediaDecoder () {
   return {
     mediaTypes: arrayOf({ type: "", subtype: "" }),
     decode () {},

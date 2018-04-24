@@ -2,7 +2,7 @@
 
 export default function createValaaTransientScheme (/* { logger } */) {
   return {
-    getURIScheme: () => "valaa-transient",
+    scheme: "valaa-transient",
 
     getAuthorityURIFromPartitionURI: () => `valaa-transient:`,
 

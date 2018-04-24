@@ -2,7 +2,7 @@
 
 import { addStackFrameToError } from "~/valaa-core/VALK/StackTrace";
 
-import JSXDecoder from "~/valaa-inspire/decoders/JSXDecoder";
+import JSXDecoder from "~/valaa-inspire/mediaDecoders/JSXDecoder";
 import VALEK from "~/valaa-engine/VALEK";
 
 import { transpileValaaScriptBody } from "~/valaa-script";

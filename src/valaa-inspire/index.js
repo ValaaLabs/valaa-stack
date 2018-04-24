@@ -15,7 +15,7 @@ import revelationTemplate from "~/valaa-inspire/revelation.template";
 import { exportValaaPlugin, getGlobal, Logger, LogEventGenerator, outputError }
     from "~/valaa-tools";
 
-import * as decoders from "./decoders";
+import * as mediaDecoders from "./mediaDecoders";
 
 injectTapEventPlugin();
 
@@ -36,7 +36,7 @@ export default (Valaa.createGateway = async function createGateway (...revelatio
   let combinedRevelation;
   const delayedPlugins = [];
   try {
-    exportValaaPlugin({ name: "valaa-inspire", decoders });
+    exportValaaPlugin({ name: "valaa-inspire", mediaDecoders });
     if (Valaa.gateway) {
       throw new Error(`Valaa.gateway already exists (${
           Valaa.gateway.debugId()}). There can be only one.`);

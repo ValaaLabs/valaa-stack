@@ -8,27 +8,28 @@ import { invariantify, LogEventGenerator } from "~/valaa-tools";
 
 export default class AuthorityNexus extends LogEventGenerator {
   _authorityProphets: Object;
-  _schemePlugins: Object;
+  _schemeModules: Object;
 
   constructor (options: Object = {}) {
     super(options);
-    this._schemePlugins = {};
+    this._schemeModules = {};
     this._authorityConfigs = options.authorityConfigs || {};
     this._authorityProphets = {};
   }
 
-  addSchemePlugin (schemePlugin: Object) {
-    invariantify(!this._schemePlugins[schemePlugin.getURIScheme()],
-        `URI scheme plugin for "${schemePlugin.getURIScheme()}" already exists`);
-    this._schemePlugins[schemePlugin.getURIScheme()] = schemePlugin;
+  addSchemeModule (schemeModule: Object) {
+    invariantify(!this._schemeModules[schemeModule.scheme],
+        `URI scheme '${schemeModule.scheme}' module already exists`);
+    this._schemeModules[schemeModule.scheme] = schemeModule;
   }
 
-  getSchemePlugin (uriScheme: string) {
-    return this.getSchemePlugin(uriScheme, { require: true });
   }
 
-  trySchemePlugin (uriScheme: string, { require } = {}) {
-    const ret = this._schemePlugins[uriScheme];
+  getSchemeModule (uriScheme: string) {
+    return this.getSchemeModule(uriScheme, { require: true });
+
+  trySchemeModule (uriScheme: string, { require } = {}) {
+    const ret = this._schemeModules[uriScheme];
     if (!require || (typeof ret !== "undefined")) return ret;
     throw new Error(`Unrecognized URI scheme "${uriScheme}"`);
   }
@@ -62,11 +63,11 @@ export default class AuthorityNexus extends LogEventGenerator {
   }
 
   _tryAuthorityURIFromPartitionURI (partitionURI: URL, { require }: Object = {}): URL {
-    let schemePlugin;
+    let schemeModule;
     try {
-      schemePlugin = this.trySchemePlugin(partitionURI.protocol.slice(0, -1), { require });
-      if (!schemePlugin) return undefined;
-      const ret = schemePlugin.getAuthorityURIFromPartitionURI(partitionURI, { require });
+      schemeModule = this.trySchemeModule(partitionURI.protocol.slice(0, -1), { require });
+      if (!schemeModule) return undefined;
+      const ret = schemeModule.getAuthorityURIFromPartitionURI(partitionURI, { require });
       if (require && (typeof ret === "undefined")) {
         throw new Error(`Scheme "${partitionURI.protocol.slice(0, -1)
             }" could not determine authority URI of partitionURI "${String(partitionURI)}"`);
@@ -74,18 +75,18 @@ export default class AuthorityNexus extends LogEventGenerator {
       return ret;
     } catch (error) {
       throw this.wrapErrorEvent(error, `tryAuthorityURIFromPartitionURI("${String(partitionURI)}")`,
-          "\n\tschemePlugin:", schemePlugin);
+          "\n\tschemeModule:", schemeModule);
     }
   }
 
   _createAuthorityProphet (authorityURI: URL): Prophet {
-    let schemePlugin;
+    let schemeModule;
     let authorityConfig;
     try {
-      schemePlugin = this.getSchemePlugin(authorityURI.protocol.slice(0, -1));
+      schemeModule = this.getSchemeModule(authorityURI.protocol.slice(0, -1));
       authorityConfig = this._authorityConfigs[String(authorityURI)];
       if (!authorityConfig) {
-        authorityConfig = schemePlugin.createDefaultAuthorityConfig(authorityURI);
+        authorityConfig = schemeModule.createDefaultAuthorityConfig(authorityURI);
         if (!authorityConfig) {
           throw new Error(`No Valaa authority config found for "${String(authorityURI)}"`);
         }
@@ -93,7 +94,7 @@ export default class AuthorityNexus extends LogEventGenerator {
       return schemePlugin.createAuthorityProphet(authorityURI, authorityConfig, this);
     } catch (error) {
       throw this.wrapErrorEvent(error, `createAuthorityProphet("${String(authorityURI)}")`,
-          "\n\tschemePlugin:", schemePlugin,
+          "\n\tschemeModule:", schemeModule,
           "\n\tauthorityConfig:", authorityConfig,
           "\n\tconfigs:", this._authorityConfigs);
     }

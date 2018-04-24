@@ -2,7 +2,7 @@
 
 export default function createValaaLocalScheme (/* { logger } */) {
   return {
-    getURIScheme: () => "valaa-local",
+    scheme: "valaa-local",
 
     getAuthorityURIFromPartitionURI: () => `valaa-local:`,
 
