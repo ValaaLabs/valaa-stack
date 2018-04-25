@@ -1,7 +1,6 @@
 // @flow
 import { GraphQLObjectType } from "graphql/type";
 import { Map } from "immutable";
-import cloneDeep from "lodash/cloneDeep";
 
 import type Command, { Action } from "~/core/command";
 import isResourceType from "~/core/tools/graphql/isResourceType";
@@ -11,6 +10,7 @@ import type { State } from "~/core/tools/denormalized/State";
 import { obtainVRef, getRawIdFrom } from "~/core/ValaaReference";
 
 import { dumpObject, invariantify, outputCollapsedError } from "~/tools";
+import { trivialCloneWith } from "~/tools/trivialClone";
 
 /**
  * Bard subsystem.
@@ -20,7 +20,8 @@ export type Passage = Action;
 export type Story = Passage;
 
 export function createUniversalizableCommand (restrictedCommand: Command) {
-  return cloneDeep(restrictedCommand);
+  return trivialCloneWith(restrictedCommand,
+      entry => (entry instanceof URL ? entry : undefined));
 }
 
 export function isRestrictedCommand (action: Action) {

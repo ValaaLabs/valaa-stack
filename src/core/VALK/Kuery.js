@@ -1,5 +1,3 @@
-import fromPairs from "lodash/fromPairs";
-
 import { VRef, DRef, vRef } from "~/core/ValaaReference";
 
 import beaumpify from "~/tools/beaumpify";
@@ -493,12 +491,21 @@ export default class Kuery {
   select (selectors: (string[] | Object)): Kuery {
     // TODO(iridian): Add stricter invariant checks with element invariants for arrays and objects.
     invariantifyObject(selectors, "VALK.select.selectors", { allowEmpty: true });
-    return this._addRawVAKON(fromPairs(Array.isArray(selectors)
-        ? selectors.map(rule => (Array.isArray(rule)
-            ? [rule[0], rule.slice(1).reduce((kuery, step) => kuery.to(step), this._root).toVAKON()]
-            : [rule, rule]))
-        : Object.keys(selectors).map(name => [name, this._root.to(selectors[name]).toVAKON()])
-    ));
+    const selectorVAKON = {};
+    if (!Array.isArray(selectors)) {
+      for (const key of Object.keys(selectors)) {
+        selectorVAKON[key] = this._root.to(selectors[key]).toVAKON();
+      }
+    } else {
+      for (const rule of selectors) {
+        if (!Array.isArray(rule)) selectorVAKON[rule] = rule;
+        else {
+          selectorVAKON[rule[0]] =
+              rule.slice(1).reduce((kuery, step) => kuery.to(step), this._root).toVAKON();
+        }
+      }
+    }
+    return this._addRawVAKON(selectorVAKON);
   }
 
 
@@ -1679,8 +1686,11 @@ function toRawVAKON (kueryOrPrimitive: any): any {
       // throw new Error(`toRawVAKON: VAKON object literal values must be typeless, got ${
       //  kueryOrPrimitive.constructor.name}`);
     }
-    return fromPairs(Object.keys(kueryOrPrimitive).map(key =>
-        [key, toRawVAKON(kueryOrPrimitive[key])]));
+    const ret = {};
+    for (const [key, value] of Object.entries(kueryOrPrimitive)) {
+      ret[key] = toRawVAKON(value);
+    }
+    return ret;
   } catch (error) {
     if (kueryOrPrimitive instanceof Kuery) {
       if (kueryOrPrimitive._circular) {

@@ -1,4 +1,5 @@
-import assign from "lodash/assign";
+// @flow
+
 import { GraphQLObjectType, GraphQLSchema, isInputType, isOutputType, isLeafType, isCompositeType,
   isAbstractType,
 } from "graphql/type";
@@ -61,8 +62,8 @@ export default function createContentAPI ({ name, inherits = [], exposes, mutati
     }
     subAPIs[subAPI.name] = subAPI;
     exposedAccessPoints[subAPI.name] = subAPI.subAPIDependencyField;
-    assign(actualValidators, subAPI.validators || {});
-    assign(actualMutations, subAPI.mutations || {});
+    _assign(actualValidators, subAPI.validators || {});
+    _assign(actualMutations, subAPI.mutations || {});
     subAPI.reducers.forEach(reducer => reducer && actualReducers.add(reducer));
   }
 
@@ -73,8 +74,8 @@ export default function createContentAPI ({ name, inherits = [], exposes, mutati
   Object.freeze(subAPIs);
   Object.freeze(exposedAccessPoints);
 
-  assign(actualValidators, validators || {});
-  assign(actualMutations, mutations || {});
+  _assign(actualValidators, validators || {});
+  _assign(actualMutations, mutations || {});
   return Object.freeze({
     name,
     schema: _validateSchema(new GraphQLSchema({
@@ -101,6 +102,14 @@ export default function createContentAPI ({ name, inherits = [], exposes, mutati
     ),
     subAPIs,
   });
+}
+
+function _assign (target: Object, ...sources: Object) {
+  for (const source of sources) {
+    for (const [key, value] of Object.entries(source)) {
+      target[key] = value;
+    }
+  }
 }
 
 function _validateSchema (schema: GraphQLSchema) {

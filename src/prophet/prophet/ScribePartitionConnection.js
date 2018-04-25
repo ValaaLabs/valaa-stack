@@ -1,5 +1,3 @@
-import cloneDeepWith from "lodash/cloneDeepWith";
-
 import Command, { isCreatedLike, isTransactedLike } from "~/core/command";
 import { VRef, obtainVRef, getRawIdFrom } from "~/core/ValaaReference";
 
@@ -13,6 +11,7 @@ import { type DatabaseAPI } from "~/tools/indexedDB/databaseAPI";
 import IndexedDBWrapper from "~/tools/html5/IndexedDBWrapper";
 import { encodeDataURI } from "~/tools/html5/urlEncode";
 import { bufferAndContentIdFromNative, stringFromUTF8ArrayBuffer } from "~/tools/textEncoding";
+import { trivialCloneWith } from "~/tools/trivialClone";
 
 export default class ScribePartitionConnection extends PartitionConnection {
   _processEvent: () => void;
@@ -713,11 +712,16 @@ export default class ScribePartitionConnection extends PartitionConnection {
   }
 
   _serializeEventAsJSON (event) {
-    return cloneDeepWith(event, (value) => {
-      if ((typeof value !== "object") || (value === null)) return value;
-      if (typeof value.toJSON === "function") return value.toJSON();
-      if (value instanceof URL) return value.toString();
-      return undefined;
+    return trivialCloneWith(event, (value) => {
+      try {
+        if ((typeof value !== "object") || (value === null)) return value;
+        if (typeof value.toJSON === "function") return value.toJSON();
+        if (value instanceof URL) return value.toString();
+        return undefined;
+      } catch (error) {
+        throw this.wrapErrorEvent(error, "serializeEventAsJSON.trivialClone.customizer",
+            "\n\tvalue:", { value });
+      }
     });
   }
 

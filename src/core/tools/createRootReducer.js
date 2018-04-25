@@ -1,35 +1,36 @@
 import { Map } from "immutable";
-import mapValues from "lodash/mapValues";
-import mergeWith from "lodash/mergeWith";
-import zipObject from "lodash/zipObject";
-import fill from "lodash/fill";
-import omit from "lodash/omit";
 
 import { dumpify, invariantifyArray, LogEventGenerator } from "~/tools";
+import { arrayFromAny } from "~/tools/sequenceFromAny";
 
 /**
  * Combines a list of reducer-by-action-type objects into a single reducer-by-action-type.
  * Individual reducers for each action type are then chained together.
  */
-function mergeActionReducers (reducers, context) {
-  invariantifyArray(reducers, "mergeActionReducers.reducers");
-  const reducerListsByActionType = reducers.reduce((result, reducerByActionType) =>
-      mergeWith(result,
-          reducerByActionType(context),
-          (list, reducer) => (list || []).concat([reducer])),
-      {});
-  return Object.freeze(mapValues(reducerListsByActionType,
-      reducerList => function reduceChain (state, action, ...rest) {
-        return reducerList.reduce(
-            (innerState, reducer) => reducer.call(this, innerState, action, ...rest),
-            state,
-        );
-      }
-  ));
-}
+function mergeActionReducers (reducerDictionaryCreates, context) {
+  invariantifyArray(reducerDictionaryCreates, "mergeActionReducers.reducerDictionaryCreates");
+  const ret = {};
+  for (const createReducerDictionary of reducerDictionaryCreates) {
+    for (const [actionType, reducer] of Object.entries(createReducerDictionary(context))) {
+      ret[actionType] = arrayFromAny(ret[actionType]).concat([reducer]);
+    }
+  }
+  for (const [type, reducers] of Object.entries(ret)) {
+    ret[type] = createSingularReducer(reducers);
+  }
+  return Object.freeze(ret);
 
-export function missingReducers (actionTypes) {
-  return zipObject(actionTypes, fill([...actionTypes], state => state));
+  function createSingularReducer (reducers) {
+    // Two different reduce sides against the same action coin.
+    // This one is the reducer for reducing sequences of actions with a single function.
+    return function reduce (state, action, ...rest) {
+      // This one reduces a sequence of reducer functions against a single action.
+      return reducers.reduce(
+          (innerState, reducer) => reducer.call(this, innerState, action, ...rest),
+          state,
+      );
+    };
+  }
 }
 
 /**
@@ -89,11 +90,11 @@ export default function createRootReducer ({
       if (mainLogEventer.getDebugLevel() >= reduceLogThreshold) {
         const time = action.timeStamp;
         const minor = action.typeName ? `${action.typeName} ` : "";
+        // eslint-disable-next-line
+        const { timeStamp, type, typeName, id, passages, parentPassage, bard, ...rest } = action;
         mainLogEventer.logEvent(
             `Reducing @${time} ${action.type} ${minor}${dumpify(action.commandId, 40, "...")}`,
-            `\n\t${JSON.stringify(omit(action,
-                    ["timeStamp", "type", "typeName", "id", "passages", "parentPassage", "bard"]))
-                .slice(0, 380)}`);
+            `\n\t${JSON.stringify(rest).slice(0, 380)}`);
       }
       const reducer = reducerByActionType[action.type];
       if (reducer) return reducer.call(this, state, action);
@@ -119,10 +120,11 @@ export default function createRootReducer ({
       if (subLogEventer.getDebugLevel() >= subReduceLogThreshold) {
         let minor = action.typeName ? `${action.typeName} ` : "";
         if (action.id) minor = `${minor}${dumpify(action.id, 40, "...")}`;
+        // eslint-disable-next-line
+        const { type, typeName, id, passages, parentPassage, bard, ...rest } = action;
         subLogEventer.logEvent(
             `Sub-reducing ${action.type} ${minor}`,
-            `\n\t${JSON.stringify(omit(action,
-                ["type", "typeName", "id", "passages", "parentPassage", "bard"])).slice(0, 380)}`);
+            `\n\t${JSON.stringify(rest).slice(0, 380)}`);
       }
       if (action.story && action.story.isBeingUniversalized) {
         // Offers limited protection against programming errors for generated passages especially.

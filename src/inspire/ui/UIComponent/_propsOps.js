@@ -1,5 +1,5 @@
 // @flow
-import isEqual from "lodash/isEqual";
+import isEqual from "lodash.isequal";
 
 import { Kuery } from "~/core/VALK";
 

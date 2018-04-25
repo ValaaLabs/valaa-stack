@@ -7,7 +7,6 @@
   "license": "MIT",
   "dependencies": {
     "immutable": "~3.7.4",
-    "lodash": "^4.17.2",
     "url-search-params": "^0.10.0",
     "@valaa/tools": "^0.30.0-prerelease"
   },

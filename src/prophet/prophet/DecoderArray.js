@@ -1,9 +1,10 @@
 // @flow
 
-import mergeWith from "lodash/mergeWith";
 
 import type { MediaInfo } from "~/prophet/api/Prophet";
+
 import MediaDecoder from "~/tools/MediaDecoder";
+import { mergeDeepWith } from "~/tools/mergeDeep";
 import { arrayFromAny, LogEventGenerator } from "~/tools";
 
 export default class DecoderArray extends LogEventGenerator {
@@ -19,7 +20,7 @@ export default class DecoderArray extends LogEventGenerator {
 
   addDecoder (decoder: MediaDecoder) {
     try {
-      mergeWith(this._decodersByType || (this._decodersByType = {}),
+      mergeDeepWith(this._decodersByType || (this._decodersByType = {}),
           decoder.getByMediaTypeLookup(),
           (targetEntry, sourceEntry) => ((Array.isArray(targetEntry) || Array.isArray(sourceEntry))
               ? arrayFromAny(targetEntry).concat(arrayFromAny(sourceEntry))

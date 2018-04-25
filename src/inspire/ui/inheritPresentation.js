@@ -1,10 +1,12 @@
-import mergeWith from "lodash/mergeWith";
+// @flow
+
+import { mergeDeepWith } from "~/tools/mergeDeep";
 
 import { unthunkRepeat, isThunk, isExpandable } from "~/inspire/ui/thunk";
 
 // TODO(iridian): The presentation system requires a simplification overhaul.
 
-export default function inheritPresentation (presentation, overrides, initial) {
+export default function inheritPresentation (presentation: any, overrides: any, initial: any) {
   const presentations = [initial, presentation, overrides].filter(value => value);
   if (!presentations.length) {
     return {};
@@ -19,7 +21,7 @@ export default function inheritPresentation (presentation, overrides, initial) {
       if (!isExpandable(left) || !isExpandable(right)) {
         return right;
       }
-      return mergeWith(left, right, (baseChild, overridingChild) =>
+      return mergeDeepWith(left, right, (baseChild, overridingChild) =>
           ((!isThunk(overridingChild) && !isExpandable(overridingChild))
               ? overridingChild
           : (isThunk(baseChild) || isThunk(overridingChild))
