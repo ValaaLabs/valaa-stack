@@ -82,24 +82,9 @@ export default class OraclePartitionConnection extends PartitionConnection {
       // Handle step 1. of the acquirePartitionConnection optimistic full narration logic defined
       // in PartitionConnection.js and begin Start scribe event log narration (which is likely to
       // be I/O bound) in parallel to the authority proxy/connection creation.
-      const remoteConnection = this._connectToAuthorityProphet(onConnectData);
+      this._connectToAuthorityProphet(onConnectData);
 
-      const localNarrationProcess = this.narrateEventLog(initialNarrateOptions);
-
-      ret = await localNarrationProcess;
-
-      const remoteNarrationProcess = remoteConnection
-          && !initialNarrateOptions.dontRemoteNarrate
-          && ((async () =>
-        (await remoteConnection).narrateEventLog(
-            { firstEventId: this._lastAuthorizedEventId + 1 }))());
-
-      // Handle step 2 of the optimistic full narration logic after if the initial local narration
-      // didn't find any events.
-      if (remoteNarrationProcess && !(ret.eventLog || []).length
-          && !(ret.scribeEventLog || []).length && !(ret.scribeCommandQueue || []).length) {
-        Object.assign(ret, await remoteNarrationProcess);
-      }
+      ret = await this.narrateEventLog(initialNarrateOptions);
 
       const actionCount = Object.values(ret).reduce(
           (acc, log) => acc + (Array.isArray(log) ? log.length : 0), 0);
@@ -230,7 +215,7 @@ export default class OraclePartitionConnection extends PartitionConnection {
     this._authorityProphet = this._prophet._authorityNexus
         .obtainAuthorityProphetOfPartition(this.partitionURI());
     if (!this._authorityProphet) return undefined;
-    return (async () => {
+    this._remoteConnection = (async () => {
       const remoteConnection = await this._authorityProphet
           .acquirePartitionConnection(this.partitionURI(),
               { callback: this._onConfirmTruth.bind(this, "remoteUpstream"), noConnect: true });
@@ -238,8 +223,10 @@ export default class OraclePartitionConnection extends PartitionConnection {
       onConnectData.retrieveMediaContent
           = remoteConnection.readMediaContent.bind(remoteConnection);
       await remoteConnection.connect();
+      this._remoteConnection = remoteConnection;
       return remoteConnection;
     })();
+    return this._remoteConnection;
   }
 
   async narrateEventLog (options: NarrateOptions = {}): Promise<any> {
@@ -251,23 +238,24 @@ export default class OraclePartitionConnection extends PartitionConnection {
           (typeof options.lastEventId !== "undefined") &&
           (candidateEventId > options.lastEventId);
       const rawId = this.partitionRawId();
-      const explicitEventLogNarrations = [];
-      for (const event of (options.eventLog || [])) {
-        const eventId = event.partitions[rawId].eventId;
-        invariantifyNumber(eventId, `event.partitions[${rawId}].eventId`, {}, "\n\tevent:", event);
-        if (typeof currentFirstEventId !== "undefined") {
-          if ((eventId < currentFirstEventId) || isPastLastEvent(eventId)) continue;
-          if (eventId > currentFirstEventId) {
-            throw new Error(`got eventId ${eventId} while narrating explicit eventLog, expected ${
-                currentFirstEventId} (eventlog ids must be monotonous and start from firstEventId`);
+      if (options.eventLog && options.eventLog.length) {
+        const explicitEventLogNarrations = [];
+        for (const event of options.eventLog) {
+          const eventId = event.partitions[rawId].eventId;
+          invariantifyNumber(eventId, `event.partitions[${rawId}].eventId`, {}, "\n\tevent:",
+              event);
+          if (typeof currentFirstEventId !== "undefined") {
+            if ((eventId < currentFirstEventId) || isPastLastEvent(eventId)) continue;
+            if (eventId > currentFirstEventId) {
+              throw new Error(`got eventId ${eventId} while narrating explicit eventLog, expected ${
+                  currentFirstEventId}, eventlog ids must be monotonous starting at firstEventId`);
+            }
           }
+          explicitEventLogNarrations.push(options.callback
+              ? options.callback(event)
+              : this._onConfirmTruth("explicitEventLog", event));
+          currentFirstEventId = eventId + 1;
         }
-        explicitEventLogNarrations.push(options.callback
-            ? options.callback(event)
-            : this._onConfirmTruth("explicitEventLog", event));
-        currentFirstEventId = eventId + 1;
-      }
-      if (explicitEventLogNarrations.length) {
         ret.explicitEventLog = await Promise.all(explicitEventLogNarrations);
       }
       if (!isPastLastEvent(currentFirstEventId)) {
@@ -277,6 +265,21 @@ export default class OraclePartitionConnection extends PartitionConnection {
           commandCallback: options.commandCallback
               || (!options.callback && this._prophet._repeatClaimToAllFollowers.bind(this._prophet))
         }));
+      }
+
+      if (this._remoteConnection && !options.dontRemoteNarrate) {
+        const remoteNarrationProcess = ((async () =>
+            (await this._remoteConnection).narrateEventLog(
+                { firstEventId: this._lastAuthorizedEventId + 1 }))());
+        if (!(ret.eventLog || []).length
+            && !(ret.scribeEventLog || []).length
+            && !(ret.scribeCommandQueue || []).length) {
+          // Handle step 2 of the optimistic full narration logic after if the initial local
+          // narration didn't find any events.
+          console.log("pre remote narrate");
+          Object.assign(ret, await remoteNarrationProcess);
+          console.log("post remote narrate");
+        }
       }
       return ret;
     } catch (error) {

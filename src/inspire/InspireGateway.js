@@ -408,42 +408,48 @@ export default class InspireGateway extends LogEventGenerator {
   }
 
   _connectAndNarratePrologue = async ({ partitionURI, info }: any) => {
-    const connection = await this.falseProphet.acquirePartitionConnection(partitionURI, {
-      dontRemoteNarrate: true,
-      retrieveMediaContent, // this should be a parameter for narrateEventLog below
-    });
     if ((await info.commandId) >= 0) {
       throw new Error("Command queues in revelation are not supported yet");
     }
+    // Acquire connection without remote narration to determine the current last authorized event
+    // so that we can narrate any content in the prologue before any remote activity.
+    const connection = await this.falseProphet.acquirePartitionConnection(partitionURI, {
+      dontRemoteNarrate: true,
+    });
     const eventId = await info.eventId;
     const lastEventId = connection.getLastAuthorizedEventId();
-    if ((typeof eventId === "undefined") || (eventId <= lastEventId)) return connection;
-    // If no event logs are replayed, we don't need to precache the blobs either, so we delay
-    // loading them up to this point.
-    await (this.blobInfos || (this.blobInfos = this._getBlobInfos()));
-
-    const logs = await info.logs;
-    const eventLog = await logs.eventLog;
-    const commandQueue = await logs.commandQueue;
-    if (commandQueue && commandQueue.length) {
-      throw new Error("commandQueue revelation not implemented yet");
-    }
-    const latestMediaInfos = await logs.latestMediaInfos;
-    await connection.narrateEventLog({ eventLog, firstEventId: lastEventId + 1 })/**/;
-    return connection;
-
-    function retrieveMediaContent (mediaId: VRef, mediaInfo: Object) {
-      if (!latestMediaInfos[mediaId.rawId()] ||
-          (mediaInfo.blobId !== latestMediaInfos[mediaId.rawId()].mediaInfo.blobId)) {
-        // Blob wasn't found in cache and the blobId doesn't match the latest known blobId for
-        // the requested media. The request for the latest blob should come later:
-        // Return undefined to silently ignore this request.
-        return undefined;
+    if ((typeof eventId === "undefined") || (eventId <= lastEventId)) {
+      const remoteNarration = connection.narrateEventLog();
+      if (!(lastEventId >= 0)) await remoteNarration;
+    } else {
+      // If no event logs are replayed, we don't need to precache the blobs either, so we delay
+      // loading them up to this point.
+      await (this.blobInfos || (this.blobInfos = this._getBlobInfos()));
+      const logs = await info.logs;
+      const eventLog = await logs.eventLog;
+      const commandQueue = await logs.commandQueue;
+      if (commandQueue && commandQueue.length) {
+        throw new Error("commandQueue revelation not implemented yet");
       }
-      // Otherwise this is the request for last known blob, which should have been precached.
-      throw new Error(`Cannot find the latest blob of media "${mediaInfo.name
-          }" during prologue narration, with blob id "${mediaInfo.blobId}" `);
+      const latestMediaInfos = await logs.latestMediaInfos;
+      await connection.narrateEventLog({
+        eventLog,
+        firstEventId: lastEventId + 1,
+        retrieveMediaContent (mediaId: VRef, mediaInfo: Object) {
+          if (!latestMediaInfos[mediaId.rawId()] ||
+              (mediaInfo.blobId !== latestMediaInfos[mediaId.rawId()].mediaInfo.blobId)) {
+            // Blob wasn't found in cache and the blobId doesn't match the latest known blobId for
+            // the requested media. The request for the latest blob should come later:
+            // Return undefined to silently ignore this request.
+            return undefined;
+          }
+          // Otherwise this is the request for last known blob, which should have been precached.
+          throw new Error(`Cannot find the latest blob of media "${mediaInfo.name
+              }" during prologue narration, with blob id "${mediaInfo.blobId}" `);
+        }
+      });
     }
+    return connection;
   }
 
   async _getBlobInfos () {
