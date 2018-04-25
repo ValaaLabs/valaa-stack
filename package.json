@@ -2,7 +2,7 @@
   "name": "@valaa/vault",
   "version": "0.30.0-prerelease",
   "config": {
-    "defaultrevelation": "revelations/static-dev-zero",
+    "revelation": "revelations/local-zero",
     "modulepaths": "core/node_modules:prophet/node_modules:script/node_modules:engine/node_modules:inspire/node_modules"
   },
   "description": "Vault of Valaa open source tools and libraries. Expect this package to be split when the child components mature with more stable APIs and less cross-dependencies.",
@@ -10,13 +10,13 @@
   "scripts": {
     "build": "cross-conf-env cross-env NODE_PATH=$NODE_PATH:$npm_package_config_modulepaths webpack ",
     "build-packages": "NODE_ENV=build-packages babel src --out-dir dist/modules/@valaa; for i in tools core script prophet engine inspire manager; do cp src/$i/package.json dist/modules/@valaa/$i; done",
-    "dev": "TARGET_ENV=local cross-conf-env npm run dev-webpack $npm_package_config_defaultrevelation",
-    "prod": "TARGET_ENV=production cross-conf-env npm run dev-webpack $npm_package_config_defaultrevelation",
+    "dev": "TARGET_ENV=local cross-conf-env npm run dev-webpack $npm_package_config_revelation",
+    "prod": "TARGET_ENV=production cross-conf-env npm run dev-webpack $npm_package_config_revelation",
     "dev-webpack": "cross-conf-env cross-env NODE_PATH=$NODE_PATH:$npm_package_config_modulepaths webpack-dev-server --inline --progress --open --host 0.0.0.0 --content-base ",
     "eslint": "eslint .",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "lint": "npm run eslint",
-    "start": "cross-conf-env npm run dev-webpack $npm_package_config_defaultrevelation",
+    "start": "cross-conf-env npm run dev-webpack $npm_package_config_revelation",
     "test": "jest",
     "test-e2e": "karma start"
   },

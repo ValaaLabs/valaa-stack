@@ -2,10 +2,10 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Valaa Inspire - Static Dev Zero</title>
+        <title>Valaa local Zero</title>
         <link rel="icon" href="favicon.ico?a=1" type="image/x-icon" />
         <style>
-          html, body, #static-dev-zero--main-container {
+          html, body, #valaa-inspire--main-container {
             margin: 0px;
             padding: 0px;
             box-sizing: border-box;
@@ -19,7 +19,7 @@
         <link rel="preload" href="valaa.json" as="fetch"/>
     </head>
 <body>
-    <div id="static-dev-zero--main-container"></div>
+    <div id="valaa-inspire--main-container"></div>
     <!-- TODO: cdn.valaa.com? -->
     <script src="valaa/inspire/valaa-inspire.js"></script>
     <script>
@@ -33,10 +33,10 @@
       }).then(function (inspireGateway) {
         Valaa.views = inspireGateway.createAndConnectViewsToDOM({
           inspireMain: {
-            name: "Inspire Main",
+            name: "Valaa local Zero Main",
             size: { width: window.innerWidth, height: window.innerHeight, scale: 1 },
-            container: document.querySelector("#static-dev-zero--main-container"),
-            rootId: "static-dev-zero--main-root",
+            container: document.querySelector("#valaa-inspire--main-container"),
+            rootId: "valaa-inspire--main-root",
             rootPartitionURI: inspireGateway.revelation.prologue.rootPartitionURI,
           },
         });

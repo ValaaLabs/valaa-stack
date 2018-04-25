@@ -1,7 +1,7 @@
 {
-  "name": "static-dev-zero",
+  "name": "@valaa/revelation-local-zero",
   "version": "0.30.0-prerelease",
-  "description": "Static Dev Zero",
+  "description": "Valaa local Zero revelation, lands at valaa-local: Zero",
   "author": "Valaa Technologies Ltd.",
   "license": "MIT",
   "private": false,
