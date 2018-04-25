@@ -11,8 +11,9 @@ import { BuiltinTypePrototype, createNativeIdentifier, ValaaPrimitive } from "~/
 import VALEK, { extractFunctionVAKON } from "~/engine/VALEK";
 import Vrapper from "~/engine/Vrapper";
 
-import { derivedId, dumpify, dumpObject, invariantifyObject, outputCollapsedError, wrapError }
-    from "~/tools";
+import { derivedId, dumpify, dumpObject, invariantifyObject, outputCollapsedError,
+  wrapError,
+} from "~/tools";
 
 /* eslint-disable prefer-arrow-callback */
 
@@ -128,7 +129,7 @@ export default function injectSchemaTypeBindings (Valaa: Object, scope: Object) 
         outputCollapsedError(this.__callerValker__.wrapErrorEvent(error,
                 `Resource.getActiveResource('${String(id)}')`,
             "\n\tvalker:", ...dumpObject(this.__callerValker__),
-        ), undefined, `Caught exception (collapsed and ignored during deprecation period: ${
+        ), `Caught exception (collapsed and ignored during deprecation period: ${
             ""}\n\n\tEVENTUALLY THIS WILL BECOME AN ACTUAL ERROR\n\n)`);
       }
       return this.__callerValker__.run({}, VALEK.fromObject(id).nullable());

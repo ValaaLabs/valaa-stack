@@ -96,8 +96,7 @@ export function inBrowser () {
       && !executingInJest();
 }
 
-export function outputError (error, counter = 0, header = "Exception caught",
-    logger = errorLogger) {
+export function outputError (error, header = "Exception caught", logger = errorLogger) {
   logger.error(`  ${header} (with ${(error.errorContexts || []).length} contexts):\n\n`,
       error.originalMessage || error.message, `\n `);
   if (error.customErrorHandler) {
@@ -110,8 +109,7 @@ export function outputError (error, counter = 0, header = "Exception caught",
   logger.log(_clipFrameListToCurrentContext(error).slice(1).join("\n"));
 }
 
-export function outputCollapsedError (error, counter = 0, header = "Exception caught",
-    logger = errorLogger) {
+export function outputCollapsedError (error, header = "Exception caught", logger = errorLogger) {
   const collapsedContexts = [];
   const collapsingLogger = {
     log: (...args) => collapsedContexts[collapsedContexts.length - 1].traces.push(
@@ -119,7 +117,7 @@ export function outputCollapsedError (error, counter = 0, header = "Exception ca
     warn: (...args) => collapsedContexts.push({ context: args, traces: [] }),
     error: (...args) => collapsedContexts.push({ context: args, traces: [] }),
   };
-  const ret = outputError(error, counter, header, collapsingLogger);
+  const ret = outputError(error, header, collapsingLogger);
   delete collapsedContexts[0].context;
   logger.error(`  ${header} (with ${(error.errorContexts || []).length} collapsed contexts):\n`,
       error.originalMessage || error.message, "\n", { collapsedContexts });
@@ -220,10 +218,10 @@ if (typeof window !== "undefined") {
 }
 
 function unhandledError (error) {
-  const header = `VALAA ERROR: Unhandled exception`;
+  stackFrameCounter += 1;
+  const header = `UNHANDLED ERROR #${stackFrameCounter}`;
   if (error instanceof Error) {
-    stackFrameCounter += 1;
-    outputError(error, stackFrameCounter, header, errorLogger);
+    outputError(error, header, errorLogger);
   } else {
     errorLogger.error(header);
     errorLogger.error(`  Irregular error info:`,
@@ -232,15 +230,16 @@ function unhandledError (error) {
 }
 
 function unhandledRejection (reason, promise) {
+  stackFrameCounter += 1;
   const header =
-      `VALAA INTERNAL ERROR: Unhandled Rejection: a Promise somewhere is missing then/catch and `
-      + `an exception occurred.\n\tUnhandled rejection happens when an async function throws and `
+      `UNHANDLED PROMISE REJECTION #${stackFrameCounter
+          }: a Promise somewhere is missing then/catch and `
+      + `an exception occurred.\n\tThis happens when an async function throws and `
       + `the call site doesn't handle the Promise returned by the function (neither with await nor `
       + `by explicit .then/.catch).
-The actual exception caught is `;
+The actual error:`;
   if (reason instanceof Error) {
-    stackFrameCounter += 1;
-    outputError(reason, stackFrameCounter, header, errorLogger);
+    outputError(reason, header, errorLogger);
   } else {
     errorLogger.error(header);
     errorLogger.error(`  Error info:`, promise,

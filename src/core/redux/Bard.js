@@ -97,7 +97,7 @@ export function createBardReducer (bardOperation: (bard: Bard) => State,
           "\n\taction:", ...dumpObject(getActionFromPassage(apprentice.passage)),
           "\n\tpassage:", ...dumpObject(apprentice.passage),
           "\n\tapprentice:", ...dumpObject(apprentice),
-      ), undefined, "Exception caught during event playback (corresponding sub-event IGNORED)");
+      ), "Exception caught during event playback (corresponding sub-event IGNORED)");
       return state;
     } finally {
       delete apprentice.passage.apprentice;

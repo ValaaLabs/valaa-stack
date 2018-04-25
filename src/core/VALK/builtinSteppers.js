@@ -12,8 +12,9 @@ import { isPackedField } from "~/core/VALK/packedField";
 import { tryConnectToMissingPartitionsAndThen } from "~/core/tools/denormalized/partitions";
 import { PrototypeOfImmaterialTag } from "~/core/tools/denormalized/Transient";
 
-import { dumpify, invariantify, invariantifyObject, invariantifyArray, wrapError }
-    from "~/tools";
+import { dumpify, invariantify, invariantifyObject, invariantifyArray, isPromise,
+  outputCollapsedError, wrapError,
+} from "~/tools";
 
 /* eslint-disable no-bitwise */
 /* eslint-disable prefer-rest-params */
@@ -223,9 +224,20 @@ export default Object.freeze({
           eThis.__callerScope__ = scope;
         }
       }
-      return valker.tryPack(eCallee.apply(eThis, eArgs));
+      const ret = eCallee.apply(eThis, eArgs);
+      if ((typeof ret === "object") && (ret !== null) && ret.catch && isPromise(ret)) {
+        ret.catch(error => {
+          outputCollapsedError(onError(error),
+              `Exception re-raised by VALK.§apply('${eCallee.name}').ret:Promise.catch`);
+          throw error;
+        });
+      }
+      return valker.tryPack(ret);
     } catch (error) {
-      throw wrapError(error, `During ${valker.debugId()}\n. builtinSteppers["§apply"](), with:`,
+      throw onError(error);
+    }
+    function onError (error) {
+      return valker.wrapErrorEvent(error, "builtin.§apply",
           "\n\thead:", ...dumpObject(head),
           "\n\tcallee:", ...dumpObject(eCallee),
           "(via kuery:", ...dumpKuery(callee), ")",
@@ -274,9 +286,20 @@ export default Object.freeze({
           eThis.__callerScope__ = scope;
         }
       }
-      return valker.tryPack(eCallee.call(eThis, ...eArgs));
+      const ret = eCallee.call(eThis, ...eArgs);
+      if ((typeof ret === "object") && (ret !== null) && ret.catch && isPromise(ret)) {
+        ret.catch(error => {
+          outputCollapsedError(onError(error),
+              `Exception re-raised by VALK.§call('${eCallee.name}').ret:Promise.catch`);
+          throw error;
+        });
+      }
+      return valker.tryPack(ret);
     } catch (error) {
-      throw valker.wrapErrorEvent(error, "builtin.§call",
+      throw onError(error);
+    }
+    function onError (error) {
+      return valker.wrapErrorEvent(error, "builtin.§call",
           "\n\thead:", ...dumpObject(head),
           "\n\tcallee:", ...dumpObject(eCallee),
           "(via kuery:", ...dumpKuery(callStep[1]), ")",

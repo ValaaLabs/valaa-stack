@@ -73,7 +73,7 @@ export default class FalseProphet extends Prophet {
         try {
           this._rejectLastProphecyAsHeresy(prophecy.story);
         } catch (innerError) {
-          outputError(innerError, undefined, `Caught an exception in the exception handler of${
+          outputError(innerError, `Caught an exception in the exception handler of${
               ""} a claim; the resulting purge threw exception of its own:`);
         }
         throw this.wrapErrorEvent(error, `claim():`,
