@@ -8,7 +8,7 @@ export default function createValaaLocalScheme (/* { logger } */) {
 
     getInteractableURLFromAuthorityURI: () => null,
 
-    createDefaultAuthorityConfig: (/* partitionURI: URL */) => {},
+    createDefaultAuthorityConfig: (/* partitionURI: URL */) => ({}),
 
     createAuthorityProphet: () => null,
   };

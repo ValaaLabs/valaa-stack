@@ -8,7 +8,7 @@ export default function createValaaTransientScheme (/* { logger } */) {
 
     getInteractableURLFromAuthorityURI: () => null,
 
-    createDefaultAuthorityConfig: (/* partitionURI: URL */) => {},
+    createDefaultAuthorityConfig: (/* partitionURI: URL */) => ({}),
 
     createAuthorityProphet: () => null,
   };

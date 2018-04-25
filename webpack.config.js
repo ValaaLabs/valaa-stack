@@ -20,11 +20,11 @@ const isProduction = (process.env.TARGET_ENV === "production");
 const isLocal = (process.env.TARGET_ENV === "local");
 
 if (isProduction) {
-  console.info("Production webpack bundle - simple uglify (not full yet)");
+  console.info("Production webpack bundle - tight (not full) uglify + gzip");
 } else if (isLocal) {
-  console.info(`\n\nLOCAL webpack bundle - no uglify\n\n`);
+  console.info(`\n\nLOCAL webpack bundle - no uglify, no gzip\n\n`);
 } else {
-  console.info(`\n\nNON-PRODUCTION webpack bundle - simple uglify\n\n`);
+  console.info(`\n\nNON-PRODUCTION webpack bundle - simple uglify + gzip\n\n`);
 }
 
 module.exports = {

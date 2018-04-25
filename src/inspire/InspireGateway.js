@@ -324,7 +324,7 @@ export default class InspireGateway extends LogEventGenerator {
               `'${prologues.map(({ partitionURI }) => String(partitionURI)).join("', '")}'`);
       const ret = await Promise.all(prologues.map(this._connectAndNarratePrologue));
       this.warnEvent(`Acquired active connections for all revelation prologue partitions:`,
-          "\n\tconnections:", ret.map(connection => [connection.debugId()]));
+          "\n\tconnections:", ret);
       return ret;
     } catch (error) {
       throw this.wrapErrorEvent(error, "narratePrologue",
@@ -346,7 +346,7 @@ export default class InspireGateway extends LogEventGenerator {
         ret.push({
           partitionURI: createPartitionURI(await prologueRevelation.rootPartitionURI),
           isNewPartition: false,
-          info: { commandId: -1, eventId: -1, logs: { commands: [], events: [] } },
+          info: { commandId: -1, eventId: -1, logs: { commandQueue: [], eventLog: [] } },
         });
       } else {
         // These are not obsolete yet, but temporarily disabled.

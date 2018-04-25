@@ -31,7 +31,7 @@ export default class AuthorityNexus extends LogEventGenerator {
   }
 
   getSchemeModule (uriScheme: string) {
-    return this.getSchemeModule(uriScheme, { require: true });
+    return this.trySchemeModule(uriScheme, { require: true });
   }
 
   trySchemeModule (uriScheme: string, { require } = {}) {
@@ -57,7 +57,7 @@ export default class AuthorityNexus extends LogEventGenerator {
 
   obtainAuthorityProphet (authorityURI: URL | string) {
     let ret = this._authorityProphets[String(authorityURI)];
-    if (typeof ret !== "undefined") {
+    if (typeof ret === "undefined") {
       ret = this._authorityProphets[String(authorityURI)]
           = this._createAuthorityProphet(getValaaURI(authorityURI));
     }
@@ -97,9 +97,7 @@ export default class AuthorityNexus extends LogEventGenerator {
           throw new Error(`No Valaa authority config found for "${String(authorityURI)}"`);
         }
       }
-      return schemeModule.createAuthorityProphet({
-        authorityURI, authorityConfig, nexus: this,
-      });
+      return schemeModule.createAuthorityProphet({ authorityURI, authorityConfig, nexus: this });
     } catch (error) {
       throw this.wrapErrorEvent(error, `createAuthorityProphet("${String(authorityURI)}")`,
           "\n\tschemeModule:", schemeModule,

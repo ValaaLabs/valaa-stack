@@ -70,7 +70,8 @@ export default class OraclePartitionConnection extends PartitionConnection {
     let ret;
     try {
       if (this.getDebugLevel()) {
-        this.warnEvent("\n\tBegun initializing connection with options", initialNarrateOptions);
+        this.warnEvent("\n\tBegun initializing connection with options", initialNarrateOptions,
+            this);
       }
       const scribeConnection = await this._prophet._upstream
           .acquirePartitionConnection(this.partitionURI(),
@@ -273,8 +274,8 @@ export default class OraclePartitionConnection extends PartitionConnection {
         Object.assign(ret, await super.narrateEventLog({
           ...options,
           firstEventId: currentFirstEventId,
-          commandCallback: options.commandCallback || (!options.callback
-              && this._prophet._repeatClaimToAllFollowers.bind(this._prophet))
+          commandCallback: options.commandCallback
+              || (!options.callback && this._prophet._repeatClaimToAllFollowers.bind(this._prophet))
         }));
       }
       return ret;

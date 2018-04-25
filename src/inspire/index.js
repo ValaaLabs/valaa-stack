@@ -54,8 +54,6 @@ export default (Valaa.createGateway = async function createGateway (...revelatio
         revelationTemplate,
         ...revelations,
         gatewayPluginsRevelation);
-    ret.warnEvent(`  revelation combined as`, combinedRevelation);
-
     await ret.initialize(combinedRevelation);
     Valaa.gateway = ret;
     ret.warnEvent(`InspireGateway set to window.Valaa.gateway as`, ret);
