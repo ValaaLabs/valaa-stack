@@ -118,21 +118,4 @@ describe("vss", () => {
     };
     mockContext.getVSSSheet.mockReturnValueOnce({ classes: mockClasses });
   });
-
-  it("should call getVSSSheet from the context with unthunked style data", () => {
-    testComponent.getVssClasses({}, { test: "baz" });
-    expect(mockContext.getVSSSheet.mock.calls[0][1]).toBe(testComponent);
-    expect(mockContext.getVSSSheet.mock.calls[0][0]).toEqual({
-      typeName: "Property",
-      value: "wooo",
-      value2: "baz",
-      value3: "poiuyt",
-      value4: "hello"
-    });
-  });
-
-  it("should return the classes property of the returned object", () => {
-    const result = testComponent.getVssClasses({}, {});
-    expect(result).toBe(mockClasses);
-  });
 });

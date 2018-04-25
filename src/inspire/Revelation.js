@@ -1,6 +1,6 @@
 // @flow
 
-import { dumpObject, isPromise, request, wrapError } from "~/tools";
+import { dumpObject, inProduction, isPromise, request, wrapError } from "~/tools";
 
 // Revelation is a JSON object for which any expected sub-object can be replaced with an XHR
 // reqwest option object, identified by the presence of key 'url': { url: "..." }.
@@ -156,7 +156,7 @@ function _extendRevelation (gateway: Object, base: Object, extension: Object,
               "\n\tbase:", base);
         }
       }
-      if (extension.name !== base.name) {
+      if (!inProduction() && (extension.name !== base.name)) {
         throw new Error(`Revelation function name mismatch: trying to override function '${
             base.name}' with '${extension.name}'`);
       }

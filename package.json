@@ -9,7 +9,7 @@
   "main": "index.js",
   "scripts": {
     "build": "cross-conf-env cross-env NODE_PATH=$NODE_PATH:$npm_package_config_modulepaths webpack ",
-    "build-packages": "NODE_ENV=build-packages babel src --out-dir dist/package; for i in tools core script prophet engine inspire manager; do cp src/$i/package.json dist/package/$i; done",
+    "build-packages": "NODE_ENV=build-packages babel src --out-dir dist/modules/@valaa; for i in tools core script prophet engine inspire manager; do cp src/$i/package.json dist/modules/@valaa/$i; done",
     "dev": "TARGET_ENV=local cross-conf-env npm run dev-webpack $npm_package_config_defaultrevelation",
     "prod": "TARGET_ENV=production cross-conf-env npm run dev-webpack $npm_package_config_defaultrevelation",
     "dev-webpack": "cross-conf-env cross-env NODE_PATH=$NODE_PATH:$npm_package_config_modulepaths webpack-dev-server --inline --progress --open --host 0.0.0.0 --content-base ",
@@ -31,7 +31,7 @@
       ".*/test"
     ],
     "verbose": true,
-    "testRegex": ".*\\.test\\.js$",
+    "testRegex": "src.*\\.test\\.js$",
     "moduleNameMapper": {
       "\\.(css|less)$": "<rootDir>/src/tools/mocks/styleMock.js"
     },
@@ -40,6 +40,10 @@
     }
   },
   "dependencies": {
+    "@valaa/core": "file:src/core",
+    "@valaa/prophet": "file:src/prophet",
+    "@valaa/script": "file:src/script",
+    "@valaa/tools": "file:src/tools",
     "acorn": "^5.0.3",
     "babel-runtime": "^6.25.0",
     "base64-js": "^1.2.3",
@@ -63,11 +67,7 @@
     "reqwest": "^2.0.5",
     "text-encoding": "^0.6.4",
     "url-search-params": "^0.10.0",
-    "uuid": "^2.0.2",
-    "@valaa/core": "file:src/core",
-    "@valaa/prophet": "file:src/prophet",
-    "@valaa/script": "file:src/script",
-    "@valaa/tools": "file:src/tools"
+    "uuid": "^2.0.2"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",

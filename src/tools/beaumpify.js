@@ -13,5 +13,6 @@ import dumpify from "~/tools/dumpify";
  */
 export default function beaumpify (value, { slice, sliceSuffix } = {}) {
   return dumpify(value, slice, sliceSuffix);
-  // return dumpified ? beautify(dumpified, { ...beautifyOptions }) : "undefined";
+  // const dumpified = dumpify(value, slice, sliceSuffix);
+  // return dumpified ? beautify(dumpified, {}) : "undefined";
 }

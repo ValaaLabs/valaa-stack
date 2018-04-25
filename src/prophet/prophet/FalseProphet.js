@@ -25,8 +25,8 @@ import { dumpObject, invariantify, invariantifyObject, invariantifyString, outpu
  * Finally, FalseProphet initiates the universalisation process, where so-called restricted commands
  * coming from downstream via .claim (whose meaning is well-defined only in current FalseProphet)
  * get rewritten as universal commands, whose meaning is well-defined for all clients.
- * This process is carried out and more closely documented by @valaa/core/redux/Bard and the reducers
- * contained within the FalseProphet.
+ * This process is carried out and more closely documented by @valaa/core/redux/Bard and the
+ * reducers contained within the FalseProphet.
  */
 export default class FalseProphet extends Prophet {
   constructor ({ name, logger, schema, corpus, upstream }: Object) {

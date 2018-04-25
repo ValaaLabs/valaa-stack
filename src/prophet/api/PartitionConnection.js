@@ -5,7 +5,7 @@ import { PartitionURI, getPartitionRawIdFrom } from "~/core/tools/PartitionURI";
 
 import Prophet, { MediaInfo, NarrateOptions } from "~/prophet/api/Prophet";
 
-import Logger, { LogEventGenerator } from "~/tools/Logger";
+import Logger, { LogEventGenerator } from "~/tools/Logger";
 import { invariantifyObject } from "~/tools/invariantify";
 
 /**

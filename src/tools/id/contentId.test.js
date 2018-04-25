@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 
-import { contentIdFromUCS2String } from "./textEncoding";
+import { contentIdFromUCS2String } from "~/tools/textEncoding";
 import { contentIdFromArrayBuffer, contentIdFromNativeStream } from "./contentId";
 
 function toArrayBuffer (buf) {

@@ -41,6 +41,8 @@ export const invariantifyString = require("./invariantify").invariantifyString;
 
 export const isPromise = require("./isPromise").default;
 
+export { default as inProduction } from "./inProduction";
+
 export const Logger = require("./Logger").default;
 export const LogEventGenerator = require("./Logger").LogEventGenerator;
 export const createForwardLogger = require("./Logger").createForwardLogger;

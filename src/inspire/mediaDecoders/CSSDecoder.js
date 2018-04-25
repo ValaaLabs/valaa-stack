@@ -2,7 +2,7 @@
 
 import css from "jss-css/lib/css";
 
-import { MediaDecoder } from "~/tools";
+import MediaDecoder from "~/tools/MediaDecoder";
 
 export default class CSSDecoder extends MediaDecoder {
   static mediaTypes = [

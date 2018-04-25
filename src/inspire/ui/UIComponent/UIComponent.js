@@ -29,9 +29,6 @@ import {
   _tryRenderLensArray, _validateElement,
 } from "./_renderOps";
 import {
-  _getVSSClasses,
-} from "./_styleOps";
-import {
   _finalizeDetachSubscribers, _attachSubscriber, _detachSubscriber, _attachKuerySubscriber
 } from "./_subscriberOps";
 
@@ -203,22 +200,6 @@ export default class UIComponent extends React.Component {
         (this.constructor._defaultPresentation().root || {}).style || {},
         this.style || {},
         this.props.style || {});
-  }
-
-  /**
-   * Called from VSX via `VSS` alias setup in src/inspire/ui/helper/lens.js.
-   * Takes a property that should point to a media file, unthunks the content and then looks up
-   * the style sheet from the ui context
-   */
-  getVssClasses = (styleMediaProperty: Object, extraContext: ?Object) => {
-    try {
-      return _getVSSClasses(this, styleMediaProperty, extraContext);
-    } catch (error) {
-      throw wrapError(error, `During ${this.debugId()}\n .getVssClasses:`,
-      "\n\tStyle media kuery:", [...dumpKuery(styleMediaProperty)],
-      "\n\tcurrent props:", this.props,
-      "\n\tstate:", this.state);
-    }
   }
 
   static propsCompareModesOnComponentUpdate = {

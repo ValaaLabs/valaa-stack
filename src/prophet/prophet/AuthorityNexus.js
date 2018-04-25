@@ -98,7 +98,7 @@ export default class AuthorityNexus extends LogEventGenerator {
         }
       }
       return schemeModule.createAuthorityProphet({
-        authorityURI, authorityConfig, logger: this.getLogger(),
+        authorityURI, authorityConfig, nexus: this,
       });
     } catch (error) {
       throw this.wrapErrorEvent(error, `createAuthorityProphet("${String(authorityURI)}")`,

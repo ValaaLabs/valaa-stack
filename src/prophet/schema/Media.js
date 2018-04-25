@@ -27,11 +27,6 @@ export default new GraphQLObjectType({
 
   interfaces: () => [Relatable, Scope, Describable, Discoverable, Resource, ResourceStub],
 
-  recognizers: () => [
-    { text: { directory: MEDIA_FROM_DIRECTORY } },
-    MEDIA_FROM_ANY,
-  ],
-
   fields: () => ({
     ...relatableInterface(OBJECT_DESCRIPTION).fields(),
 

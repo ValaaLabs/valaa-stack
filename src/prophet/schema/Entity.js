@@ -1,6 +1,5 @@
 // @flow
 import { GraphQLObjectType } from "graphql/type";
-import { jsonRecognizer, csvRecognizer, nameRecognizer } from "~/core/tools/graphql/recognizers";
 
 import Describable from "~/core/schema/Describable";
 import Discoverable from "~/core/schema/Discoverable";
@@ -26,22 +25,6 @@ export default new GraphQLObjectType({
 
   interfaces: () =>
       [Partition, Relatable, Scope, Describable, Discoverable, Resource, ResourceStub],
-
-  recognizers: () => ({
-    application: { json: jsonRecognizer({ sceneVersion: true }, SCENE_FROM_JSON) },
-    text: {
-      csv: csvRecognizer("sceneName",
-          SCENE_FROM_CSV),
-      plain: jsonRecognizer({ sceneVersion: true },
-          SCENE_FROM_JSON),
-      directory: [
-        nameRecognizer({ "(.*)Atlas.json": jsonRecognizer({ frames: true, meta: true }, true) },
-            SCENE_FROM_DIR_ATLAS),
-        nameRecognizer({ "scene.csv": csvRecognizer("sceneName") },
-            SCENE_FROM_DIR_CSV),
-      ],
-    },
-  }),
 
   fields: () => ({
     ...partitionInterface(OBJECT_DESCRIPTION).fields(),

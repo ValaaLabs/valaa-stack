@@ -2,7 +2,7 @@
 
 import { transpileValaaScriptModule, Kuery } from "~/script";
 
-import { MediaDecoder } from "~/tools";
+import MediaDecoder from "~/tools/MediaDecoder";
 
 export default class ValaaScriptDecoder extends MediaDecoder {
   static mediaTypes = [

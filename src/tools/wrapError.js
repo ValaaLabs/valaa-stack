@@ -151,32 +151,38 @@ export function debugObject (head) { return debugObjectNest(head); }
 export function debugObjectHard (head) { return debugObjectNest(head, 1, true); }
 
 export function debugObjectNest (head, nest = 1, alwaysStringify = false) {
-  if (!head || (!alwaysStringify && inBrowser())) return head;
-  if (typeof head === "function") return `[[function.name '${head.name}']]`;
-  if (head instanceof Function) return `[[Function.name '${head.name}']]`;
-  if (typeof head === "symbol") return `[[${head.toString()}]]`;
-  if (typeof head !== "object") return head;
-  if (!nest) {
-    if (Array.isArray(head)) return `[[Array.length==${head.length}]]`;
-    if (isIterable(head)) return `[[Iterable.size==${head.size}]]`;
+  try {
+    if (!head || (!alwaysStringify && inBrowser())) return head;
+    if (typeof head === "function") return `[[function.name '${head.name}']]`;
+    if (head instanceof Function) return `[[Function.name '${head.name}']]`;
+    if (typeof head === "symbol") return `[[${head.toString()}]]`;
+    if (typeof head !== "object") return head;
+    if (!nest) {
+      if (Array.isArray(head)) return `[[Array.length==${head.length}]]`;
+      if (isIterable(head)) return `[[Iterable.size==${head.size}]]`;
+    }
+    if (head.toString
+        && (head.toString !== Object.prototype.toString)
+        && (head.toString !== Array.prototype.toString)) {
+      return head.toString(nest);
+    }
+    if (!nest) {
+      return `[[${(head.constructor && head.constructor.name) || "<no constructor>"}.keys.length==${
+          Object.keys(head).length}]]`;
+    }
+    return ((Array.isArray(head)
+            && `[${head.map(entry => debugObjectNest(entry, nest, alwaysStringify)).join(", ")}]`)
+        || (isIterable(head) && debugObjectNest(head.toJS(), nest, alwaysStringify))
+        || `{ ${Object.keys(head)
+              .map(key => `${typeof key === "symbol" ? key.toString() : key}: ${
+                  debugObjectNest(head[key], nest - 1, alwaysStringify)}`)
+              .join(", ")
+            } }`);
+  } catch (error) {
+    console.error("Suppressed an error in debugObjectNest:", error,
+        "\n\treturning head:", head);
   }
-  if (head.toString
-      && (head.toString !== Object.prototype.toString)
-      && (head.toString !== Array.prototype.toString)) {
-    return head.toString(nest);
-  }
-  if (!nest) {
-    return `[[${(head.constructor && head.constructor.name) || "<no constructor>"}.keys.length==${
-        Object.keys(head).length}]]`;
-  }
-  return ((Array.isArray(head)
-          && `[${head.map(entry => debugObjectNest(entry, nest, alwaysStringify)).join(", ")}]`)
-      || (isIterable(head) && debugObjectNest(head.toJS(), nest, alwaysStringify))
-      || `{ ${Object.keys(head)
-            .map(key => `${typeof key === "symbol" ? key.toString() : key}: ${
-                debugObjectNest(head[key], nest - 1, alwaysStringify)}`)
-            .join(", ")
-          } }`);
+  return head;
 }
 
 function isIterable (candidate) {

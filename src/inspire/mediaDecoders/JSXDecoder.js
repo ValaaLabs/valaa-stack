@@ -4,7 +4,6 @@ import React from "react";
 
 import { addStackFrameToError, SourceInfoTag } from "~/core/VALK/StackTrace";
 
-import { MediaDecoder } from "~/tools";
 
 import VALEK, { Kuery, EngineKuery, VS } from "~/engine/VALEK";
 
@@ -12,6 +11,7 @@ import { LENS } from "~/inspire/ui/UIComponent";
 import vidgets from "~/inspire/ui";
 import _jsxTransformFromString from "~/inspire/mediaDecoders/_jsxTransformFromString";
 
+import MediaDecoder from "~/tools/MediaDecoder";
 import notThatSafeEval from "~/tools/notThatSafeEval";
 
 export default class JSXDecoder extends MediaDecoder {
