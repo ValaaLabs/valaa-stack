@@ -13,13 +13,13 @@ import { dumpObject, invariantifyNumber, thenChainEagerly } from "~/tools";
 
 /**
  * The nexus connection object, which consolidates the local scribe connections and the possible
- * remote connection.
+ * authority connection.
  *
  * Unconditionally relies on scribe connection: any failures (like running over quota) will flow
  * through to front-end.
- * Unconditionally relies on remote connection also.
- * TODO(iridian): The remote connection must not be relied upon, but reconnection support needs to
- * be added.
+ * Unconditionally relies on authority connection also.
+ * TODO(iridian): The authority connection should not be relied upon, but reconnection support needs
+ * to be added.
  *
  * @export
  * @class OraclePartitionConnection
@@ -46,13 +46,13 @@ export default class OraclePartitionConnection extends PartitionConnection {
   }
 
   /**
-   * Asynchronoush operation which activates the connection to the Scribe and loads its metadatas,
-   * initiates the remote connections and narrates any requested events before finalizing.
+   * Asynchronous operation which activates the connection to the Scribe and loads its metadatas,
+   * initiates the authority connection and narrates any requested events before finalizing.
    *
    * The initial narration looks for the requested events in following order:
    * 1. initialNarrateOptions.eventLog
    * 2. scribe in-memory and IndexedDB caches
-   * 3. remote connection.narrateEventLog (only if initialNarrateOptions.lastEventId is specified)
+   * 3. authority connection.narrateEventLog (only if initialNarrateOptions.lastEventId is given)
    *
    * If lastEventId is not specified, all the explicit eventLog and local cache events (starting
    * from the optional firstEventId) are narrated.
@@ -79,10 +79,10 @@ export default class OraclePartitionConnection extends PartitionConnection {
       this.transferIntoDependentConnection("scribeUpstream", scribeConnection);
       this.setUpstreamConnection(scribeConnection);
 
-      // Handle step 1. of the acquirePartitionConnection optimistic full narration logic defined
-      // in PartitionConnection.js and begin Start scribe event log narration (which is likely to
-      // be I/O bound) in parallel to the authority proxy/connection creation.
-      this._connectToAuthorityProphet(onConnectData);
+      // Handle step 1. of the acquirePartitionConnection first narration logic (defined
+      // in PartitionConnection.js) and begin I/O bound scribe event log narration in parallel to
+      // the authority proxy/connection creation.
+
 
       ret = await this.narrateEventLog(initialNarrateOptions);
 
@@ -108,8 +108,7 @@ export default class OraclePartitionConnection extends PartitionConnection {
       this._isConnected = true;
       if (this.getDebugLevel()) {
         this.warnEvent("\n\tDone initializing connection with options", initialNarrateOptions,
-            "\n\tinitial narration:", ret,
-            "\n\tmedia retrievals:", onConnectData.mediaRetrievalStatus);
+            "\n\tinitial narration:", ret);
       }
       return ret;
     } catch (error) {
@@ -138,7 +137,8 @@ export default class OraclePartitionConnection extends PartitionConnection {
   _decorateOnConnectRetrieveMediaContent (onConnectData: Object) {
     const retrievals = onConnectData.retrievals = {};
     return (mediaId: VRef, mediaInfo: Object) => {
-      const mediaRetrievals = retrievals[mediaId.rawId()]
+      const mediaRetrievals
+          = retrievals[mediaId.rawId()]
           || (retrievals[mediaId.rawId()] = { history: [], pendingRetrieval: undefined });
       const thisRetrieval = {
         process: undefined, content: undefined, retries: 0, error: undefined, skipped: false,
@@ -412,7 +412,7 @@ export default class OraclePartitionConnection extends PartitionConnection {
       if (typeof ret !== "undefined") return ret;
       if (!actualInfo.blobId) {
         const sourceURI = createValaaURI(actualInfo.sourceURL);
-        // TODO(iridian): Implement schema-based request forwarding to remote authorities
+        // TODO(iridian): Implement schema-based request forwarding to authorities
         // TODO(iridian): Implement straight mediaInfo.sourceURL retrieval if the field is
         // present, using actualInfo.type/subtype as the request ContentType.
         throw new Error(`direct retrieval not implemented for mediaInfo.sourceURL '${
@@ -420,11 +420,11 @@ export default class OraclePartitionConnection extends PartitionConnection {
       }
       if (!this._retrieveRemoteMediaContent) {
         throw new Error(`Could not locate media content in Scribe and ${
-          ""}OraclePartitionConnection._retrieveRemoteMediaContent is not defined`);
+          ""}no OraclePartitionConnection._(override)retrieveMediaContent is defined`);
       }
       ret = this._retrieveRemoteMediaContent(mediaId, actualInfo);
     } catch (error) { throw onError.call(this, error); }
-    // Store the content to Scribe as well (but not remote): dont wait for completion
+    // Store the content to Scribe as well (but not to authority): dont wait for completion
     thenChainEagerly(ret,
         (content) => this.prepareBlob(content, actualInfo, { noRemotePersist: true }),
         onError.bind(this));
@@ -458,12 +458,12 @@ export default class OraclePartitionConnection extends PartitionConnection {
         throw new Error(`schema-based mediaInfo.sourceURL's not implemented, got '${
             sourceURI.toString()}'`);
       }
-      const remoteConnection = this.getDependentConnection("remoteUpstream");
-      if (!remoteConnection) {
-        throw new Error(`OraclePartitionConnection has no remote authority connection specified ${
+      const authorityConnection = this.getDependentConnection("authorityUpstream");
+      if (!authorityConnection) {
+        throw new Error(`OraclePartitionConnection has no authority connection specified ${
             ""} and could not locate local media URL from Scribe`);
       }
-      return remoteConnection.getMediaURL(mediaId, actualInfo);
+      return authorityConnection.getMediaURL(mediaId, actualInfo);
     } catch (error) {
       throw this.wrapErrorEvent(error, `getMediaURL(${
               (mediaInfo && mediaInfo.name) ? `'${mediaInfo.name}'` : `unnamed media`})`,
@@ -480,11 +480,12 @@ export default class OraclePartitionConnection extends PartitionConnection {
     let ret;
     try {
       ret = this.getScribeConnection().prepareBlob(content, mediaInfo);
-      const remoteConnection = !noRemotePersist && this.getDependentConnection("remoteUpstream");
-      if (remoteConnection) {
-        const remoteMediaInfo = { ...(mediaInfo || {}), blobId: ret.contentId };
-        ret.remotePersistProcess =
-            remoteConnection.prepareBlob(ret.buffer, remoteMediaInfo)
+      const authorityConnection = !noRemotePersist
+          && this.getDependentConnection("authorityUpstream");
+      if (authorityConnection) {
+        const authorityMediaInfo = { ...(mediaInfo || {}), blobId: ret.contentId };
+        ret.authorityPersistProcess =
+            authorityConnection.prepareBlob(ret.buffer, authorityMediaInfo)
                 .persistProcess;
       }
       return ret;

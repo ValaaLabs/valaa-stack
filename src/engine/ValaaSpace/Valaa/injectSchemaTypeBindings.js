@@ -44,7 +44,7 @@ export default function injectSchemaTypeBindings (Valaa: Object, scope: Object) 
     activate: denoteValaaBuiltinWithSignature(
       `activates the Resource by acquiring the partition connection and also recursively ${
         ""}activating all Resource's in the prototype chain. Returns a Promise which resolves ${
-        ""}once all corresponding partitions have completed their optimistic event narration`
+        ""}once all corresponding partitions have completed their first narration`
     )(function activate (resource) {
       return Promise.resolve(resource.activate());
     }),

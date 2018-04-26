@@ -113,16 +113,21 @@ export default class Prophet extends LogEventGenerator {
    * counting; it is acquired once as part of this call. The connection must be manually released
    * with releaseConnection or otherwise the connection resources will be left open.
    *
-   * The connection is considered acquired and the promise is resolved after a
-   * "optimistic full narration" is complete. This is defined to be first option which
-   * results in non-zero events and/or commands:
+   * The connection is considered acquired and the promise is resolved after a lazy greedy
+   * "first narration" is complete. Lazy means that only the single closest source which
+   * can provide events is consulted. Greedy means that all events from that source are retrieved.
+   *
+   * The design principle behind this is that no non-authoritative event log cache shalle have
+   * functionally incomplete event logs, even if event log might be outdated in itself.
+   *
+   * More specifically in inspire context the first source resulting in non-zero events is chosen:
    * 1. all events and commands of the optional explicit initialNarrateOptions.eventLog option and
    *    the latest previously seen full narration of this partition in the Scribe (deduplicated)
    * 2. all events in the most recent authorized snapshot known by the remote authority connection
    * 3. all events in the remote authorize event log itself
    *
-   * Irrespective of where the optimistic full narration is sourced, an authorized full narration is
-   * initiated against the remote authority.
+   * Irrespective of where the first narration is sourced, an authorized full narration is
+   * initiated against the remote authority if available.
    *
    * @param {PartitionURI} partitionURI
    * @returns {PartitionConnection}

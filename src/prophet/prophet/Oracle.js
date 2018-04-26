@@ -13,8 +13,8 @@ import OraclePartitionConnection from "~/prophet/prophet/OraclePartitionConnecti
 import { dumpObject, invariantifyObject, thenChainEagerly } from "~/tools";
 
 /**
- * Oracle is the central hub for routing content and metadata streams between remote partition
- * authorities and the local caches, both upstream and downstream.
+ * Oracle is the central hub for routing content and metadata streams between the downstream users,
+ * upstream authorities and local caches.
  *
  * 1. Provides downstream multi-partition event synchronization and deduplication by gating
  * individual partition event downstreams until all partitions reach the same point.
@@ -23,7 +23,7 @@ import { dumpObject, invariantifyObject, thenChainEagerly } from "~/tools";
  * has been retrieved and stored in scribe.
  *
  * 3. Provides upstream media command gating by making sure all associated blob content is stored in
- * corresponding remote storage before letting the commands go further upstream.
+ * corresponding authority storage before letting the commands go further upstream.
  *
  * 4. Provides offline mode handling through scribe.
  *
@@ -139,7 +139,7 @@ export default class Oracle extends Prophet {
   claim (command: Command, options: Object): ClaimResult {
     const operation: any = {
       command, options, authorities: {},
-      remoteUploads: null, localFinalizes: null, isLocallyPersisted: false, process: null,
+      localFinalizes: null, isLocallyPersisted: false, process: null,
     };
     operation.partitionProcesses = this._resolveCommandPartitionDatas(operation);
 
@@ -150,13 +150,13 @@ export default class Oracle extends Prophet {
           authorityURIs.join(`", "`)}"`);
     }
 
-    operation.remotePersistProcesses = this._getOngoingRemoteContentPersistProcesses(operation);
+    operation.authorityPersistProcesses = this._getOngoingAuthorityPersists(operation);
 
     this._claimOperationQueue.push(operation);
     const operationProcess = operation.process = (async () => {
       let remoteAuthority;
       try {
-        await Promise.all(operation.remotePersistProcesses);
+        await Promise.all(operation.authorityPersistProcesses);
         while (this._claimOperationQueue[0] !== operation) {
           if (!this._claimOperationQueue[0].process) this._claimOperationQueue.shift();
           else {
@@ -232,7 +232,7 @@ export default class Oracle extends Prophet {
     };
   }
 
-  _getOngoingRemoteContentPersistProcesses ({ command }: Object) {
+  _getOngoingAuthorityPersists ({ command }: Object) {
     const ret = [];
     for (const blobId of Object.keys(command.addedBlobReferences || {})) {
       for (const { referrerId } of command.addedBlobReferences[blobId]) {
@@ -244,8 +244,9 @@ export default class Oracle extends Prophet {
         } catch (error) { throw onError.call(this, blobId, referrerId, error); }
         const persistProcess = thenChainEagerly(entry.pendingConnection || entry.connection,
             (connectedConnection) => {
-              const remote = connectedConnection.getDependentConnection("remoteUpstream");
-              return remote && remote.getContentPersistProcess(blobId);
+              const authorityConnection =
+                  connectedConnection.getDependentConnection("authorityUpstream");
+              return authorityConnection && authorityConnection.getContentPersistProcess(blobId);
             },
             onError.bind(this, blobId, referrerId));
         if (persistProcess) ret.push(persistProcess);
@@ -253,7 +254,7 @@ export default class Oracle extends Prophet {
     }
     return ret;
     function onError (blobId, referrerId, error) {
-      return this.wrapErrorEvent(error, "_getOngoingRemoteContentPersistProcesses",
+      return this.wrapErrorEvent(error, "_getOngoingAuthorityPersists",
               "\n\tcurrent referrerId:", ...dumpObject(referrerId),
               "\n\tcurrent blobId:", ...dumpObject(blobId),
               "\n\tret (so far):", ...dumpObject(ret),
