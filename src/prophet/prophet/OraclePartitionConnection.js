@@ -28,7 +28,8 @@ import { dumpObject, invariantifyNumber, thenChainEagerly } from "~/tools";
 export default class OraclePartitionConnection extends PartitionConnection {
   _lastAuthorizedEventId: number;
   _downstreamTruthQueue: Object[];
-  _retrieveRemoteMediaContent: ?RetrieveMediaContent;
+  _authorityRetrieveMediaContent: ?RetrieveMediaContent;
+  _narrationRetrieveMediaContent: ?RetrieveMediaContent;
 
   constructor (options: Object) {
     super(options);
@@ -39,6 +40,10 @@ export default class OraclePartitionConnection extends PartitionConnection {
 
   getScribeConnection (): ScribePartitionConnection {
     return this._upstreamConnection;
+  }
+
+  getRetrieveMediaContent () {
+    return this._narrationRetrieveMediaContent || this._authorityRetrieveMediaContent;
   }
 
   isConnected (): boolean {
@@ -66,7 +71,6 @@ export default class OraclePartitionConnection extends PartitionConnection {
     const onConnectData = {
       ...initialNarrateOptions,
     };
-    this._retrieveRemoteMediaContent = this._decorateOnConnectRetrieveMediaContent(onConnectData);
     let ret;
     try {
       if (this.getDebugLevel()) {
@@ -83,6 +87,15 @@ export default class OraclePartitionConnection extends PartitionConnection {
       // in PartitionConnection.js) and begin I/O bound scribe event log narration in parallel to
       // the authority proxy/connection creation.
 
+      const authorityConnection = this._connectToAuthorityProphet();
+      if (authorityConnection) {
+        this._authorityConnection = Promise.resolve(authorityConnection).then(async connection => {
+          this._authorityRetrieveMediaContent = connection.readMediaContent.bind(connection);
+          await connection.connect();
+          this._authorityConnection = connection;
+          return connection;
+        });
+      }
 
       ret = await this.narrateEventLog(initialNarrateOptions);
 
@@ -95,9 +108,7 @@ export default class OraclePartitionConnection extends PartitionConnection {
         throw new Error(`Existing actions found when trying to create a new partition '${
             this.partitionURI().toString()}'`);
       }
-
-      onConnectData.mediaRetrievalStatus = this._analyzeOnConnectMediaRetrievals(onConnectData);
-      if (onConnectData.mediaRetrievalStatus.latestFailures.length
+      if (ret.mediaRetrievalStatus.latestFailures.length
           && (onConnectData.requireLatestMediaContents !== false)) {
         throw new Error(`Failed to connect to partition: encountered ${
                 onConnectData.mediaRetrievalStatus.latestFailures.length
@@ -115,124 +126,37 @@ export default class OraclePartitionConnection extends PartitionConnection {
       throw this.wrapErrorEvent(error, "connect",
           "\n\tonConnectData:", onConnectData,
           "\n\tcurrent ret:", ret);
-    } finally {
-      this._retrieveRemoteMediaContent = onConnectData.retrieveMediaContent;
     }
   }
 
-  static maxOnConnectRetrievalRetries = 3;
-
-  /**
-   * Creates and returns a connect-process decorator for the retrieveMediaContent callback of this
-   * connection. This decorator manages all media retrievals for the duration of the initial
-   * narration. Intermediate Media contents are potentially skipped so that only the latest content
-   * of each Media is available.
-   * The retrieval of the latest content is attempted maxOnConnectRetrievalRetries times.
-   *
-   * @param {Object} onConnectData
-   * @returns
-   *
-   * @memberof OraclePartitionConnection
-   */
-  _decorateOnConnectRetrieveMediaContent (onConnectData: Object) {
-    const retrievals = onConnectData.retrievals = {};
-    return (mediaId: VRef, mediaInfo: Object) => {
-      const mediaRetrievals
-          = retrievals[mediaId.rawId()]
-          || (retrievals[mediaId.rawId()] = { history: [], pendingRetrieval: undefined });
-      const thisRetrieval = {
-        process: undefined, content: undefined, retries: 0, error: undefined, skipped: false,
-      };
-      mediaRetrievals.history.push(thisRetrieval);
-      return (async () => {
-        try {
-          if (mediaRetrievals.pendingRetrieval) await mediaRetrievals.pendingRetrieval.process;
-        } catch (error) {
-          // Ignore any errors of earlier retrievals.
-        }
-        while (thisRetrieval === mediaRetrievals.history[mediaRetrievals.history.length - 1]) {
-          try {
-            thisRetrieval.process = onConnectData.retrieveMediaContent(mediaId, mediaInfo);
-            mediaRetrievals.pendingRetrieval = thisRetrieval;
-            thisRetrieval.content = await thisRetrieval.process;
-            return thisRetrieval.content;
-          } catch (error) {
-            ++thisRetrieval.retries;
-            const description = `connect/retrieveMediaContent(${
-                mediaInfo.name}), ${thisRetrieval.retries}. attempt`;
-            if (thisRetrieval.retries <= OraclePartitionConnection.maxOnConnectRetrievalRetries) {
-              this.warnEvent(`${description} retrying after ignoring an exception: ${
-                  error.originalMessage || error.message}`);
-            } else {
-              thisRetrieval.error = this.wrapErrorEvent(error, description,
-                  "\n\tonConnectData:", ...dumpObject(onConnectData),
-                  "\n\tmediaId:", mediaId.rawId(),
-                  "\n\tmediaInfo:", ...dumpObject(mediaInfo),
-                  "\n\tmediaRetrievals:", ...dumpObject(mediaRetrievals),
-                  "\n\tthisRetrieval:", ...dumpObject(thisRetrieval),
-              );
-              return undefined;
-            }
-          } finally {
-            if (mediaRetrievals.pendingRetrieval === thisRetrieval) {
-              mediaRetrievals.pendingRetrieval = null;
-            }
-          }
-        }
-        thisRetrieval.skipped = true;
-        return undefined;
-      })();
-    };
-  }
-
-  _analyzeOnConnectMediaRetrievals ({ retrievals }: Object) {
-    const ret = {
-      medias: Object.keys(retrievals).length,
-      successfulRetrievals: 0,
-      overallSkips: 0,
-      overallRetries: 0,
-      intermediateFailures: [],
-      latestFailures: [],
-    };
-    for (const mediaRetrievals of Object.values(retrievals)) {
-      mediaRetrievals.history.forEach((retrieval, index) => {
-        if (typeof retrieval.content !== "undefined") ++ret.successfulRetrievals;
-        if (retrieval.skipped) ++ret.overallSkips;
-        ret.overallRetries += retrieval.retries;
-        if (retrieval.error) {
-          if (index + 1 !== mediaRetrievals.history.length) {
-            ret.intermediateFailures.push(retrieval.error);
-          } else {
-            ret.latestFailures.push(retrieval.error);
-          }
-        }
-      });
-    }
-    return ret;
-  }
-
-  _connectToAuthorityProphet (onConnectData: Object) {
+  _connectToAuthorityProphet () {
     this._authorityProphet = this._prophet._authorityNexus
         .obtainAuthorityProphetOfPartition(this.partitionURI());
     if (!this._authorityProphet) return undefined;
-    this._remoteConnection = (async () => {
-      const remoteConnection = await this._authorityProphet
+    return (async () => {
+      const connection = await this._authorityProphet
           .acquirePartitionConnection(this.partitionURI(),
-              { callback: this._onConfirmTruth.bind(this, "remoteUpstream"), noConnect: true });
-      this.transferIntoDependentConnection("remoteUpstream", remoteConnection);
-      onConnectData.retrieveMediaContent
-          = remoteConnection.readMediaContent.bind(remoteConnection);
-      await remoteConnection.connect();
-      this._remoteConnection = remoteConnection;
-      return remoteConnection;
+              { callback: this._onConfirmTruth.bind(this, "authorityUpstream"), noConnect: true });
+      this.transferIntoDependentConnection("authorityUpstream", connection);
+      return connection;
     })();
-    return this._remoteConnection;
   }
 
   async narrateEventLog (options: NarrateOptions = {}): Promise<any> {
     let currentFirstEventId = options.firstEventId;
     const ret = {};
+    const retrievals = {};
     try {
+      if (options.retrieveMediaContent) {
+        // TODO(iridian): _narrationRetrieveMediaContent should probably be a function parameter
+        // instead of an object member.
+        if (this._narrationRetrieveMediaContent) {
+          throw new Error(`There can be only one concurrent narrateEventLog with${
+              ""} an options.retrieveMediaContent override`);
+        }
+        this._narrationRetrieveMediaContent =
+            this._decorateRetrieveMediaContent(options.retrieveMediaContent, retrievals);
+      }
       const isPastLastEvent = (candidateEventId) =>
           (typeof candidateEventId !== "undefined") &&
           (typeof options.lastEventId !== "undefined") &&
@@ -267,28 +191,122 @@ export default class OraclePartitionConnection extends PartitionConnection {
         }));
       }
 
-      if (this._remoteConnection && !options.dontRemoteNarrate) {
-        const remoteNarrationProcess = ((async () =>
-            (await this._remoteConnection).narrateEventLog(
-                { firstEventId: this._lastAuthorizedEventId + 1 }))());
+      if (this._authorityConnection && !options.dontRemoteNarrate) {
+        const authoritativeNarration = (await this._authorityConnection)
+            .narrateEventLog({ firstEventId: this._lastAuthorizedEventId + 1 });
         if (!(ret.eventLog || []).length
             && !(ret.scribeEventLog || []).length
             && !(ret.scribeCommandQueue || []).length) {
-          // Handle step 2 of the optimistic full narration logic after if the initial local
-          // narration didn't find any events.
-          console.log("pre remote narrate");
-          Object.assign(ret, await remoteNarrationProcess);
-          console.log("post remote narrate");
+          // Handle step 2 of the narration logic if local narration didn't find any events.
+          Object.assign(ret, await authoritativeNarration);
+          console.log("done", ret);
         }
       }
+
+      ret.mediaRetrievalStatus = this._analyzeRetrievals(retrievals);
       return ret;
     } catch (error) {
       throw this.wrapErrorEvent(error, "narrateEventLog()",
           "\n\toptions:", options,
           "\n\tcurrentFirstEventId:", currentFirstEventId,
           "\n\tcurrent ret:", ret);
+    } finally {
+      if (options.retrieveMediaContent) {
+        delete this._narrationRetrieveMediaContent;
+      }
     }
   }
+
+  static maxOnConnectRetrievalRetries = 3;
+
+  /**
+   * Creates and returns a connect-process decorator for the retrieveMediaContent callback of this
+   * connection. This decorator manages all media retrievals for the duration of the initial
+   * narration. Intermediate Media contents are potentially skipped so that only the latest content
+   * of each Media is available.
+   * The retrieval of the latest content is attempted maxOnConnectRetrievalRetries times.
+   *
+   * @param {Object} onConnectData
+   * @returns
+   *
+   * @memberof OraclePartitionConnection
+   */
+  _decorateRetrieveMediaContent (retrieveMediaContent: Function, retrievals: Object) {
+    return (mediaId: VRef, mediaInfo: Object) => {
+      const mediaRetrievals
+          = retrievals[mediaId.rawId()]
+          || (retrievals[mediaId.rawId()] = { history: [], pendingRetrieval: undefined });
+      const thisRetrieval = {
+        process: undefined, content: undefined, retries: 0, error: undefined, skipped: false,
+      };
+      mediaRetrievals.history.push(thisRetrieval);
+      return (async () => {
+        try {
+          if (mediaRetrievals.pendingRetrieval) await mediaRetrievals.pendingRetrieval.process;
+        } catch (error) {
+          // Ignore any errors of earlier retrievals.
+        }
+        while (thisRetrieval === mediaRetrievals.history[mediaRetrievals.history.length - 1]) {
+          try {
+            thisRetrieval.process = retrieveMediaContent(mediaId, mediaInfo);
+            mediaRetrievals.pendingRetrieval = thisRetrieval;
+            thisRetrieval.content = await thisRetrieval.process;
+            return thisRetrieval.content;
+          } catch (error) {
+            ++thisRetrieval.retries;
+            const description = `connect/retrieveMediaContent(${
+                mediaInfo.name}), ${thisRetrieval.retries}. attempt`;
+            if (thisRetrieval.retries <= OraclePartitionConnection.maxOnConnectRetrievalRetries) {
+              this.warnEvent(`${description} retrying after ignoring an exception: ${
+                  error.originalMessage || error.message}`);
+            } else {
+              thisRetrieval.error = this.wrapErrorEvent(error, description,
+                  "\n\tretrievals:", ...dumpObject(retrievals),
+                  "\n\tmediaId:", mediaId.rawId(),
+                  "\n\tmediaInfo:", ...dumpObject(mediaInfo),
+                  "\n\tmediaRetrievals:", ...dumpObject(mediaRetrievals),
+                  "\n\tthisRetrieval:", ...dumpObject(thisRetrieval),
+              );
+              return undefined;
+            }
+          } finally {
+            if (mediaRetrievals.pendingRetrieval === thisRetrieval) {
+              mediaRetrievals.pendingRetrieval = null;
+            }
+          }
+        }
+        thisRetrieval.skipped = true;
+        return undefined;
+      })();
+    };
+  }
+
+  _analyzeRetrievals (retrievals: Object) {
+    const ret = {
+      medias: Object.keys(retrievals).length,
+      successfulRetrievals: 0,
+      overallSkips: 0,
+      overallRetries: 0,
+      intermediateFailures: [],
+      latestFailures: [],
+    };
+    for (const mediaRetrievals of Object.values(retrievals)) {
+      mediaRetrievals.history.forEach((retrieval, index) => {
+        if (typeof retrieval.content !== "undefined") ++ret.successfulRetrievals;
+        if (retrieval.skipped) ++ret.overallSkips;
+        ret.overallRetries += retrieval.retries;
+        if (retrieval.error) {
+          if (index + 1 !== mediaRetrievals.history.length) {
+            ret.intermediateFailures.push(retrieval.error);
+          } else {
+            ret.latestFailures.push(retrieval.error);
+          }
+        }
+      });
+    }
+    return ret;
+  }
+
 
   async _onConfirmTruth (originName: string, authorizedEvent: Object): Promise<Object> {
     const partitionData = authorizedEvent.partitions &&
@@ -305,7 +323,7 @@ export default class OraclePartitionConnection extends PartitionConnection {
           event: authorizedEvent,
           eventId: partitionData.eventId,
           finalizers: this.getScribeConnection().createEventFinalizers(
-              authorizedEvent, partitionData.eventId, this._retrieveRemoteMediaContent),
+              authorizedEvent, partitionData.eventId, this.getRetrieveMediaContent()),
         };
         const pendingMultiPartitionEvent = await this._unwindSinglePartitionEvents();
         if (pendingMultiPartitionEvent) {
@@ -324,7 +342,7 @@ export default class OraclePartitionConnection extends PartitionConnection {
   }
 
   claimCommandEvent (command: Command) {
-    return this.getScribeConnection().claimCommandEvent(command, this._retrieveRemoteMediaContent);
+    return this.getScribeConnection().claimCommandEvent(command, this.getRetrieveMediaContent());
   }
 
   _preAuthorizeCommand = (preAuthorizedEvent: Object) =>
@@ -418,11 +436,12 @@ export default class OraclePartitionConnection extends PartitionConnection {
         throw new Error(`direct retrieval not implemented for mediaInfo.sourceURL '${
             sourceURI.toString()}'`);
       }
-      if (!this._retrieveRemoteMediaContent) {
+      const retrieveMediaContent = this.getRetrieveMediaContent();
+      if (!retrieveMediaContent) {
         throw new Error(`Could not locate media content in Scribe and ${
           ""}no OraclePartitionConnection._(override)retrieveMediaContent is defined`);
       }
-      ret = this._retrieveRemoteMediaContent(mediaId, actualInfo);
+      ret = retrieveMediaContent(mediaId, actualInfo);
     } catch (error) { throw onError.call(this, error); }
     // Store the content to Scribe as well (but not to authority): dont wait for completion
     thenChainEagerly(ret,
