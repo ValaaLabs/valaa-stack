@@ -90,6 +90,10 @@ export default class InspireGateway extends LogEventGenerator {
     }
   }
 
+  getRootPartitionURI () {
+    return String(this.entryPartitionConnection.partitionURI());
+  }
+
   createAndConnectViewsToDOM (viewConfigs: {
     [string]: { name: string, size: Object, defaultAuthorityURI: ?string }
   }) {
@@ -342,62 +346,27 @@ export default class InspireGateway extends LogEventGenerator {
           info: await info,
         });
       }
-      if (prologueRevelation.rootPartitionURI) {
+      let partitionURI;
+      if (prologueRevelation.endpoint) {
+        const endpoint = await prologueRevelation.endpoint;
+        const endpoints = (await prologueRevelation.endpoints) || {};
+        if (!endpoints[endpoint]) {
+          throw new Error(`prologue.endpoint '${endpoint}' not found in prologue.endpoints`);
+        }
+        partitionURI = createPartitionURI(await endpoints[endpoint]);
+      } else if (prologueRevelation.rootPartitionURI) {
+        partitionURI = createPartitionURI(await prologueRevelation.rootPartitionURI);
+      }
+      if (partitionURI) {
         ret.push({
-          partitionURI: createPartitionURI(await prologueRevelation.rootPartitionURI),
+          partitionURI,
           isNewPartition: false,
           info: { commandId: -1, eventId: -1, logs: { commandQueue: [], eventLog: [] } },
         });
-      } else {
-        // These are not obsolete yet, but temporarily disabled.
-        if (Array.isArray(prologueRevelation.snapshotEventPaths)) {
-          throw new Error("revelation.snapshotEventPaths temporarily disabled");
-          /*
-          for (const [partitionURIString, snapshotPath] of revelation.snapshotEventPaths) {
-            invariantifyString(partitionURIString,
-                "revelation.snapshotEventPaths[0]: partition URI string");
-            invariantifyString(snapshotPath,
-                "revelation.snapshotEventPaths[1]: snapshot event path");
-            const snapshotEvent = await request({ url: snapshotPath });
-            this.warnEvent(`Located legacy partition '${partitionURIString}' snapshot event at '${
-                snapshotPath}'`, "\n\tsnapshot event:", snapshotEvent);
-            const partitionURI = createPartitionURI(partitionURIString);
-            invariantifyObject(partitionURI, "revelation.snapshotEventPaths[0]: partitionURI",
-                { instanceof: URL, allowEmpty: true });
-            ret.push({
-              partitionURI,
-              eventLog: [snapshotEvent],
-              isNewPartition: false,
-            });
-          }
-          */
-        }
-        if (prologueRevelation.initialEventPath) {
-          throw new Error("revelation.initialEventPath temporarily disabled");
-          /*
-          // Legacy revelation.
-          const initialEvent = await request({ url: revelation.initialEventPath });
-          const initialCreateEntityEvent = initialEvent.actions && initialEvent.actions[0];
-          invariantifyString(initialCreateEntityEvent && initialCreateEntityEvent.typeName,
-              "legacy entry point missing: first event is not an Entity CREATED",
-              { value: "Entity" });
-
-          const partitionAuthorityURI = "valaa-local:";
-          if (!initialCreateEntityEvent.initialState) initialCreateEntityEvent.initialState = {};
-          initialCreateEntityEvent.initialState.partitionAuthorityURI = partitionAuthorityURI;
-          initialEvent.partitions = { [releaseEvent.id]: { eventId: 0, partitionAuthorityURI } };
-          this.warnEvent(`Located legacy entry point`, `${releaseEvent.id}:Entity`);
-          ret.push({
-            partitionURI: createPartitionURI(partitionAuthorityURI, releaseEvent.id),
-            eventLog: [initialEvent],
-            isNewPartition: true,
-          });
-          */
-        }
       }
       if (!ret.length) {
-        throw new Error(`${this.debugId()
-            }.loadRevelationPrologues: non-legacy prologues not implemented yet`);
+        throw new Error(`Revelation prologue is missing entry point${
+            ""} (either prologue.endpoint or prologue.rootPartitionURI)`);
       }
       return ret;
     } catch (error) {

@@ -84,7 +84,9 @@ export function createValaaURI (uriString: string): URL {
 
 export function getURIQueryField (uri: URL | string, fieldName: string): ?any {
   const valaaURI = (typeof uri === "string") ? createValaaURI(uri) : uri;
-  return valaaURI.searchParams && valaaURI.searchParams.get(fieldName);
+  const searchParams = valaaURI.searchParams
+      || (valaaURI.search ? new URLSearchParams(valaaURI.search) : undefined);
+  return searchParams && searchParams.get(fieldName);
 }
 
 export function getPartitionRawIdFrom (partitionURI: PartitionURI): string {

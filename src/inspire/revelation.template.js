@@ -27,7 +27,9 @@ export default {
     falseProphet: { logLevel: 0 },
   },
   prologue: {
+    endpoint: "",
     rootPartitionURI: "",
+    endpoints: dictionaryOf(""),
     partitionInfos: dictionaryOf(partitionInfo()),
     blobInfos: dictionaryOf(blobInfo()),
     blobBuffers: dictionaryOf(blobBuffer()),
