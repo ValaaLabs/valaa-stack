@@ -7,13 +7,13 @@
   "private": false,
   "gateway": {
     "version": "0.30.0-prerelease",
-    "runtime": { "/": "valaa/inspire/valaa-inspire.js" },
-    "authorityConfigs": { "/": "valaa/authorityConfigs.json" }
+    "runtime": { "...": "valaa/inspire/valaa-inspire.js" },
+    "authorityConfigs": { "...": "valaa/authorityConfigs.json" }
   },
   "prologue": {
     "rootPartitionURI": "valaa-local:?id=lcl-c986ddf3-917b-48da-9a58-eb495093e34c",
-    "partitionInfos": { "/": "valaa/partitionInfos.json" },
-    "blobInfos": { "/": "valaa/blobInfos.json" },
-    "blobBuffers": { "/": "valaa/blobBuffers.json" }
+    "partitionInfos": { "...": "valaa/partitionInfos.json" },
+    "blobInfos": { "...": "valaa/blobInfos.json" },
+    "blobBuffers": { "...": "valaa/blobBuffers.json" }
   }
 }

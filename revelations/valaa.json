@@ -9,6 +9,6 @@
   "valaa": { "engine": { "name": "@valaa/inspire", "version": "0.30.0-prerelease" } },
   "gateway": {
     "version": "0.30.0-prerelease",
-    "runtime": { "/": "/valaa/inspire/valaa-inspire.js" }
+    "runtime": { "...": "/valaa/inspire/valaa-inspire.js" }
   }
 }
