@@ -2,7 +2,7 @@
   "name": "@valaa/vault",
   "version": "0.30.0-prerelease",
   "config": {
-    "revelation": "revelations/local-zero",
+    "revelation": "revelations",
     "modulepaths": "core/node_modules:prophet/node_modules:script/node_modules:engine/node_modules:inspire/node_modules"
   },
   "description": "Vault of Valaa open source tools and libraries. Expect this package to be split when the child components mature with more stable APIs and less cross-dependencies.",
