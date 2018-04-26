@@ -40,7 +40,7 @@ valaa-aws://example.com:123/dev?id=abcd-123...2343#987b-72f...8263?coupling=rela
 
 The division between partition URI and local reference has many curious dualistic qualities:
 backend vs. frontend, hierarchical vs. flat, routing vs. computation, extensible vs. fixed, 
-absolute vs. contextual, coarse vs. granular, self-contained vs. part-of-a-whole. While 
+absolute vs. contextual, coarse vs. granular, self-contained vs. part-of-a-whole. 
 
 ##### 1.1.1. Partition URI domain is backend, local reference domain is front-end
 

@@ -6,8 +6,6 @@ export default function createValaaLocalScheme (/* { logger } */) {
 
     getAuthorityURIFromPartitionURI: () => `valaa-local:`,
 
-    getInteractableURLFromAuthorityURI: () => null,
-
     createDefaultAuthorityConfig: (/* partitionURI: URL */) => ({}),
 
     createAuthorityProphet: () => null,
