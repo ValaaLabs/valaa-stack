@@ -2,7 +2,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import { createPartitionURI, getPartitionRawIdFrom } from "~/core/tools/PartitionURI";
+import { vRefFromURI } from "~/core/ValaaReference";
 
 import Cog from "~/engine/Cog";
 import Vrapper from "~/engine/Vrapper";
@@ -15,15 +15,17 @@ import { getGlobal } from "~/tools";
  * This class is the view entry point
  */
 export default class InspireView extends Cog {
-  async initialize ({ name, container, rootId, size, rootPartitionURI }: Object) {
+  async initialize ({ name, container, rootId, size, rootLensURI }: Object) {
     try {
-      if (!rootPartitionURI) {
-        throw new Error(`No view ${name} options.rootPartitionURI found`);
+      if (!rootLensURI) {
+        throw new Error(`No options.rootLensURI found for view ${name}`);
       }
       // Load project
-      const partitionURI = createPartitionURI(rootPartitionURI);
-      this._rootConnection = await this.engine.prophet.acquirePartitionConnection(partitionURI);
-      this._vUIRoot = await this.engine.getVrapper(getPartitionRawIdFrom(partitionURI));
+      const lensRef = vRefFromURI(rootLensURI);
+      this._rootConnection = await this.engine.prophet.acquirePartitionConnection(
+          lensRef.partitionURI());
+      this._vUIRoot = await this.engine.getVrapper(
+          lensRef.rawId() || this._rootConnection.partitionRawId());
       this.warnEvent(`initialize(): partition '${this._vUIRoot.get("name")}' UI root set:`,
           this._vUIRoot.debugId());
       // this.warn("\n\n");
@@ -37,7 +39,7 @@ export default class InspireView extends Cog {
           size, `unused)`);
       return this;
     } catch (error) {
-      throw this.wrapErrorEvent(error, `initialize('${name}' -> ${rootPartitionURI})`);
+      throw this.wrapErrorEvent(error, `initialize('${name}' -> ${rootLensURI})`);
     }
   }
 

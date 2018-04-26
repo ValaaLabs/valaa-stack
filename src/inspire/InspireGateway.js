@@ -95,7 +95,7 @@ export default class InspireGateway extends LogEventGenerator {
   }
 
   createAndConnectViewsToDOM (viewConfigs: {
-    [string]: { name: string, size: Object, defaultAuthorityURI: ?string }
+    [string]: { name: string, size: Object, container: Object, rootId: string, rootLensURI: any }
   }) {
     const ret = {};
     for (const [viewName, viewConfig: Object] of Object.entries(viewConfigs)) {

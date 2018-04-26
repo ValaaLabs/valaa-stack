@@ -203,7 +203,12 @@ export default class FalseProphet extends Prophet {
     // TODO(iridian): After migration to zero missing commandId should be at create warnings
     let prophecy = truthId && this._prophecyByCommandId[truthId];
     if (!prophecy) {
-      prophecy = this._fabricateProphecy(authorizedEvent, `event ${truthId.slice(0, 13)}...`);
+      if (!truthId) {
+        this.warnEvent("Warning: encountered an authorized event with missing commandId:",
+            authorizedEvent);
+      }
+      prophecy = this._fabricateProphecy(authorizedEvent,
+          `event ${!truthId ? "legacy" : truthId.slice(0, 13)}...`);
       this._revealProphecyToAllFollowers(prophecy);
     }
     prophecy.isTruth = true;

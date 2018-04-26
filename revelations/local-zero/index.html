@@ -34,10 +34,10 @@
         Valaa.views = inspireGateway.createAndConnectViewsToDOM({
           inspireMain: {
             name: "Valaa local Zero Main",
-            size: { width: window.innerWidth, height: window.innerHeight, scale: 1 },
+            rootLensURI: inspireGateway.getRootPartitionURI(),
             container: document.querySelector("#valaa-inspire--main-container"),
             rootId: "valaa-inspire--main-root",
-            rootPartitionURI: inspireGateway.revelation.prologue.rootPartitionURI,
+            size: { width: window.innerWidth, height: window.innerHeight, scale: 1 },
           },
         });
       });

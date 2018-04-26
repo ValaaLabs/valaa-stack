@@ -224,7 +224,7 @@ export function vRef (rawId: RawId, coupledField: ?string = null, ghostPath: ?Gh
     invariantifyString(coupledField, "vRef.coupledField", { allowNull: true });
     invariantifyObject(ghostPath, "vRef.ghostPath", { allowNull: true, instanceof: GhostPath });
     invariantifyObject(partitionURI, "vRef.partitionURI",
-        { allowNull: true, instanceof: PartitionURI });
+        { allowNull: true, allowEmpty: true, instanceof: URL });
     return new RefType([rawId, coupledField, ghostPath], partitionURI);
   } catch (error) {
     throw wrapError(error, `During vRef('${rawId}', '${coupledField}', ghostPath, ${
@@ -255,6 +255,22 @@ export function vRefFromJSON (json: JSONIdData, RefType: Object = VRef): VRef {
     ret._vref[3] = createPartitionURI(ret._vref[3]);
   }
   return ret;
+}
+
+export function vRefFromURI (uri: URL | string): VRef {
+  const [partitionURI, fragment] = String(uri).split("#");
+  if (!fragment) return vRef("", null, null, new URL(partitionURI));
+  const [rawId, referenceOptions] = fragment.split("?");
+  // TODO(iridian): validate rawId against [-_0-9a-zA-Z] and do base64 -> base64url conversion
+  // which needs codebase wide changes.
+  if (!referenceOptions) return vRef(rawId, null, null, new URL(partitionURI));
+  // const options = {};
+  let coupling;
+  for (const [key, value] of referenceOptions.split("&").map(pair => pair.split("="))) {
+    if (key === "coupling") coupling = value;
+    else throw new Error(`ValaaReference option '${key}' not implemented yet`);
+  }
+  return vRef(rawId, coupling, undefined, new URL(partitionURI));
 }
 
 /**
