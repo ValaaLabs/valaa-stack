@@ -6,25 +6,48 @@ deploying, sharing and reusing not just the applications themselves,
 but modules and the content as well, using a unified, powerful
 resource model.
 
+
 ## Community
 
 Valaa Stack is open source software released under an
 [MIT license](https://github.com/ValaaLabs/inspire/blob/master/LICENSE).
 
-## Installation
 
-Undergoing reorganization.
+## Valaa Vault in github.com/valaatech/vault
 
-For limited functionality, with npm installed run
+Vault is an aggregate repository with three main roles.
+
+- Vault is the authoritative upstream for all the primary `@valaa` 
+scoped npm es5 packages: `tools`, `core`, `script`, `prophet`, 
+`engine` and `inspire`.
+- Vault provides a locally deployable and thus restricted but otherwise
+complete Valaa Stack for testing and hot-reloadable development.
+- Vault provides `@valaa/vault` npm package with the shared tools for
+creating and managing `Valaa Stack` deployment in general and 
+`Inspire Gateway` runtime deployments in specific.
+
+
+## Local Valaa Stack deployment
+
+Local development web server can be launched like so:
 ```
 npm install
 npm start
 ```
 
-This launches a local webpack-based http server at 0.0.0.0:8080 which
-serves a static zero editor setup through the `Inspire` application
-stream gateway. No remote plugins are integrated yet so all content
-created is persisted in the browser IndexedDB only at the moment.
+This launches webpack dev-server at 0.0.0.0:8080 which serves the 
+`Inspire Gateway` javascript runtime to the client browser accessing
+it. The gateway will deliver `Zero Editor` as its `ValaaSpace` entry
+site which is sourced locally from `./revelations/local-zero`.
+
+
+### No remote authority plugins - limited persistence
+
+No remote content can be accessed and all content that is created is 
+persisted only locally inside the client browser IndexedDB cache. 
+`ValaaSpace` content will thus survive page refreshes but can still be
+unpredictably lost. This can happen for example when the browser 
+clears its cache for new space.
 
 
 ## Overview
@@ -37,6 +60,7 @@ Valaa resources, which are stored in a globally shared `ValaaSpace`.
 In order to efficiently show these applications to the user Inspire
 loads only small parts of the whole ValaaSpace (called `partitions`)
 inside the user's browser. It accomplishes this using `event streams`.
+
 
 ### Event stream circle of life
 
@@ -59,6 +83,7 @@ this cycle. Zero, the primary ValaaSpace content editor, is merely
 another Valaa application rendered by Inspire and has indeed been
 primarily developed using itself (after a brief bootstrapping phase).
 
+
 ### Backend authorities can be simple
 
 A minimal but complete backend authority needs to be two things:
@@ -79,15 +104,18 @@ completes Valaa as a fully self-contained platform.
 Note: tools for managing reference authority deplyoments will likely
 be contained in a separate repository (as valma).
 
-## Inspire components
 
-Inspire client is divided into several sub-modules. For now they exist
-in the same repository but eventually might be separated. They share
-similarities in structure. @valaa/inspire is the top level entry point.
-Those extending the schema provide a root-level ContentAPI.js. Several
-modules provide an incremental test harness under */test/*TestHarness.
-@valaa/tools contains assorted generic tools. Some shared concepts
-between all the submodules:
+## Primary Valaa packages
+
+For ease of development all primary packages still exist in the same
+repository. They might be gradually separated but as long as they
+remain their version numbers will progress in lock-step.
+@valaa/inspire is the top level entry point of the local development 
+environment `Inspire Gateway`.
+These packages have similarities in their structure. Those extending
+the schema provide a root-level ContentAPI.js. Several modules 
+provide an incremental test harness under */test/*TestHarness.
+@valaa/tools contains assorted generic tools. All packages share:
 
 - dev-depends: `jest`, `eslint`, `flow`, `babel`, `webpack`, `npm`
 - depends: `lodash`, `graphql`, `es5`, `various polyfills`
@@ -186,6 +214,7 @@ ValaaSpace integration with the UI.
 - exports: `createInspireClient`,
 - ValaaSpace: `ValaaScope`, `If`, `ForEach`, `TextFileEditor`
 - concepts: `model-view`, `HTML5/CSS/JS`, `rapid devevelopment`
+
 
 ## The promise and the claim
 
