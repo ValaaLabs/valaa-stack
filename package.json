@@ -6,6 +6,10 @@
     "modulepaths": "core/node_modules:prophet/node_modules:script/node_modules:engine/node_modules:inspire/node_modules"
   },
   "description": "Vault of Valaa open source tools and libraries. Expect this package to be split when the child components mature with more stable APIs and less cross-dependencies.",
+  "license": "MIT",
+  "author": "Valaa Technologies Ltd",
+  "private": false,
+
   "main": "index.js",
   "scripts": {
     "build": "cross-conf-env cross-env NODE_PATH=$NODE_PATH:$npm_package_config_modulepaths webpack ",
@@ -20,9 +24,6 @@
     "test": "jest",
     "test-e2e": "karma start"
   },
-  "author": "Valaa Technologies Ltd.",
-  "license": "MIT",
-  "private": false,
   "jest": {
     "collectCoverage": false,
     "coveragePathIgnorePatterns": [

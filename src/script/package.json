@@ -3,7 +3,7 @@
   "version": "0.30.0-prerelease",
   "description": "Valaa Script API, schema",
   "main": "index.js",
-  "author": "Valaa Technologies Ltd.",
+  "author": "Valaa Technologies Ltd",
   "license": "MIT",
   "dependencies": {
     "acorn": "^5.0.3",

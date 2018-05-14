@@ -3,7 +3,7 @@
   "version": "0.30.0-prerelease",
   "description": "Valaa Core API, Schema",
   "main": "index.js",
-  "author": "Valaa Technologies Ltd.",
+  "author": "Valaa Technologies Ltd",
   "license": "MIT",
   "dependencies": {
     "immutable": "~3.7.4",

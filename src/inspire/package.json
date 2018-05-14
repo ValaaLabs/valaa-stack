@@ -3,7 +3,7 @@
   "version": "0.30.0-prerelease",
   "description": "Valaa Inspire application gateway",
   "main": "index.js",
-  "author": "Valaa Technologies Ltd.",
+  "author": "Valaa Technologies Ltd",
   "license": "MIT",
   "dependencies": {
     "babel-polyfill": "^6.9.1",

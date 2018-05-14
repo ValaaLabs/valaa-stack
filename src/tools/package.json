@@ -3,7 +3,7 @@
   "version": "0.30.0-prerelease",
   "description": "Valaa Tools API",
   "main": "index.js",
-  "author": "Valaa Technologies Ltd.",
+  "author": "Valaa Technologies Ltd",
   "license": "MIT",
   "dependencies": {
     "base64-js": "^1.2.3",
