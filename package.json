@@ -1,28 +1,29 @@
 {
   "name": "@valaa/vault",
   "version": "0.30.0-prerelease",
-  "config": {
-    "revelation": "dist/public",
-    "modulepaths": "core/node_modules:prophet/node_modules:script/node_modules:engine/node_modules:inspire/node_modules"
-  },
   "description": "Vault of Valaa open source tools and libraries. Expect this package to be split when the child components mature with more stable APIs and less cross-dependencies.",
   "license": "MIT",
   "author": "Valaa Technologies Ltd",
   "private": false,
 
-  "main": "index.js",
+  "bin": {
+    "valma-dev-server": "bin/valma-dev-server.js"
+  },
   "scripts": {
-    "build": "cross-conf-env cross-env NODE_PATH=$NODE_PATH:$npm_package_config_modulepaths webpack ",
-    "build-packages": "NODE_ENV=build-packages babel src --out-dir dist/modules/@valaa; for i in tools core script prophet engine inspire manager; do cp src/$i/package.json dist/modules/@valaa/$i; done",
-    "dev": "TARGET_ENV=local cross-conf-env node script/dev-server dist/public",
-    "prod": "TARGET_ENV=production cross-conf-env node script/dev-server dist/public",
-    "dev-webpack": "cross-conf-env cross-env NODE_PATH=$NODE_PATH:$npm_package_config_modulepaths webpack-dev-server --inline --progress --open --host 0.0.0.0 --content-base ",
+    "start": "node bin/valma-dev-server",
+    "dev": "TARGET_ENV=local node bin/valma-dev-server",
+    "prod": "TARGET_ENV=production node bin/valma-dev-server",
+    "dev-webpack": "webpack-dev-server --inline --progress --open --host 0.0.0.0 --content-base ",
+
     "eslint": "eslint .",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "lint": "npm run eslint",
-    "start": "cross-conf-env npm run dev-webpack $npm_package_config_revelation",
     "test": "jest",
-    "test-e2e": "karma start"
+    "test-e2e": "karma start",
+
+    "build": "webpack ",
+    "assemble-packages": "NODE_ENV=assemble-packages node script/assemble-packages ",
+    "deploy-packages": "NODE_ENV=assemble-packages node script/deploy-packages "
   },
   "jest": {
     "collectCoverage": false,
@@ -41,10 +42,6 @@
     }
   },
   "dependencies": {
-    "@valaa/core": "file:src/core",
-    "@valaa/prophet": "file:src/prophet",
-    "@valaa/script": "file:src/script",
-    "@valaa/tools": "file:src/tools",
     "acorn": "^5.0.3",
     "babel-runtime": "^6.25.0",
     "base64-js": "^1.2.3",
@@ -71,6 +68,10 @@
     "uuid": "^2.0.2"
   },
   "devDependencies": {
+    "@valaa/core": "file:src/core",
+    "@valaa/prophet": "file:src/prophet",
+    "@valaa/script": "file:src/script",
+    "@valaa/tools": "file:src/tools",
     "babel-cli": "^6.24.1",
     "babel-core": "^6.26.0",
     "babel-eslint": "^7.1.0",

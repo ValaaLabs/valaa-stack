@@ -5,10 +5,7 @@
       "presets": ["es2015", "react", "stage-0"],
       "plugins": [
         "babel-plugin-transform-decorators-legacy",
-        ["babel-plugin-root-import", {
-          "rootPathPrefix": "~",
-          "rootPathSuffix": "src"
-        }],
+        ["babel-plugin-root-import", { "rootPathSuffix": "src" }],
         ["transform-runtime"],
         ["transform-flow-strip-types"]
       ]
@@ -19,24 +16,18 @@
       "presets": ["es2015", "react", "stage-0"],
       "plugins": [
         "babel-plugin-transform-decorators-legacy",
-        ["babel-plugin-root-import", {
-          "rootPathPrefix": "~",
-          "rootPathSuffix": "src"
-        }],
+        ["babel-plugin-root-import", { "rootPathSuffix": "src" }],
         ["transform-runtime"],
         ["transform-flow-strip-types"]
       ]
     },
 
-    "build-packages": {
+    "assemble-packages": {
       "ignore": ["node_modules/**/*"],
       "presets": ["es2015", "react", "stage-0"],
       "plugins": [
         "babel-plugin-transform-decorators-legacy",
-        ["module-resolver", {
-          "root": ["./src"],
-          "alias": { "~": "@valaa" }
-        }],
+        ["module-resolver", { "root": ["./src"], "alias": { "~": "@valaa" } }],
         ["transform-runtime"],
         ["transform-flow-strip-types"]
       ]
