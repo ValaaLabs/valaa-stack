@@ -1,7 +1,7 @@
 {
   "name": "@valaa/vault",
   "version": "0.30.0-prerelease",
-  "description": "Vault of Valaa open source tools and libraries. Expect this package to be split when the child components mature with more stable APIs and less cross-dependencies.",
+  "description": "Valaa common infrastructure tools and libraries monorepo.",
   "license": "MIT",
   "author": "Valaa Technologies Ltd",
   "private": false,
