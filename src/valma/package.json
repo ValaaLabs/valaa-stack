@@ -1,0 +1,20 @@
+{
+  "name": "valma",
+  "version": "0.30.0-prerelease",
+  "description": "A convenience Valaa CLI tool to context-dependent infrastructure command scripts",
+  "license": "MIT",
+  "author": "Valaa Technologies Ltd",
+  "private": false,
+
+  "valaa": { "type": "toolset", "domain": "infrastructure" },
+
+  "bin": {
+    "vlm": "bin/valma.js",
+    "valma": "bin/valma.js",
+    "valma-status": "bin/valma-status.js",
+    "valma-status-details": "bin/valma-status-details.js"
+  },
+  "dependencies": {
+    "shelljs": "^0.8.2"
+  }
+}

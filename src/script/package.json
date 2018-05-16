@@ -2,9 +2,13 @@
   "name": "@valaa/script",
   "version": "0.30.0-prerelease",
   "description": "Valaa Script API, schema",
-  "main": "index.js",
-  "author": "Valaa Technologies Ltd",
   "license": "MIT",
+  "author": "Valaa Technologies Ltd",
+  "private": false,
+
+  "valaa": { "type": "library", "domain": "kernel" },
+
+  "main": "index.js",
   "dependencies": {
     "acorn": "^5.0.3",
     "@valaa/core": "^0.30.0-prerelease"

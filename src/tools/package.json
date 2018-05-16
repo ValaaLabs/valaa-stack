@@ -2,9 +2,13 @@
   "name": "@valaa/tools",
   "version": "0.30.0-prerelease",
   "description": "Valaa Tools API",
-  "main": "index.js",
-  "author": "Valaa Technologies Ltd",
   "license": "MIT",
+  "author": "Valaa Technologies Ltd",
+  "private": false,
+
+  "valaa": { "type": "library", "domain": "kernel" },
+
+  "main": "index.js",
   "dependencies": {
     "base64-js": "^1.2.3",
     "fake-indexeddb": "^2.0.3",

@@ -2,9 +2,13 @@
   "name": "@valaa/prophet",
   "version": "0.30.0-prerelease",
   "description": "Valaa Prophet API, schema",
-  "main": "index.js",
-  "author": "Valaa Technologies Ltd",
   "license": "MIT",
+  "author": "Valaa Technologies Ltd",
+  "private": false,
+
+  "valaa": { "type": "library", "domain": "kernel" },
+
+  "main": "index.js",
   "dependencies": {
     "@valaa/script": "^0.30.0-prerelease"
   },

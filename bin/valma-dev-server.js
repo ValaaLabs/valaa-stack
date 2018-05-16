@@ -1,19 +1,15 @@
 #!/usr/bin/env node
 
-require("shelljs/global");
+const shell = require("shelljs");
 
-var contentBase = process.argv[2];
+const contentBase = process.argv[2] || "dist/public";
+if (!process.argv[2]) console.log("Defaulting to dist/public as the dev-webpack --content-base");
 
-if (!contentBase) {
-  console.log("Defaulting to dist/public as the dev-webpack --content-base");
-  contentBase = "dist/public";
-}
-
-if (!test("-d", contentBase)) {
+if (!shell.test("-d", contentBase)) {
   console.log("Content base directory", contentBase,
       "missing; creating and populating it (for this first time only) from ./revelations/");
-  mkdir("-p", contentBase);
-  cp("-R", "revelations/*", contentBase);
+  shell.mkdir("-p", contentBase);
+  shell.cp("-R", "revelations/*", contentBase);
 }
 
-exec("npm run dev-webpack " + contentBase);
+shell.exec(`npm run dev-webpack ${contentBase}`);

@@ -2,9 +2,13 @@
   "name": "@valaa/inspire",
   "version": "0.30.0-prerelease",
   "description": "Valaa Inspire application gateway",
-  "main": "index.js",
-  "author": "Valaa Technologies Ltd",
   "license": "MIT",
+  "author": "Valaa Technologies Ltd",
+  "private": false,
+
+  "valaa": { "type": "library", "domain": "gateway" },
+
+  "main": "index.js",
   "dependencies": {
     "babel-polyfill": "^6.9.1",
     "brace": "^0.9.1",
