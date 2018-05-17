@@ -3,7 +3,7 @@
 const shell = require("shelljs");
 
 const contentBase = process.argv[2] || "dist/public";
-if (!process.argv[2]) console.log("Defaulting to dist/public as the dev-webpack --content-base");
+if (!process.argv[2]) console.log("Defaulting to dist/public as the webpack-dev-server --content-base");
 
 if (!shell.test("-d", contentBase)) {
   console.log("Content base directory", contentBase,
@@ -12,4 +12,4 @@ if (!shell.test("-d", contentBase)) {
   shell.cp("-R", "revelations/*", contentBase);
 }
 
-shell.exec(`npm run dev-webpack ${contentBase}`);
+shell.exec(`npx -c "webpack-dev-server --inline --progress --open --host 0.0.0.0 --content-base ${contentBase}"`);

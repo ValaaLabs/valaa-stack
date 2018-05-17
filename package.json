@@ -10,10 +10,9 @@
     "domain": "kernel"
   },
   "scripts": {
-    "start": "node bin/valma-dev-server ",
-    "dev": "TARGET_ENV=local node bin/valma-dev-server ",
-    "prod": "TARGET_ENV=production node bin/valma-dev-server ",
-    "dev-webpack": "webpack-dev-server --inline --progress --open --host 0.0.0.0 --content-base ",
+    "start": "valma-revelations-dev-server ",
+    "dev": "TARGET_ENV=local valma-revelations-dev-server ",
+    "prod": "TARGET_ENV=production valma-revelations-dev-server ",
     "eslint": "eslint .",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "lint": "npm run eslint",
@@ -24,8 +23,7 @@
     "publish-packages": "NODE_ENV=assemble-packages node script/valma-publish-packages "
   },
   "bin": {
-    "valma-create-authollery": "bin/valma-create-authollery.js",
-    "valma-dev-server": "bin/valma-dev-server.js"
+    "valma-create-authollery": "bin/valma-create-authollery.js"
   },
   "jest": {
     "collectCoverage": false,
@@ -52,9 +50,9 @@
     "uglify-js": "git://github.com/mishoo/UglifyJS2#harmony-v2.8.22",
     "uglifyjs-webpack-plugin": "^1.0.0-rc.0",
     "webpack": "^3.8.1",
-    "webpack-dev-server": "^2.9.3"
   },
   "devDependencies": {
+    "@valos/revelations-dev-server": "file:packages/revelations-dev-server",
     "@valos/core": "file:packages/core",
     "@valos/prophet": "file:packages/prophet",
     "@valos/script": "file:packages/script",
