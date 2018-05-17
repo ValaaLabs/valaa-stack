@@ -5,9 +5,13 @@
   "license": "MIT",
   "author": "Valaa Technologies Ltd",
   "private": false,
-
-  "valaa": { "type": "library", "domain": "kernel" },
-
+  "publishConfig": {
+    "access": "public"
+  },
+  "valaa": {
+    "type": "library",
+    "domain": "kernel"
+  },
   "main": "index.js",
   "dependencies": {
     "base64-js": "^1.2.3",
@@ -17,8 +21,6 @@
     "object-hash": "^1.1.3",
     "reqwest": "^2.0.5",
     "text-encoding": "^0.6.4",
-    "uuid": "^2.0.2"
-  },
-  "devDependencies": {},
-  "peerDependencies": {}
+    "uuid": "^3.2.1"
+  }
 }

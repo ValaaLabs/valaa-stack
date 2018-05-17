@@ -5,9 +5,13 @@
   "license": "MIT",
   "author": "Valaa Technologies Ltd",
   "private": false,
-
-  "valaa": { "type": "toolset", "domain": "infrastructure" },
-
+  "publishConfig": {
+    "access": "public"
+  },
+  "valaa": {
+    "type": "toolset",
+    "domain": "infrastructure"
+  },
   "bin": {
     "vlm": "bin/valma.js",
     "valma": "bin/valma.js",

@@ -5,13 +5,19 @@
   "license": "MIT",
   "author": "Valaa Technologies Ltd",
   "private": false,
-
-  "valaa": { "type": "library", "domain": "gateway" },
-
+  "publishConfig": {
+    "access": "public"
+  },
+  "valaa": {
+    "type": "library",
+    "domain": "gateway"
+  },
   "main": "index.js",
   "dependencies": {
+    "@valos/engine": "^0.30.0-prerelease",
     "babel-polyfill": "^6.9.1",
     "brace": "^0.9.1",
+    "graphql": "^0.6.2",
     "immutable": "~3.7.4",
     "jss": "^8.1.0",
     "jss-css": "^3.0.0",
@@ -23,11 +29,6 @@
     "react-ace": "^5.8.0",
     "react-contextmenu": "^2.6.5",
     "react-dom": "^16.2.0",
-    "react-tap-event-plugin": "^3.0.2",
-    "@valos/engine": "^0.30.0-prerelease"
-  },
-  "devDependencies": {},
-  "peerDependencies": {
-    "graphql": ">= 0.6.2"
+    "react-tap-event-plugin": "^3.0.2"
   }
 }

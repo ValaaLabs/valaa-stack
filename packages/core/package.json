@@ -5,17 +5,18 @@
   "license": "MIT",
   "author": "Valaa Technologies Ltd",
   "private": false,
-
-  "valaa": { "type": "library", "domain": "kernel" },
-
+  "publishConfig": {
+    "access": "public"
+  },
+  "valaa": {
+    "type": "library",
+    "domain": "kernel"
+  },
   "main": "index.js",
   "dependencies": {
+    "@valos/tools": "^0.30.0-prerelease",
+    "graphql": "^0.6.2",
     "immutable": "~3.7.4",
-    "url-search-params": "^0.10.0",
-    "@valos/tools": "^0.30.0-prerelease"
-  },
-  "devDependencies": {},
-  "peerDependencies": {
-    "graphql": ">= 0.6.2"
+    "url-search-params": "^0.10.0"
   }
 }
