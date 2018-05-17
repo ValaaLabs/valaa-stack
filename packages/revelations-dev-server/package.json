@@ -5,6 +5,9 @@
   "license": "MIT",
   "author": "Valaa Technologies Ltd.",
   "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "valaa": {
     "type": "toolset",
     "domain": "gateway"
