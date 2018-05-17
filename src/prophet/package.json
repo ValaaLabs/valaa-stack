@@ -1,5 +1,5 @@
 {
-  "name": "@valaa/prophet",
+  "name": "@valos/prophet",
   "version": "0.30.0-prerelease",
   "description": "Valaa Prophet API, schema",
   "license": "MIT",
@@ -10,7 +10,7 @@
 
   "main": "index.js",
   "dependencies": {
-    "@valaa/script": "^0.30.0-prerelease"
+    "@valos/script": "^0.30.0-prerelease"
   },
   "devDependencies": {},
   "peerDependencies": {

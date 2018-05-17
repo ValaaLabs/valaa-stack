@@ -21,7 +21,7 @@ export default class Discourse extends Valker {
   }
 
   /**
-   * kuery - Run given kuery starting from given head. See @valaa/core/VALK
+   * kuery - Run given kuery starting from given head. See @valos/core/VALK
    *
    * @param  {type} kuery           description
    * @param  {type} state           description

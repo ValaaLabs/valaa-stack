@@ -11,7 +11,7 @@ import { createNativeIdentifier, isNativeIdentifier, getNativeIdentifierValue,
 
 export default Object.freeze({
   ...coreBuiltinSteppers,
-  // @valaa/script property builtin steppers
+  // @valos/script property builtin steppers
   "§let$$": function _createLetIdentifier (valker: Valker, head: any, scope: ?Object,
       [, value]: Object) {
     return createNativeIdentifier(
@@ -135,7 +135,7 @@ function getIdentifierOrPropertyValue (valker: Valker, head: any, scope: ?Object
     if ((typeof property !== "object") || (property === null)) return property;
     const ret = isNativeIdentifier(property) ? getNativeIdentifierValue(property)
         // FIXME(iridian): Leaking abstractions like there's no tomorrow. This (among many other
-        // parts of this file) belong to the @valaa/engine builtinSteppers-extension, which
+        // parts of this file) belong to the @valos/engine builtinSteppers-extension, which
         // doesn't exist, which is the reason these are not there.
         : (property._typeName === "Property") && isHostHead(valker.tryPack(property))
             ? property.extractValue({ transaction: valker }, eContainer.this)

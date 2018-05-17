@@ -27,7 +27,7 @@
       "presets": ["es2015", "react", "stage-0"],
       "plugins": [
         "babel-plugin-transform-decorators-legacy",
-        ["module-resolver", { "root": ["./src"], "alias": { "~": "@valaa" } }],
+        ["module-resolver", { "root": ["./src"], "alias": { "~": "@valos" } }],
         ["transform-runtime"],
         ["transform-flow-strip-types"]
       ]

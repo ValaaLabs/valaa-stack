@@ -40,7 +40,7 @@ export {
 /**
  * Returns an expanded ValaaScript Literal with given value.
  *
- * An expanded ValaaScript Literal behaves like @valaa/script/schema/Literal.literal except that it
+ * An expanded ValaaScript Literal behaves like @valos/script/schema/Literal.literal except that it
  * can only be used as part of an mutation (which recurses and evaluates any nested Kuery's,
  * \see evaluateToCommandData).
  *
@@ -56,7 +56,7 @@ export function literal (value: Kuery | Object | Array<any> | boolean | string |
 /**
  * Returns an expanded ValaaScript Identifier with given target.
  *
- * Like @valaa/script/schema/Identifier.identifier, but can only be used as part of a mutation.
+ * Like @valos/script/schema/Identifier.identifier, but can only be used as part of a mutation.
  * \see literal for more details.
  *
  * @export

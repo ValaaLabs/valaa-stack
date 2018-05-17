@@ -1,6 +1,6 @@
 // @flow
 
-// TODO(iridian): @valaa/inspire entry is possibly not the appropriate place for babel-polyfill:
+// TODO(iridian): @valos/inspire entry is possibly not the appropriate place for babel-polyfill:
 // at the moment it still is the top level entry point, but this might change.
 import "babel-polyfill";
 import injectTapEventPlugin from "react-tap-event-plugin";
@@ -36,7 +36,7 @@ export default (Valaa.createGateway = async function createGateway (...revelatio
   let combinedRevelation;
   const delayedPlugins = [];
   try {
-    exportValaaPlugin({ name: "@valaa/inspire", mediaDecoders });
+    exportValaaPlugin({ name: "@valos/inspire", mediaDecoders });
     if (Valaa.gateway) {
       throw new Error(`Valaa.gateway already exists (${
           Valaa.gateway.debugId()}). There can be only one.`);

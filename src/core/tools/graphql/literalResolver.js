@@ -32,7 +32,7 @@ export default function literalResolver (source, args, context) {
  * Returns a denormalized Literal representation of value
  */
 export function literalFromValue (value) {
-  // TODO(iridian): In a wrong place, Literal is defined in @valaa/script, this is @valaa/core
+  // TODO(iridian): In a wrong place, Literal is defined in @valos/script, this is @valos/core
   // TODO(iridian): Literal's currently only support String, Number and Boolean, everything else
   // goes to null silently. This might be surprising.
   const type = byValueType(value, {

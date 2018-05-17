@@ -1,5 +1,5 @@
 {
-  "name": "@valaa/vault",
+  "name": "@valos/vault",
   "version": "0.30.0-prerelease",
   "description": "Valaa common infrastructure tools and libraries monorepo.",
   "license": "MIT",
@@ -25,7 +25,7 @@
     "publish-packages": "NODE_ENV=assemble-packages node script/valma-publish-packages "
   },
   "bin": {
-    "valma-create-valama": "bin/valma-create-valama.js",
+    "valma-create-authollery": "bin/valma-create-authollery.js",
     "valma-dev-server": "bin/valma-dev-server.js"
   },
   "jest": {
@@ -111,10 +111,10 @@
     "text-encoding": "^0.6.4",
     "url-search-params": "^0.10.0",
     "uuid": "^2.0.2",
-    "@valaa/core": "file:src/core",
-    "@valaa/prophet": "file:src/prophet",
-    "@valaa/script": "file:src/script",
-    "@valaa/tools": "file:src/tools",
+    "@valos/core": "file:src/core",
+    "@valos/prophet": "file:src/prophet",
+    "@valos/script": "file:src/script",
+    "@valos/tools": "file:src/tools",
     "valma": "file:src/valma"
   }
 }

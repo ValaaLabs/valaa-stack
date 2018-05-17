@@ -1,5 +1,5 @@
 {
-  "name": "@valaa/core",
+  "name": "@valos/core",
   "version": "0.30.0-prerelease",
   "description": "Valaa Core API, Schema",
   "license": "MIT",
@@ -12,7 +12,7 @@
   "dependencies": {
     "immutable": "~3.7.4",
     "url-search-params": "^0.10.0",
-    "@valaa/tools": "^0.30.0-prerelease"
+    "@valos/tools": "^0.30.0-prerelease"
   },
   "devDependencies": {},
   "peerDependencies": {

@@ -206,7 +206,7 @@ can be set up for that purpose.
 valma package commands: `vlm assemble-packages` `vlm publish-packages`
 
 
-## 4.4. Authorities utility layer is the valu deployments on infrastructure services
+## 4.4. Authorities utility layer is the authollery deployments on infrastructure services
 
 > `valos-vault-4.4.1`: Authorities utility payload is a set of service
 > APIs and their associated static content.
@@ -220,20 +220,20 @@ infrastructure domains (such as the `partitions` utility).
 > external infrastructure provider but can be also generated.
 
 The upstream git repositories for authority payloads are called
-VALaa aUthority or `valu` repositories. Updates to the authority
-payloads are primarily done as modifications to the corresponding valu
-repository and then distributing those via release deployments.
+`valaa AUTHority contrOLLEr repositoRY`s or `authollery`s. Updates to
+the authority payloads are primarily done as modifications to the
+corresponding authollery and then distributing those via release
+deployments.
 
-> `valos-vault-4.4.3`: valu repositories must not be published as
-> packages.
+> `valos-vault-4.4.3`: autholleries must not be published as packages.
 
-While valu repositories make use of package.json and the npm dependency
-management this provides they can nevertheless contain considerable
-amounts of static content. Also, there should be no reason to depend
-on a valu repository. Automatic release deployment systems should have
-access to a valu repository directly for building the release.
+While autholleries make use of package.json and the npm dependency
+management this provides, they can also contain considerable amounts of
+static content. In addition there should be no reason to depend on
+an authollery. Automatic release deployment systems should have access
+to a authollery directly for building the release.
 
-valma valu commands: `vlm build-release` `vlm deploy-release`
+valma authollery commands: `vlm build-release` `vlm deploy-release`
 
 
 ### 4.4.1. Valaa authorities vs. ValOS authorities

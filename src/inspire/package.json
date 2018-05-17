@@ -1,5 +1,5 @@
 {
-  "name": "@valaa/inspire",
+  "name": "@valos/inspire",
   "version": "0.30.0-prerelease",
   "description": "Valaa Inspire application gateway",
   "license": "MIT",
@@ -24,7 +24,7 @@
     "react-contextmenu": "^2.6.5",
     "react-dom": "^16.2.0",
     "react-tap-event-plugin": "^3.0.2",
-    "@valaa/engine": "^0.30.0-prerelease"
+    "@valos/engine": "^0.30.0-prerelease"
   },
   "devDependencies": {},
   "peerDependencies": {

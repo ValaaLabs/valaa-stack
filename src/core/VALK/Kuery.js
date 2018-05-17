@@ -15,7 +15,7 @@ import wrapError, { inBrowser, dumpObject as _dumpObject } from "~/tools/wrapErr
  * the value of the final head.
  *
  * ```
- * import V from "@valaa/core/VALK";
+ * import V from "@valos/core/VALK";
  * const to5thDistantCoords = V
  *     .toField("positions")
  *     .filter(V.add(V.to("x"), V.to("y")).greaterThan(10))

@@ -35,7 +35,7 @@ export default function injectSchemaTypeBindings (Valaa: Object, scope: Object) 
     ".new": function new_ (valker: Valker, innerScope: ?Object, initialState: ?Object) {
       const actualInitialState = prepareInitialState(this, innerScope, initialState);
       // TODO(iridian): Replace valker.follower with some builtinStep when moving ValaaSpace to
-      // @valaa/script. Now this relies on valker always being a FalseProphetDiscourse/transaction.
+      // @valos/script. Now this relies on valker always being a FalseProphetDiscourse/transaction.
       const resource = valker.follower.create(this.name, actualInitialState,
           { transaction: valker });
       return resource;
@@ -175,7 +175,7 @@ export default function injectSchemaTypeBindings (Valaa: Object, scope: Object) 
             ""} multi-partition command between said partitions is possible).`
     )(function recombine (...duplicationDirectives) {
       // TODO(iridian): Replace valker.follower with some builtinStep when moving ValaaSpace to
-      // @valaa/script. Now this relies on valker always being a FalseProphetDiscourse/transaction.
+      // @valos/script. Now this relies on valker always being a FalseProphetDiscourse/transaction.
       return this.__callerValker__.follower.recombine(duplicationDirectives,
           { transaction: this.__callerValker__ });
     }),

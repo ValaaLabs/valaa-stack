@@ -4,7 +4,7 @@ import exportValaaPlugin from "~/tools/exportValaaPlugin";
 
 import ContentAPI from "./CoreContentAPI";
 
-export default exportValaaPlugin({ name: "@valaa/core", ContentAPI });
+export default exportValaaPlugin({ name: "@valos/core", ContentAPI });
 
 
 export {

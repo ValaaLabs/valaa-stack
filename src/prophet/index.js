@@ -7,7 +7,7 @@ import exportValaaPlugin from "~/tools/exportValaaPlugin";
 import ContentAPI from "./ProphetContentAPI";
 import schemeModules from "./schemeModules";
 
-export default exportValaaPlugin({ name: "@valaa/prophet", ContentAPI, schemeModules });
+export default exportValaaPlugin({ name: "@valos/prophet", ContentAPI, schemeModules });
 
 
 export { default as Discourse } from "./api/Discourse";

@@ -12,7 +12,7 @@ export default {
   valaa: deprecated({},
       "DEPRECATED: Section revelation.valaa is deprecated\n\tprefer revelation.gateway"),
   gateway: {
-    name: "@valaa/inspire",
+    name: "@valos/inspire",
     version: "",
     description: "Inspire - Valaa Browser Gateway",
     runtime: "",

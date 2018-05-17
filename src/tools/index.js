@@ -4,7 +4,7 @@ import exportValaaPlugin from "./exportValaaPlugin";
 
 import * as mediaDecoders from "./mediaDecoders";
 
-export default exportValaaPlugin({ name: "@valaa/tools", mediaDecoders });
+export default exportValaaPlugin({ name: "@valos/tools", mediaDecoders });
 
 
 export { default as valaaHash } from "./id/valaaHash";

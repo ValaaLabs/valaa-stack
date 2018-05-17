@@ -1,5 +1,5 @@
 {
-  "name": "@valaa/engine",
+  "name": "@valos/engine",
   "version": "0.30.0-prerelease",
   "description": "Valaa Engine API and Schema",
   "license": "MIT",
@@ -11,7 +11,7 @@
   "main": "index.js",
   "dependencies": {
     "immutable": "~3.7.4",
-    "@valaa/prophet": "^0.30.0-prerelease"
+    "@valos/prophet": "^0.30.0-prerelease"
   },
   "devDependencies": {},
   "peerDependencies": {

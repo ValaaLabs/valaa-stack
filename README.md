@@ -17,13 +17,13 @@ Valaa Stack is open source software released under an
 
 Vault is an aggregate repository with three main roles.
 
-- Vault is the authoritative upstream for all the primary `@valaa` 
-scoped npm es5 packages: `tools`, `core`, `script`, `prophet`, 
+- Vault is the authoritative upstream for all the primary `@valos`
+scoped npm es5 packages: `tools`, `core`, `script`, `prophet`,
 `engine` and `inspire`.
 - Vault provides a locally deployable and thus restricted but otherwise
 complete Valaa Stack for testing and hot-reloadable development.
-- Vault provides `@valaa/vault` npm package with the shared tools for
-creating and managing `Valaa Stack` deployment in general and 
+- Vault provides `@valos/vault` npm package with the shared tools for
+creating and managing `Valaa Stack` deployment in general and
 `Inspire Gateway` runtime deployments in specific.
 
 
@@ -35,7 +35,7 @@ npm install
 npm start
 ```
 
-This launches webpack dev-server at 0.0.0.0:8080 which serves the 
+This launches webpack dev-server at 0.0.0.0:8080 which serves the
 `Inspire Gateway` javascript runtime to the client browser accessing
 it. The gateway will deliver `Zero Editor` as its `ValaaSpace` entry
 site which is sourced locally from `./revelations/local-zero`.
@@ -43,10 +43,10 @@ site which is sourced locally from `./revelations/local-zero`.
 
 ### No remote authority plugins - limited persistence
 
-No remote content can be accessed and all content that is created is 
-persisted only locally inside the client browser IndexedDB cache. 
+No remote content can be accessed and all content that is created is
+persisted only locally inside the client browser IndexedDB cache.
 `ValaaSpace` content will thus survive page refreshes but can still be
-unpredictably lost. This can happen for example when the browser 
+unpredictably lost. This can happen for example when the browser
 clears its cache for new space.
 
 
@@ -110,19 +110,19 @@ be contained in a separate repository (as valma).
 For ease of development all primary packages still exist in the same
 repository. They might be gradually separated but as long as they
 remain their version numbers will progress in lock-step.
-@valaa/inspire is the top level entry point of the local development 
+@valos/inspire is the top level entry point of the local development
 environment `Inspire Gateway`.
 These packages have similarities in their structure. Those extending
-the schema provide a root-level ContentAPI.js. Several modules 
+the schema provide a root-level ContentAPI.js. Several modules
 provide an incremental test harness under */test/*TestHarness.
-@valaa/tools contains assorted generic tools. All packages share:
+@valos/tools contains assorted generic tools. All packages share:
 
 - dev-depends: `jest`, `eslint`, `flow`, `babel`, `webpack`, `npm`
 - depends: `lodash`, `graphql`, `es5`, `various polyfills`
 - concepts: `event sourcing`, `distributed infrastructure`, `es6`
 
 
-### @valaa/core
+### @valos/core
 
 The execution core. Provides the ability to `reduce` event streams
 into in-memory Valaa resources and their updates. Provides schema
@@ -135,13 +135,13 @@ inheritance which recursively inherits the sub-components of the
 prototype as transparent but selectively modifiable `ghosts`.
 Provides referential integrity to the resource model via `couplings`.
 
-- depends: `@valaa/tools`, `immutable`
+- depends: `@valos/tools`, `immutable`
 - exports: `Corpus`, `Command`, `VALK`, `CoreContentAPI`
 - ValaaSpace: `Resource`, `ResourceStub`, `Blob`, `Partition`
 - concepts: `ghost instancing`, `partitions`, `couplings`
 
 
-### @valaa/script
+### @valos/script
 
 Extends the core with ValaaScript. It is a semantic, non-syntactic
 extension of Javascript which seamlessly integrates Valaa resources
@@ -150,18 +150,18 @@ model and Valaa resource model by extensively extending the schema.
 Provides an implementation for ValaaScript via transpilation into an
 intermediate language in the form of VALK kueries.
 
-- depends: `@valaa/core`, `acorn`
+- depends: `@valos/core`, `acorn`
 - exports: `transpileValaaScript`, `VALSK`, `ScriptContentAPI`
 - ValaaSpace: `Scope`, `Property`
 - concepts: `ECMAScript2015`, `scope`, `transpilation`
 
 
-### @valaa/prophet
+### @valos/prophet
 
 Provides event stream connectivity. This is not just to remote
 authorities but also to local browser `IndexedDB` storage. Provides
 a non-authoritative in-memory repository `FalseProphet`, which wraps
-@valaa/core and @valaa/script. Provides command queueing and reformation
+@valos/core and @valos/script. Provides command queueing and reformation
 capabilities. Provides a client-side `ACID` `transaction` framework
 with transparent ValaaScript integration. Provides blob content
 caching and management pathways. Extends the schema with folder-like
@@ -170,13 +170,13 @@ provide fully offline mode readiness. Provides the backend event
 stream  connectivity reference implementation with AWS using simple
 REST lambdas and the AWS mqtt IoT as event pub-sub.
 
-- depends: `@valaa/script`, `IndexedDB`, `AWS IoT/S3/DynamoDB`
+- depends: `@valos/script`, `IndexedDB`, `AWS IoT/S3/DynamoDB`
 - exports: `FalseProphet`, `PartitionConnection`, `ProphetContentAPI`
 - ValaaSpace: `Relatable`, `Entity`, `Media`, `Relation`,
 - concepts: `ACID`, `authorities`, `pub-sub`, `offline readiness`
 
 
-### @valaa/engine
+### @valos/engine
 
 Provides the live proxies (`Vrappers`) to ValaaSpace resources with
 `ValaaEngine`. Completes the modifcation and transaction frameworks
@@ -192,13 +192,13 @@ primitive, with which ValaaScript programs have full control over
 computation, stream connectivity and rendering environment inside the
 browser.
 
-- depends: `@valaa/prophet`
+- depends: `@valos/prophet`
 - exports: `ValaaEngine`, `Vrapper`, `VALEK`
 - ValaaSpace: `Valaa.*`, `Object integration`
 - concepts: `live kuery`, `code-as-content`, `3rd party libraries`
 
 
-### @valaa/inspire
+### @valos/inspire
 
 Provides the runtime entry point and UI rendering integration using
 `React`. Sets up the full ValaaStack. Manages initial authentication
@@ -210,7 +210,7 @@ writing natural HTML but also embedding it with fully live ValaaScript
 snippets. With promise-enabled rendering enables fully dynamic
 ValaaSpace integration with the UI.
 
-- depends: `@valaa/engine`, `React`, `brace`
+- depends: `@valos/engine`, `React`, `brace`
 - exports: `createInspireClient`,
 - ValaaSpace: `ValaaScope`, `If`, `ForEach`, `TextFileEditor`
 - concepts: `model-view`, `HTML5/CSS/JS`, `rapid devevelopment`

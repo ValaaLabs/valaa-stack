@@ -1,7 +1,7 @@
 # Valaa Prophet
 
-This package is likely the most important sub-package of the whole Valaa architecture. While other 
-packages provide tools and specifications which enable Valaa, @valaa/prophet *defines* Valaa. 
+This package is likely the most important sub-package of the whole Valaa architecture. While other
+packages provide tools and specifications which enable Valaa, @valos/prophet *defines* Valaa.
 The dense definition of Valaa ecosystem is:
   1. All content is stored inside *Valaa Resources*, which live inside
   2. a unified, global, fully cross-connected, immense *ValaaSpace*, which is segmented into
@@ -10,15 +10,15 @@ The dense definition of Valaa ecosystem is:
   5. a distributed network of high-level *Prophet* nodes, which provide the concrete
   6. *PartitionConnection* access points which enable users to access the upstream partitions.
 
-With these concepts this specification aims to implement the distributed event sourcing paradigm 
-between many independent downstream consumers and many independent upstream authorities 
-comprehensively, scalably and robustly. 
+With these concepts this specification aims to implement the distributed event sourcing paradigm
+between many independent downstream consumers and many independent upstream authorities
+comprehensively, scalably and robustly.
 
-This package also extends the @valaa/script schema with Media and Entity. Media is a file-like 
+This package also extends the @valos/script schema with Media and Entity. Media is a file-like
 content container. Via Prophets and PartitionConnections it allows reading, writing and interpreting
 the content. Entity in turn provides directory-like hierarchies for Medias and other Entitys.
 
-This package also extends command/event semantics defined in @valaa/core with the concepts of 
+This package also extends command/event semantics defined in @valos/core with the concepts of
 restricted and universal commands.
 
 This package also provides various Prophet component javascript implementations which can be used to
@@ -57,7 +57,7 @@ Those events have an incrementing serial number *eventId*. Together they form *t
 ##### 1.3.2.1. Low coupling saves network bandwidth and CPU ...
 
 When [partitions have low coupling in relation to each other](https://en.wikipedia.org/wiki/Coupling_(computer_programming))
-(ie. dependencies between partitions are clear and mostly one-directional) then bandwidth and 
+(ie. dependencies between partitions are clear and mostly one-directional) then bandwidth and
 computational resources can be saved. Partitions which contain information that is auxiliary to
 the application don't need to be loaded before needed. For example a game might have separate areas
 be in separate partitions and only start loading the next area when the player is about to finish
@@ -65,9 +65,9 @@ the previous one.
 
 ##### 1.3.2.2. ... and high cohesion saves time, spares nerves and minimizes overheads
 
-Loading a partition still loads all of its resources. With a sound partition design this is 
-advantageous. As a corollary to the low coupling above, when 
-[resources inside a partition have high cohesion](https://en.wikipedia.org/wiki/Cohesion_(computer_science)) 
+Loading a partition still loads all of its resources. With a sound partition design this is
+advantageous. As a corollary to the low coupling above, when
+[resources inside a partition have high cohesion](https://en.wikipedia.org/wiki/Cohesion_(computer_science))
 (ie. loading one resource means that it is very likely to load the others) it is useful to load them
 all together as it spares the network latency and overheads of repeated consequtive requests.
 
@@ -77,7 +77,7 @@ all together as it spares the network latency and overheads of repeated consequt
 
 ### 1.6. *PartitionConnection* provides an API for accessing an individual partition
 
-Receiving and sending information to a partition is done using a *PartitionConnection*. With the 
+Receiving and sending information to a partition is done using a *PartitionConnection*. With the
 the Prophet that provided the connection it manages four types of information streams:
   1. commands sent towards upstream
   2. events received towards downstream
@@ -93,23 +93,23 @@ Media interpretation is the process of retrieving content and converting it to a
 is useful for users. It is split into three stages: *retrieve* octet stream, *decode* as object
 representation and *integrate* in use site context.
 
-#### 2.3.1. Blob *retrieve* yields an ArrayBuffer via network download, cache hit, etc. 
-Persisted octet sequences are typically identified by their *blobId*, a well-defined content hash of 
-the whole octet sequence (and nothing else). Their in-memory representation is shared between all 
-consumers inside the same execution environment. 
+#### 2.3.1. Blob *retrieve* yields an ArrayBuffer via network download, cache hit, etc.
+Persisted octet sequences are typically identified by their *blobId*, a well-defined content hash of
+the whole octet sequence (and nothing else). Their in-memory representation is shared between all
+consumers inside the same execution environment.
 
 #### 2.3.2. Content ArrayBuffer is *decoded* into immutable, cacheable object representation based on mime
 The octet stream is decoded by decoder plugins associated with the requested mime type into some
-runtime object representation. This object representation can range anything from a flat text 
-decoding, through a complex javascript composite object representation into a full-blown component 
-with rich, asynchronous API's for accessing the content piece-meal. The requirement is that the 
-resulting dedoded object must be shareable and reusable between different consumers in unspecified 
+runtime object representation. This object representation can range anything from a flat text
+decoding, through a complex javascript composite object representation into a full-blown component
+with rich, asynchronous API's for accessing the content piece-meal. The requirement is that the
+resulting dedoded object must be shareable and reusable between different consumers in unspecified
 contexts. This implies that the decoded object should be immutable or provide an immutable API.
 
-##### 2.3.2.1. decoding "application/valaascript" 
-The application/valaascript decoder transpiles the octet stream into a *module program Kuery*. 
-This Kuery contains the rules for setting up an ES6-like module exports. The kuery can thus be 
-shared between different integration contexts (different ghosts of the same base media in different 
+##### 2.3.2.1. decoding "application/valaascript"
+The application/valaascript decoder transpiles the octet stream into a *module program Kuery*.
+This Kuery contains the rules for setting up an ES6-like module exports. The kuery can thus be
+shared between different integration contexts (different ghosts of the same base media in different
 instances, etc.)
 
 #### 2.3.2.2. decoding "application/javascript"
@@ -126,20 +126,20 @@ ES6-style bindings of the exported symbols as the object properties.
 
 TODO(iridian): Define this precisely. Consult an [analysis of CommonJS and ES Modules within NodeJS](https://medium.com/@giltayar/native-es-modules-in-nodejs-status-and-future-directions-part-i-ee5ea3001f71)
 [typescript ESM default interop with CJS](https://github.com/Microsoft/TypeScript/issues/2719) and
-[neufund default export ban](https://blog.neufund.org/why-we-have-banned-default-exports-and-you-should-do-the-same-d51fdc2cf2ad) 
-[ES6 exports immutable bindings, not values](https://github.com/rauschma/module-bindings-demo) 
-for some starting inspiration. 
+[neufund default export ban](https://blog.neufund.org/why-we-have-banned-default-exports-and-you-should-do-the-same-d51fdc2cf2ad)
+[ES6 exports immutable bindings, not values](https://github.com/rauschma/module-bindings-demo)
+for some starting inspiration.
 
 #### 2.3.3.2. integrating  "application/javascript"
-The contextual global scope for the integration is a javascript global host object associated with 
+The contextual global scope for the integration is a javascript global host object associated with
 the context resource.
 
 
 ## 3. Only *universal* commands are accepted by the upstream
 Restricted commands are commands created by downstream components and which target a particular
-partition but for which some of the relevant data is found only in other partitions (such as a 
-cross-partition DUPLICATED command). Before a restricted command can be sent upstream (from where it 
-might reach other users which might not even have permissions to access those other partitions) the 
+partition but for which some of the relevant data is found only in other partitions (such as a
+cross-partition DUPLICATED command). Before a restricted command can be sent upstream (from where it
+might reach other users which might not even have permissions to access those other partitions) the
 command must be *universalized* by explicitly adding all necessary data to the command.
 
 
@@ -149,4 +149,4 @@ command must be *universalized* by explicitly adding all necessary data to the c
 
 ### 4.2. The *Scribe* provides partition content, command queue and event log caching in IndexedDB.
 
-### 4.3. The *Oracle* manages connection information stream routing to authorities and Scribe 
+### 4.3. The *Oracle* manages connection information stream routing to authorities and Scribe

@@ -5,7 +5,7 @@ import exportValaaPlugin from "~/tools/exportValaaPlugin";
 import ContentAPI from "./ScriptContentAPI";
 import * as mediaDecoders from "./mediaDecoders";
 
-export default exportValaaPlugin({ name: "@valaa/script", ContentAPI, mediaDecoders });
+export default exportValaaPlugin({ name: "@valos/script", ContentAPI, mediaDecoders });
 
 
 export {
