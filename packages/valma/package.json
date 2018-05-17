@@ -1,6 +1,6 @@
 {
   "name": "valma",
-  "version": "0.30.0-prerelease",
+  "version": "0.30.0-prerelease.0",
   "description": "A convenience Valaa CLI tool to context-dependent infrastructure command scripts",
   "license": "MIT",
   "author": "Valaa Technologies Ltd.",
