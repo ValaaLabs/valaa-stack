@@ -2,7 +2,7 @@
   "name": "@valos/revelation-local-zero",
   "version": "0.30.0-prerelease",
   "description": "Valaa local Zero revelation, lands at valaa-local: Zero",
-  "author": "Valaa Technologies Ltd",
+  "author": "Valaa Technologies Ltd.",
   "license": "MIT",
   "private": false,
   "gateway": {
