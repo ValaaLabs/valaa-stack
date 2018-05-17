@@ -1,11 +1,11 @@
 .*
 
-node_modules
-
 coverage
 dist
 src
 packages
+**/test/**/*
+*test.js
 
 npm-debug.log
 yarn.lock

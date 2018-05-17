@@ -34,7 +34,7 @@ module.exports = {
     "./packages/inspire/index.js",
   ],
   output: {
-    path: __dirname + "/dist/public/valaa/inspire/",
+    path: __dirname + "/dist/revelations/valaa/inspire/",
     publicPath: "/",
     filename: "valaa-inspire.js",
   },

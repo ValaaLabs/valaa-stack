@@ -19,8 +19,8 @@
     "test": "jest",
     "test-e2e": "karma start",
     "build": "webpack ",
-    "assemble-packages": "NODE_ENV=assemble-packages script/valma-assemble-packages ",
-    "publish-packages": "NODE_ENV=assemble-packages script/valma-publish-packages ",
+    "assemble-packages": "NODE_ENV=assemble-packages script/valma-assemble-packages.js ",
+    "publish-packages": "NODE_ENV=assemble-packages script/valma-publish-packages.js ",
     "postinstall": "lerna bootstrap --hoist"
   },
   "bin": {
