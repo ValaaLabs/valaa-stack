@@ -10,7 +10,7 @@ shell.mkdir("-p", valaaDist);
 const valmaDirectory = `${packagesDist}/valma`;
 console.log("\nAssembling package 'valma' into", valmaDirectory, "\n");
 shell.rm("-rf", valmaDirectory);
-shell.cp("-R", `src/valma`, valmaDirectory);
+shell.cp("-R", `packages/valma`, valmaDirectory);
 
 // @valos/vault itself
 const vaultDirectory = `${valaaDist}/vault`;
@@ -20,11 +20,11 @@ shell.mkdir(vaultDirectory);
 shell.cp(`package.json`, vaultDirectory);
 shell.cp("-R", `bin`, vaultDirectory);
 
-// @valos primary sub-packages in src/*
+// @valos primary sub-packages in packages/*
 for (var subPackage of ["tools", "core", "script", "prophet", "engine", "inspire"]) {
   var subPackageDirectory = `${valaaDist}/${subPackage}`;
   console.log(`\nAssembling package '@valos/${subPackage}' into`, subPackageDirectory, "\n");
   shell.rm("-rf", subPackageDirectory);
-  shell.cp("-R", `src/${subPackage}`, subPackageDirectory);
-  shell.exec(`babel src/${subPackage} --out-dir ${subPackageDirectory}`);
+  shell.cp("-R", `packages/${subPackage}`, subPackageDirectory);
+  shell.exec(`babel packages/${subPackage} --out-dir ${subPackageDirectory}`);
 }

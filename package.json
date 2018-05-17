@@ -5,21 +5,20 @@
   "license": "MIT",
   "author": "Valaa Technologies Ltd",
   "private": false,
-
-  "valaa": { "type": "toolset", "domain": "kernel" },
-
+  "valaa": {
+    "type": "toolset",
+    "domain": "kernel"
+  },
   "scripts": {
     "start": "node bin/valma-dev-server ",
     "dev": "TARGET_ENV=local node bin/valma-dev-server ",
     "prod": "TARGET_ENV=production node bin/valma-dev-server ",
     "dev-webpack": "webpack-dev-server --inline --progress --open --host 0.0.0.0 --content-base ",
-
     "eslint": "eslint .",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "lint": "npm run eslint",
     "test": "jest",
     "test-e2e": "karma start",
-
     "build": "webpack ",
     "assemble-packages": "NODE_ENV=assemble-packages node script/valma-assemble-packages ",
     "publish-packages": "NODE_ENV=assemble-packages node script/valma-publish-packages "
@@ -36,9 +35,9 @@
       ".*/test"
     ],
     "verbose": true,
-    "testRegex": "src.*\\.test\\.js$",
+    "testRegex": "packages.*\\.test\\.js$",
     "moduleNameMapper": {
-      "\\.(css|less)$": "<rootDir>/src/tools/mocks/styleMock.js"
+      "\\.(css|less)$": "<rootDir>/packages/tools/mocks/styleMock.js"
     },
     "transform": {
       ".*": "<rootDir>/node_modules/babel-jest"
@@ -48,7 +47,7 @@
     "compression-webpack-plugin": "^1.1.11",
     "css-loader": "^0.26.1",
     "postcss-loader": "^2.0.8",
-    "shelljs": "^0.7.2",
+    "shelljs": "^0.8.2",
     "style-loader": "^0.13.1",
     "uglify-js": "git://github.com/mishoo/UglifyJS2#harmony-v2.8.22",
     "uglifyjs-webpack-plugin": "^1.0.0-rc.0",
@@ -56,6 +55,10 @@
     "webpack-dev-server": "^2.9.3"
   },
   "devDependencies": {
+    "@valos/core": "file:packages/core",
+    "@valos/prophet": "file:packages/prophet",
+    "@valos/script": "file:packages/script",
+    "@valos/tools": "file:packages/tools",
     "acorn": "^5.0.3",
     "babel-cli": "^6.24.1",
     "babel-core": "^6.26.0",
@@ -111,10 +114,6 @@
     "text-encoding": "^0.6.4",
     "url-search-params": "^0.10.0",
     "uuid": "^2.0.2",
-    "@valos/core": "file:src/core",
-    "@valos/prophet": "file:src/prophet",
-    "@valos/script": "file:src/script",
-    "@valos/tools": "file:src/tools",
-    "valma": "file:src/valma"
+    "valma": "file:packages/valma"
   }
 }

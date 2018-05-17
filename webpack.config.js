@@ -31,7 +31,7 @@ module.exports = {
   context: __dirname,
   devtool: "source-map",
   entry: [
-    "./src/inspire/index.js",
+    "./packages/inspire/index.js",
   ],
   output: {
     path: __dirname + "/dist/public/valaa/inspire/",
@@ -99,7 +99,7 @@ module.exports = {
             }
           },
         ],
-        include: /src/,
+        include: /packages/,
       }
     ]
   },

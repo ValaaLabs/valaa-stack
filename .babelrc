@@ -5,7 +5,7 @@
       "presets": ["es2015", "react", "stage-0"],
       "plugins": [
         "babel-plugin-transform-decorators-legacy",
-        ["babel-plugin-root-import", { "rootPathSuffix": "src" }],
+        ["babel-plugin-root-import", { "rootPathSuffix": "packages" }],
         ["transform-runtime"],
         ["transform-flow-strip-types"]
       ]
@@ -16,7 +16,7 @@
       "presets": ["es2015", "react", "stage-0"],
       "plugins": [
         "babel-plugin-transform-decorators-legacy",
-        ["babel-plugin-root-import", { "rootPathSuffix": "src" }],
+        ["babel-plugin-root-import", { "rootPathSuffix": "packages" }],
         ["transform-runtime"],
         ["transform-flow-strip-types"]
       ]
@@ -27,7 +27,7 @@
       "presets": ["es2015", "react", "stage-0"],
       "plugins": [
         "babel-plugin-transform-decorators-legacy",
-        ["module-resolver", { "root": ["./src"], "alias": { "~": "@valos" } }],
+        ["module-resolver", { "root": ["./packages"], "alias": { "~": "@valos" } }],
         ["transform-runtime"],
         ["transform-flow-strip-types"]
       ]
