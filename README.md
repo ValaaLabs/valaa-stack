@@ -1,4 +1,4 @@
-# Valaa Stack
+# @valos/vault provides `ValOS` - the Valaa Open System
 
 Distributed platform of platforms, with minimal threshold of entry
 for creating applications with familiar HTML5/CSS/JS and then
@@ -6,28 +6,30 @@ deploying, sharing and reusing not just the applications themselves,
 but modules and the content as well, using a unified, powerful
 resource model.
 
+## [ValOS specification and DevOps guide](DEVOPS.md)
+
+[Important but not first reading material](DEVOPS.md).
 
 ## Community
 
-Valaa Stack is open source software released under an
+Valaa Open System is open source software released under an
 [MIT license](https://github.com/ValaaLabs/inspire/blob/master/LICENSE).
 
+## @valos/vault repository in github.com/valaatech/vault
 
-## Valaa Vault in github.com/valaatech/vault
+@valos/vault repository has three main roles:
 
-Vault is an aggregate repository with three main roles.
-
-- Vault is the authoritative upstream for all the primary `@valos`
-scoped npm es5 packages: `tools`, `core`, `script`, `prophet`,
-`engine` and `inspire`.
-- Vault provides a locally deployable and thus restricted but otherwise
-complete Valaa Stack for testing and hot-reloadable development.
-- Vault provides `@valos/vault` npm package with the shared tools for
-creating and managing `Valaa Stack` deployment in general and
+- it is the [monorepo](https://medium.com/@luisvieira_gmr/building-large-scale-react-applications-in-a-monorepo-91cd4637c131)
+and the upstream for all the primary `@valos` npmjs.com packages:
+`tools`, `raem`, `script`, `prophet`, `engine` and `inspire`.
+- it provides a locally deployable, locally restricted but otherwise
+complete ValOS Stack for testing and hot-reloading development.
+- it provides `@valos/vault` npm package with the shared tools for
+creating and managing ValOS deployments in general and
 `Inspire Gateway` runtime deployments in specific.
 
 
-## Local Valaa Stack deployment
+## Local deployment of a restricted ValOS stack
 
 Local development web server can be launched like so:
 ```
@@ -105,13 +107,15 @@ Note: tools for managing reference authority deplyoments will likely
 be contained in a separate repository (as valma).
 
 
-## Primary Valaa packages
+## Monorepo of primary ValOS packages
 
-For ease of development all primary packages still exist in the same
-repository. They might be gradually separated but as long as they
-remain their version numbers will progress in lock-step.
+For ease of development all primary ValOS packages still exist in the
+same repository. Some of them might be gradually separated but as long
+as they remain their version numbers will progress in lock-step.
+
 @valos/inspire is the top level entry point of the local development
 environment `Inspire Gateway`.
+
 These packages have similarities in their structure. Those extending
 the schema provide a root-level ContentAPI.js. Several modules
 provide an incremental test harness under */test/*TestHarness.
@@ -122,46 +126,47 @@ provide an incremental test harness under */test/*TestHarness.
 - concepts: `event sourcing`, `distributed infrastructure`, `es6`
 
 
-### @valos/core
+### @valos/raem provides Valaa Resources And Events Model `ValaaRAEM` (/vælɑːɹɛem/)
 
-The execution core. Provides the ability to `reduce` event streams
-into in-memory Valaa resources and their updates. Provides schema
-definitions for `Resource` and other essential Valaa resource model
-interfaces. Provides a kuery language `VALK` for accessing and making
-limited manipulations to the resources. Provides the low level APIs
-for manipulating partitions. Implements `ghost instancing` for the
-Valaa resource model, an extension of the traditional prototypical
-inheritance which recursively inherits the sub-components of the
-prototype as transparent but selectively modifiable `ghosts`.
-Provides referential integrity to the resource model via `couplings`.
+Provides the central Valaa technologies: the Valaa Resource Model and
+the Valaa Event Model. Provides the connection between these in the
+form of `reducers` which convert event streams into in-memory Valaa
+resources and their updates. Provides schema definitions for `Resource`
+and other essential Valaa resource model interfaces. Provides a kuery
+language `VALK` for accessing and making limited manipulations to the
+resources. Provides the low level APIs for manipulating partitions.
+Implements `ghost instancing` for the Valaa resource model;
+a generalization extension of the traditional prototypical inheritance
+which recursively inherits the sub-components of the prototype as
+transparent but selectively modifiable `ghosts`. Provides referential
+integrity to the resource model via `couplings`.
 
 - depends: `@valos/tools`, `immutable`
-- exports: `Corpus`, `Command`, `VALK`, `CoreContentAPI`
+- exports: `Corpus`, `Command`, `VALK`, `RAEMContentAPI`
 - ValaaSpace: `Resource`, `ResourceStub`, `Blob`, `Partition`
 - concepts: `ghost instancing`, `partitions`, `couplings`
 
 
-### @valos/script
+### @valos/script extends Javascript with ValaaRAEM as `ValaaScript`
 
-Extends the core with ValaaScript. It is a semantic, non-syntactic
-extension of Javascript which seamlessly integrates Valaa resources
-with the Javascript object model. Bridges the gap between Javascript
-model and Valaa resource model by extensively extending the schema.
-Provides an implementation for ValaaScript via transpilation into an
-intermediate language in the form of VALK kueries.
+ValaaScript is a semantic, non-syntactic extension of Javascript which
+seamlessly integrates Valaa resources with the Javascript object model.
+Bridges the gap between Javascript model and ValaaRAEM by considerably
+extending the schema. Provides an implementation for ValaaScript via
+transpiling into VALK kueries as an intermediate language.
 
-- depends: `@valos/core`, `acorn`
+- depends: `@valos/raem`, `acorn`
 - exports: `transpileValaaScript`, `VALSK`, `ScriptContentAPI`
 - ValaaSpace: `Scope`, `Property`
 - concepts: `ECMAScript2015`, `scope`, `transpilation`
 
 
-### @valos/prophet
+### @valos/prophet provides ValaaRAEM stream components
 
 Provides event stream connectivity. This is not just to remote
 authorities but also to local browser `IndexedDB` storage. Provides
 a non-authoritative in-memory repository `FalseProphet`, which wraps
-@valos/core and @valos/script. Provides command queueing and reformation
+@valos/raem and @valos/script. Provides command queueing and reformation
 capabilities. Provides a client-side `ACID` `transaction` framework
 with transparent ValaaScript integration. Provides blob content
 caching and management pathways. Extends the schema with folder-like
@@ -176,7 +181,7 @@ REST lambdas and the AWS mqtt IoT as event pub-sub.
 - concepts: `ACID`, `authorities`, `pub-sub`, `offline readiness`
 
 
-### @valos/engine
+### @valos/engine provides the ValaaRAEM object mapper and computation engine
 
 Provides the live proxies (`Vrappers`) to ValaaSpace resources with
 `ValaaEngine`. Completes the modifcation and transaction frameworks
@@ -198,7 +203,7 @@ browser.
 - concepts: `live kuery`, `code-as-content`, `3rd party libraries`
 
 
-### @valos/inspire
+### @valos/inspire provides the ValOS browser gateway and DOM UI renderer
 
 Provides the runtime entry point and UI rendering integration using
 `React`. Sets up the full ValaaStack. Manages initial authentication

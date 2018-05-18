@@ -1,20 +1,20 @@
-# ValOS DevOps or grasping the Valaa Open System and dealing with the authorities
+# Valaa Open System DevOps, or how to grasp the ValOS and handle the authorities
 
 This document has two purposes. Firstly it provides the initial
-specification of Valaa Open System and secondly it serves as the
-introduction for [Development Operations](https://en.wikipedia.org/wiki/DevOps).
+specification of Valaa Open System (`ValOS`) and secondly it serves as
+the introduction for [Development Operations](https://en.wikipedia.org/wiki/DevOps).
 
-The main infrastructure concepts investigated in this document are the
+The main infrastructural concepts investigated in this document are the
 vertical, purpose and people oriented `domains` and the horizontal,
 service and tool oriented `utility layers`. Each domain makes use of
 many utility layers - each utility layer serves several domains.
 
-The main DevOps tools are `git` and `npm` boosted with the custom
+The main DevOps tools are `git` and `npm` reinforced with the custom
 Valaa Manager convenience tool `valma` (`vlm` on the command line).
 
-Most domains are specified in other documents and `valma` is simple.
-Thus utility layers form the bulk of this document and as such are
-investigated last.
+As most domains are specified in other documents and `valma` itself is
+trivial, the utility layers form the bulk of this document. They are
+thus investigated last.
 
 ## 1. ValOS specification
 
@@ -65,14 +65,15 @@ It is so that `kernel` is mostly about developers and the way they
 check out, design, implement, test, review, integrate and publish code;
 and likewise it is so that `infrastructure` is mostly about how DevOps
 agents mind automation, communication, monitoring & QA, diagnostics,
-reliability, risk management, improvement, etc.
+reliability, risk management, gradual improvement, etc.
 
 But it is also that `kernel` work involves DevOps concerns and that
-`infrastructure` work involves software development. A software must
-see the infrastructural ecosystem around them and where they are
-currently standing in it to understand their impact and consequences;
-likewise a DevOps agent must know about software development best
-practices to support their infrastructure development work.
+`infrastructure` work involves software development. A software
+developer must see the infrastructural ecosystem around them. Knowing
+where they are currently standing is necessary to understand the impact
+and consequences of their code. Likewise a DevOps agent must know about
+software development best practices to support their infrastructure
+development work.
 
 A person thus is never exclusively a software developer or a DevOps
 agent. Likewise also when project role calls for DevOps or when some
@@ -171,22 +172,23 @@ repositories. Making updates to such utility content thus requires:
 Step 3 can be automated by tooling in particular domains as a response
 to particularily formed git repository updates.
 
-### 4.2. Files utility layer is git repositories persisted typically in github
+### 4.2. Files utility layer has files committed in git repositories
 
 [git](https://git-scm.com/) is the industry standard for version
 managing sets of files in a non-centralized ecosystem. No additional
 tools are provided because there is no need.
 
-> `valos-vault-6.1`: ValOS tools should use git as the files provider.
+> `valos-vault-4.2.1`: ValOS tools should use git as the files
+> provider.
 
 While github.com is the de facto standard provider and the typical
 choice it must *not* be _required_.
 
-> `valos-vault-6.2`: All git providers must be fully supported by all
+> `valos-vault-4.2.2`: All git providers must be fully supported by all
 > ValOS tools and libraries.
 
 
-## 4.3. Packages utility layer is shared, versioned, dependable sets of files stored as npmjs.com packages
+## 4.3. Packages utility layer has shared, versioned, dependable sets of files published as npmjs.com packages
 
 > `valos-vault-4.3.1`: The packages utility payload is [npmjs.com packages](https://docs.npmjs.com/getting-started/packages)
 
@@ -206,32 +208,79 @@ can be set up for that purpose.
 valma package commands: `vlm assemble-packages` `vlm publish-packages`
 
 
-## 4.4. Authorities utility layer is the authollery deployments on infrastructure services
+## 4.4. Authorities utility layer has the authority deployments on infrastructure services
 
-> `valos-vault-4.4.1`: Authorities utility payload is a set of service
-> APIs and their associated static content.
+> `valos-vault-4.4.1`: A Valaa `authority` is uniquely identified by an
+> `authority URI`.
 
-Notably this includes site HTTP landing pages, ValOS gateway runtimes
-and other static files. Authority payload is primarily immutable; any
-dynamic content served via authority APIs belongs to other
-infrastructure domains (such as the `partitions` utility).
+[Read more about Valaa URIs](packages/raem/README.md).
 
-> `valos-vault-4.4.2`: Authorities payloads are typically provided by
-> external infrastructure provider but can be also generated.
+> `valos-vault-4.4.2`: A Valaa `authority` can contain Valaa
+> `partitions` and must provide a mechanism for accessing event logs
+> and blob content as well as for accepting and authorizing incoming
+> commands into authorized partition events.
 
-The upstream git repositories for authority payloads are called
-`valaa AUTHority contrOLLEr repositoRY`s or `authollery`s. Updates to
-the authority payloads are primarily done as modifications to the
-corresponding authollery and then distributing those via release
+Authorities are usually live deployments on some infrastructure and
+they provide service APIs as the required mechanisms.
+
+Stateless or in some way non-infrastructural authorities also exist but
+are specified elsewhere (they are considered degenerate, without
+upstream and with empty payload).
+
+[Read more about authorities](packages/prophet/README.md).
+
+> `valos-vault-4.4.3`: Authorities utility layer payload
+> (`authority payload`) is a set of deployed authority service APIs and
+> any associated static content.
+
+The payload here refers to the service deployments and their live APIs
+themselves and not any dynamic content delivered through them. Such
+dynamic content belongs to other domains (notably ValaaSpace content
+resides in the `partitions` utility layer, see below).
+
+The static content includes HTTP landing pages, site routes and their
+configurations, ValOS gateway and plugin runtimes and any other similar
+statically configured files.
+
+> `valos-vault-4.4.4`: An authority may have a valaa AUTHority
+> contrOLLERr repositoRY (`authollery`) as its upstream for managing
+> its payload.
+
+Particular authorities are naturally free to implement their
+operational architectures in any way they like. This said autholleries
+have a well-defined structure which valma authority tools make use of.
+
+Updates to the authority payloads are primarily done as modifications
+to the corresponding authollery and then distributing those via release
 deployments.
 
-> `valos-vault-4.4.3`: autholleries must not be published as packages.
+> `valos-vault-4.4.5`: An autholleriy should not be published as a
+> package.
 
 While autholleries make use of package.json and the npm dependency
 management this provides, they can also contain considerable amounts of
-static content. In addition there should be no reason to depend on
+static content. Also, there should be no reason to depend on
 an authollery. Automatic release deployment systems should have access
 to a authollery directly for building the release.
+
+> `valos-vault-4.4.6`: Information must not move from deployed
+> authorities back to authority utility layer upstream.
+
+Information flowing back upstream increases complexity, prevents
+decentralized and manual upstreams (there is a definite upstream which
+must be always accessible), and are a security concern (for
+programmatic access the downstream must have the upstream credentials).
+
+If a use case necessitating this arises, still seriously consider
+keeping the mutateable content separate from the upstream itself and
+instead have upstream only contain the necessary code and credentials
+to access this content.
+
+Note: this applies to architectural decisions and automations only.
+Interactive content in ValaaSpace is not limited from using an
+authollery to update authorities (although it is still recommended to
+keep such ValaaSpace applications deployments separate from the
+authorities they are used to control).
 
 valma authollery commands: `vlm build-release` `vlm deploy-release`
 
@@ -278,7 +327,7 @@ TODO(iridian): Figure out whether this is the actually most meaningful
                standard runtime is useful, but how useful actually?
 
 
-## 5. Kernel domain provides the core libraries
+## 5. Kernel domain provides the ValOS primary libraries
 
 It does, indeed (this section pending better understanding on how to
 write domain specifications).
