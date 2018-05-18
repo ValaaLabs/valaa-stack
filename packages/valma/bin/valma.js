@@ -6,6 +6,8 @@ const path = require("path");
 const commandPaths = ["script", "bin", "node_modules/.bin"];
 const commandPathNames = ["local", "distributed", "depended"];
 
+/* eslint-disable vars-on-top, no-var, no-loop-func, no-restricted-syntax */
+
 for (var newerValmaCandidateBasePath of commandPaths) {
   var valmaPathCandidate = path.join(process.cwd(), newerValmaCandidateBasePath, "valma.js");
   if (process.argv[1] === valmaPathCandidate) break;

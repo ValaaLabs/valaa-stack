@@ -9,6 +9,7 @@ if (!shell.test("-f", configPath)) {
   process.exit();
 }
 
+// eslint-disable-next-line
 const config = require(configPath);
 
 const valaa = config.valaa;
