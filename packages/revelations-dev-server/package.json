@@ -1,6 +1,6 @@
 {
   "name": "@valos/revelations-dev-server",
-  "version": "0.30.0-prerelease.0",
+  "version": "0.30.0-prerelease.1",
   "description": "Development tool for launching webpack-dev-server using copy of revelations/* as content",
   "license": "MIT",
   "author": "Valaa Technologies Ltd.",

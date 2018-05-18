@@ -1,6 +1,6 @@
 {
   "name": "@valos/inspire",
-  "version": "0.30.0-prerelease.0",
+  "version": "0.30.0-prerelease.1",
   "description": "Valaa Inspire application gateway",
   "license": "MIT",
   "author": "Valaa Technologies Ltd.",
@@ -14,7 +14,7 @@
   },
   "main": "index.js",
   "dependencies": {
-    "@valos/engine": "^0.30.0-prerelease.0",
+    "@valos/engine": "^0.30.0-prerelease.1",
     "babel-polyfill": "^6.9.1",
     "brace": "^0.9.1",
     "graphql": "^0.6.2",
