@@ -1,7 +1,7 @@
 // @flow
 
-import type { IdData } from "~/core/ValaaReference";
-import { Kuery } from "~/core/VALK";
+import type { IdData } from "~/raem/ValaaReference";
+import { Kuery } from "~/raem/VALK";
 
 import Vrapper from "~/engine/Vrapper";
 import { ValaaScriptKuery, pointer as _pointer, literal } from "~/script/VALSK";

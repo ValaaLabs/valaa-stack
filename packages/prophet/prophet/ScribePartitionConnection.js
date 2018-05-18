@@ -1,5 +1,5 @@
-import Command, { isCreatedLike, isTransactedLike } from "~/core/command";
-import { VRef, obtainVRef, getRawIdFrom } from "~/core/ValaaReference";
+import Command, { isCreatedLike, isTransactedLike } from "~/raem/command";
+import { VRef, obtainVRef, getRawIdFrom } from "~/raem/ValaaReference";
 
 import PartitionConnection from "~/prophet/api/PartitionConnection";
 import { MediaInfo, NarrateOptions, RetrieveMediaContent } from "~/prophet/api/Prophet";

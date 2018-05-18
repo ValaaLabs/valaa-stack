@@ -1,12 +1,12 @@
 // @flow
 import { GraphQLObjectType } from "graphql/type";
 
-import primaryField from "~/core/tools/graphql/primaryField";
+import primaryField from "~/raem/tools/graphql/primaryField";
 
-import Describable, { describableInterface } from "~/core/schema/Describable";
-import Discoverable from "~/core/schema/Discoverable";
-import ResourceStub from "~/core/schema/ResourceStub";
-import Resource from "~/core/schema/Resource";
+import Describable, { describableInterface } from "~/raem/schema/Describable";
+import Discoverable from "~/raem/schema/Discoverable";
+import ResourceStub from "~/raem/schema/ResourceStub";
+import Resource from "~/raem/schema/Resource";
 
 import Expression from "~/script/schema/Expression";
 

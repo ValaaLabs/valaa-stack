@@ -1,6 +1,6 @@
-import { created, transacted, fieldsSet } from "~/core/command/index";
-import { vRef } from "~/core/ValaaReference";
-import { createPartitionURI } from "~/core/tools/PartitionURI";
+import { created, transacted, fieldsSet } from "~/raem/command/index";
+import { vRef } from "~/raem/ValaaReference";
+import { createPartitionURI } from "~/raem/tools/PartitionURI";
 
 import { createProphetOracleHarness } from "~/prophet/test/ProphetTestHarness";
 

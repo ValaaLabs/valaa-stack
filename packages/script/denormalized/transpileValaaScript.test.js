@@ -1,7 +1,7 @@
 /* global jest describe expect beforeEach it */
 
-import { created } from "~/core/command";
-import { vRef } from "~/core/ValaaReference";
+import { created } from "~/raem/command";
+import { vRef } from "~/raem/ValaaReference";
 
 import { evaluateTestProgram } from "~/script/test/ScriptTestHarness";
 import { transpileValaaScriptBody } from "~/script";

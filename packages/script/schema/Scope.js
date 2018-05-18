@@ -1,9 +1,9 @@
 // @flow
 import { GraphQLList, GraphQLInterfaceType } from "graphql/type";
 
-import primaryField from "~/core/tools/graphql/primaryField";
-import { toManyOwnlings } from "~/core/tools/graphql/coupling";
-import { typeNameResolver } from "~/core/tools/graphql/typeResolver";
+import primaryField from "~/raem/tools/graphql/primaryField";
+import { toManyOwnlings } from "~/raem/tools/graphql/coupling";
+import { typeNameResolver } from "~/raem/tools/graphql/typeResolver";
 
 import Property from "./Property";
 

@@ -1,10 +1,10 @@
 // @flow
 
-import Command, { created, duplicated, destroyed } from "~/core/command";
-import type { Corpus } from "~/core/Corpus";
-import type { PartitionURI } from "~/core/tools/PartitionURI";
-import { dumpObject } from "~/core/VALK";
-import { addConnectToPartitionToError } from "~/core/tools/denormalized/partitions";
+import Command, { created, duplicated, destroyed } from "~/raem/command";
+import type { Corpus } from "~/raem/Corpus";
+import type { PartitionURI } from "~/raem/tools/PartitionURI";
+import { dumpObject } from "~/raem/VALK";
+import { addConnectToPartitionToError } from "~/raem/tools/denormalized/partitions";
 
 import Discourse from "~/prophet/api/Discourse";
 import Follower from "~/prophet/api/Follower";

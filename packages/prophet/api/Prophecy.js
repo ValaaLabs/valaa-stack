@@ -1,7 +1,7 @@
 // @flow
 
-import type Command from "~/core/command";
-import type { Story } from "~/core/redux/Bard";
+import type Command from "~/raem/command";
+import type { Story } from "~/raem/redux/Bard";
 
 export default class Prophecy {
   story: Story; // The convenience wrapper with top-level event as its prototype

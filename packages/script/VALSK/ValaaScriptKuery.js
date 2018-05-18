@@ -1,6 +1,6 @@
 // @flow
 
-import { Kuery } from "~/core/VALK";
+import { Kuery } from "~/raem/VALK";
 
 export default class ValaaScriptKuery extends Kuery {
   /**

@@ -14,7 +14,7 @@
   },
   "main": "index.js",
   "dependencies": {
-    "@valos/core": "^0.30.0-prerelease.0",
+    "@valos/raem": "^0.30.0-prerelease.0",
     "acorn": "^5.0.3",
     "graphql": "^0.6.2"
   }

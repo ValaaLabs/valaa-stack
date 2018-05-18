@@ -4,7 +4,7 @@ import { module as es2017module, body as es2017body } from "~/script/acorn/es201
 import ValaaScriptTranspiler from "~/script/acorn/ValaaScriptTranspiler";
 import VALSK from "~/script/VALSK";
 
-import { Kuery } from "~/core/VALK";
+import { Kuery } from "~/raem/VALK";
 
 const moduleTranspilerLookup = new Map();
 const bodyTranspilerLookup = new Map();

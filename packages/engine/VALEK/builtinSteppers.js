@@ -1,8 +1,8 @@
 // @flow
 
-import { Valker, BuiltinStep } from "~/core/VALK";
+import { Valker, BuiltinStep } from "~/raem/VALK";
 import { tryLiteral, /* tryFullLiteral,*/ tryUnpackLiteral }
-    from "~/core/VALK/builtinSteppers";
+    from "~/raem/VALK/builtinSteppers";
 
 import valaaScriptBuiltinSteppers from "~/script/VALSK/builtinSteppers";
 

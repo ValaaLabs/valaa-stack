@@ -1,8 +1,8 @@
 // @flow
 
-import { Kuery } from "~/core/VALK";
+import { Kuery } from "~/raem/VALK";
 
-import type { IdData } from "~/core/ValaaReference";
+import type { IdData } from "~/raem/ValaaReference";
 
 import { literal as _literal } from "~/script/schema/Literal";
 import { identifier } from "~/script/schema/Identifier";
@@ -22,7 +22,7 @@ export {
   dumpObject,
   isValaaFunction,
   toVAKON,
-} from "../../core/VALK";
+} from "../../raem/VALK";
 
 export {
   Kuery,

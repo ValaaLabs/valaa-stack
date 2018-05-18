@@ -1,15 +1,15 @@
 // @flow
 import { GraphQLObjectType, GraphQLNonNull, GraphQLString } from "graphql/type";
 
-import VALK from "~/core/VALK";
-import generatedField from "~/core/tools/graphql/generatedField";
-import primaryField from "~/core/tools/graphql/primaryField";
-import dataFieldValue from "~/core/tools/denormalized/dataFieldValue";
+import VALK from "~/raem/VALK";
+import generatedField from "~/raem/tools/graphql/generatedField";
+import primaryField from "~/raem/tools/graphql/primaryField";
+import dataFieldValue from "~/raem/tools/denormalized/dataFieldValue";
 
-import Data from "~/core/schema/Data";
+import Data from "~/raem/schema/Data";
 
-import LiteralValue from "~/core/schema/LiteralValue";
-import Tag from "~/core/schema/Tag";
+import LiteralValue from "~/raem/schema/LiteralValue";
+import Tag from "~/raem/schema/Tag";
 
 import invariantify from "~/tools/invariantify";
 

@@ -1,6 +1,6 @@
-import createContentAPI from "~/core/tools/graphql/createContentAPI";
+import createContentAPI from "~/raem/tools/graphql/createContentAPI";
 
-import { CoreContentAPI } from "~/core";
+import { RAEMContentAPI } from "~/raem";
 
 import Expression from "~/script/schema/Expression";
 import Identifier from "~/script/schema/Identifier";
@@ -13,7 +13,7 @@ import Scope from "~/script/schema/Scope";
 
 export default createContentAPI({
   name: "ValaaScriptContentAPI",
-  inherits: [CoreContentAPI],
+  inherits: [RAEMContentAPI],
   exposes: [
     Expression, Identifier, KueryExpression, Literal, Property, Relation, Relatable, Scope,
   ],

@@ -1,8 +1,8 @@
 // @flow
 
-import { created } from "~/core/command/index";
-import { vRef } from "~/core/ValaaReference";
-import { createGhostRawId } from "~/core/tools/denormalized/GhostPath";
+import { created } from "~/raem/command/index";
+import { vRef } from "~/raem/ValaaReference";
+import { createGhostRawId } from "~/raem/tools/denormalized/GhostPath";
 
 import VALEK from "~/engine/VALEK";
 import Vrapper from "~/engine/Vrapper";

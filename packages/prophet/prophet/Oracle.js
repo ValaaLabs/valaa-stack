@@ -1,9 +1,9 @@
 // @flow
 
-import type Command from "~/core/command";
+import type Command from "~/raem/command";
 import { PartitionURI, createPartitionURI, getPartitionRawIdFrom }
-    from "~/core/tools/PartitionURI";
-import { MissingPartitionConnectionsError } from "~/core/tools/denormalized/partitions";
+    from "~/raem/tools/PartitionURI";
+import { MissingPartitionConnectionsError } from "~/raem/tools/denormalized/partitions";
 
 import Prophet, { ClaimResult, NarrateOptions } from "~/prophet/api/Prophet";
 import Prophecy from "~/prophet/api/Prophecy";

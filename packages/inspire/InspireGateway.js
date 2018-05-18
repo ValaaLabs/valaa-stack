@@ -2,15 +2,15 @@
 
 import { Map as ImmutableMap } from "immutable";
 
-import { VRef } from "~/core/ValaaReference";
-import { createPartitionURI } from "~/core/tools/PartitionURI";
-import createRootReducer from "~/core/tools/createRootReducer";
-import createValidateActionMiddleware from "~/core/redux/middleware/validateAction";
-import createProcessCommandIdMiddleware from "~/core/redux/middleware/processCommandId";
+import { VRef } from "~/raem/ValaaReference";
+import { createPartitionURI } from "~/raem/tools/PartitionURI";
+import createRootReducer from "~/raem/tools/createRootReducer";
+import createValidateActionMiddleware from "~/raem/redux/middleware/validateAction";
+import createProcessCommandIdMiddleware from "~/raem/redux/middleware/processCommandId";
 import createProcessCommandVersionMiddleware from
-    "~/core/redux/middleware/processCommandVersion";
-import { createBardMiddleware } from "~/core/redux/Bard";
-import Corpus from "~/core/Corpus";
+    "~/raem/redux/middleware/processCommandVersion";
+import { createBardMiddleware } from "~/raem/redux/Bard";
+import Corpus from "~/raem/Corpus";
 
 import { AuthorityNexus, FalseProphet, Oracle, Prophet, Scribe } from "~/prophet";
 

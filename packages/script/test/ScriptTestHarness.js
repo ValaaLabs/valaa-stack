@@ -1,18 +1,18 @@
 // @flow
 
-import CoreTestHarness, { createCoreTestHarness } from "~/core/test/CoreTestHarness";
+import RAEMTestHarness, { createRAEMTestHarness } from "~/raem/test/RAEMTestHarness";
 import ScriptTestAPI from "~/script/test/ScriptTestAPI";
 import { Kuery, builtinSteppers } from "~/script/VALSK";
 
 export function createScriptTestHarness (options: Object, ...commandBlocks: any) {
-  return createCoreTestHarness({
+  return createRAEMTestHarness({
     name: "Script Test Harness", ContentAPI: ScriptTestAPI, TestHarness: ScriptTestHarness,
     corpusOptions: { builtinSteppers },
     ...options,
   }, ...commandBlocks);
 }
 
-export default class ScriptTestHarness extends CoreTestHarness {}
+export default class ScriptTestHarness extends RAEMTestHarness {}
 
 /**
  * Calls given expressionKuery against given corpus, setting given thisReference as the call this

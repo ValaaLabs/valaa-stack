@@ -1,5 +1,5 @@
 // @flow
-import { VRef } from "~/core/ValaaReference";
+import { VRef } from "~/raem/ValaaReference";
 
 import { transpileValaaScript, isNativeIdentifier, getNativeIdentifierValue } from "~/script";
 import { dumpObject as _dumpObject, Kuery, ValaaScriptKuery, isValaaFunction, toVAKON }

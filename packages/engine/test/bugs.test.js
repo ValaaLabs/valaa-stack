@@ -1,6 +1,6 @@
 
-import { created } from "~/core/command";
-import { vRef } from "~/core/ValaaReference";
+import { created } from "~/raem/command";
+import { vRef } from "~/raem/ValaaReference";
 
 import { createEngineTestHarness } from "~/engine/test/EngineTestHarness";
 import VALEK, { literal, pointer } from "~/engine/VALEK";

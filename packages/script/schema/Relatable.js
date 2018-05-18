@@ -1,15 +1,15 @@
 // @flow
 import { GraphQLInterfaceType, GraphQLList } from "graphql/type";
 
-import { toMany, toManyOwnlings } from "~/core/tools/graphql/coupling";
-import { typeNameResolver } from "~/core/tools/graphql/typeResolver";
-import primaryField from "~/core/tools/graphql/primaryField";
-import transientField from "~/core/tools/graphql/transientField";
+import { toMany, toManyOwnlings } from "~/raem/tools/graphql/coupling";
+import { typeNameResolver } from "~/raem/tools/graphql/typeResolver";
+import primaryField from "~/raem/tools/graphql/primaryField";
+import transientField from "~/raem/tools/graphql/transientField";
 
-import Discoverable from "~/core/schema/Discoverable";
-import Describable, { describableInterface } from "~/core/schema/Describable";
-import ResourceStub from "~/core/schema/ResourceStub";
-import Resource from "~/core/schema/Resource";
+import Discoverable from "~/raem/schema/Discoverable";
+import Describable, { describableInterface } from "~/raem/schema/Describable";
+import ResourceStub from "~/raem/schema/ResourceStub";
+import Resource from "~/raem/schema/Resource";
 
 import Relation from "~/script/schema/Relation";
 import Scope, { scopeInterface } from "~/script/schema/Scope";

@@ -1,8 +1,8 @@
 import { createPassageFromAction, createUniversalizableCommand, getActionFromPassage }
-    from "~/core/redux/Bard";
+    from "~/raem/redux/Bard";
 
-import Command, { transacted } from "~/core/command";
-import type { Corpus } from "~/core/Corpus";
+import Command, { transacted } from "~/raem/command";
+import type { Corpus } from "~/raem/Corpus";
 
 import { ClaimResult } from "~/prophet/api/Prophet";
 import Prophecy from "~/prophet/api/Prophecy";

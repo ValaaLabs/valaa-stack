@@ -13,3 +13,8 @@ into ValaaSpace as `Valaa` execution environment global scope
 primitive, with which ValaaScript programs have full control over
 computation, stream connectivity and rendering environment inside the
 browser.
+
+- depends: `@valos/prophet`
+- exports: `ValaaEngine`, `Vrapper`, `VALEK`
+- ValaaSpace: `Valaa.*`, `Object integration`
+- concepts: `live kuery`, `code-as-content`, `3rd party libraries`

@@ -1,6 +1,6 @@
 // @flow
 
-import { addStackFrameToError } from "~/core/VALK/StackTrace";
+import { addStackFrameToError } from "~/raem/VALK/StackTrace";
 
 import JSXDecoder from "~/inspire/mediaDecoders/JSXDecoder";
 import VALEK from "~/engine/VALEK";

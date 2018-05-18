@@ -3,10 +3,10 @@
 import { parse } from "acorn";
 import type { Node } from "~/script/acorn/es5/grammar";
 
-import { Kuery, dumpObject } from "~/core/VALK";
-import { addStackFrameToError, SourceInfoTag } from "~/core/VALK/StackTrace";
+import { Kuery, dumpObject } from "~/raem/VALK";
+import { addStackFrameToError, SourceInfoTag } from "~/raem/VALK/StackTrace";
 import { isBuiltinStep, getBuiltinStepName, getBuiltinStepArguments }
-    from "~/core/VALK/builtinSteppers";
+    from "~/raem/VALK/builtinSteppers";
 
 import Language from "~/script/acorn/Language";
 

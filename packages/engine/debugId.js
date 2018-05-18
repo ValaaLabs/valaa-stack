@@ -1,4 +1,4 @@
-import { getTransientTypeName } from "~/core/tools/denormalized/Transient";
+import { getTransientTypeName } from "~/raem/tools/denormalized/Transient";
 
 export default function debugId (object: any) {
   if (!object) return "null";

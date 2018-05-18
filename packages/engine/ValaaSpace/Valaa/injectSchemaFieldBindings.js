@@ -1,6 +1,6 @@
 import { GraphQLObjectType, GraphQLSchema } from "graphql/type";
 
-import getTypeInterfaces from "~/core/tools/graphql/getTypeInterfaces";
+import getTypeInterfaces from "~/raem/tools/graphql/getTypeInterfaces";
 
 import createSymbolAliases from "~/engine/ValaaSpace/createSymbolAliases";
 import { createHostFunctionDescriptor, createHostSymbolDescriptor }

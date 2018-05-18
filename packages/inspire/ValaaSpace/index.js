@@ -1,6 +1,6 @@
 // @flow
 
-import { denoteValaaBuiltinWithSignature } from "~/core/VALK";
+import { denoteValaaBuiltinWithSignature } from "~/raem/VALK";
 
 import globalHTML5BuiltinObjects from "./globalHTML5BuiltinObjects";
 import extendValaa from "./Valaa";

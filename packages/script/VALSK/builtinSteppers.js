@@ -1,16 +1,16 @@
 // @flow
 
-import { dumpKuery, dumpObject, Valker } from "~/core/VALK";
-import coreBuiltinSteppers, {
+import { dumpKuery, dumpObject, Valker } from "~/raem/VALK";
+import raemBuiltinSteppers, {
   tryLiteral, tryFullLiteral, tryUnpackLiteral, isHostHead, resolveTypeof, BuiltinStep,
-} from "~/core/VALK/builtinSteppers";
+} from "~/raem/VALK/builtinSteppers";
 
 import { createNativeIdentifier, isNativeIdentifier, getNativeIdentifierValue,
   setNativeIdentifierValue,
 } from "~/script/denormalized/nativeIdentifier";
 
 export default Object.freeze({
-  ...coreBuiltinSteppers,
+  ...raemBuiltinSteppers,
   // @valos/script property builtin steppers
   "§let$$": function _createLetIdentifier (valker: Valker, head: any, scope: ?Object,
       [, value]: Object) {

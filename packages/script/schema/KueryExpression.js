@@ -1,12 +1,12 @@
 // @flow
 import { GraphQLObjectType } from "graphql/type";
 
-import aliasField from "~/core/tools/graphql/aliasField";
-import primaryField from "~/core/tools/graphql/primaryField";
+import aliasField from "~/raem/tools/graphql/aliasField";
+import primaryField from "~/raem/tools/graphql/primaryField";
 
-import Data from "~/core/schema/Data";
+import Data from "~/raem/schema/Data";
 
-import LiteralValue from "~/core/schema/LiteralValue";
+import LiteralValue from "~/raem/schema/LiteralValue";
 
 import Expression, { expressionInterface } from "./Expression";
 

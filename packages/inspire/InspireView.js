@@ -2,7 +2,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import { vRefFromURI } from "~/core/ValaaReference";
+import { vRefFromURI } from "~/raem/ValaaReference";
 
 import Cog from "~/engine/Cog";
 import Vrapper from "~/engine/Vrapper";

@@ -1,4 +1,4 @@
-import { vRef } from "~/core/ValaaReference";
+import { vRef } from "~/raem/ValaaReference";
 import VALEK from "~/engine/VALEK";
 import { asyncRequest } from "~/tools";
 

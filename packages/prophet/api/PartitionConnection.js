@@ -1,7 +1,7 @@
 // @flow
 
-import { VRef } from "~/core/ValaaReference";
-import { PartitionURI, getPartitionRawIdFrom } from "~/core/tools/PartitionURI";
+import { VRef } from "~/raem/ValaaReference";
+import { PartitionURI, getPartitionRawIdFrom } from "~/raem/tools/PartitionURI";
 
 import Prophet, { MediaInfo, NarrateOptions } from "~/prophet/api/Prophet";
 

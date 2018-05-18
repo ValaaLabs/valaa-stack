@@ -1,6 +1,6 @@
 // @flow
 
-import { PartialRemovesTag } from "~/core/tools/denormalized/partialSequences";
+import { PartialRemovesTag } from "~/raem/tools/denormalized/partialSequences";
 import { BuiltinTypePrototype, ValaaPrimitive } from "~/script";
 
 import VALEK, { expressionFromValue, expressionFromOperation } from "~/engine/VALEK";

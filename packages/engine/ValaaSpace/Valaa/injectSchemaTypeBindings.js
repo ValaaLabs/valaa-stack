@@ -2,9 +2,9 @@
 
 import { Valker, denoteValaaBuiltinWithSignature, denoteDeprecatedValaaBuiltin,
   denoteValaaKueryFunction,
-} from "~/core/VALK";
-import { VRef, RRef } from "~/core/ValaaReference";
-import { createPartitionURI } from "~/core/tools/PartitionURI";
+} from "~/raem/VALK";
+import { VRef, RRef } from "~/raem/ValaaReference";
+import { createPartitionURI } from "~/raem/tools/PartitionURI";
 
 import { BuiltinTypePrototype, createNativeIdentifier, ValaaPrimitive } from "~/script";
 

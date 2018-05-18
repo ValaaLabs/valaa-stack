@@ -1,10 +1,10 @@
 // @flow
 import { GraphQLInterfaceType, GraphQLString } from "graphql/type";
-import { dataTypeResolver } from "~/core/tools/graphql/typeResolver";
-import generatedField from "~/core/tools/graphql/generatedField";
+import { dataTypeResolver } from "~/raem/tools/graphql/typeResolver";
+import generatedField from "~/raem/tools/graphql/generatedField";
 
-import Data, { dataInterface } from "~/core/schema/Data";
-import LiteralValue from "~/core/schema/LiteralValue";
+import Data, { dataInterface } from "~/raem/schema/Data";
+import LiteralValue from "~/raem/schema/LiteralValue";
 
 const INTERFACE_DESCRIPTION = "expression";
 

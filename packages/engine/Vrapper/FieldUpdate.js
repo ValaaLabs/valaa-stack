@@ -1,9 +1,9 @@
 // @flow
 
-import type { VALKOptions } from "~/core/VALK";
+import type { VALKOptions } from "~/raem/VALK";
 
 import { Prophecy } from "~/prophet";
-import { isCreatedLike } from "~/core/command";
+import { isCreatedLike } from "~/raem/command";
 
 import Vrapper from "~/engine/Vrapper";
 import { arrayFromAny, Forkable } from "~/tools";

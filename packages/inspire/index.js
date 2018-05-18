@@ -5,7 +5,7 @@
 import "babel-polyfill";
 import injectTapEventPlugin from "react-tap-event-plugin";
 
-import { getURIQueryField } from "~/core/tools/PartitionURI";
+import { getURIQueryField } from "~/raem/tools/PartitionURI";
 
 import InspireGateway from "~/inspire/InspireGateway";
 import { combineRevelationsLazily } from "~/inspire/Revelation";

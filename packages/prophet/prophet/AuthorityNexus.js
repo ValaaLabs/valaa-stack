@@ -1,6 +1,6 @@
 // @flow
 
-import { getValaaURI } from "~/core/tools/PartitionURI";
+import { getValaaURI } from "~/raem/tools/PartitionURI";
 
 import Prophet from "~/prophet/api/Prophet";
 

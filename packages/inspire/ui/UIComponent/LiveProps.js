@@ -5,8 +5,8 @@ import PropTypes from "prop-types";
 import { OrderedMap } from "immutable";
 
 import { asyncConnectToPartitionsIfMissingAndRetry, tryConnectToMissingPartitionsAndThen }
-    from "~/core/tools/denormalized/partitions";
-import { Kuery } from "~/core/VALK";
+    from "~/raem/tools/denormalized/partitions";
+import { Kuery } from "~/raem/VALK";
 
 import { FieldUpdate, getImplicitCallable } from "~/engine/Vrapper";
 

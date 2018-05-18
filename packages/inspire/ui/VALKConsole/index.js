@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-import { VRef } from "~/core/ValaaReference";
+import { VRef } from "~/raem/ValaaReference";
 
 import VALEK from "~/engine/VALEK";
 import UIComponent from "~/inspire/ui/UIComponent";

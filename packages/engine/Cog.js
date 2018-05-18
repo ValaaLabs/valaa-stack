@@ -1,7 +1,7 @@
 // @flow
 
-import type Command from "~/core/command/Command";
-import type { VALKOptions } from "~/core/VALK";
+import type Command from "~/raem/command/Command";
+import type { VALKOptions } from "~/raem/VALK";
 
 import { Discourse } from "~/prophet";
 

@@ -3,7 +3,7 @@ import React from "react";
 import PropTypes from "prop-types";
 
 import { asyncConnectToPartitionsIfMissingAndRetry }
-    from "~/core/tools/denormalized/partitions";
+    from "~/raem/tools/denormalized/partitions";
 
 import Vrapper, { VrapperSubscriber } from "~/engine/Vrapper";
 import VALEK, { dumpObject } from "~/engine/VALEK";

@@ -1,11 +1,11 @@
 // @flow
 import { GraphQLObjectType } from "graphql/type";
 
-import Describable from "~/core/schema/Describable";
-import Discoverable from "~/core/schema/Discoverable";
-import ResourceStub from "~/core/schema/ResourceStub";
-import Partition, { partitionInterface } from "~/core/schema/Partition";
-import Resource from "~/core/schema/Resource";
+import Describable from "~/raem/schema/Describable";
+import Discoverable from "~/raem/schema/Discoverable";
+import ResourceStub from "~/raem/schema/ResourceStub";
+import Partition, { partitionInterface } from "~/raem/schema/Partition";
+import Resource from "~/raem/schema/Resource";
 
 import Scope from "~/script/schema/Scope";
 

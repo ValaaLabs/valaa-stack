@@ -1,7 +1,7 @@
 // @flow
 
-import { created } from "~/core/command";
-import { vRef } from "~/core/ValaaReference";
+import { created } from "~/raem/command";
+import { vRef } from "~/raem/ValaaReference";
 import VALEK, { literal, pointer, kueryExpression } from "~/engine/VALEK";
 
 export default [{

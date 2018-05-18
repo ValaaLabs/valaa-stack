@@ -4,15 +4,15 @@ import VALEK, { Kuery, VALKOptions, dumpObject, rootScopeSelf,
   builtinSteppers as engineBuiltinSteppers,
 } from "~/engine/VALEK";
 
-import Command, { created, duplicated, recombined, isCreatedLike } from "~/core/command";
+import Command, { created, duplicated, recombined, isCreatedLike } from "~/raem/command";
 
-import { VRef, vRef, IdData, obtainVRef, getRawIdFrom } from "~/core/ValaaReference";
-import { createPartitionURI } from "~/core/tools/PartitionURI";
+import { VRef, vRef, IdData, obtainVRef, getRawIdFrom } from "~/raem/ValaaReference";
+import { createPartitionURI } from "~/raem/tools/PartitionURI";
 
 import Transient, { createTransient, getTransientTypeName }
-    from "~/core/tools/denormalized/Transient";
-import { isGhost } from "~/core/tools/denormalized/ghost";
-import layoutByObjectField from "~/core/tools/denormalized/layoutByObjectField";
+    from "~/raem/tools/denormalized/Transient";
+import { isGhost } from "~/raem/tools/denormalized/ghost";
+import layoutByObjectField from "~/raem/tools/denormalized/layoutByObjectField";
 
 import type { Prophet } from "~/prophet";
 

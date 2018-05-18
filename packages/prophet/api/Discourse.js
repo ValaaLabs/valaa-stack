@@ -1,4 +1,4 @@
-import Valker from "~/core/VALK/Valker";
+import Valker from "~/raem/VALK/Valker";
 
 import type { ClaimResult } from "~/prophet/api/Prophet";
 
@@ -21,7 +21,7 @@ export default class Discourse extends Valker {
   }
 
   /**
-   * kuery - Run given kuery starting from given head. See @valos/core/VALK
+   * kuery - Run given kuery starting from given head. See @valos/raem/VALK
    *
    * @param  {type} kuery           description
    * @param  {type} state           description

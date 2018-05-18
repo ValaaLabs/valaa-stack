@@ -1,7 +1,7 @@
-import type Command, { Action, AuthorizedEvent } from "~/core/command";
-import type { State } from "~/core/tools/denormalized/State";
+import type Command, { Action, AuthorizedEvent } from "~/raem/command";
+import type { State } from "~/raem/tools/denormalized/State";
 import { isRestrictedCommand, createUniversalizableCommand, getActionFromPassage }
-    from "~/core/redux/Bard";
+    from "~/raem/redux/Bard";
 
 import FalseProphetDiscourse from "~/prophet/prophet/FalseProphetDiscourse";
 import Follower from "~/prophet/api/Follower";
@@ -25,7 +25,7 @@ import { dumpObject, invariantify, invariantifyObject, invariantifyString, outpu
  * Finally, FalseProphet initiates the universalisation process, where so-called restricted commands
  * coming from downstream via .claim (whose meaning is well-defined only in current FalseProphet)
  * get rewritten as universal commands, whose meaning is well-defined for all clients.
- * This process is carried out and more closely documented by @valos/core/redux/Bard and the
+ * This process is carried out and more closely documented by @valos/raem/redux/Bard and the
  * reducers contained within the FalseProphet.
  */
 export default class FalseProphet extends Prophet {

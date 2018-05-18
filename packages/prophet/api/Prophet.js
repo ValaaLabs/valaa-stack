@@ -1,8 +1,8 @@
 // @flow
 
-import type Command from "~/core/command";
-import type { PartitionURI } from "~/core/tools/PartitionURI";
-import { VRef } from "~/core/ValaaReference";
+import type Command from "~/raem/command";
+import type { PartitionURI } from "~/raem/tools/PartitionURI";
+import { VRef } from "~/raem/ValaaReference";
 
 import Follower from "~/prophet/api/Follower";
 import type Prophecy from "~/prophet/api/Prophecy";

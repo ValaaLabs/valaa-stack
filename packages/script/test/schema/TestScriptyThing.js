@@ -1,25 +1,25 @@
 // @flow
 import { GraphQLObjectType, GraphQLList, GraphQLNonNull } from "graphql/type";
 
-import aliasField from "~/core/tools/graphql/aliasField";
-import primaryField from "~/core/tools/graphql/primaryField";
-import transientField from "~/core/tools/graphql/transientField";
+import aliasField from "~/raem/tools/graphql/aliasField";
+import primaryField from "~/raem/tools/graphql/primaryField";
+import transientField from "~/raem/tools/graphql/transientField";
 
-import { toOne, toMany, toManyOwnlings, toNone } from "~/core/tools/graphql/coupling";
+import { toOne, toMany, toManyOwnlings, toNone } from "~/raem/tools/graphql/coupling";
 
-import Blob from "~/core/schema/Blob";
-import Data from "~/core/schema/Data";
-import Discoverable, { discoverableInterface } from "~/core/schema/Discoverable";
-import ResourceStub from "~/core/schema/ResourceStub";
-import Partition, { partitionInterface } from "~/core/schema/Partition";
-import Resource from "~/core/schema/Resource";
+import Blob from "~/raem/schema/Blob";
+import Data from "~/raem/schema/Data";
+import Discoverable, { discoverableInterface } from "~/raem/schema/Discoverable";
+import ResourceStub from "~/raem/schema/ResourceStub";
+import Partition, { partitionInterface } from "~/raem/schema/Partition";
+import Resource from "~/raem/schema/Resource";
 
-import SemVer from "~/core/schema/SemVer";
-import Sprite from "~/core/schema/Sprite";
-import MediaType from "~/core/schema/MediaType";
+import SemVer from "~/raem/schema/SemVer";
+import Sprite from "~/raem/schema/Sprite";
+import MediaType from "~/raem/schema/MediaType";
 
-import TestDataGlue from "~/core/test/schema/TestDataGlue";
-import TestGlue from "~/core/test/schema/TestGlue";
+import TestDataGlue from "~/raem/test/schema/TestDataGlue";
+import TestGlue from "~/raem/test/schema/TestGlue";
 
 // TODO(iridian): This introduces library cross-dependence and should be replaced.
 import Scope, { scopeInterface } from "~/script/schema/Scope";
@@ -29,7 +29,7 @@ const OBJECT_DESCRIPTION = "testing partition";
 const TestScriptyThing = new GraphQLObjectType({
   name: "TestScriptyThing",
 
-  description: "An encompassing partition for testing core schema and tools.",
+  description: "An encompassing partition for testing RAEM schema and tools.",
 
   interfaces: () => [Partition, Scope, Discoverable, Resource, ResourceStub],
 

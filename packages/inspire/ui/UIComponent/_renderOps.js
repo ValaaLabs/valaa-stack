@@ -3,8 +3,8 @@
 import React from "react";
 import { OrderedMap } from "immutable";
 
-import { tryConnectToMissingPartitionsAndThen } from "~/core/tools/denormalized/partitions";
-import { Kuery } from "~/core/VALK";
+import { tryConnectToMissingPartitionsAndThen } from "~/raem/tools/denormalized/partitions";
+import { Kuery } from "~/raem/VALK";
 
 import Vrapper from "~/engine/Vrapper";
 

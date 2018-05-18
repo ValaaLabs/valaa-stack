@@ -1,15 +1,15 @@
 // @flow
 import { GraphQLObjectType, GraphQLString, GraphQLInt } from "graphql/type";
 
-import primaryField from "~/core/tools/graphql/primaryField";
-import { toOne } from "~/core/tools/graphql/coupling";
+import primaryField from "~/raem/tools/graphql/primaryField";
+import { toOne } from "~/raem/tools/graphql/coupling";
 
-import Blob from "~/core/schema/Blob";
-import Describable from "~/core/schema/Describable";
-import Discoverable from "~/core/schema/Discoverable";
-import ResourceStub from "~/core/schema/ResourceStub";
-import Resource from "~/core/schema/Resource";
-import MediaType from "~/core/schema/MediaType";
+import Blob from "~/raem/schema/Blob";
+import Describable from "~/raem/schema/Describable";
+import Discoverable from "~/raem/schema/Discoverable";
+import ResourceStub from "~/raem/schema/ResourceStub";
+import Resource from "~/raem/schema/Resource";
+import MediaType from "~/raem/schema/MediaType";
 import Scope from "~/script/schema/Scope";
 
 import Relatable, { relatableInterface } from "~/script/schema/Relatable";

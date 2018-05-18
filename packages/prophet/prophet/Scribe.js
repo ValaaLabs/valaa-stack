@@ -1,6 +1,6 @@
 // @flow
 
-import type { PartitionURI } from "~/core/tools/PartitionURI";
+import type { PartitionURI } from "~/raem/tools/PartitionURI";
 
 import Prophet, { NarrateOptions } from "~/prophet/api/Prophet";
 

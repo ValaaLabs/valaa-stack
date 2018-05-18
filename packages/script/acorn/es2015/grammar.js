@@ -2,7 +2,7 @@ import * as es5 from "~/script/acorn/es5/grammar";
 
 /* eslint-disable max-len */
 
-// Extensions to Core ESTree AST node types for ES2015 grammar, see https://github.com/estree/estree/blob/master/es2015.md
+// Extensions to core ESTree AST node types for ES2015 grammar, see https://github.com/estree/estree/blob/master/es2015.md
 
 // Programs
 

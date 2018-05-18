@@ -1,4 +1,4 @@
-import createContentAPI from "~/core/tools/graphql/createContentAPI";
+import createContentAPI from "~/raem/tools/graphql/createContentAPI";
 
 import EngineContentAPI from "~/engine/EngineContentAPI";
 import ProphetTestAPI from "~/prophet/test/ProphetTestAPI";

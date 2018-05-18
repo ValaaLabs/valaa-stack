@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { addStackFrameToError, SourceInfoTag } from "~/core/VALK/StackTrace";
+import { addStackFrameToError, SourceInfoTag } from "~/raem/VALK/StackTrace";
 
 
 import VALEK, { Kuery, EngineKuery, VS } from "~/engine/VALEK";

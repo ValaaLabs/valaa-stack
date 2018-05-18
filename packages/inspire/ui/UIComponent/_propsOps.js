@@ -1,7 +1,7 @@
 // @flow
 import isEqual from "lodash.isequal";
 
-import { Kuery } from "~/core/VALK";
+import { Kuery } from "~/raem/VALK";
 
 import Vrapper from "~/engine/Vrapper";
 

@@ -2,27 +2,27 @@
 import { GraphQLObjectType, isAbstractType } from "graphql/type";
 import { Iterable } from "immutable";
 
-import VALK, { VALKOptions, packedSingular } from "~/core/VALK";
+import VALK, { VALKOptions, packedSingular } from "~/raem/VALK";
 
 import { fieldsSet, addedToFields, removedFromFields, replacedWithinFields, isCreatedLike }
-    from "~/core/command";
+    from "~/raem/command";
 import { VRef, vRef, invariantifyId, getRawIdFrom, tryCoupledFieldFrom, expandIdDataFrom,
-    obtainVRef } from "~/core/ValaaReference";
-import { createPartitionURI, getPartitionRawIdFrom } from "~/core/tools/PartitionURI";
-import { tryElevateFieldValue } from "~/core/tools/denormalized/FieldInfo";
+    obtainVRef } from "~/raem/ValaaReference";
+import { createPartitionURI, getPartitionRawIdFrom } from "~/raem/tools/PartitionURI";
+import { tryElevateFieldValue } from "~/raem/tools/denormalized/FieldInfo";
 
-import dataFieldValue from "~/core/tools/denormalized/dataFieldValue";
-import Resolver from "~/core/tools/denormalized/Resolver";
-import type { State } from "~/core/tools/denormalized/State";
-import Transient from "~/core/tools/denormalized/Transient";
+import dataFieldValue from "~/raem/tools/denormalized/dataFieldValue";
+import Resolver from "~/raem/tools/denormalized/Resolver";
+import type { State } from "~/raem/tools/denormalized/State";
+import Transient from "~/raem/tools/denormalized/Transient";
 import { createGhostVRefInInstance, isMaterialized, createMaterializeGhostAction }
-    from "~/core/tools/denormalized/ghost";
+    from "~/raem/tools/denormalized/ghost";
 import { MissingPartitionConnectionsError, addConnectToPartitionToError }
-    from "~/core/tools/denormalized/partitions";
-import getObjectTransient from "~/core/tools/denormalized/getObjectTransient";
-import { getObjectRawField } from "~/core/tools/denormalized/getObjectField";
+    from "~/raem/tools/denormalized/partitions";
+import getObjectTransient from "~/raem/tools/denormalized/getObjectTransient";
+import { getObjectRawField } from "~/raem/tools/denormalized/getObjectField";
 
-import isResourceType from "~/core/tools/graphql/isResourceType";
+import isResourceType from "~/raem/tools/graphql/isResourceType";
 
 import { ValaaPrimitive } from "~/script";
 

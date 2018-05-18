@@ -50,7 +50,7 @@ shell.cp("-R", `bin`, vaultDirectory);
 
 // @valos primary sub-packages in packages/*
 /*
-for (var subPackage of ["tools", "core", "script", "prophet", "engine", "inspire"]) {
+for (var subPackage of ["tools", "raem", "script", "prophet", "engine", "inspire"]) {
   var subPackageDirectory = `${valosDist}/${subPackage}`;
   console.log(`\nAssembling package '@valos/${subPackage}' into`, subPackageDirectory, "\n");
   shell.rm("-rf", subPackageDirectory);

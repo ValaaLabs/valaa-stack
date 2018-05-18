@@ -1,7 +1,7 @@
 // @flow
 
-import type { VALKOptions } from "~/core/VALK";
-import { SourceInfoTag } from "~/core/VALK/StackTrace";
+import type { VALKOptions } from "~/raem/VALK";
+import { SourceInfoTag } from "~/raem/VALK/StackTrace";
 
 import { addExportsContainerToScope } from "~/script";
 

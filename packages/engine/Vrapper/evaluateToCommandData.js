@@ -1,7 +1,7 @@
 // @flow
 import { Iterable } from "immutable";
-import { isIdData } from "~/core/ValaaReference";
-import { Kuery } from "~/core/VALK";
+import { isIdData } from "~/raem/ValaaReference";
+import { Kuery } from "~/raem/VALK";
 import Vrapper from "~/engine/Vrapper";
 
 import { invariantifyObject } from "~/tools/invariantify";

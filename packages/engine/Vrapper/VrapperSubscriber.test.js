@@ -1,6 +1,6 @@
 // @flow
 
-import { created } from "~/core/command";
+import { created } from "~/raem/command";
 
 import VALEK, { Kuery, pointer, literal } from "~/engine/VALEK";
 import Vrapper, { VrapperSubscriber } from "~/engine/Vrapper";

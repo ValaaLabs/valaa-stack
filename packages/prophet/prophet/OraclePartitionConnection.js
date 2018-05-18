@@ -1,8 +1,8 @@
 // @flow
 
-import type Command from "~/core/command";
-import { createValaaURI } from "~/core/tools/PartitionURI";
-import { VRef } from "~/core/ValaaReference";
+import type Command from "~/raem/command";
+import { createValaaURI } from "~/raem/tools/PartitionURI";
+import { VRef } from "~/raem/ValaaReference";
 
 import PartitionConnection from "~/prophet/api/PartitionConnection";
 import { NarrateOptions, MediaInfo, RetrieveMediaContent } from "~/prophet/api/Prophet";

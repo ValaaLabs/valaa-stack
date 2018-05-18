@@ -1,6 +1,6 @@
 // @flow
 
-import type Kuery from "~/core/VALK/Kuery";
+import type Kuery from "~/raem/VALK/Kuery";
 
 import SimpleData from "~/tools/SimpleData";
 

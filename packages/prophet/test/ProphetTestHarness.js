@@ -1,10 +1,10 @@
 // @flow
 
 import { OrderedMap } from "immutable";
-import Command from "~/core/command";
+import Command from "~/raem/command";
 
 import { createTestPartitionURIFromRawId, createPartitionURI }
-    from "~/core/tools/PartitionURI";
+    from "~/raem/tools/PartitionURI";
 
 import ScriptTestHarness, { createScriptTestHarness } from "~/script/test/ScriptTestHarness";
 
