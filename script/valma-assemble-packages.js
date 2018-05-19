@@ -2,9 +2,9 @@
 
 const shell = require("shelljs");
 
-const packagesDist = "dist/publish";
-shell.rm("-rf", packagesDist);
-const valosDist = `${packagesDist}/@valos`;
+const publishDist = "dist/publish";
+shell.rm("-rf", publishDist);
+const valosDist = `${publishDist}/@valos`;
 shell.mkdir("-p", valosDist);
 
 var updatedPackages = shell.exec(`npx -c "lerna updated --json  --loglevel=silent"`);
@@ -18,7 +18,11 @@ shell.exec(`npx -c "lerna publish --skip-npm --yes --loglevel=silent"`);
 
 for (var updatedPackage of updatedPackages) {
   var name = updatedPackage.name;
-  var targetDirectory = `${packagesDist}/${name}`;
+  if (updatedPackage.private) {
+    console.log(`\nNOT assembling package '${name}' which is marked private`);
+    continue;
+  }
+  var targetDirectory = `${publishDist}/${name}`;
   var subPackage = (name === "valma")
       ? "valma"
       : name.match(/\/([^/]*)/)[1];
