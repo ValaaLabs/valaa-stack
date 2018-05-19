@@ -83,43 +83,60 @@ continuum.
 
 ## 3. `valma` - a convenience CLI to context-dependent command scripts
 
-> `valos-vault-3.1`: valma is installed with `npm install -g valma`
+valma (`vlm` in CLI) is a convenience tool for executing valaa scripts
+in package and repository contexts. It is a generalization of 'npx -c'
+behaviour, adding discoverability, ability to invoke global scripts
+and the ability to invoke multiple scripts at once using glob matching.
+
+> `valos-vault-3.1`: valma is installed with `npm install -g valma` or
+> as a package dependency.
 
 This installs the global CLI command `vlm` (as an alias for `valma`).
+At its core valma is a command dispatcher to `valma scripts` in
+various `command pools`.
 
-At its core valma is just a command dispatcher to
-`valma command scripts` in specific places.
+> `valos-vault-3.2`: valma searches the scripts first from the
+> package.json `scripts` pool, then from `./node_modules/.bin/`
+> `depends` pool and lastly (the OS-specific variant of) `/usr/bin`
+> `global` pool.
 
-> `valos-vault-3.2`: valma searches the category paths `./script`,
-> `./bin`, `./node_modules/.bin/` and (the OS-specific variant of)
-> `/usr/bin` in this order for a matching command script.
+For example typing `vlm status` in some directory context would forward
+the command to `package.json:script.valma-status` first if one exists
+and falling back to the more generic versions if not. The call
+eventually resolves at the global `/usr/bin/valma-status` - which calls
+`vlm status-*` invoking all valma `status scripts` (scripts prefixed
+with `valma-status-`) visible on the execution context pools.
 
-For example typing `vlm status` would forward the command to
-`./script/valma-status.js` first if one exists and falling back to the
-more generic versions if not, eventually resolving to the global
-`/usr/bin/valma-status`.
+> `valos-vault-3.3`: A package can export valma scripts using npm
+> package.json `bin` section and by prefixing the exported name with
+> `valma-` as usual. These scripts will be available for all packages
+> depending on this package in their `depends` pool.
 
-> `valos-vault-3.3`: Packages can add valma command scripts using the
-> npm package.json `bin` section and by prefixing the exported name
-> with `valma-`.
+Running `vlm` with no arguments lists all available commands grouped by
+pool in current directory context.
 
-> `valos-vault-3.4`: Running `vlm` with no arguments must list all
-> available commands grouped by category in current directory context.
+> `valos-vault-3.5`: valma should be used in programmatic contexts to
+> run valma scripts. When done so, valma must be added as a dependency.
 
-The usefulness of valma comes how these commands are now readily
-discoverable. For example any commands from depended packages appear
-under `depended` commands category.
+This happens just like with the CLI by using `vlm <command> [<args>]`.
+("npx -c" would be the alternative but it's slow and limited).
 
-> `valos-vault-3.5`: valma must not be used in programmatic contexts.
+> `valos-vault-3.5.1`: valma ensures that node environment is loaded
 
-Valma is a manual CLI tool for discoverability and convenience of use.
+The environment is loaded only once even for recursive script
+invokations.
 
-Programmatic tools should make use of the [`npm scripts`](https://docs.npmjs.com/misc/scripts)
-section and [`npx -c`](https://medium.com/@maybekatz/introducing-npx-an-npm-package-runner-55f7d4bd282b#21c4)
-directly. Notably `npx -c` allows the seamless execution of code as if
-it was in the `scripts` section: if the code tries to execute another
-script which is not found in the current `scripts` the script can still
-be found from a corresponding `bin`-export of some depended package.
+> `valos-vault-3.5.2`: valma ensures that 'vlm' is always found in path
+
+This is so that valma scripts can call 'vlm' even valma is not globally
+installed if valma has been installed as a dependency.
+
+> `valos-vault-3.5.3` valma ensures that the most specific 'vlm'
+> version is used to evaluate a command, preferring scripts over
+> depended over global.
+
+This is so that toolkits can precisely control the whole toolchain in
+their dependencies.
 
 
 ## 4. ValOS `utility` layer provides a particular operational service for all

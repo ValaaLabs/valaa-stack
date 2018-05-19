@@ -9,16 +9,4 @@ if (!shell.test("-f", configPath)) {
   process.exit();
 }
 
-// eslint-disable-next-line
-const config = require(configPath);
-
-const valaa = config.valaa;
-if (!valaa) {
-  console.log(`Package '${config.name}' is not a valaa repository (${
-      configPath}.json doesn't contain a .valaa section)`);
-  process.exit();
-}
-
-console.log(`${valaa.domain} ${valaa.type} repository '${config.name}' version ${config.version}`);
-
-shell.exec(`vlm status-details`);
+shell.exec(`vlm status-*`);

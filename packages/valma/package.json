@@ -14,11 +14,16 @@
   },
   "bin": {
     "vlm": "bin/valma.js",
-    "valma": "bin/valma.js",
     "valma-status": "bin/valma-status.js",
-    "valma-status-details": "bin/valma-status-details.js"
+    "valma-status-header": "bin/valma-status-header.js"
+  },
+  "scripts": {
+    "vlm": "node bin/valma.js",
+    "valma-status": "node bin/valma-status.js",
+    "valma-status-header": "node bin/valma-status-header.js"
   },
   "dependencies": {
+    "glob-to-regexp": "^0.4.0",
     "shelljs": "^0.8.2"
   }
 }
