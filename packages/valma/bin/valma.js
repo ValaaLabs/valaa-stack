@@ -1,188 +1,215 @@
 #!/usr/bin/env node
 
-const shell = require("shelljs");
-const yargs = require("yargs");
-/* eslint-disable vars-on-top, no-var, no-loop-func, no-restricted-syntax, no-cond-assign */
-
-const packageName = "package.json";
-const dependedPoolPath = "node_modules/.bin/";
-var globalPoolPath;
-
-function createCommonYargs () {
-  return yargs.option({
-    l: {
-      alias: "list", type: "boolean", default: false,
-      description: "Lists scripts matching the command glob"
-    },
-    n: {
-      alias: "no-node", type: "boolean", default: false,
-      description: "Don't add node environment"
-    }
-  });
-}
-
-var needNode;
-var shouldForward;
-
-var preYargv;
-
-var fullyBuiltin = (process.argv[2] === "--get-yargs-completions");
-if (!fullyBuiltin) {
-  preYargv = createCommonYargs().argv;
-  fullyBuiltin = preYargv.l || !preYargv._.length;
-  needNode = !process.env.npm_package_name;
-  shouldForward = needNode || (!process.env.VALMA_LOCAL && !process.env.VALMA_GLOBAL);
-}
-
-// console.log("ENTRY:", needNode, shouldForward, process.argv, preYargv);
-
-// Phase 1:
-// Load pools and forward to 'vlm' if needed (if a more specific 'vlm' is found or if the
-// node environment or 'vlm' needs to be loaded)
-
-function forwardToValma (forwardValmaPrefix) {
-  if (fullyBuiltin) return;
-
-  const path = require("path");
-
-  const hasGlobalValma = shell.which("vlm");
-  var prefix = needNode ? `npx -c "` : "node ";
-  var suffix = needNode ? `"` : "";
-  if (hasGlobalValma && !process.env.VALMA_GLOBAL) {
-    prefix = `VALMA_GLOBAL=${hasGlobalValma} ${prefix}`;
-  } else if (!process.env.VALMA_LOCAL) {
-    const valmaLocal = path.resolve(process.cwd(), forwardValmaPrefix || "bin");
-    prefix = `VALMA_LOCAL=${valmaLocal} PATH=$PATH:${valmaLocal} ${prefix}`;
-  }
-  const vlmPath = forwardValmaPrefix ? "vlm" : path.join("bin", "vlm");
-  const forwardArguments = process.argv.slice(2).map(a => JSON.stringify(a)).join(" ");
-  // console.log(`Forwarding to valma at: ${prefix}${forwardValmaPrefix}${vlmPath}${suffix}`);
-  shell.exec(`${prefix}${forwardValmaPrefix}${vlmPath} ${forwardArguments}${suffix}`);
-  process.exit();
-}
-
-var commandPools = [];
-
-var packageScripts;
-if (shell.test("-f", packageName)
-    && (packageScripts = JSON.parse(shell.head({ "-n": 100000 }, packageName)).scripts)) {
-      // if a package specifies scripts.vlm it must be stored inside bin/vlm to prevent inf-loop
-  if ((shouldForward || (process.argv[1].indexOf("bin/vlm") === -1))
-      && packageScripts.vlm) {
-    forwardToValma("");
-  }
-  commandPools.push({ name: "package", poolPath: "package.json:scripts.", source: packageScripts });
-}
-
-if (shell.test("-d", dependedPoolPath)) {
-  const dependedScripts = shell.ls("-lAR", dependedPoolPath);
-  if ((shouldForward || (process.argv[1].indexOf(process.cwd()) !== 0))
-      && dependedScripts.find(dependedFile => dependedFile.name === "vlm")) {
-    forwardToValma(dependedPoolPath);
-  }
-  commandPools.push({ name: "depended", poolPath: dependedPoolPath, source: dependedScripts });
-}
-
-const globalValmaPath = !process.env.VALMA_LOCAL
-    && (process.env.VALMA_GLOBAL || shell.which("vlm"));
-if (globalValmaPath) {
-  globalPoolPath = globalValmaPath.match(/(.*(\/|\\))vlm/)[1];
-  const globalScripts = shell.ls("-lAR", globalPoolPath);
-  if (shouldForward && globalScripts.find(globalFile => globalFile.name === "vlm")) {
-    forwardToValma(globalPoolPath);
-  }
-  commandPools.push({ name: "global", poolPath: globalPoolPath, source: globalScripts });
-}
-
-if (!fullyBuiltin && shouldForward) {
-  console.error("vlm: could not locate 'vlm' in any pool while trying to load node environment");
-  process.exit(-1);
-}
-
-// Phase 2: parse argv and extract the commands from the pools which match the requested command
-
 const minimatch = require("minimatch");
+const path = require("path");
+const shell = require("shelljs");
+
+/* eslint-disable vars-on-top, no-var, no-loop-func, no-restricted-syntax, no-cond-assign,
+                  import/no-dynamic-require
+*/
+
+var activePools = [];
+var command;
+
+const defaultPaths = {
+  packagePool: "scripts/",
+  dependedPool: "node_modules/.bin/",
+  globalPool: process.env.VALMA_GLOBAL || (shell.which("vlm") || "").slice(0, -3),
+};
+
+// Phase 1: Pre-load args with so-far empty pools to detect fully builtin commands (which don't
+// need forwarding).
+// console.log("Phase 1:", process.argv, defaultPaths.globalPool, process.env.VALMA_GLOBAL,
+//    process.env.VALMA_PATH, process.env.PATH);
+
+var yargs = require("yargs")
+    .option({
+      l: {
+        alias: "list", type: "boolean", default: false,
+        description: "Lists scripts matching the command glob"
+      },
+      n: {
+        alias: "no-node", type: "boolean", default: false,
+        description: "Don't add node environment"
+      },
+      v: {
+        alias: "verbose", default: false,
+        description: "Be noisy"
+      },
+      "package-pool": {
+        type: "string", default: defaultPaths.packagePool,
+        description: "Package pool path is the first pool to be searched"
+      },
+      "depended-pool": {
+        type: "string", default: defaultPaths.dependedPool,
+        description: "Depended pool path is the second pool to be searched"
+      },
+      "global-pool": {
+        type: "string", default: defaultPaths.globalPool || "",
+        description: "Global pool path is the third pool to be searched"
+      }
+    })
+    .completion("bash_completion", (current, argvSoFar) =>
+        [].concat(...activePools.map(pool => pool.listing.map(s => !isDirectory(s) && s.name)))
+          .filter(name => name && minimatch(name, `valma-${argvSoFar._[1] || ""}*`))
+          .map(name => name.slice(6)));
 
 // eslint-disable-next-line no-bitwise
 function isDirectory (candidate) { return candidate.mode & 0x4000; }
 
-const yargsIntermediate = createCommonYargs()
+var preYargv;
+var needNode;
+var shouldForward;
+var verbosity = 0;
 
-const yargv = yargsIntermediate.argv;
-
-const command = yargv._[0];
-const commandGlob = `valma-${command || "*"}`;
-
-// Have matching global command names execute first (while obeying overrides properly ofc.)
-commandPools.reverse();
-
-for (var pool of commandPools) {
-  pool.commands = {};
-  if (!Array.isArray(pool.source)) {
-    for (var key of Object.keys(pool.source)) {
-      if (minimatch(key, commandGlob)) {
-        pool.commands[key.slice(6)] = pool.source[key];
-      }
-    }
-  } else {
-    pool.source.forEach(script => {
-      if (minimatch(script.name, commandGlob) && !isDirectory(script)) {
-        pool.commands[script.name.slice(6)] = { script, pool };
-      }
-    });
-  }
+var fullyBuiltin = (process.argv[2] === "--get-yargs-completions");
+if (!fullyBuiltin) {
+  preYargv = yargs.help(false).argv;
+  command = preYargv._[0];
+  fullyBuiltin = preYargv.l || !preYargv._.length;
+  verbosity = preYargv.v ? [].concat(preYargv.v).length : 0;
+  needNode = !preYargv.noNode && !process.env.npm_package_name;
+  shouldForward = needNode || !process.env.VALMA_PATH;
 }
 
-if (!command || yargv.list) {
-  if (!yargv.list) console.log("Usage: vlm [-l] <command> [<args>]\n");
-  var align = 0;
-  for (var p of commandPools) {
-    Object.keys(p.commands).forEach(name => { if (name.length > align) align = name.length; });
-  }
-  for (var listPool of commandPools) {
-    if (!Object.keys(listPool.commands).length) {
-      console.log(`\t'${listPool.name}' pool empty (with "${listPool.poolPath}${commandGlob}")`);
-    } else {
-      console.log(`\t'${listPool.name}' pool commands (with "${
-          listPool.poolPath}${commandGlob}"):`);
-      Object.keys(listPool.commands).forEach(commandName => {
-        const cmd = listPool.commands[commandName];
-        console.log(commandName, `${" ".repeat(align - commandName.length)}:`,
-            `${typeof cmd === "string" ? cmd : `${listPool.poolPath}valma-${commandName}`}`);
-      });
-      console.log();
-    }
-  }
-  process.exit(0);
-}
+// Phase 2: Load pools and forward to 'vlm' if needed (if a more specific 'vlm' is found or if the
+// node environment or 'vlm' needs to be loaded)
+if (verbosity >= 2) console.log("Phase 2:", needNode, shouldForward, preYargv);
 
-const activeCommands = Object.assign({}, ...commandPools.map(p => p.commands));
+var moreSpecificValmaFound = false;
+[
+  { name: "package", path: (preYargv || defaultPaths).packagePool, rootPath: process.cwd() },
+  { name: "depended", path: (preYargv || defaultPaths).dependedPool, rootPath: process.cwd() },
+  { name: "global", path: (preYargv || defaultPaths).globalPool },
+].forEach(pool => {
+  if (!shell.test("-d", pool.path)) return;
+  activePools.push(pool);
+  pool.absolutePath = pool.rootPath ? path.resolve(pool.rootPath, pool.path) : pool.path;
+  pool.listing = shell.ls("-lAR", pool.path);
+  if (fullyBuiltin) return;
+  if (process.argv[1].slice(0, pool.absolutePath.length) === pool.absolutePath) {
+    moreSpecificValmaFound = true;
+  }
+  if (!shouldForward && moreSpecificValmaFound) return;
+  if (!pool.listing.find(file => (file.name === "vlm"))) return;
+  var prefix = needNode ? `npx -c '` : `node `;
+  var suffix = needNode ? `'` : ``;
+  if (!process.env.VALMA_PATH) {
+    prefix = `VALMA_PATH=${pool.absolutePath} PATH=${pool.absolutePath}:$PATH ${prefix}`;
+  }
+  if (!process.env.VALMA_GLOBAL && (preYargv || defaultPaths).globalPool) {
+    prefix = `VALMA_GLOBAL=${(preYargv || defaultPaths).globalPool} ${prefix}`;
+  }
+  const forwardArguments = process.argv.slice(2).map(a => JSON.stringify(a)).join(" ");
+  if (verbosity) {
+    console.log(`Forwarding to: ${prefix}${path.join(pool.absolutePath, "vlm")} ${
+        forwardArguments}${suffix}`);
+  }
+  shell.exec(`${prefix}${path.join(pool.absolutePath, "vlm")} ${forwardArguments}${suffix}`);
+  process.exit();
+});
 
-if (!Object.keys(activeCommands).length) {
-  if (command.indexOf("*") !== -1) process.exit(0);
-  console.log(`vlm: cannot find command '${command}' from pools:`,
-      ...commandPools.map(emptyPool => `"${path.join(emptyPool.poolPath, commandGlob)}"`));
+if (!fullyBuiltin && shouldForward) {
+  console.error("vlm: could not locate 'vlm' forward in any pool",
+      "while trying to load node environment variables");
   process.exit(-1);
 }
 
-const commandArgs = process.argv.slice(3).map(arg => JSON.stringify(arg)).join(" ");
+// Phase 3: parse argv properly against the command pools which match the requested command
+process.exit(callValma(
+    (typeof (preYargv || {}).help === "string") ? preYargv.help : command,
+    process.argv.slice(2)));
 
-var ret;
+function callValma (command_, argv) {
+  const commandGlob = `valma-${command_ || "*"}`;
+  const activeCommands = {};
+  if (verbosity >= 2) console.log("Phase 3:", commandGlob, argv);
 
-for (var executeePool of commandPools) {
-  for (var executeeName of Object.keys(executeePool.commands)) {
-    var commandContent = activeCommands[executeeName];
-    if (!commandContent) continue;
-    var dispatch;
-    if (typeof commandContent === "string") {
-      dispatch = `${commandContent} ${commandArgs}`;
-    } else {
-      dispatch = `${commandContent.pool.poolPath}valma-${executeeName} ${commandArgs}`;
-    }
-    // console.log(`Executing command '${dispatch}'`);
-    ret = shell.exec(dispatch);
-    delete activeCommands[executeeName];
+  for (var pool of activePools) {
+    pool.commands = {};
+    pool.listing.forEach(file => {
+      if (isDirectory(file) || !minimatch(file.name, commandGlob)) return;
+      var commandName = file.name.slice(6);
+      pool.commands[commandName] = { script: file, pool };
+      if (activeCommands[commandName]) return;
+      activeCommands[commandName] = pool.commands[commandName];
+      if (!preYargv || preYargv.list) return;
+      yargs = yargs.command(require(path.join(pool.absolutePath, file.name)));
+    });
   }
-}
 
-process.exit(ret.code);
+
+  // Phase 4: perform the full yargs run, possibly evaluating a singular matching command
+
+  var newDelays = [];
+  if (verbosity >= 2) console.log("Phase 4:", argv, newDelays, "fuck you", activeCommands);
+
+  const delayOptions = { vlm: (op, argv_, onDone) => newDelays.push({ op, argv: argv_, onDone }) };
+  function unwindDelays () {
+    var pendingDelays = newDelays;
+    newDelays = [];
+    for (var delay of pendingDelays) {
+      var ret = callValma(delay.op, [delay.op].concat(delay.argv));
+      if (delay.onDone) delay.onDone(delay.op, delay.argv, ret);
+      unwindDelays();
+    }
+  }
+
+  const yargv = yargs.help().parse(argv, delayOptions);
+  unwindDelays();
+
+  if (command_ && (command_.indexOf("*") === -1)) {
+    if (Object.keys(activeCommands).length) return 0;
+    console.log(`vlm: cannot find command '${command_}' from pools:`,
+        ...activePools.map(emptyPool => `"${path.join(emptyPool.path, commandGlob)}"`));
+    return -1;
+  }
+
+  // Phase 5: handle wildcard commands
+
+  if (verbosity >= 2) console.log("Phase 5:", yargv._);
+
+  // Have matching global command names execute first (while obeying overrides properly ofc.)
+  activePools.reverse();
+
+  if (!command_ || yargv.list) {
+    if (!yargv.list) console.log("Simple usage: vlm [--help] [-l | --list] <command> [-- <args>]\n");
+    var align = 0;
+    for (var p of activePools) {
+      Object.keys(p.commands).forEach(name => { if (name.length > align) align = name.length; });
+    }
+    for (var listPool of activePools) {
+      if (!Object.keys(listPool.commands).length) {
+        console.log(`\t'${listPool.name}' pool empty (with "${listPool.path}${commandGlob}")`);
+      } else {
+        console.log(`\t'${listPool.name}' pool commands (with "${
+            listPool.path}${commandGlob}"):`);
+        Object.keys(listPool.commands).forEach(commandName => {
+          console.log(commandName, `${" ".repeat(align - commandName.length)}:`,
+              `${listPool.path}valma-${commandName}`);
+        });
+        console.log();
+      }
+    }
+    return 0;
+  }
+
+  var ret = 0;
+
+  const commandArgs = yargv._.slice(1).map(arg => JSON.stringify(arg)).join(" ");
+  for (var activePool of activePools) {
+    for (var matchingCommandName of Object.keys(activePool.commands)) {
+      var content = activeCommands[matchingCommandName];
+      if (!content) continue;
+      if (verbosity) {
+        console.log(`Executing ${commandGlob} command: '${matchingCommandName} ${commandArgs}'`);
+      }
+      var module = require(path.join(content.pool.absolutePath, content.script.name));
+      yargs.command(module.command, module.describe, module.builder, module.handler)
+          .parse(`${matchingCommandName} ${commandArgs}`, delayOptions);
+      unwindDelays();
+      delete activeCommands[matchingCommandName];
+    }
+  }
+  return ret;
+}

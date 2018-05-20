@@ -18,9 +18,8 @@
     "valma-status-detail/header": "bin/valma-status-detail/header.js"
   },
   "scripts": {
-    "vlm": "node bin/valma.js",
-    "valma-status": "node bin/valma-status.js",
-    "valma-status-detail/header": "node bin/valma-status-detail/header.js"
+    "vlm": "node scripts/vlm",
+    "status": "npm run vlm status"
   },
   "dependencies": {
     "glob-to-regexp": "^0.4.0",

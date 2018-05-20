@@ -10,17 +10,18 @@
     "domain": "kernel"
   },
   "scripts": {
-    "start": "valma-revelations-dev-server ",
-    "dev": "TARGET_ENV=local valma-revelations-dev-server ",
-    "prod": "TARGET_ENV=production valma-revelations-dev-server ",
+    "start": "vlm revelations-dev-server ",
+    "dev": "TARGET_ENV=local vlm revelations-dev-server ",
+    "prod": "TARGET_ENV=production vlm revelations-dev-server ",
     "eslint": "eslint .",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "lint": "npm run eslint",
     "test": "jest",
     "test-e2e": "karma start",
     "build": "webpack ",
-    "assemble-packages": "NODE_ENV=assemble-packages script/valma-assemble-packages.js ",
-    "publish-packages": "NODE_ENV=assemble-packages script/valma-publish-packages.js ",
+    "assemble-packages": "vlm assemble-packages ",
+    "create-authollery": "vlm create-authollery ",
+    "publish-packages": "vlm publish-packages ",
     "postinstall": "lerna bootstrap --hoist"
   },
   "bin": {
@@ -83,7 +84,7 @@
     "style-loader": "^0.13.1",
     "uglify-js": "git://github.com/mishoo/UglifyJS2#harmony-v2.8.22",
     "uglifyjs-webpack-plugin": "^1.0.0-rc.0",
-    "valma": ">0.30.0-prerelease",
+    "valma": "file:packages/valma",
     "webpack": "^3.8.1"
   },
   "dependencies": {}
