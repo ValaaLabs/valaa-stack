@@ -15,15 +15,17 @@
   "bin": {
     "vlm": "bin/valma.js",
     "valma-status": "bin/valma-status.js",
-    "valma-status-header": "bin/valma-status-header.js"
+    "valma-status-detail/header": "bin/valma-status-detail/header.js"
   },
   "scripts": {
     "vlm": "node bin/valma.js",
     "valma-status": "node bin/valma-status.js",
-    "valma-status-header": "node bin/valma-status-header.js"
+    "valma-status-detail/header": "node bin/valma-status-detail/header.js"
   },
   "dependencies": {
     "glob-to-regexp": "^0.4.0",
-    "shelljs": "^0.8.2"
+    "minimatch": "^3.0.4",
+    "shelljs": "^0.8.2",
+    "yargs": "^11.0.0"
   }
 }

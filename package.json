@@ -58,8 +58,8 @@
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
     "babel-runtime": "^6.25.0",
-    "css-loader": "^0.26.1",
     "compression-webpack-plugin": "^1.1.11",
+    "css-loader": "^0.26.1",
     "eslint": "3.19.0",
     "eslint-config-airbnb": "^12.0.0",
     "eslint-import-resolver-babel-plugin-root-import": "^1.1.1",
@@ -83,7 +83,8 @@
     "style-loader": "^0.13.1",
     "uglify-js": "git://github.com/mishoo/UglifyJS2#harmony-v2.8.22",
     "uglifyjs-webpack-plugin": "^1.0.0-rc.0",
-    "valma": "file:packages/valma",
+    "valma": ">0.30.0-prerelease",
     "webpack": "^3.8.1"
-  }
+  },
+  "dependencies": {}
 }

@@ -9,4 +9,4 @@ if (!shell.test("-f", configPath)) {
   process.exit();
 }
 
-shell.exec(`vlm status-*`);
+shell.exec(`vlm -n status-detail/*`);
