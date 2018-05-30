@@ -56,6 +56,10 @@ yargs = yargs.version(false)
         alias: "list", type: "boolean", default: false, global: false,
         description: "Lists scripts which match the command",
       },
+      u: {
+        alias: "unlisted", type: "boolean", default: false, global: false, implies: "l",
+        description: "Lists unlisted scripts in listings and calls",
+      },
       n: {
         alias: "no-node", type: "boolean", default: false, global: false,
         description: "Don't add node environment",
@@ -195,14 +199,16 @@ async function main () {
 }
 
 async function callValmaWithEcho (command, argv = []) {
-  if (vlm.echo) console.log("->> vlm", command, ...argv);
+  if (vlm.echo) console.log("    ->> vlm", command, ...argv);
   const ret = await callValma(command, argv);
-  if (vlm.echo) console.log("<<- vlm", command, ...argv);
+  if (vlm.echo) console.log("    <<- vlm", command, ...argv);
   return ret;
 }
 
 async function callValma (command, argv = []) {
-  const commandGlob = _valmaGlobFromCommand(command || "*");
+  const commandGlob = (preYargv && preYargv.unlisted)
+      ? `{.,}valma-${command || ""}*`
+      : _valmaGlobFromCommand(command || "*");
   const activeCommands = {};
   if (verbosity >= 2) console.log("Phase 3, commandGlob:", commandGlob, ", argv:\n", argv, "\n");
   const restArgv = argv.slice(argv.indexOf(command) + 1);
@@ -292,9 +298,9 @@ async function callValma (command, argv = []) {
       // console.log("forwarding...\n\toptions:", yargs.getOptions(), "\n\tsubArgv:", subYargv,
       //     "\n\tinteractives:", interactiveOptions);
       await _tryInteractive(subYargv, interactiveOptions);
-      if (preYargv.echo && (matchingCommand !== command)) console.log("->> vlm", subCommand);
+      if (preYargv.echo && (matchingCommand !== command)) console.log("    ->> vlm", subCommand);
       await module.handler(subYargv);
-      if (preYargv.echo && (matchingCommand !== command)) console.log("<<- vlm", subCommand);
+      if (preYargv.echo && (matchingCommand !== command)) console.log("    <<- vlm", subCommand);
       delete activeCommands[matchingCommand];
     }
   }
@@ -374,7 +380,7 @@ function executeExternal (executable, argv = []) {
     if (verbosity) {
       console.log("vlm: executing command line: ", executable, argv);
     }
-    if (preYargv.echo) console.log("->>", executable, ...argv);
+    if (preYargv.echo) console.log("    ->>", executable, ...argv);
     const subprocess = spawn(executable, argv,
         { env: process.env, stdio: ["inherit", "inherit", "inherit"] });
     subprocess.on("exit", (code, signal) => {
@@ -382,7 +388,7 @@ function executeExternal (executable, argv = []) {
       else {
         _refreshActivePoolsAndMaybeForward();
         _reloadPackageAndValmaConfigs();
-        if (preYargv.echo) console.log("<<-", executable, ...argv);
+        if (preYargv.echo) console.log("    <<-", executable, ...argv);
         resolve();
       }
     });
@@ -400,9 +406,9 @@ function _outputSimpleUsage (yargv, commandGlob) {
   }
   for (const listPool of activePools) {
     if (!Object.keys(listPool.commands).length) {
-      console.log(`\t'${listPool.name}' pool empty (with "${listPool.path}${commandGlob}")`);
+      console.log(`\t'${listPool.name}' pool empty (matching "${listPool.path}${commandGlob}")`);
     } else {
-      console.log(`\t'${listPool.name}' pool commands (with "${
+      console.log(`\t'${listPool.name}' pool commands (matching "${
           listPool.path}${commandGlob}"):`);
       Object.keys(listPool.commands).sort().forEach(commandName => {
         console.log(commandName, `${" ".repeat(align - commandName.length)}:`,

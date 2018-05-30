@@ -1,4 +1,4 @@
-exports.command = ".status/10-authollery";
+exports.command = ".status-10-authollery";
 exports.summary = "displays the generic information header for the current repository";
 exports.describe = `${exports.summary}`;
 

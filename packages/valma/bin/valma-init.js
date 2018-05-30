@@ -52,7 +52,7 @@ exports.handler = async (yargv) => {
     if (answer.choice === "quit") return;
     if (answer.choice === "help") {
       console.log();
-      await vlm.callValma(".configure/.initialize", ["--describe"]);
+      await vlm.callValma(".configure.initialize", ["--describe"]);
       console.log();
       continue;
     }
@@ -62,13 +62,13 @@ exports.handler = async (yargv) => {
       break;
     }
     vlm.reinitialize = true;
-    await vlm.callValma(".configure/.initialize");
+    await vlm.callValma(".configure.initialize");
     console.log();
     console.log("You selected repository domain", vlm.packageConfig.valaa.domain, ":");
-    await vlm.callValma(`.configure/.domain/${vlm.packageConfig.valaa.domain}`, ["--describe"]);
+    await vlm.callValma(`.configure.domain-${vlm.packageConfig.valaa.domain}`, ["--describe"]);
     console.log();
     console.log("You selected repository type", vlm.packageConfig.valaa.type, ":");
-    await vlm.callValma(`.configure/.type/${vlm.packageConfig.valaa.type}`, ["--describe"]);
+    await vlm.callValma(`.configure.type-${vlm.packageConfig.valaa.type}`, ["--describe"]);
     justConfigured = true;
   }
 

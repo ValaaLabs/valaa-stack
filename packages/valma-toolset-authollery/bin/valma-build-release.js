@@ -42,5 +42,5 @@ exports.handler = (yargv) => {
   console.log("valma-build-release: building version", packageConfig.version, "of",
       packageConfig.name, "into", releaseDist);
 
-  return yargv.vlm.callValma(".build-release/**/*", releaseDist);
+  return yargv.vlm.callValma(".build-release-*", releaseDist);
 };

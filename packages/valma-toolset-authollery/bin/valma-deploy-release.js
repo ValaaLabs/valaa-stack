@@ -35,5 +35,5 @@ exports.handler = (yargv) => {
   console.log("\nvalma-deploy-release: deploying", packageConfig.name, packageConfig.version,
       "from", releaseDist);
 
-  return yargv.vlm.callValma(".deploy-release/**/*", releaseDist);
+  return yargv.vlm.callValma(".deploy-release-*", releaseDist);
 };

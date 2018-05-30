@@ -1,5 +1,3 @@
-const path = require("path");
-
 exports.command = "status [moduleglob]";
 exports.summary = "Display the status of the current repository and its valma modules";
 exports.describe = `${exports.summary
@@ -13,6 +11,5 @@ exports.handler = (yargv) => {
         "package.json does not exist or is not a file");
     return undefined;
   }
-  return yargv.vlm.callValma(path.posix.join(".status", yargv.moduleglob || "**/*"),
-      yargv._.slice(1));
+  return yargv.vlm.callValma(`.status-${yargv.moduleglob || ""}*`, yargv._.slice(1));
 };

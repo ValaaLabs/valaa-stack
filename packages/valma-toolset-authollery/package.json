@@ -13,8 +13,8 @@
     "domain": "infrastructure"
   },
   "bin": {
-    ".valma-configure/.type/.authollery/00-available-stacks": "bin/.valma-configure.authollery.available-stacks.js",
-    ".valma-status/10-authollery": "bin/.valma-status.authollery.js",
+    ".valma-configure.type.authollery-00-available-stacks": "bin/.valma-configure.type.authollery-00-available-stacks.js",
+    ".valma-status-10-authollery": "bin/.valma-status-10-authollery.js",
     "valma-build-release": "bin/valma-build-release.js",
     "valma-deploy-release": "bin/valma-deploy-release.js"
   },
