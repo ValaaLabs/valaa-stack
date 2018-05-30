@@ -1,16 +1,18 @@
-#!/usr/bin/env node
-
-const shell = require("shelljs");
 const path = require("path");
 
-exports.command = "status [glob]";
-exports.describe = "displays the valaa status of current repository via 'vlm status-detail/[glob]'";
-exports.builder = function builder (yargs) { return yargs; };
-exports.handler = function handler (argv) {
-  const configPath = path.join(process.cwd(), "package.json");
-  if (!shell.test("-f", configPath)) {
-    console.log(`Cannot find '${configPath}'`);
-    return;
+exports.command = "status [moduleglob]";
+exports.summary = "Display the status of the current repository and its valma modules";
+exports.describe = `${exports.summary
+    }. If moduleglob is specified limits the status those modules.`;
+
+exports.builder = (yargs) => yargs;
+
+exports.handler = (yargv) => {
+  if (!yargv.vlm.packageConfig) {
+    console.error("valma-status: current directory is not a repository;",
+        "package.json does not exist or is not a file");
+    return undefined;
   }
-  argv.vlm(`status-detail/${argv.glob || "*"}`, argv._.slice(1));
+  return yargv.vlm.callValma(path.posix.join(".status", yargv.moduleglob || "**/*"),
+      yargv._.slice(1));
 };

@@ -4,8 +4,9 @@ const shell = require("shelljs");
 const path = require("path");
 
 exports.command = "revelations-dev-server [contentBase]";
-exports.describe =
-    "launches a webpack-dev-server at localhost using given <contentBase> as content root.";
+exports.summary = "launches a webpack-dev-server at localhost.";
+exports.describe = `${exports.summary} using given <contentBase> as content root`;
+
 exports.builder = function builder (yargs) {
   return yargs
       .option({
@@ -32,17 +33,17 @@ exports.builder = function builder (yargs) {
         }
       });
 };
-exports.handler = function handler (argv) {
-  const contentBase = argv.contentBase || "dist/revelations";
+exports.handler = function handler (yargv) {
+  const contentBase = yargv.contentBase || "dist/revelations";
   if (!shell.test("-d", contentBase)) {
     console.log("Creating and populating an initially missing content base directory", contentBase,
-        `(for this first time only) from ${argv.revelations}`);
+        `(for this first time only) from ${yargv.revelations}`);
     shell.mkdir("-p", contentBase);
-    shell.cp("-R", path.join(argv.revelations, "*"), contentBase);
+    shell.cp("-R", path.posix.join(yargv.revelations, "*"), contentBase);
   }
   shell.exec(`npx -c "webpack-dev-server ${""
-        } ${argv.inline ? "--inline" : ""
-        } ${argv.progress ? "--progress" : ""
-        } ${argv.open ? "--open" : ""
-        } --host ${argv.host} --content-base ${contentBase}"`);
+        } ${yargv.inline ? "--inline" : ""
+        } ${yargv.progress ? "--progress" : ""
+        } ${yargv.open ? "--open" : ""
+        } --host ${yargv.host} --content-base ${contentBase}"`);
 };

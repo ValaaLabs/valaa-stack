@@ -1,5 +1,9 @@
 {
   "name": "valma",
+  "valaa": {
+    "type": "toolset",
+    "domain": "infrastructure"
+  },
   "version": "0.30.0-prerelease.3",
   "description": "A convenience Valaa CLI tool to context-dependent infrastructure command scripts",
   "license": "MIT",
@@ -8,21 +12,28 @@
   "publishConfig": {
     "access": "public"
   },
-  "valaa": {
-    "type": "toolset",
-    "domain": "infrastructure"
+  "scripts": {
+    "vlm": "node localbin/vlm"
   },
   "bin": {
     "vlm": "bin/valma.js",
+    "valma-configure": "bin/valma-configure.js",
+    "valma-init": "bin/valma-init.js",
     "valma-status": "bin/valma-status.js",
-    "valma-status-detail/header": "bin/valma-status-detail/header.js"
-  },
-  "scripts": {
-    "vlm": "node scripts/vlm",
-    "status": "npm run vlm status"
+    ".valma-configure/.initialize": "bin/.valma-configure/.initialize.js",
+    ".valma-configure/.domain/gateway": "bin/.valma-configure/.domain/gateway.js",
+    ".valma-configure/.domain/infrastructure": "bin/.valma-configure/.domain/infrastructure.js",
+    ".valma-configure/.domain/kernel": "bin/.valma-configure/.domain/kernel.js",
+    ".valma-configure/.domain/scheme": "bin/.valma-configure/.domain/scheme.js",
+    ".valma-configure/.type/authollery": "bin/.valma-configure/.type/authollery.js",
+    ".valma-configure/.type/library": "bin/.valma-configure/.type/library.js",
+    ".valma-configure/.type/monorepo": "bin/.valma-configure/.type/monorepo.js",
+    ".valma-configure/.type/toolset": "bin/.valma-configure/.type/toolset.js",
+    ".valma-status/10-header": "bin/.valma-status.10-header.js"
   },
   "dependencies": {
     "glob-to-regexp": "^0.4.0",
+    "inquirer": "^5.2.0",
     "minimatch": "^3.0.4",
     "shelljs": "^0.8.2",
     "yargs": "^11.0.0"

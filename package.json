@@ -24,9 +24,7 @@
     "publish-packages": "vlm publish-packages ",
     "postinstall": "lerna bootstrap --hoist"
   },
-  "bin": {
-    "valma-create-authollery": "bin/valma-create-authollery.js"
-  },
+  "bin": {},
   "jest": {
     "collectCoverage": false,
     "coveragePathIgnorePatterns": [
@@ -78,7 +76,6 @@
     "karma-chrome-launcher": "^2.2.0",
     "karma-jasmine": "^1.1.0",
     "karma-webpack": "^2.0.4",
-    "lerna": "^2.11.0",
     "postcss-loader": "^2.0.8",
     "shelljs": "^0.8.2",
     "style-loader": "^0.13.1",
