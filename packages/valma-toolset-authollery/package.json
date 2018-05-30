@@ -1,0 +1,28 @@
+{
+  "name": "@valos/valma-toolset-authollery",
+  "version": "0.30.0-prerelease.4",
+  "description": "A valma toolset for managing autholleries",
+  "license": "MIT",
+  "author": "Valaa Technologies Ltd.",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "valaa": {
+    "type": "toolset",
+    "domain": "infrastructure"
+  },
+  "bin": {
+    ".valma-configure/.type/.authollery/00-available-stacks": "bin/.valma-configure.authollery.available-stacks.js",
+    ".valma-status/10-authollery": "bin/.valma-status.authollery.js",
+    "valma-build-release": "bin/valma-build-release.js",
+    "valma-deploy-release": "bin/valma-deploy-release.js"
+  },
+  "dependencies": {
+    "lerna": "^2.11.0",
+    "shelljs": "^0.8.2"
+  },
+  "peerDependencies": {
+    "valma": "0.30.0-prerelease.3"
+  }
+}
