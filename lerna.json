@@ -1,5 +1,5 @@
 {
-  "version": "0.30.0-prerelease.3",
+  "version": "0.30.0-prerelease.4",
   "lerna": "2.11.0",
   "packages": [
     "packages/*"
