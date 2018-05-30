@@ -27,8 +27,8 @@
     ".valma-configure/.domain/scheme": "bin/.valma-configure/.domain/scheme.js",
     ".valma-configure/.type/authollery": "bin/.valma-configure/.type/authollery.js",
     ".valma-configure/.type/library": "bin/.valma-configure/.type/library.js",
-    ".valma-configure/.type/monorepo": "bin/.valma-configure/.type/monorepo.js",
     ".valma-configure/.type/toolset": "bin/.valma-configure/.type/toolset.js",
+    ".valma-configure/.type/vault": "bin/.valma-configure/.type/vault.js",
     ".valma-status/10-header": "bin/.valma-status.10-header.js"
   },
   "dependencies": {

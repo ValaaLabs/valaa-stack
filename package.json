@@ -6,7 +6,7 @@
   "author": "Valaa Technologies Ltd.",
   "private": false,
   "valaa": {
-    "type": "monorepo",
+    "type": "vault",
     "domain": "kernel"
   },
   "scripts": {
@@ -44,6 +44,7 @@
   "devDependencies": {
     "@valos/revelations-dev-server": "file:packages/revelations-dev-server",
     "@valos/valma-toolset-authollery": "file:packages/valma-toolset-authollery",
+    "@valos/valma-toolset-vault": "file:packages/valma-toolset-vault",
     "babel-cli": "^6.24.1",
     "babel-core": "^6.26.0",
     "babel-eslint": "^7.1.0",

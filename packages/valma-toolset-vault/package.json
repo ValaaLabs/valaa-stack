@@ -1,0 +1,26 @@
+{
+  "name": "@valos/valma-toolset-vault",
+  "version": "0.30.0-prerelease.3",
+  "description": "A valma toolset for managing vault package monorepositories",
+  "license": "MIT",
+  "author": "Valaa Technologies Ltd.",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "valaa": {
+    "type": "toolset",
+    "domain": "infrastructure"
+  },
+  "bin": {
+    "valma-assemble-packages": "bin/valma-assemble-packages.js",
+    "valma-publish-packages": "bin/valma-publish-packages.js"
+  },
+  "dependencies": {
+    "lerna": "^2.11.0",
+    "shelljs": "^0.8.2"
+  },
+  "peerDependencies": {
+    "valma": "0.30.0-prerelease.3"
+  }
+}
