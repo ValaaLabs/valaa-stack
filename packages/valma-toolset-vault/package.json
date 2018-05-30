@@ -1,6 +1,6 @@
 {
   "name": "@valos/valma-toolset-vault",
-  "version": "0.30.0-prerelease.4",
+  "version": "0.30.0-prerelease.5",
   "description": "A valma toolset for managing vault package monorepositories",
   "license": "MIT",
   "author": "Valaa Technologies Ltd.",
