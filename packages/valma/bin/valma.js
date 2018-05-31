@@ -55,24 +55,26 @@ yargs = yargs
     .group("help", "Common options:")
     .group("version", "Common options:")
     .option({
-      e: {
-        group: "Common options:",
-        alias: "echo", type: "boolean", default: true, global: true,
-        description: "Echo all sub-command and external command calls and returns",
-      },
-      interactive: {
-        group: "Common options:",
-        type: "boolean", default: true, global: true,
-        description: "Prompt for missing required fields",
-      },
       version: {
+        group: "Common options:",
         alias: "version", type: "boolean", default: false, global: true,
         description: "Show the version of the command (or vlm itself)",
       },
       info: {
+        group: "Common options:",
         type: "boolean", default: false, global: true,
         description: "Show the info block and description of the command",
       },
+
+      i: {
+        alias: "interactive", type: "boolean", default: true, global: false,
+        description: "Prompt for missing required fields",
+      },
+      e: {
+        alias: "echo", type: "boolean", default: true, global: false,
+        description: "Echo all sub-command and external command calls and returns",
+      },
+
       l: {
         alias: "list", type: "boolean", default: false, global: false,
         description: "Lists scripts which match the command",
@@ -85,10 +87,8 @@ yargs = yargs
         alias: "no-node", type: "boolean", default: false, global: false,
         description: "Don't add node environment",
       },
-
       v: {
-        group: "Common options:",
-        alias: "verbose", count: true, global: true,
+        alias: "verbose", count: true, global: false,
         description: "Be noisy. -vv... -> be more noisy.",
       },
       "package-pool": {
@@ -219,7 +219,7 @@ async function main () {
       process.exit(0);
     }
     if (preYargv && preYargv.info) {
-      _outputCommandInfo("vlm", 3, _commandInfo(__filename, path.dirname(process.argv[1])),
+      _outputCommandInfo(["vlm", ..._commandInfo(__filename, path.dirname(process.argv[1]))],
           description);
       process.exit(0);
     }
@@ -267,7 +267,7 @@ async function callValma (command, argv = []) {
       };
       if (activeCommands[commandName]) return;
       const activeCommand = activeCommands[commandName] = pool.commands[commandName];
-      if (!preYargv || preYargv.list) return;
+      if (!preYargv || preYargv.list || !shell.test("-e", activeCommand.modulePath)) return;
       const module = activeCommand.module = require(activeCommand.modulePath);
       if (verbosity >= 3) {
         console.log("Phase 3.5, pool.absolutePath:", pool.absolutePath,
@@ -302,16 +302,26 @@ async function callValma (command, argv = []) {
     } else {
       let align = 0;
       Object.keys(activeCommands).forEach(n => { if (n.length > align) align = n.length; });
-      for (const current of Object.values(activeCommands)) {
-        if (!current || !current.module) continue;
-        const info = _commandInfo(current.modulePath, current.pool.path);
-        if (!showInfo && !isWildCardCommand) {
-          console.log(info[0]);
-          return 0;
+      let versionAlign = 0;
+      Object.values(activeCommands).map((activeCommand) => {
+        if (!activeCommand) return {};
+        const info = _commandInfo(activeCommand.modulePath, activeCommand.pool.path);
+        if (info[0].length > versionAlign) versionAlign = info[0].length;
+        return { activeCommand, info };
+      }).forEach(({ activeCommand, info }) => {
+        if (info) {
+          _outputCommandInfo([
+            [activeCommand.commandName, align], "|",
+            [info[0], versionAlign], "|",
+            ...info.slice(1),
+          ], showInfo && activeCommand.module && activeCommand.module.describe);
         }
-        _outputCommandInfo(current.commandName, align, info, showInfo && current.module.describe);
+      });
+      if (!showInfo && !isWildCardCommand) {
+        console.log(infos[0][0]);
+        return 0;
       }
-    }
+  }
     return 0;
   }
 
@@ -335,6 +345,11 @@ async function callValma (command, argv = []) {
       const activeCommand = activeCommands[matchingCommand];
       if (!activeCommand) continue;
       const module = activeCommand.module;
+      if (!module) {
+        console.error("vlm error: trying to execute command", matchingCommand,
+            "link missing its target at", activeCommand.modulePath);
+        continue;
+      }
       const optionsYargs = Object.create(yargs);
       const interactiveOptions = {};
       optionsYargs.option = optionsYargs.options = (opt, attributes) => {
@@ -390,7 +405,9 @@ function _underToSlash (text = "") {
 }
 
 function _commandInfo (commandPath, poolPath) {
-  if (!commandPath || !shell.test("-e", commandPath)) return ["-", "-", "-", "-"];
+  if (!commandPath || !shell.test("-e", commandPath)) {
+    return ["<missing_command_script>", "<missing_command_script>", poolPath, commandPath];
+  }
   const realPath = fs.realpathSync(commandPath);
   let remaining = path.dirname(realPath);
   while (remaining !== "/") {
@@ -401,17 +418,20 @@ function _commandInfo (commandPath, poolPath) {
     }
     remaining = path.posix.join(remaining, "..");
   }
-  return "<could not determine version>";
+  return ["<missing_command_package>", "<missing_command_package>", poolPath, realPath];
 }
 
-function _outputCommandInfo (commandName, align, infos, description_) {
-  console.log(`${commandName} ${" ".repeat(align - commandName.length)}:`, ...infos);
+function _outputCommandInfo (elements, description_) {
+  console.log(...elements.map(
+      entry => (Array.isArray(entry) ? _rightpad(entry[0], entry[1]) : entry)));
   if (description_) {
     console.log();
     console.log(description_);
     console.log();
   }
 }
+
+function _rightpad (text, align) { return `${text}${" ".repeat(align - text.length)}`; }
 
 function _refreshActivePoolsAndMaybeForward () {
   activePools = [];
@@ -496,14 +516,19 @@ function _outputSimpleUsage (yargv, commandGlob) {
   }
   for (const listPool of activePools) {
     if (!Object.keys(listPool.commands).length) {
-      console.log(`\t'${listPool.name}' pool empty (matching "${listPool.path}${commandGlob}")`);
+      console.log(`#\t'${listPool.name}' pool empty (matching "${listPool.path}${commandGlob}")`);
     } else {
-      console.log(`\t'${listPool.name}' pool commands (matching "${
+      console.log(`#\t'${listPool.name}' pool commands (matching "${
           listPool.path}${commandGlob}"):`);
-      Object.keys(listPool.commands).sort().forEach(commandName => {
+      let versionAlign = 0;
+      Object.keys(listPool.commands).sort().map(commandName => {
         const info = _commandInfo(listPool.commands[commandName].modulePath);
-        _outputCommandInfo(commandName, align, info.slice(0, 2));
+        if (info[0].length > versionAlign) versionAlign = info[0].length;
+        return { commandName, info };
+      }).forEach(({ commandName, info }) => {
+        _outputCommandInfo([[commandName, align], "|", [info[0], versionAlign], "|", info[1]]);
       });
+
       console.log();
     }
   }
