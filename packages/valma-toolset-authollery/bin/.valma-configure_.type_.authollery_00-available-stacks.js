@@ -1,4 +1,4 @@
-exports.command = ".configure.type.authollery-00-available-stacks";
+exports.command = ".configure/.type/.authollery/00-available-stacks";
 exports.summary = "Configure available authollery stacks";
 exports.describe = `${exports.summary}.`;
 

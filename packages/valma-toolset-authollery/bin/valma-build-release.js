@@ -14,16 +14,11 @@ exports.builder = (yargs) => yargs.options({
     type: "string", default: "packages",
     description: "relative lerna packages source directory for sourcing the packages"
   },
-  "node-env": {
-    type: "string", default: "assemble-packages",
-    description: "NODE_ENV environment variable for the babel builds"
-        + " (used for packages with .babelrc defined)"
-  }
 });
 
 exports.handler = (yargv) => {
   const packageConfig = yargv.vlm.packageConfig;
-  const packageName = packageConfig.name.replace(/\//g, "-");
+  const packageName = packageConfig.name.replace(/\//g, "_");
 
   const releaseDist = path.posix.join(yargv.target, `${packageName}-${packageConfig.version}`);
   if (shell.test("-d", releaseDist)) {
@@ -42,5 +37,5 @@ exports.handler = (yargv) => {
   console.log("valma-build-release: building version", packageConfig.version, "of",
       packageConfig.name, "into", releaseDist);
 
-  return yargv.vlm.callValma(".build-release-*", releaseDist);
+  return yargv.vlm.callValma(".build-release/**/*", releaseDist);
 };

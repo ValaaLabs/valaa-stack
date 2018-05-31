@@ -23,17 +23,17 @@ exports.handler = async (yargv) => {
           + "package.json does not have valaa section "
           + "(maybe run 'vlm configure' without module selector'?)");
     }
-    await vlm.callValma(`.configure-${yargv.moduleglob}*"`, yargv._.slice(1));
+    await vlm.callValma(`.configure/${yargv.moduleglob}*"`, yargv._.slice(1));
   } else {
     if (!valaa || yargv.reinitialize) {
-      await vlm.callValma(".configure.initialize", yargv._.slice(1));
+      await vlm.callValma(".configure/.initialize", yargv._.slice(1));
       valaa = vlm.packageConfig.valaa;
       if (!valaa || !valaa.type || !valaa.domain) {
         throw new Error("valma-configure: cannot find valaa.type or valaa.domain during (re)init");
       }
     }
-    await vlm.callValma(`.configure.type-${valaa.type}`, yargv._.slice(1));
-    await vlm.callValma(`.configure.domain-${valaa.domain}`, yargv._.slice(1));
-    await vlm.callValma(`.configure-*`, yargv._.slice(1));
+    await vlm.callValma(`.configure/.type/${valaa.type}`, yargv._.slice(1));
+    await vlm.callValma(`.configure/.domain/${valaa.domain}`, yargv._.slice(1));
+    await vlm.callValma(`.configure/**/*`, yargv._.slice(1));
   }
 };

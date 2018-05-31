@@ -21,6 +21,6 @@
     "shelljs": "^0.8.2"
   },
   "peerDependencies": {
-    "valma": "0.30.0-prerelease.4"
+    "valma": ">=0.30.0-prerelease"
   }
 }

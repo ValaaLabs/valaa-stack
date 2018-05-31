@@ -13,8 +13,8 @@
     "domain": "infrastructure"
   },
   "bin": {
-    ".valma-configure.type.authollery-00-available-stacks": "bin/.valma-configure.type.authollery-00-available-stacks.js",
-    ".valma-status-10-authollery": "bin/.valma-status-10-authollery.js",
+    ".valma-configure_.type_.authollery_00-available-stacks": "bin/.valma-configure_.type_.authollery_00-available-stacks.js",
+    ".valma-status_.type_.authollery_10-authollery": "bin/.valma-status_.type_.authollery_10-authollery.js",
     "valma-build-release": "bin/valma-build-release.js",
     "valma-deploy-release": "bin/valma-deploy-release.js"
   },
@@ -23,6 +23,6 @@
     "shelljs": "^0.8.2"
   },
   "peerDependencies": {
-    "valma": "0.30.0-prerelease.4"
+    "valma": ">=0.30.0-prerelease"
   }
 }

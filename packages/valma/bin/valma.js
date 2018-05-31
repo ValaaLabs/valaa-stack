@@ -42,6 +42,11 @@ Unlisted scripts are all valma scripts whose name begins with a '.' (or any of
 their path parts for nested scripts). These scripts can still be called with
 valma normally but are intended to be used indirectly by other valma scripts.
 
+Note: valma treats the underscore '_' equal to '/' in all command pattern
+matching contexts. While use of '_' is otherwise optional, it is specifically
+mandatory to use '_' inside the package.json bin section export names (npm
+doesn't support bin '/' or at least not sharing the folders between separate
+packages).`;
 
 yargs = yargs
     .help(false)
@@ -224,7 +229,6 @@ async function main () {
   const restArgv = userArgv.slice(userArgv.indexOf(command) + 1);
   if (help && !restArgv.includes("--help")) restArgv.unshift("--help");
 
-
   const maybeRet = vlm.callValma(command, restArgv);
   vlm.callValma = callValmaWithEcho;
   const ret = await maybeRet;
@@ -241,7 +245,7 @@ async function callValmaWithEcho (command, argv = []) {
 }
 
 async function callValma (command, argv = []) {
-  const commandGlob = (preYargv && preYargv.unlisted)
+  const commandGlob = _underToSlash((preYargv && preYargv.unlisted)
       ? _valmaGlobFromCommandPrefix(command, true)
       : _valmaGlobFromCommand(command || "*"));
   const isWildCardCommand = !command || (command.indexOf("*") !== -1);
@@ -252,7 +256,10 @@ async function callValma (command, argv = []) {
   for (const pool of activePools) {
     pool.commands = {};
     pool.listing.forEach(file => {
-      if (_isDirectory(file) || !minimatch(file.name, commandGlob)) return;
+      // console.log("matching:", _isDirectory(file), _underToSlash(file.name), commandGlob, ": ",
+      //    minimatch(_underToSlash(file.name), commandGlob, { dot: vlm.unlisted }));
+      if (_isDirectory(file)) return;
+      if (!minimatch(_underToSlash(file.name), commandGlob, { dot: vlm.unlisted })) return;
       const commandName = _valmaCommandFromPath(file.name);
       pool.commands[commandName] = {
         commandName, pool, file,
@@ -374,7 +381,13 @@ function _valmaGlobFromCommandPrefix (commandPrefix = "", showUnlisted) {
 
 function _valmaCommandFromPath (pathname) {
   const match = pathname.match(/(\.?)valma-(.*)/);
-  return `${match[1]}${match[2]}`;
+  return _underToSlash(`${match[1]}${match[2]}`);
+}
+
+function _underToSlash (text = "") {
+  if (typeof text !== "string") throw new Error(`expected string, got: ${JSON.stringify(text)}`);
+  return text.replace(/_/g, "/");
+}
 
 function _commandInfo (commandPath, poolPath) {
   if (!commandPath || !shell.test("-e", commandPath)) return ["-", "-", "-", "-"];
@@ -445,8 +458,10 @@ function _refreshActivePoolsAndMaybeForward () {
 }
 
 function matchPoolCommandNames (pattern) {
-  return [].concat(...activePools.map(pool =>
-      pool.listing.map(file => file.name).filter(name => minimatch(name, pattern))));
+  const minimatcher = _underToSlash(pattern);
+  return [].concat(...activePools.map(pool => pool.listing
+      .map(file => _underToSlash(file.name))
+      .filter(name => minimatch(name, minimatcher, { dot: vlm.unlisted }))));
 }
 
 function executeExternal (executable, argv = []) {

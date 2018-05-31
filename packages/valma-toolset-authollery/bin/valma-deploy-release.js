@@ -7,7 +7,7 @@ exports.describe = `${exports.summary}`;
 
 exports.builder = (yargs) => yargs.options({
   source: {
-    type: "string", default: "dist/publish",
+    type: "string", default: "dist/deploy",
     description: `source directory for the releases that are to be deployed. ${
         ""}Each release in this directory will be removed after a successful deployment.`,
   },
@@ -19,7 +19,7 @@ exports.builder = (yargs) => yargs.options({
 
 exports.handler = (yargv) => {
   const packageConfig = yargv.vlm.packageConfig;
-  const packageName = packageConfig.name.replace(/\//g, "-");
+  const packageName = packageConfig.name.replace(/\//g, "_");
 
   const releaseDist = path.posix.join(yargv.source, `${packageName}-${packageConfig.version}`);
 
@@ -35,5 +35,5 @@ exports.handler = (yargv) => {
   console.log("\nvalma-deploy-release: deploying", packageConfig.name, packageConfig.version,
       "from", releaseDist);
 
-  return yargv.vlm.callValma(".deploy-release-*", releaseDist);
+  return yargv.vlm.callValma(".deploy-release/**/*", releaseDist);
 };
