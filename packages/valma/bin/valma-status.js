@@ -1,7 +1,8 @@
 exports.command = "status [moduleglob]";
 exports.summary = "Display the status of the current repository and its valma modules";
 exports.describe = `${exports.summary
-    }. If moduleglob is specified limits the status those modules.`;
+    }. If moduleglob is specified the status is limited to status scripts matching ${
+    ""}'.status/{moduleglob}*', otherwise all status scripts by '.status/**/*' are used.`;
 
 exports.builder = (yargs) => yargs;
 

@@ -10,6 +10,7 @@
     "domain": "kernel"
   },
   "scripts": {
+    "vlm": "vlm ",
     "start": "vlm revelations-dev-server ",
     "dev": "TARGET_ENV=local vlm revelations-dev-server ",
     "prod": "TARGET_ENV=production vlm revelations-dev-server ",

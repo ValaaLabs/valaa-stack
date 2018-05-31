@@ -4,7 +4,7 @@ const shell = require("shelljs");
 const path = require("path");
 
 exports.command = "revelations-dev-server [contentBase]";
-exports.summary = "launches a webpack-dev-server at localhost.";
+exports.summary = "Launches a webpack-dev-server at localhost";
 exports.describe = `${exports.summary} using given <contentBase> as content root`;
 
 exports.builder = function builder (yargs) {

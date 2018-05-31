@@ -101,11 +101,12 @@ various `command pools`.
 > `global` pool.
 
 For example typing `vlm status` in some directory context would forward
-the command to `package.json:script.valma-status` first if one exists
-and falling back to the more generic versions if not. The call
-eventually resolves at the global `/usr/bin/valma-status` - which calls
-`vlm status-*` invoking all valma `status scripts` (scripts prefixed
-with `valma-status-`) visible on the execution context pools.
+the command to `localbin/valma-status` first if one exists and falling
+back to the more generic versions if not. The call eventually resolves
+at the global `/usr/bin/valma-status`. Its implementation then calls
+`vlm .status/**/*` which calls all scripts matching the glob
+`.valma-status/**/*` visible on the execution context pools (these
+particular scripts are commonly called `valma status scripts`).
 
 > `valos-vault-3.3`: A package can export valma scripts using npm
 > package.json `bin` section and by prefixing the exported name with
