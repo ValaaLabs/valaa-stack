@@ -3,7 +3,7 @@
   "version": "0.30.0-prerelease.1",
   "description": "Valaa Resources And Events Model (ValaaRAEM) API, Schema",
   "license": "MIT",
-  "author": "Valaa Technologies Ltd.",
+  "author": "Valaa Technologies Ltd",
   "private": false,
   "publishConfig": {
     "access": "public"

@@ -7,7 +7,7 @@
   "version": "0.30.0-prerelease.6",
   "description": "A convenience Valaa CLI tool to context-dependent infrastructure command scripts",
   "license": "MIT",
-  "author": "Valaa Technologies Ltd.",
+  "author": "Valaa Technologies Ltd",
   "private": false,
   "publishConfig": {
     "access": "public"

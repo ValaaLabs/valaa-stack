@@ -3,7 +3,7 @@
   "version": "0.30.0-prerelease.5",
   "description": "Development tool for launching webpack-dev-server using copy of revelations/* as content",
   "license": "MIT",
-  "author": "Valaa Technologies Ltd.",
+  "author": "Valaa Technologies Ltd",
   "private": false,
   "publishConfig": {
     "access": "public"
