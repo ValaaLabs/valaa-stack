@@ -6,7 +6,7 @@ exports.summary = "assembles all current modified vault packages (preparing for 
 exports.describe = `${exports.summary} into a temporary dist target.
 
 Uses lerna to handle the monorepo sub-packages update detection, versioning,
-git interactions and npm publish. Configuration for lerna is in lerna.json:
+and git interactions. Configuration for lerna is in lerna.json:
 notably the version increase semantics is configured there.
 
 Lerna is not used for constructing the actual packages. This is done by a
@@ -47,7 +47,7 @@ Read more about npm link: https://docs.npmjs.com/cli/link .
 
 exports.builder = (yargs) => yargs.options({
   target: {
-    type: "string", default: "dist/publish",
+    type: "string", default: "dist/packages",
     description: "Target directory for building the packages (must be empty or not exist)"
   },
   source: {

@@ -7,7 +7,7 @@ exports.describe = `${exports.summary} for publishing by valma-assemble-packages
 
 exports.builder = (yargs) => yargs.options({
   source: {
-    type: "string", default: "dist/publish",
+    type: "string", default: "dist/packages",
     description: `source directory for the packages that are to be published. ${
         ""}Each package in this directory will be destroyed after successful publish.`
   }

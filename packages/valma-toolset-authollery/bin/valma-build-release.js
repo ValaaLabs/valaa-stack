@@ -7,7 +7,7 @@ exports.describe = `${exports.summary} into a temporary dist target`;
 
 exports.builder = (yargs) => yargs.options({
   target: {
-    type: "string", default: "dist/publish",
+    type: "string", default: "dist/release",
     description: "target directory root for building the release"
   },
   source: {
@@ -37,5 +37,5 @@ exports.handler = (yargv) => {
   console.log("valma-build-release: building version", packageConfig.version, "of",
       packageConfig.name, "into", releaseDist);
 
-  return yargv.vlm.callValma(".build-release/**/*", releaseDist);
+  return yargv.vlm.callValma(".build-release/**/*", [releaseDist]);
 };

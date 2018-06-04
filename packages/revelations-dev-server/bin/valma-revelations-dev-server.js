@@ -3,7 +3,7 @@
 const shell = require("shelljs");
 const path = require("path");
 
-exports.command = "revelations-dev-server [contentBase]";
+exports.command = "revelations-dev-server [distContentBase]";
 exports.summary = "Launches a webpack-dev-server at localhost";
 exports.describe = `${exports.summary} using given <contentBase> as content root`;
 
@@ -34,12 +34,12 @@ exports.builder = function builder (yargs) {
       });
 };
 exports.handler = function handler (yargv) {
-  const contentBase = yargv.contentBase || "dist/revelations";
+  const contentBase = yargv.distContentBase || "dist/revelations";
   if (!shell.test("-d", contentBase)) {
     console.log("Creating and populating an initially missing content base directory", contentBase,
-        `(for this first time only) from ${yargv.revelations}`);
+        `(for this first time only) from ${yargv.source}`);
     shell.mkdir("-p", contentBase);
-    shell.cp("-R", path.posix.join(yargv.revelations, "*"), contentBase);
+    shell.cp("-R", path.posix.join(yargv.source, "*"), contentBase);
   }
   shell.exec(`npx -c "webpack-dev-server ${""
         } ${yargv.inline ? "--inline" : ""

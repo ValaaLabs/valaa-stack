@@ -7,7 +7,7 @@ exports.builder = (yargs) => {
   return yargs.options({
     stack: {
       type: "string", default: authollery.stack || "",
-      interactive: { type: "input", prompt: "always" },
+      interactive: { type: "input", when: "always" },
       description: "authollery stack name",
     },
   });
