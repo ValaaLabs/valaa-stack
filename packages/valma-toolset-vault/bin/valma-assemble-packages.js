@@ -59,6 +59,10 @@ exports.builder = (yargs) => yargs.options({
     description: "NODE_ENV environment variable for the babel builds"
         + " (used for packages with .babelrc defined)"
   },
+  force: {
+    type: "boolean", default: false,
+    description: "Build packages even if they have not been updated"
+  },
   overwrite: {
     type: "boolean", default: false,
     description: "Allow overwriting existing packages in the target directory"
@@ -89,13 +93,16 @@ exports.handler = async (yargv) => {
     process.exit(-1);
   }
 
-  let updatedPackages = shell.exec(`npx -c "lerna updated --json  --loglevel=silent"`);
-  if (updatedPackages.code) {
-    console.log(`valma-assemble-packages: no updated packages found (or other lerna error, code ${
-        updatedPackages.code})`);
-    return;
+  let updatedPackageNames;
+  if (!yargv.force) {
+    const updatedPackages = shell.exec(`npx -c "lerna updated --json  --loglevel=silent"`);
+    if (updatedPackages.code) {
+      console.log(`valma-assemble-packages: no updated packages found (or other lerna error, code ${
+          updatedPackages.code})`);
+      return;
+    }
+    updatedPackageNames = JSON.parse(updatedPackages).map(entry => entry.name);
   }
-  updatedPackages = JSON.parse(updatedPackages);
   const sourcePackageJSONPaths = shell.find("-l", path.posix.join(yargv.source, "*/package.json"));
   const successfulPackages = [];
 
@@ -105,38 +112,37 @@ exports.handler = async (yargv) => {
     // eslint-disable-next-line import/no-dynamic-require
     const packageConfig = require(packagePath);
     const name = packageConfig.name;
-    if (!updatedPackages.find((candidate) => (candidate.name === name))) return undefined;
+    if (updatedPackageNames && !updatedPackageNames.includes(name)) return undefined;
     if (packageConfig.private) {
       console.log(`\nvalma-assemble-packages: skipping private package '${name}'`);
       return undefined;
     }
     const targetDirectory = path.posix.join(publishDist, name);
+    return {
+      name, sourceDirectory, packagePath, packageConfig, targetDirectory, sourcePackageJSONPath,
+    };
+  }).filter(p => p);
+
+  const finalizers = assemblePackages.map(({
+    name, sourceDirectory, packagePath, packageConfig, targetDirectory, sourcePackageJSONPath,
+  }) => {
     console.log(`\nvalma-assemble-packages: assembling package '${name}' into`, targetDirectory);
     shell.mkdir("-p", targetDirectory);
     shell.cp("-R", path.posix.join(sourceDirectory, "*"), targetDirectory);
     if (shell.test("-f", path.posix.join(sourceDirectory, ".babelrc"))) {
       shell.exec(`NODE_ENV=${yargv.nodeEnv} babel ${sourceDirectory} --out-dir ${targetDirectory}`);
     }
-    if (yargv.link) {
-      console.log(`\nvalma-assemble-packages: 'npm link' for package '${name}' (in '${
-          targetDirectory}')`);
-      shell.exec(`cd ${targetDirectory} && npm link`);
-    }
     if (yargv.unlink) {
-      console.log(`\nvalma-assemble-packages: 'npm unlink' for package '${name}' (in '${
+      console.log(`\nvalma-assemble-packages: 'yarn unlink' for package '${name}' (in '${
           targetDirectory}')`);
-      shell.exec(`cd ${targetDirectory} && npm unlink`);
-    }
-    if (yargv.post) {
-      console.log(`\nvalma-assemble-packages: '${yargv.post}' for package '${name}' (in '${
-          targetDirectory}')`);
-      shell.exec(`cd ${targetDirectory} && ${yargv.post}`);
+      shell.exec(`cd ${targetDirectory} && yarn unlink`);
     }
     successfulPackages.push({ packageConfig, packagePath });
     return { sourcePath: sourcePackageJSONPath, targetPath: targetDirectory };
   }).filter(finalizer => finalizer);
 
   console.log("valma-assemble-packages: no catastrophic errors found during assembly");
+
   const noUpdate = yargv.skipVersioning;
   if (noUpdate) {
     console.log("valma-assemble-packages: --skip-versioning requested:",
@@ -144,7 +150,8 @@ exports.handler = async (yargv) => {
   } else {
     console.log("valma-assemble-packages: no errors found during assembly:",
         "updating version, making git commit and creating lerna git tag");
-    shell.exec(`npx -c "lerna publish --skip-npm --yes --loglevel=silent"`);
+    const forceFlags = yargv.force ? "--force-publish=*" : "";
+    shell.exec(`npx -c "lerna publish --skip-npm --yes --loglevel=silent ${forceFlags}"`);
     console.log("valma-assemble-packages:",
         "finalizing assembled packages with version-updated package.json's");
     [].concat(...finalizers).forEach((operation) => {
@@ -152,12 +159,15 @@ exports.handler = async (yargv) => {
     });
   }
 
-  let align = successfulPackages.reduce((acc, { packageConfig }) =>
+
+  const align = successfulPackages.reduce((acc, { packageConfig }) =>
       ((acc > packageConfig.name.length) ? acc : packageConfig.name.length), 0);
 
   console.log("valma-assemble-packages: successfully",
-      noUpdate ? "reassembled": "assembled", finalizers.length,
-          "packages (out of", updatedPackages.length, "marked as updated):");
+      noUpdate ? "reassembled" : "assembled", finalizers.length, "packages",
+          ...(updatedPackageNames
+              ? ["(out of", updatedPackageNames.length, "marked as updated):"]
+              : ["(from all --force selected packages)"]));
   successfulPackages.forEach(({ packageConfig, packagePath }) => {
     const updatedConfig = JSON.parse(shell.head({ "-n": 1000000 }, packagePath));
     const versionChange = noUpdate && (updatedConfig.version === packageConfig.version)
