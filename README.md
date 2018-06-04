@@ -31,10 +31,13 @@ creating and managing ValOS deployments in general and
 
 ## Local deployment of a restricted ValOS stack
 
+You need to have yarn installed. If you have npm already then you can
+get it with `sudo npm install -g yarn`.
+
 Local development web server can be launched like so:
 ```
-npm install
-npm start
+yarn install
+yarn start
 ```
 
 This launches webpack dev-server at 0.0.0.0:8080 which serves the

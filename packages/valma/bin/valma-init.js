@@ -16,24 +16,24 @@ exports.handler = async (yargv) => {
         .concat(["help", "quit"]);
     const answer = await vlm.inquire([{
       message: vlm.packageConfig
-          ? "Reconfigure the existing root package.json with 'npm init'?"
-          : "Initialize the root package.json with 'npm init'?",
+          ? "Reconfigure the existing root package.json with 'yarn init'?"
+          : "Initialize the root package.json with 'yarn init'?",
       type: "list", name: "choice", default: choices[0], choices,
     }]);
     if (answer.choice === "quit") return;
     if (answer.choice === "help") {
       console.log();
-      console.log("Valaa repositories use npm extensively for version, dependency and script");
-      console.log("management; package.json is the central npm configuration file. 'npm init'");
+      console.log("Valaa repositories use yarn extensively for version, dependency and script");
+      console.log("management; package.json is the central yarn configuration file. 'yarn init'");
       console.log("will initialize it.");
       console.log();
       continue;
     }
     if (answer.choice === "Skip") {
-      console.log("Skipped 'npm init'.");
+      console.log("Skipped 'yarn init'.");
       break;
     }
-    await vlm.executeExternal("npm", ["init"]);
+    await vlm.executeExternal("yarn", ["init"]);
     break;
   }
 
@@ -108,17 +108,17 @@ exports.handler = async (yargv) => {
     }
     answer = await vlm.inquire([{
       type: "input", name: "devDependencies",
-      message: "enter a space-separated list of valma modules for 'npm install --save-dev':\n",
+      message: "enter a space-separated list of valma modules for 'yarn install --save-dev':\n",
     }]);
     if (!answer || !answer.devDependencies) {
-      console.log("no devDependencies provided, skipping 'npm install --save-dev'");
+      console.log("no devDependencies provided, skipping 'yarn install --save-dev'");
     } else {
       try {
-        await vlm.executeExternal("npm",
+        await vlm.executeExternal("yarn",
             ["install", "--save-dev"].concat(answer.devDependencies.split(" ")));
       } catch (error) {
         console.log();
-        console.error(`An exception caught while running external command 'npm install --save-dev ${
+        console.error(`An exception caught during external command 'yarn install --save-dev ${
             answer.devDependencies}':`, error);
         wasError = true;
       }

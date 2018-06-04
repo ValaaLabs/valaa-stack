@@ -8,7 +8,7 @@ Installs a devDependency to @valos/valma-toolset-authollery.`;
 exports.builder = (yargs) => yargs;
 
 exports.handler = async (yargv) => {
-  await yargv.vlm.executeExternal("npm",
+  await yargv.vlm.executeExternal("yarn",
       ["install", "--save-dev", "@valos/valma-toolset-authollery"]);
   return yargv.vlm.callValma(`.configure/.type/.authollery/**/*`);
 }

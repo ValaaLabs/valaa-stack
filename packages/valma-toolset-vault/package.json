@@ -18,9 +18,7 @@
   },
   "dependencies": {
     "lerna": "^2.11.0",
-    "shelljs": "^0.8.2"
-  },
-  "peerDependencies": {
-    "valma": ">=0.30.0-prerelease"
+    "shelljs": "^0.8.2",
+    "valma": "^0.30.0-prerelease.7"
   }
 }
