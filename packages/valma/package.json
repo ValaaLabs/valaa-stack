@@ -21,6 +21,7 @@
     "valma-init": "bin/valma-init.js",
     "valma-status": "bin/valma-status.js",
     ".valma-configure_.initialize": "bin/.valma-configure/.initialize.js",
+    ".valma-configure_.modules": "bin/.valma-configure/.modules.js",
     ".valma-configure_.domain_gateway": "bin/.valma-configure/.domain/gateway.js",
     ".valma-configure_.domain_infrastructure": "bin/.valma-configure/.domain/infrastructure.js",
     ".valma-configure_.domain_kernel": "bin/.valma-configure/.domain/kernel.js",
