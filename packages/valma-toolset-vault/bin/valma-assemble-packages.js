@@ -31,7 +31,7 @@ packages depending on and being tested against them. To have other packages
 depend on such an assembled, iteratively developed package the dependency must
 be then manually added by running following command in the depending package:
 
-'yarn link <assembled-package-name>'
+'npm link <assembled-package-name>'
 
 After the initial run the packages can be updated without 'sudo' with
 
@@ -40,8 +40,8 @@ After the initial run the packages can be updated without 'sudo' with
 as long as no new files have been added (re-run the full command in that case).
 
 Note: the --post options is used to reset the ownership back to original user
-as as 'sudo yarn link' uses hard links.
-Read more about yarn link: https://yarnpkg.com/lang/en/docs/cli/link/ .
+as as 'sudo npm link' uses hard links.
+Read more about npm link: https://docs.npmjs.com/cli/link .
 `;
 
 
@@ -73,11 +73,11 @@ exports.builder = (yargs) => yargs.options({
   },
   link: {
     type: "boolean", default: false,
-    description: "Run 'yarn link' for each assembled package"
+    description: "Run 'npm link' for each assembled package"
   },
   unlink: {
     type: "boolean", default: false, implies: ["overwrite", "skip-versioning"],
-    description: "Run 'yarn unlink' for each assembled package"
+    description: "Run 'npm unlink' for each assembled package"
   },
   post: {
     type: "string",
@@ -133,9 +133,9 @@ exports.handler = async (yargv) => {
       shell.exec(`NODE_ENV=${yargv.nodeEnv} babel ${sourceDirectory} --out-dir ${targetDirectory}`);
     }
     if (yargv.unlink) {
-      console.log(`\nvalma-assemble-packages: 'yarn unlink' for package '${name}' (in '${
+      console.log(`\nvalma-assemble-packages: 'npm unlink' for package '${name}' (in '${
           targetDirectory}')`);
-      shell.exec(`cd ${targetDirectory} && yarn unlink`);
+      shell.exec(`cd ${targetDirectory} && npm unlink`);
     }
     successfulPackages.push({ packageConfig, packagePath });
     return { sourcePath: sourcePackageJSONPath, targetPath: targetDirectory };
@@ -161,9 +161,9 @@ exports.handler = async (yargv) => {
 
   if (yargv.link) {
     assemblePackages.forEach(({ name, targetDirectory }) => {
-      console.log(`\nvalma-assemble-packages: 'yarn link' for package '${name}' (in '${
+      console.log(`\nvalma-assemble-packages: 'npm link' for package '${name}' (in '${
         targetDirectory}')`);
-      shell.exec(`cd ${targetDirectory} && yarn link`);
+      shell.exec(`cd ${targetDirectory} && npm link`);
     });
   }
 
