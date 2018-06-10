@@ -5,11 +5,7 @@ exports.describe = `${exports.summary}. The set of available modules is those ma
 
 exports.builder = (yargs) => {
   const valaa = yargs.vlm.packageConfig.valaa;
-  if (!valaa || !valaa.type || !valaa.domain) {
-    throw new Error(".valma-configure/.modules: current directory is not a valaa repository; "
-        + "package.json does not have valaa section, or valaa.type or valaa.domain settings"
-        + "(maybe run 'vlm init'?)");
-  }
+  if (!valaa || !valaa.type || !valaa.domain) return undefined;
   const valmaConfig = yargs.vlm.valmaConfig;
   if (!valmaConfig) {
     throw new Error(".valma-configure/.modules: current directory is not a valma repository; "
