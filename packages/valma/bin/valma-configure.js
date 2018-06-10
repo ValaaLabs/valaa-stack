@@ -1,3 +1,5 @@
+const shell = require("shelljs");
+
 exports.command = "configure [moduleglob]";
 exports.summary = "Configure the current valaa repository and its valma modules";
 exports.describe = `${exports.summary}.`;
@@ -19,11 +21,16 @@ exports.handler = async (yargv) => {
   const valaa = vlm.packageConfig.valaa;
   if (!valaa || !valaa.type || !valaa.domain) {
     throw new Error("valma-configure: current directory is not a valaa repository; "
-        + "package.json does not have valaa section, or valaa.type or valaa.domain settings"
-        + "(maybe run 'vlm init'?)");
+        + "package.json doesn't have the valaa section or it doesn't have valaa.type/domain set"
+        + "(maybe run 'vlm init' to initialize?)");
+  }
+  if (!vlm.valmaConfig) {
+    vlm.updateValmaConfig({});
   }
   vlm.askToCreateValmaScriptSkeleton = askToCreateValmaScriptSkeleton;
   if (!yargv.moduleglob) {
+    await vlm.callValma(`.configure/.domain/${vlm.packageConfig.valaa.domain}`);
+    await vlm.callValma(`.configure/.type/${vlm.packageConfig.valaa.type}`);
     await vlm.callValma(`.configure/.modules`, yargv._.slice(1));
   }
   await vlm.callValma(`.configure/{,.type/.${valaa.type}/,.domain/.${valaa.type}/}.module/${
