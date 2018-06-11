@@ -188,7 +188,7 @@ exports.handler = async (yargv) => {
     const versionChange = noUpdate && (updatedConfig.version === packageConfig.version)
             ? `kept at ${packageConfig.version}`
         : !noUpdate ? `updated to ${updatedConfig.version} from ${packageConfig.version}`
-        : `unexpectedly updated to ${updatedConfig.version} from ${packageConfig.version}`
+        : `unexpectedly updated to ${updatedConfig.version} from ${packageConfig.version}`;
     console.log(`\t${updatedConfig.name}${" ".repeat(align - updatedConfig.name.length)}:`,
         versionChange);
   });

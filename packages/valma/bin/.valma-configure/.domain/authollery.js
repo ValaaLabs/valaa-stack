@@ -39,21 +39,23 @@ exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
   const valaa = (vlm.packageConfig || {}).valaa;
   const isModule = (valaa.type === "module");
+  const name = vlm.packageConfig.name;
+  const shortName = /([^/]*)$/.exec(name)[1];
   if (isModule || (valaa.type === "component")) {
     await vlm.askToCreateValmaScriptSkeleton(
-        `.valma-build-release/${isModule ? "" : ".component/"}${vlm.packageConfig.name}`,
-        `valma-build-release_${valaa.type}.js`,
+        `.valma-build-release/${isModule ? "" : ".component/"}${name}`,
+        `valma-build-release__${shortName}.js`,
         `${valaa.type} sub-release build`,
-        `Build a sub-release of the ${valaa.type} ${vlm.packageConfig.name}.`,
+        `Build a sub-release of the ${valaa.type} ${name}.`,
         isModule ? `` :
 `When the current repository is building a release, each module shall
 explicitly call the build scripts of each of its buildable components.`);
 
     await vlm.askToCreateValmaScriptSkeleton(
-        `.valma-deploy-release/${isModule ? "" : ".component/"}${vlm.packageConfig.name}`,
-        `valma-deploy-release_${valaa.type}.js`,
+        `.valma-deploy-release/${isModule ? "" : ".component/"}${name}`,
+        `valma-deploy-release__${shortName}.js`,
         `${valaa.type} sub-release deploy`,
-        `Deploy the pre-built sub-release of the ${valaa.type} ${vlm.packageConfig.name}.`,
+        `Deploy the pre-built sub-release of the ${valaa.type} ${name}.`,
         isModule ? `` :
 `When the current repository is deploying a release, each module shall
 explicitly call the deploy scripts of each of its deployable components.`);

@@ -38,11 +38,11 @@ exports.handler = (yargv) => {
 
   Object.assign(vlm, {
     locateModuleRelease,
-    locateComponentRelease,
+    locateModuleComponentRelease,
   });
   return vlm.callValma(".deploy-release/**/*", [releasePath]);
 
-  function locateModuleRelease (moduleName) {
+  function locateModuleRelease (moduleName, moduleDescription = "module") {
     const logPrefix = `valma-deploy-release/${moduleName}`;
     const moduleConfig = ((vlm.valmaConfig || {}).module || {})[moduleName];
     if (!moduleConfig) {
@@ -51,17 +51,24 @@ exports.handler = (yargv) => {
     if (!shell.test("-d", releasePath)) {
       throw new Error(`${logPrefix}: releasePath directory '${releasePath}' missing`);
     }
-    const moduleReleasePath = `${releasePath}/aws-site-front`;
-    if (!shell.test("-d", moduleReleasePath)) return {};
+    const moduleReleasePath = path.posix.join(releasePath, moduleName);
+    if (!shell.test("-d", moduleReleasePath)) {
+      if (vlm.verbosity >= 1) {
+        console.log(`${logPrefix}: skipping ${moduleDescription} deploy: no release at '${
+          moduleReleasePath}'`);
+      }
+    };
     return { moduleConfig, moduleReleasePath };
   }
 
-  function locateComponentRelease (moduleReleasePath, componentName, componentDescription) {
+  function locateModuleComponentRelease (owningModuleName, componentName,
+        componentDescription = "component") {
     const logPrefix = `valma-deploy-release/${componentName}`;
-    const componentReleasePath = `${moduleReleasePath}/${componentName}`;
+    const componentConfig = ((vlm.valmaConfig || {}).module || {})[componentName];
+    const componentReleasePath = path.posix.join(releasePath, owningModuleName, componentName);
     if (!shell.test("-d", componentReleasePath)) {
       if (vlm.verbosity >= 1) {
-        console.log(`${logPrefix}: skipping ${componentDescription}: no release at '${
+        console.log(`${logPrefix}: skipping ${componentDescription} deploy: no release at '${
           componentReleasePath}'`);
       }
       return undefined;

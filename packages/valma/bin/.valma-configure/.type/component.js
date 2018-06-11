@@ -12,7 +12,7 @@ exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
   await vlm.askToCreateValmaScriptSkeleton(
       `.valma-configure/.component/${vlm.packageConfig.name}`,
-      "valma-configure_component.js",
+      `valma-configure__${vlm.packageConfig.name.match(/([^/]*)$/)[1]}.js`,
       "component configure",
       `Configure the depended component ${vlm.packageConfig.name} for the current repository`,
 `As a component this script is not automatically called. The module or

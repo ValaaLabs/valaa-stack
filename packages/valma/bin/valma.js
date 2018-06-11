@@ -245,10 +245,10 @@ async function handler (yargv) {
   subVLM.contextYargv = yargv;
   const maybeRet = subVLM.callValma(yargv.command, yargv._);
   subVLM.callValma = callValmaWithEcho;
-  const ret = await maybeRet;
+  await maybeRet;
 
   _flushPendingConfigWrites();
-  return ret || 0;
+  return 0;
 }
 
 async function callValmaWithEcho (command, argv = []) {
@@ -297,11 +297,12 @@ async function callValma (command, argv = []) {
         console.log("vlm voluble: phase 3.5, pool.absolutePath:", pool.absolutePath,
             ", file.name:", file.name);
       }
-      if (!module || (module.command === undefined) || (module.describe === undefined)) {
+      if (module && (module.command !== undefined) && (module.describe !== undefined)) {
+        yargs.command(module.command, module.summary || module.describe, module.builder, () => {});
+      } else if (!introspect && !contextYargv.list) {
         throw new Error(`vlm: invalid script module '${activeCommand.modulePath
             }', export 'command' or 'describe' missing`);
       }
-      yargs.command(module.command, module.summary || module.describe, module.builder, () => {});
     });
   }
 
@@ -330,12 +331,13 @@ async function callValma (command, argv = []) {
   }
 
   if (introspect) {
-    return _outputIntrospection(introspect, command
+    const ret = _outputIntrospection(introspect, command
         ? activeCommands
         : { vlm: {
           commandName: "vlm", module: valmaCommandExports,
           modulePath: __filename, pool: { path: path.dirname(process.argv[1]) }
         } });
+    return isWildCardCommand ? ret : ret[0];
   } else if (!command) {
     if (!contextYargv.list) {
       console.log("Simple usage: vlm [--help] [-l | --list] <command> [-- <args>]\n");
@@ -352,6 +354,7 @@ async function callValma (command, argv = []) {
   // Phase 5: Dispatch the command(s)
 
   const listedCommands = contextYargv.list && {};
+  let ret = [];
 
   // Reverse to have matching global command names execute first (while obeying overrides)
   for (const activePool of activePools.slice().reverse()) {
@@ -398,7 +401,7 @@ async function callValma (command, argv = []) {
       const subYargv = subYargs.parse(subCommand, { vlm: subVLM });
       const subIntrospect = _extractIntrospectOptions(subYargv);
       if (subIntrospect) {
-        _outputIntrospection(subIntrospect, { [matchingCommand]: activeCommand });
+        ret = ret.concat(_outputIntrospection(subIntrospect, { [matchingCommand]: activeCommand }));
       } else {
         if (contextVLM.verbosity >= 3) {
           console.log("vlm voluble: phase 5: forwarding to:", subCommand,
@@ -407,16 +410,21 @@ async function callValma (command, argv = []) {
         }
         subYargv.vlm.contextYargv = subYargv;
         await _tryInteractive(subYargv, interactiveOptions);
-        if (contextVLM.echo && (matchingCommand !== command)) console.log("    ->> vlm", subCommand);
-        await module.handler(subYargv);
-        if (contextVLM.echo && (matchingCommand !== command)) console.log("    <<- vlm", subCommand);
+        if (contextVLM.echo && (matchingCommand !== command)) {
+          console.log("    ->> vlm", subCommand);
+        }
+        ret.push(await module.handler(subYargv));
+        if (contextVLM.echo && (matchingCommand !== command)) {
+          console.log("    <<- vlm", subCommand,
+              ":", JSON.stringify(ret[ret.length - 1]).slice(0, 20), ret.length > 20 ? "..." : "");
+        }
       }
     }
   }
   if (listedCommands) {
     _outputIntrospection({ info: true }, listedCommands);
   }
-  return 0;
+  return isWildCardCommand ? ret : ret[0];
 }
 
 function _sharedYargs (yargs_, strict = true) {
@@ -650,7 +658,7 @@ function _outputSimpleUsage (commandGlob) {
 function _outputIntrospection (introspect, commands) {
   if (introspect.help) {
     yargs.showHelp("log");
-    return 0;
+    return [];
   }
   let align = 0;
   let versionAlign = 0;
@@ -665,13 +673,16 @@ function _outputIntrospection (introspect, commands) {
     return { name: command.commandName, module: command.module, info };
   });
   infos.sort((l, r) => l.name < r.name);
-  infos.forEach(({ name, module, info }) => {
+  return infos.map(({ name, module, info }) => {
+    let ret;
     if (info) {
       const name_ = commands[name].disabled ? `(${name})` : name;
       if (introspect.info) {
         _outputCommandInfo([[name_, align], "|", [info[0], versionAlign], "|", ...info.slice(1)]);
+        ret = info[0];
       } else if (introspect.version) {
         console.log(info[0]);
+        ret = info[0];
       }
       if (introspect.describe && module && module.describe) {
         console.log();
@@ -679,8 +690,8 @@ function _outputIntrospection (introspect, commands) {
         console.log();
       }
     }
-  });
-  return 0;
+    return ret;
+  }).filter(v => v);
 }
 
 function _commandInfo (commandPath, poolPath) {
