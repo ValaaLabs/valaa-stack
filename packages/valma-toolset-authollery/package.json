@@ -1,6 +1,6 @@
 {
   "name": "@valos/valma-toolset-authollery",
-  "version": "0.30.0-prerelease.8",
+  "version": "0.30.0-prerelease.9",
   "description": "A valma toolset for managing autholleries",
   "license": "MIT",
   "author": "Valaa Technologies Ltd",
@@ -21,6 +21,6 @@
   "dependencies": {
     "lerna": "^2.11.0",
     "shelljs": "^0.8.2",
-    "valma": "^0.30.0-prerelease.8"
+    "valma": "^0.30.0-prerelease.9"
   }
 }
