@@ -40,22 +40,24 @@
     "moduleNameMapper": {
       "\\.(css|less)$": "<rootDir>/packages/tools/jest/styleMock.js"
     },
-    "setupFiles": ["<rootDir>/packages/tools/jest/init.js"],
+    "setupFiles": [
+      "<rootDir>/packages/tools/jest/init.js"
+    ],
     "transform": {
       ".*": "<rootDir>/node_modules/babel-jest"
     }
   },
   "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.49",
-    "@babel/core": "^7.0.0-beta.49",
-    "@babel/plugin-proposal-decorators": "^7.0.0-beta.49",
-    "@babel/plugin-transform-flow-strip-types": "^7.0.0-beta.49",
-    "@babel/plugin-transform-runtime": "^7.0.0-beta.49",
-    "@babel/polyfill": "^7.0.0-beta.49",
-    "@babel/preset-env": "^7.0.0-beta.49",
-    "@babel/preset-react": "^7.0.0-beta.49",
-    "@babel/preset-stage-0": "^7.0.0-beta.49",
-    "@babel/runtime": "^7.0.0-beta.49",
+    "@babel/cli": "^7.0.0-beta.51",
+    "@babel/core": "^7.0.0-beta.51",
+    "@babel/plugin-proposal-decorators": "^7.0.0-beta.51",
+    "@babel/plugin-transform-flow-strip-types": "^7.0.0-beta.51",
+    "@babel/plugin-transform-runtime": "^7.0.0-beta.51",
+    "@babel/polyfill": "^7.0.0-beta.51",
+    "@babel/preset-env": "^7.0.0-beta.51",
+    "@babel/preset-react": "^7.0.0-beta.51",
+    "@babel/preset-stage-0": "^7.0.0-beta.51",
+    "@babel/runtime": "^7.0.0-beta.51",
     "@valos/revelations-dev-server": "file:packages/revelations-dev-server",
     "@valos/valma-toolset-authollery": "file:packages/valma-toolset-authollery",
     "@valos/valma-toolset-vault": "file:packages/valma-toolset-vault",
