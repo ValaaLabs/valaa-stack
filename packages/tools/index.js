@@ -38,6 +38,7 @@ export const invariantifyObject = require("./invariantify").invariantifyObject;
 export const invariantifyString = require("./invariantify").invariantifyString;
 
 export const isPromise = require("./isPromise").default;
+export const isSymbol = require("./isSymbol").default;
 
 export { default as inProduction } from "./inProduction";
 

@@ -1,6 +1,7 @@
 // import StackTrace from "stacktrace-js";
 import beaumpify from "~/tools/beaumpify";
 import { invariantifyObject } from "~/tools/invariantify";
+import isSymbol from "~/tools/isSymbol";
 
 if (typeof window !== "undefined") window.beaumpify = beaumpify;
 
@@ -162,7 +163,7 @@ export function debugObjectNest (head, nest = 1, alwaysStringify = false) {
     if (!head || (!alwaysStringify && inBrowser())) return head;
     if (typeof head === "function") return `[[function.name '${head.name}']]`;
     if (head instanceof Function) return `[[Function.name '${head.name}']]`;
-    if (typeof head === "symbol") return `[[${head.toString()}]]`;
+    if (isSymbol(head)) return `[[${head.toString()}]]`;
     if (typeof head !== "object") return head;
     if (!nest) {
       if (Array.isArray(head)) return `[[Array.length==${head.length}]]`;
@@ -181,7 +182,7 @@ export function debugObjectNest (head, nest = 1, alwaysStringify = false) {
             && `[${head.map(entry => debugObjectNest(entry, nest, alwaysStringify)).join(", ")}]`)
         || (isIterable(head) && debugObjectNest(head.toJS(), nest, alwaysStringify))
         || `{ ${Object.keys(head)
-              .map(key => `${typeof key === "symbol" ? key.toString() : key}: ${
+              .map(key => `${isSymbol(key) ? key.toString() : key}: ${
                   debugObjectNest(head[key], nest - 1, alwaysStringify)}`)
               .join(", ")
             } }`);

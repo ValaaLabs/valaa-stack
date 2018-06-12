@@ -19,7 +19,7 @@ import { tryPackedField, packedSingular } from "~/raem/VALK/packedField";
 import { addStackFrameToError, SourceInfoTag } from "~/raem/VALK/StackTrace";
 
 import type Logger from "~/tools/Logger";
-import { dumpify, wrapError } from "~/tools";
+import { dumpify, isSymbol, wrapError } from "~/tools";
 
 export type Packer = (unpackedValue: any, valker: Valker) => any;
 export type Unpacker = (packedValue: any, valker: Valker) => any;
@@ -235,9 +235,6 @@ export default class Valker extends Resolver {
         case "function":
           // Inline call, delegate handling to it completely, including packing and unpacking.
           return step(head, scope, this, nonFinalStep);
-        case "string": // Field lookup
-        case "symbol":
-          return this.field(head, step, nonFinalStep ? scope : undefined, undefined);
         case "number": // Index lookup
           return this.index(head, step, nonFinalStep ? scope : undefined);
         case "boolean": // nonNull op. nullable only makes a difference in paths.
@@ -247,22 +244,28 @@ export default class Valker extends Resolver {
           return head;
         case "object": {
           if (step === null) return head;
-          const stepName = step[0];
-          if (typeof stepName === "string") {
-            const builtinStepper = this._builtinSteppers[stepName];
-            if (typeof builtinStepper === "function") {
-              type = builtinStepper.name;
-              return builtinStepper(this, head, scope, step, nonFinalStep);
+          if (!isSymbol(step)) {
+            const stepName = step[0];
+            if (typeof stepName === "string") {
+              const builtinStepper = this._builtinSteppers[stepName];
+              if (typeof builtinStepper === "function") {
+                type = builtinStepper.name;
+                return builtinStepper(this, head, scope, step, nonFinalStep);
+              }
+              if (stepName[0] === "§") throw new Error(`Unrecognized builtin step ${stepName}`);
             }
-            if (stepName[0] === "§") throw new Error(`Unrecognized builtin step ${stepName}`);
+            if (!Array.isArray(step)) {
+              type = "select";
+              return this.select(head, step, scope, nonFinalStep);
+            }
+            type = "path";
+            return this._builtinSteppers["§->"](this, head, scope, step, nonFinalStep, 0);
           }
-          if (!Array.isArray(step)) {
-            type = "select";
-            return this.select(head, step, scope, nonFinalStep);
-          }
-          type = "path";
-          return this._builtinSteppers["§->"](this, head, scope, step, nonFinalStep, 0);
         }
+        // eslint-disable-line no-fallthrough
+        case "string": // Field lookup
+        case "symbol":
+          return this.field(head, step, nonFinalStep ? scope : undefined, undefined);
         default:
           throw new Error(`INTERNAL ERROR: Unrecognized step ${dumpify(step)}`);
       }
@@ -390,7 +393,7 @@ export default class Valker extends Resolver {
         const step = selectStep[key];
         let result;
         try {
-          result = ((typeof step === "string") || (typeof step === "symbol"))
+          result = ((typeof step === "string") || isSymbol(step))
               ? this.fieldOrSelect(head, step, undefined, singularTransient, headObjectIntro)
               : this.advance(singularTransient || head, step, scope);
           nextHead[key] = this.tryUnpack(result);

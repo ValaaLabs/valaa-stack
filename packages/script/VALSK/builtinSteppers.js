@@ -5,6 +5,8 @@ import raemBuiltinSteppers, {
   tryLiteral, tryFullLiteral, tryUnpackLiteral, isHostHead, resolveTypeof, BuiltinStep,
 } from "~/raem/VALK/builtinSteppers";
 
+import isSymbol from "~/tools/isSymbol";
+
 import { createNativeIdentifier, isNativeIdentifier, getNativeIdentifierValue,
   setNativeIdentifierValue,
 } from "~/script/denormalized/nativeIdentifier";
@@ -150,7 +152,7 @@ function getIdentifierOrPropertyValue (valker: Valker, head: any, scope: ?Object
         actualError = new Error(`Cannot access ${isGetProperty ? "property" : "identifier"} '${
             String(ePropertyName)}' from ${isGetProperty ? "non-object-like" : "non-scope"
             } value '${String(eContainer)}'`);
-      } else if ((typeof ePropertyName !== "string") && (typeof ePropertyName !== "symbol")) {
+      } else if ((typeof ePropertyName !== "string") && !isSymbol(ePropertyName)) {
         actualError = new Error(`Cannot use a value with type '${typeof ePropertyName}' as ${
             isGetProperty ? "property" : "identifier"} name`);
       }
@@ -218,7 +220,7 @@ function alterIdentifierOrProperty (valker: Valker, head: any, scope: ?Object,
         actualError = new Error(`Cannot modify ${isAlterProperty ? "property" : "identifier"} '${
             String(ePropertyName)}' of ${
             isAlterProperty ? "non-object" : "non-scope"} value '${String(eContainer)}'`);
-      } else if ((typeof ePropertyName !== "string") && (typeof ePropertyName !== "symbol")) {
+      } else if ((typeof ePropertyName !== "string") && !isSymbol(ePropertyName)) {
         actualError = new Error(`Cannot use a value with type '${typeof ePropertyName}' as ${
             isAlterProperty ? "property" : "identifier"} name when modifying`);
       }
@@ -285,7 +287,7 @@ function deleteIdentifierOrProperty (valker: Valker, head: any, scope: ?Object,
                 isPropertyNotIdentifier ? "property" : "identifier"} '${
             String(ePropertyName)}' of ${
             isPropertyNotIdentifier ? "non-object" : "non-scope"} value '${String(eContainer)}'`);
-      } else if ((typeof ePropertyName !== "string") && (typeof ePropertyName !== "symbol")) {
+      } else if ((typeof ePropertyName !== "string") && !isSymbol(ePropertyName)) {
         actualError = new Error(`Cannot use a value with type '${typeof ePropertyName}' as ${
             isPropertyNotIdentifier ? "property" : "identifier"} name when deleting`);
       }

@@ -12,7 +12,7 @@ import { isPackedField } from "~/raem/VALK/packedField";
 import { tryConnectToMissingPartitionsAndThen } from "~/raem/tools/denormalized/partitions";
 import { PrototypeOfImmaterialTag } from "~/raem/tools/denormalized/Transient";
 
-import { dumpify, invariantify, invariantifyObject, invariantifyArray, isPromise,
+import { dumpify, invariantify, invariantifyObject, invariantifyArray, isPromise, isSymbol,
   outputCollapsedError, wrapError,
 } from "~/tools";
 
@@ -632,6 +632,10 @@ function path_ (valker: Valker, head: any, scope: ?Object, pathStep: BuiltinStep
           break;
         case "object":
           if (step === null) continue;
+          if (isSymbol(step)) {
+            stepHead = valker.field(stepHead, step, pathScope || scope);
+            break;
+          }
         default: // eslint-disable-line no-fallthrough
           if (typeof pathScope === "undefined") {
             pathScope = !scope ? {} : mustNotMutateScope ? Object.create(scope) : scope;
@@ -744,7 +748,7 @@ function _headOrScopeSet (valker: Valker, target: any, head: any, scope: ?Object
       const eKey = (typeof setter[0] !== "object") ? setter[0]
           : tryLiteral(valker, head, setter[0], scope);
       const eValue = tryUnpackLiteral(valker, head, setter[1], scope);
-      if ((typeof eKey !== "string") && (typeof eKey !== "symbol")) {
+      if ((typeof eKey !== "string") && !isSymbol(eKey)) {
         throw new Error(`head/setScopeValues.setter#${index}.key is not a string or a symbol`);
       }
       eTarget[eKey] = eValue;

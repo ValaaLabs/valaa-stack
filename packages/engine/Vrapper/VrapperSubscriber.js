@@ -14,7 +14,7 @@ import FieldUpdate from "~/engine/Vrapper/FieldUpdate";
 
 import SimpleData from "~/tools/SimpleData";
 
-import { invariantify, invariantifyObject, thenChainEagerly, wrapError } from "~/tools";
+import { invariantify, invariantifyObject, isSymbol, thenChainEagerly, wrapError } from "~/tools";
 
 export default class VrapperSubscriber extends SimpleData {
   callback: Function;
@@ -41,7 +41,7 @@ export default class VrapperSubscriber extends SimpleData {
     this._subscriberContainers = new Set();
     if (!this.subscriberKey) this.subscriberKey = "unknown";
     try {
-      if ((typeof filter === "string") || (typeof filter === "symbol")) {
+      if ((typeof filter === "string") || isSymbol(filter)) {
         this._subscribedFieldName = filter;
         this._subscribeToFieldByName(emitter, filter, false);
       } else if ((typeof filter === "boolean") || (typeof filter === "function")) {
@@ -652,10 +652,10 @@ function liveMember (subscriber: VrapperSubscriber, head: any, kueryVAKON: Array
       : subscriber._run(head, containerVAKON, scope);
 
   let propertyName = kueryVAKON[1];
-  if ((typeof propertyName !== "string") && (typeof propertyName !== "symbol")
+  if ((typeof propertyName !== "string") && !isSymbol(propertyName)
       && (typeof propertyName !== "number")) {
     propertyName = subscriber._processKuery(head, propertyName, scope, true);
-    if ((typeof propertyName !== "string") && (typeof propertyName !== "symbol")
+    if ((typeof propertyName !== "string") && !isSymbol(propertyName)
         && (!isProperty || (typeof propertyName !== "number"))) {
       throw new Error(`Cannot use a value with type '${typeof propertyName}' as ${
               isProperty ? "property" : "identifier"} name`);

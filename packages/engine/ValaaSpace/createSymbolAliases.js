@@ -1,9 +1,11 @@
 // @flow
 
+import { isSymbol } from "~/tools";
+
 export default function createSymbolAliases (topLevelScope: Object, sourceScope: any) {
   Object.getOwnPropertyNames(sourceScope).forEach(name => {
     const value = sourceScope[name];
-    if (typeof value === "symbol") {
+    if (isSymbol(value)) {
       if (typeof topLevelScope[name] === "undefined") {
         topLevelScope[name] = value;
       } else {

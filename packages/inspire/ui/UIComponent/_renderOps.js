@@ -8,7 +8,7 @@ import { Kuery } from "~/raem/VALK";
 
 import Vrapper from "~/engine/Vrapper";
 
-import { arrayFromAny, isPromise, wrapError } from "~/tools";
+import { arrayFromAny, isPromise, isSymbol, wrapError } from "~/tools";
 
 import UIComponent, { isUIComponentElement } from "./UIComponent";
 import { uiComponentProps } from "./_propsOps";
@@ -103,7 +103,7 @@ export function _render (component: UIComponent):
 }
 
 export function _tryRenderLensRole (component: UIComponent,
-    rootName: string, roleName?: string, roleSymbol?: Symbol, checkIfAvailable?: boolean,
+    rootName: string, roleName: ?string, roleSymbol: ?Symbol, checkIfAvailable?: boolean,
 ): void | null | string | React.Element<any> | [] | Promise<any> {
   const Valaa = component.getValaa();
   const actualRoleName = roleName || Valaa.Lens[roleSymbol];
@@ -243,8 +243,6 @@ export function _tryRenderLens (component: UIComponent,
           lens.call(contextThis, component.getUIContext(), component),
           lensName);
     }
-    case "symbol":
-      return component.renderLensRole(lens, lensName);
     case "object":
       if ((lens === null) || isPromise(lens)) {
         return undefined;
@@ -290,8 +288,13 @@ export function _tryRenderLens (component: UIComponent,
                 component.childProps(subName, {}, { ...lens })),
             subName);
       }
-      throw new Error(`Invalid lens value when trying to render ${lensName
-          }, got value of type '${lens.constructor.name}'`);
+      if (!isSymbol(lens)) {
+        throw new Error(`Invalid lens value when trying to render ${lensName
+            }, got value of type '${lens.constructor.name}'`);
+      }
+    // eslint-disable-next-line no-fallthrough
+    case "symbol":
+      return component.renderLensRole(lens, lensName);
     default:
       break;
   }

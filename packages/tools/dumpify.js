@@ -1,3 +1,5 @@
+import isSymbol from "~/tools/isSymbol";
+
 /**
  *  Returns debug dump of a value as a string, including its type.
  *  @param value the string to dumpify
@@ -35,7 +37,7 @@ export default function dumpify (value, sliceAt, sliceSuffix = "", cache = new M
       ret += suffix;
     }
   } else if (typeof value === "string") ret = value;
-  else if (typeof value === "symbol") ret = value.toString();
+  else if (isSymbol(value)) ret = value.toString();
   else ret = JSON.stringify(value, decirculator);
   if (sliceAt && ret && (sliceAt < ret.length)) return `${ret.slice(0, sliceAt)}${sliceSuffix}`;
   return ret;

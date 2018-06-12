@@ -9,7 +9,7 @@ import { Kuery, dumpKuery, dumpObject } from "~/engine/VALEK";
 
 import Presentable from "~/inspire/ui/Presentable";
 
-import { arrayFromAny, invariantify, outputError, wrapError }
+import { arrayFromAny, invariantify, isSymbol, outputError, wrapError }
     from "~/tools";
 
 import { clearScopeValue, getScopeValue, setScopeValue } from "./scopeValue";
@@ -458,7 +458,7 @@ export default class UIComponent extends React.Component {
       }
       const ret = _tryRenderLensRole(this, actualRootRoleName,
           (typeof role === "string") ? role : undefined,
-          (typeof role === "symbol") ? role : undefined, false);
+          isSymbol(role) ? role : undefined, false);
       if (!rootRoleName) {
         this.tryClearUIContextValue(this.getValaa().rootRoleName);
       }
