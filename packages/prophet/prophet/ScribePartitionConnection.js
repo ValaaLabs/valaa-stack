@@ -97,7 +97,7 @@ export default class ScribePartitionConnection extends PartitionConnection {
   }
 
   _loadEventId (entries, direction: ?"prev", target, eventIdTargetFieldName) {
-    const req = entries.openKeyCursor(undefined, direction);
+    const req = entries.openCursor(...(direction ? [null, direction] : []));
     req.onsuccess = event => {
       const cursor = event.target.result;
       if (cursor) target[eventIdTargetFieldName] = cursor.key;
@@ -729,17 +729,8 @@ export default class ScribePartitionConnection extends PartitionConnection {
     try {
       const range = this._db.getIDBKeyRange(options);
       if (range === null) return undefined;
-      return await this._transaction(["events"], "readonly", ({ events }) =>
-          new Promise((resolve, reject) => {
-            const req = events.getAll(range);
-            req.onsuccess = () => {
-              resolve(req.result.map(event => {
-                delete event.eventId;
-                return event;
-              }));
-            };
-            req.onerror = (evt => reject(new Error(evt.target.error.message)));
-          }));
+      return await this._transaction(["events"], "readonly",
+          ({ events }) => new Promise(_getAllShim.bind(null, events, range)));
     } catch (error) {
       throw this.wrapErrorEvent(error, `_readEvents()`,
           "\n\toptions", options);
@@ -772,15 +763,8 @@ export default class ScribePartitionConnection extends PartitionConnection {
     try {
       const range = this._db.getIDBKeyRange(options);
       if (range === null) return undefined;
-      return await this._transaction(["commands"], "readonly", ({ commands }) =>
-          new Promise((resolve, reject) => {
-            const req = commands.getAll(range);
-            req.onsuccess = () => {
-              req.result.forEach(command => { delete command.eventId; });
-              resolve(req.result);
-            };
-            req.onerror = (evt => reject(new Error(evt.target.error.message)));
-          }));
+      return await this._transaction(["commands"], "readonly",
+          ({ commands }) => new Promise(_getAllShim.bind(null, commands, range)));
     } catch (error) {
       throw this.wrapErrorEvent(error, `_readCommands()`,
           "\n\toptions", options);
@@ -830,6 +814,36 @@ function _nativeObjectFromBufferAndMediaInfo (buffer: ArrayBuffer, mediaInfo?:
     return text;
   }
   return buffer;
+}
+
+function _getAllShim (database, range: IDBKeyRange, resolve: Function, reject: Function) {
+  let req;
+  if (typeof database.getAll !== "undefined") {
+    req = database.getAll(range);
+    req.onsuccess = () => _resolveWith(req.result);
+  } else {
+    console.warn("Using openCursor because getAll is not implemented (by Edge?)");
+    const result = [];
+    req = database.openCursor(range);
+    req.onsuccess = () => {
+      const nextCursor = event.target.result;
+      if (nextCursor) {
+        result.push(nextCursor.value);
+        nextCursor.continue();
+      } else {
+        // complete
+        console.log("Cursor processing complete, result:", result);
+        _resolveWith(result);
+      }
+    };
+  }
+  function _resolveWith (results) {
+    resolve(results.map(event => {
+      delete event.eventId;
+      return event;
+    }));
+  }
+  req.onerror = (evt => reject(new Error(evt.target.error.message)));
 }
 
 function _isTextType ({ type, subtype }: { type: string, subtype: string }) {

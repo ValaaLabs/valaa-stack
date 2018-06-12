@@ -39,12 +39,12 @@ export function dumpObject (value) {
  */
 export default function wrapError (errorIn: Error, ...contextDescriptions) {
   const error = (errorIn instanceof XMLHttpRequest) ? new Error(errorIn) : errorIn;
-  if (!(error instanceof Error)) {
-    console.error("INVARIANT VIOLATION during wrapError: first argument must be an Error object!",
-        "Instead got", error);
+  if ((typeof error !== "object") || !error || (typeof error.message !== "string")) {
+    console.error("INVARIANT VIOLATION during wrapError:",
+        "first argument must be an object with .message property!", "Instead got", error);
     invariantifyObject(error, "wrapError.error", { instanceof: Error });
   }
-  const WrappedType = error.constructor;
+  const WrappedType = (error instanceof Error) ? error.constructor : Error;
   const clippedFrameList = _clipFrameListToCurrentContext(error, error.frameListClipDepth || 4);
   const originalMessage = error.originalMessage || error.message;
   const myTraceAndContext = `${clippedFrameList.join("\n")}
@@ -67,7 +67,14 @@ ${myTraceAndContext}`;
 }
 
 function _clipFrameListToCurrentContext (innerError, dummySliceLineCount) {
-  if (!innerError.stack) return ["<<< inner error stack empty>>>"];
+  if (!innerError.stack) {
+    console.log("innerError has no .stack:", innerError,
+      "\n\ttoString:", innerError.toString(),
+      "\n\tfilename:", innerError.toString(),
+      "\n\ttoString:", innerError.toString(),
+    );
+    return ["<<< inner error stack empty>>>"];
+  }
   const typeHeader = innerError.stack.match(/[^:]*: /);
   const innerTraceList = innerError.stack
       .slice(((typeHeader && typeHeader[0].length) || 0) + innerError.message.length)
