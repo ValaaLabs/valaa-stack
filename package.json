@@ -4,7 +4,7 @@
   "description": "Valaa common infrastructure tools and libraries monorepo.",
   "license": "MIT",
   "author": "Valaa Technologies Ltd",
-  "private": false,
+  "private": true,
   "valaa": {
     "type": "vault",
     "domain": "kernel"
@@ -22,9 +22,11 @@
     "build": "webpack ",
     "assemble-packages": "vlm assemble-packages ",
     "create-authollery": "vlm create-authollery ",
-    "publish-packages": "vlm publish-packages ",
-    "postinstall": "lerna bootstrap --hoist"
+    "publish-packages": "vlm publish-packages "
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "bin": {},
   "jest": {
     "collectCoverage": false,

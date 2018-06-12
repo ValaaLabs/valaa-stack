@@ -1,9 +1,8 @@
 {
   "version": "0.30.0-prerelease.9",
   "lerna": "2.11.0",
-  "packages": [
-    "packages/*"
-  ],
+  "npmClient": "yarn",
+  "useWorkspaces": true,
   "command": {
     "publish": {
       "allowBranch": "prerelease/*",
