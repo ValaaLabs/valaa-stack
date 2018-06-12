@@ -32,6 +32,12 @@ export class LogEventGenerator {
     this._name = name;
   }
 
+  fork (overrides: any) {
+    const ret = Object.create(this);
+    if (overrides) Object.assign(ret, overrides);
+    return ret;
+  }
+
   getLogger (): Logger | Object { return this._logger; }
   getName (): string { return this._name; }
   setName (name: any) { this._name = name; }

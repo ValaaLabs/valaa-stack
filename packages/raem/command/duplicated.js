@@ -31,7 +31,7 @@ export function validateDuplicated (command: Duplicated): Command {
     version, commandId, partitions, parentId, timeStamp,
     // deprecateds,
     owner, instancePrototype, ghostPrototype,
-    ...unrecognized,
+    ...unrecognized
   } = command;
   invariantifyString(type, "DUPLICATED.type", { value: DUPLICATED });
   invariantify(!Object.keys(unrecognized).length,

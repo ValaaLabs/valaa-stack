@@ -54,8 +54,8 @@ export function getSharedGlobal () {
 export function createModuleGlobal (explicitGlobalPrototype?: Object) {
   const ret = Object.create(explicitGlobalPrototype || getSharedGlobal());
   Object.defineProperty(ret, "window", { get: () => ret });
-  ret.self = ret;
-  ret.global = ret;
+  Object.defineProperty(ret, "self", { value: ret });
+  Object.defineProperty(ret, "global", { value: ret });
   return ret;
 }
 

@@ -575,9 +575,9 @@ function _forwardToValmaInPool (pool, needNodeEnv) {
         { env: process.env, stdio: ["inherit", "inherit", "inherit"], detached: true });
   }
   if (childProcess) {
-    process.on("SIGINT", () => {
-      childProcess.kill();
-    });
+    // These don't actually do anything? The forwarded valma process dies to ctrl-c anyway.
+    process.on("SIGTERM", () => { childProcess.kill("SIGTERM"); });
+    process.on("SIGINT", () => { childProcess.kill("SIGINT"); });
   }
 }
 
@@ -603,10 +603,10 @@ function executeExternal (executable, argv = [], spawnOptions = {}) {
   return new Promise((resolve, failure) => {
     _flushPendingConfigWrites();
     if (vlm.echo) console.log("    -->", executable, ...argv);
-    const subprocess = spawn(executable, argv,
+    const subProcess = spawn(executable, argv,
         Object.assign({ env: process.env, stdio: ["inherit", "inherit", "inherit"] }, spawnOptions)
     );
-    subprocess.on("exit", (code, signal) => {
+    subProcess.on("exit", (code, signal) => {
       if (code || signal) failure(code || signal);
       else {
         _refreshActivePools();
@@ -615,7 +615,9 @@ function executeExternal (executable, argv = [], spawnOptions = {}) {
         resolve();
       }
     });
-    subprocess.on("error", failure);
+    subProcess.on("error", failure);
+    process.on("SIGTERM", () => { subProcess.kill("SIGTERM"); });
+    process.on("SIGINT", () => { subProcess.kill("SIGINT"); });
   });
 }
 

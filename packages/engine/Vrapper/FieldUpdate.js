@@ -6,9 +6,8 @@ import { Prophecy } from "~/prophet";
 import { isCreatedLike } from "~/raem/command";
 
 import Vrapper from "~/engine/Vrapper";
-import { arrayFromAny, Forkable } from "~/tools";
+import { arrayFromAny } from "~/tools";
 
-@Forkable
 export default class FieldUpdate {
   _value: ?any;
   _previousValue: ?any;
@@ -29,6 +28,12 @@ export default class FieldUpdate {
     this._valkOptions = { ...(prophecy ? { state: prophecy.state } : {}), ...valkOptions };
     this._vProphecyResource = vProphecyResource;
     this._explicitValue = explicitValue;
+  }
+
+  fork (overrides: any) {
+    const ret = Object.create(this);
+    if (overrides) Object.assign(ret, overrides);
+    return ret;
   }
 
   value (): ?any {

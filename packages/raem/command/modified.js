@@ -36,7 +36,7 @@ export function validateModified (command: Modified): Command {
     sets, splices, adds, removes, dontUpdateCouplings,
     // eslint-disable-next-line no-unused-vars
     version, commandId, partitions, parentId, timeStamp,
-    ...unrecognized,
+    ...unrecognized
   } = command;
   invariantifyString(type, "MODIFIED.type", {
     value: [MODIFIED, FIELDS_SET, ADDED_TO, REMOVED_FROM, REPLACED_WITHIN, SPLICED],

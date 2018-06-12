@@ -34,6 +34,7 @@ exports.builder = function builder (yargs) {
       });
 };
 exports.handler = function handler (yargv) {
+  const vlm = yargv.vlm;
   const contentBase = yargv.distContentBase || "dist/revelations";
   if (!shell.test("-d", contentBase)) {
     console.log("Creating and populating an initially missing content base directory", contentBase,
@@ -41,9 +42,11 @@ exports.handler = function handler (yargv) {
     shell.mkdir("-p", contentBase);
     shell.cp("-R", path.posix.join(yargv.source, "*"), contentBase);
   }
-  shell.exec(`npx -c "webpack-dev-server ${""
+  return vlm.executeExternal("npx", [
+    "-c", `webpack-dev-server ${""
         } ${yargv.inline ? "--inline" : ""
         } ${yargv.progress ? "--progress" : ""
         } ${yargv.open ? "--open" : ""
-        } --host ${yargv.host} --content-base ${contentBase}"`);
+        } --host ${yargv.host} --content-base ${contentBase}`
+  ]);
 };

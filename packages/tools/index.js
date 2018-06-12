@@ -25,8 +25,6 @@ export const beaumpify = require("./beaumpify").default;
 
 export const dumpify = require("./dumpify").default;
 
-export const Forkable = require("./Forkable").default;
-
 export { default as getGlobal } from "./getGlobal";
 
 export const immutate = require("./immutate").default;

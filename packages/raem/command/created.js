@@ -37,7 +37,7 @@ export function validateCreated (command: Created): Command {
     noSubMaterialize,
     // deprecateds
     owner, instancePrototype, ghostPrototype,
-    ...unrecognized,
+    ...unrecognized
   }: Created = command;
   invariantifyString(type, "CREATED.type", { value: CREATED });
   invariantify(!Object.keys(unrecognized).length, "CREATED: command contains unrecognized fields",

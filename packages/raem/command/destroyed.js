@@ -28,7 +28,7 @@ export function validateDestroyed (command: Destroyed): Command {
     version, commandId, partitions, parentId, timeStamp,
     // deprecateds
     owner,
-    ...unrecognized,
+    ...unrecognized
   } = command;
   invariantifyString(type, "DESTROYED.type", { value: DESTROYED });
   invariantify(!Object.keys(unrecognized).length, "DESTROYED: command contains unrecognized fields",

@@ -66,7 +66,7 @@ export function validateTimed (command: Timed, recursiveActionValidator: ?Functi
     primaryPartition, time, startTime, interpolation, extrapolation,
     // eslint-disable-next-line no-unused-vars
     version, commandId, partitions, parentId, timeStamp,
-    ...unrecognized,
+    ...unrecognized
   } = command;
   invariantifyString(type, "TIMED.type", { value: TIMED });
   invariantify(!Object.keys(unrecognized).length, "TIMED: command contains unrecognized fields",

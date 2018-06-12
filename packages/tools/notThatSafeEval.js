@@ -7,7 +7,7 @@ import wrapError from "~/tools/wrapError";
  * TODO(iridian): This was called safeEval, but while an effort was made to make it safe, that's a
  * bit of a lie. It's not really that isolated, so now it's truthfully called notThatSafeEval.
  */
-export default function notThatSafeEval (scope, code, { debug } = {}) {
+export default function notThatSafeEval (scope, code) {
   // Names of local function params that are used to prevent access to stuff in global scope
   // e.g. function (window) { ... } cant access the global window from its scope.
   const params = [];
@@ -44,10 +44,10 @@ export default function notThatSafeEval (scope, code, { debug } = {}) {
     // Call the function in the safe scope and return the result.
     return Function.prototype.bind.apply(sandbox, context)();
   } catch (error) {
-    if (!debug) throw error;
     throw wrapError(error, `During notThatSafeEval(), with:`,
+        `\n\terror object:`, error,
         `\n\tscope:`, scope,
-        `\n\tcode:`, code,
+        `\n\tcode:`, { code },
         `\n\tfinalScope:`, finalScope,
         `\n\tcontext:`, context);
   }

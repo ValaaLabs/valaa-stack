@@ -57,7 +57,7 @@ module.exports = {
       parallel: true,
       sourceMap: !isProduction,
       uglifyOptions: {
-        ecma: 8,
+        ecma: 5,
         warnings: false,
         parse: {},
         compress: isProduction && {},

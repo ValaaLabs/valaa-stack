@@ -10,7 +10,7 @@ import Transient, { createImmaterialTransient, createInactiveTransient }
 
 import type { State } from "~/raem/tools/denormalized/State";
 
-import { dumpObject, Forkable, invariantify, invariantifyString, LogEventGenerator }
+import { dumpObject, invariantify, invariantifyString, LogEventGenerator }
     from "~/tools";
 
 
@@ -30,7 +30,6 @@ import { dumpObject, Forkable, invariantify, invariantifyString, LogEventGenerat
  * @export
  * @class Resolver
  */
-@Forkable
 export default class Resolver extends LogEventGenerator {
   constructor (options: ?Object) {
     if (!options.name) options.name = "Resolver";

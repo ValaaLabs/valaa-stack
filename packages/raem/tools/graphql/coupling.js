@@ -30,7 +30,7 @@ import invariantify from "~/tools/invariantify";
 export function toNone () { return "none"; }
 
 export function toOne ({ coupledField, defaultCoupledField, alias, owned, whenUnmatched,
-    preventsDestroy, ...rest, } = {}) {
+    preventsDestroy, ...rest } = {}) {
   invariantify(!Object.keys(rest).length, "toOne: Unrecognized coupling options:",
       "\n\tunrecognized options:", rest);
   invariantify(!(coupledField && defaultCoupledField),
@@ -59,7 +59,7 @@ export function toOne ({ coupledField, defaultCoupledField, alias, owned, whenUn
 }
 
 export function toMany ({ coupledField, defaultCoupledField, alias, owned, whenUnmatched,
-    preventsDestroy, ...rest, } = {}) {
+    preventsDestroy, ...rest } = {}) {
   invariantify(!Object.keys(rest).length, "toMany: Unrecognized coupling options: %s", rest);
   invariantify(!(coupledField && defaultCoupledField),
       "Can only specify either coupledField or defaultCoupledField");
