@@ -1,5 +1,7 @@
 // @flow
 
+import "@babel/polyfill";
+
 import { Map as ImmutableMap } from "immutable";
 
 import { VRef } from "~/raem/ValaaReference";
