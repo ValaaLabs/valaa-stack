@@ -43,23 +43,23 @@
     }
   },
   "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.49",
+    "@babel/core": "^7.0.0-beta.49",
+    "@babel/plugin-proposal-decorators": "^7.0.0-beta.49",
+    "@babel/plugin-transform-flow-strip-types": "^7.0.0-beta.49",
+    "@babel/plugin-transform-runtime": "^7.0.0-beta.49",
+    "@babel/polyfill": "^7.0.0-beta.49",
+    "@babel/preset-env": "^7.0.0-beta.49",
+    "@babel/preset-react": "^7.0.0-beta.49",
+    "@babel/preset-stage-0": "^7.0.0-beta.49",
+    "@babel/runtime": "^7.0.0-beta.49",
     "@valos/revelations-dev-server": "file:packages/revelations-dev-server",
     "@valos/valma-toolset-authollery": "file:packages/valma-toolset-authollery",
     "@valos/valma-toolset-vault": "file:packages/valma-toolset-vault",
-    "babel-cli": "^6.24.1",
-    "babel-core": "^6.26.0",
     "babel-eslint": "^7.1.0",
-    "babel-loader": "^7.1.2",
+    "babel-loader": "^8.0.0-beta.3",
     "babel-plugin-module-resolver": "^3.1.1",
     "babel-plugin-root-import": "^5.1.0",
-    "babel-plugin-transform-decorators-legacy": "^1.3.4",
-    "babel-plugin-transform-flow-strip-types": "^6.18.0",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-polyfill": "^6.9.1",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-react": "^6.24.1",
-    "babel-preset-stage-0": "^6.24.1",
-    "babel-runtime": "^6.25.0",
     "compression-webpack-plugin": "^1.1.11",
     "css-loader": "^0.26.1",
     "eslint": "3.19.0",
@@ -86,6 +86,5 @@
     "uglifyjs-webpack-plugin": "^1.0.0-rc.0",
     "valma": "file:packages/valma",
     "webpack": "^3.8.1"
-  },
-  "dependencies": {}
+  }
 }

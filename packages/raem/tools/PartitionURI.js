@@ -1,6 +1,6 @@
 // @flow
 
-import URLSearchParams from "url-search-params";
+import "url-polyfill";
 
 import { invariantifyString, invariantifyObject } from "~/tools/invariantify";
 

@@ -1,4 +1,6 @@
 // @flow
+import "url-polyfill";
+
 import GhostPath, { JSONGhostPath, ghostPathFromJSON }
     from "~/raem/tools/denormalized/GhostPath";
 import { PartitionURI, createPartitionURI, getPartitionRawIdFrom }
