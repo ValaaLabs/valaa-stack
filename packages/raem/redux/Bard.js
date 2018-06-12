@@ -1,6 +1,7 @@
 // @flow
 import { GraphQLObjectType } from "graphql/type";
 import { Map } from "immutable";
+import { URL } from "whatwg-url";
 
 import type Command, { Action } from "~/raem/command";
 import isResourceType from "~/raem/tools/graphql/isResourceType";

@@ -17,6 +17,6 @@
     "@valos/tools": "^0.30.0-prerelease.8",
     "graphql": "^0.6.2",
     "immutable": "~3.7.4",
-    "url-polyfill": "^1.0.13"
+    "whatwg-url": "^6.5.0"
   }
 }

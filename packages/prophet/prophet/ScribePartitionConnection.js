@@ -1,3 +1,5 @@
+import { URL } from "whatwg-url";
+
 import Command, { isCreatedLike, isTransactedLike } from "~/raem/command";
 import { VRef, obtainVRef, getRawIdFrom } from "~/raem/ValaaReference";
 

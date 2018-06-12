@@ -1,5 +1,5 @@
 // @flow
-import "url-polyfill";
+import { URL } from "whatwg-url";
 
 import GhostPath, { JSONGhostPath, ghostPathFromJSON }
     from "~/raem/tools/denormalized/GhostPath";

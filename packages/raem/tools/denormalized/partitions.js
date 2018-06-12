@@ -1,3 +1,5 @@
+import { URL } from "whatwg-url";
+
 import { VRef } from "~/raem/ValaaReference";
 
 import Bard, { getActionFromPassage } from "~/raem/redux/Bard";

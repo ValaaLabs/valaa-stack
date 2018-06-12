@@ -2,7 +2,10 @@
 
 import wrapError from "~/tools/wrapError";
 
-export class InvariantError extends Error {}
+// Workaround for "_construct" typo in @babel/runtime 7.0.0-beta.49
+// https://github.com/babel/babel/issues/8061
+const ErrorClass = Error;
+export class InvariantError extends ErrorClass {}
 
 export default function invariantify (condition: mixed,
     violationErrorMessage: string, ...contextInformation: any) {

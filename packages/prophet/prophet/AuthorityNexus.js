@@ -1,5 +1,7 @@
 // @flow
 
+import { URL } from "whatwg-url";
+
 import { getValaaURI } from "~/raem/tools/PartitionURI";
 
 import Prophet from "~/prophet/api/Prophet";

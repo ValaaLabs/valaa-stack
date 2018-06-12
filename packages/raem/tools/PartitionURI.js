@@ -1,7 +1,6 @@
 // @flow
 
-import "url-polyfill";
-
+import { URL, URLSearchParams } from "whatwg-url";
 import { invariantifyString, invariantifyObject } from "~/tools/invariantify";
 
 /**
