@@ -13,6 +13,9 @@ import type { State } from "~/raem/tools/denormalized/State";
 import { dumpObject, invariantify, invariantifyString, LogEventGenerator }
     from "~/tools";
 
+type BindFieldVRefOptions = {
+  coupledField?: string, defaultCoupledField?: string, bindPartition?: boolean,
+};
 
 /**
  * Resolver is a helper component for performing various resolutions against a specific known state.
@@ -86,7 +89,7 @@ export default class Resolver extends LogEventGenerator {
    * @returns {VRef}
    */
   bindObjectId (id: VRef | JSONIdData, typeName: string = "Resource",
-      bindPartition: boolean): VRef {
+      bindPartition?: boolean): VRef {
     const idVRef = id instanceof VRef ? id : obtainVRef(id);
     const rawId = idVRef.rawId();
     try {
@@ -137,9 +140,7 @@ export default class Resolver extends LogEventGenerator {
    * @param {any} [{ coupledField, defaultCoupledField }={}]    accepts a fieldInfo structure
    * @returns
    */
-  bindFieldVRef (fieldRef: VRef | JSONIdData,
-      options: { coupledField?: string, defaultCoupledField?: string, bindPartition: boolean }
-          = {}) {
+  bindFieldVRef (fieldRef: VRef | JSONIdData, options: BindFieldVRefOptions = {}) {
     const coupledField = options.coupledField || tryCoupledFieldFrom(fieldRef)
         || options.defaultCoupledField;
     const boundId = this.bindObjectId(fieldRef, undefined, options.bindPartition);

@@ -10,11 +10,12 @@ import { invariantify, invariantifyObject, outputError, wrapError } from "~/tool
 import type UIComponent from "./UIComponent";
 import { getScopeValue } from "./scopeValue";
 
+type UIComponentPropsOptions = {
+  name?: string, index?: any, uiContext?: Object,
+  parentUIContext?: Object, focus?: any, head?: any, kuery?: any
+};
 export function uiComponentProps (
-    options: {
-      name?: string, index?: any, uiContext?: Object,
-      parentUIContext?: Object, focus?: any, head?: any, kuery?: any
-    } = {},
+    options: UIComponentPropsOptions = {},
     props?: Object = {},
 ) {
   const focus = options.hasOwnProperty("focus") ? options.focus : options.head;
