@@ -1,6 +1,6 @@
 // @flow
 
-import { URL, URLSearchParams } from "whatwg-url";
+import URL from "url-parse";
 import { invariantifyString, invariantifyObject } from "~/tools/invariantify";
 
 /**
@@ -76,22 +76,25 @@ export function getValaaURI (uri: URL | string): URL {
 
 export function createValaaURI (uriString: string): URL {
   if (typeof uriString !== "string") return undefined;
-  const ret = new URL(uriString);
-  if (!ret.searchParams && ret.search) ret.searchParams = new URLSearchParams(ret.search);
+  const ret = new URL(uriString, null, true);
+  // if (!ret.searchParams && ret.search) ret.searchParams = new URLSearchParams(ret.search);
   return ret;
 }
 
 export function getURIQueryField (uri: URL | string, fieldName: string): ?any {
   const valaaURI = (typeof uri === "string") ? createValaaURI(uri) : uri;
+  return valaaURI.query && valaaURI.query[fieldName];
+  /*
   const searchParams = valaaURI.searchParams
       || (valaaURI.search ? new URLSearchParams(valaaURI.search) : undefined);
   return searchParams && searchParams.get(fieldName);
+  */
 }
 
 export function getPartitionRawIdFrom (partitionURI: PartitionURI): string {
   invariantifyObject(partitionURI, "partitionURI",
     { instanceof: URL, allowEmpty: true });
-  return decodeURIComponent(partitionURI.searchParams.get("id"));
+  return decodeURIComponent(partitionURI.query.id);
 }
 
 export function getPartitionAuthorityURIStringFrom (partitionURI: PartitionURI): string {

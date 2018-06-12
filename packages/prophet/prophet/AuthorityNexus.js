@@ -1,6 +1,6 @@
 // @flow
 
-import { URL } from "whatwg-url";
+import URL from "url-parse";
 
 import { getValaaURI } from "~/raem/tools/PartitionURI";
 

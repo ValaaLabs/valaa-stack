@@ -1,9 +1,9 @@
 // @flow
-import { URL } from "whatwg-url";
+import URL from "url-parse";
 
 import GhostPath, { JSONGhostPath, ghostPathFromJSON }
     from "~/raem/tools/denormalized/GhostPath";
-import { PartitionURI, createPartitionURI, getPartitionRawIdFrom }
+import { PartitionURI, createValaaURI, createPartitionURI, getPartitionRawIdFrom }
     from "~/raem/tools/PartitionURI";
 
 import dumpify from "~/tools/dumpify";
@@ -261,18 +261,18 @@ export function vRefFromJSON (json: JSONIdData, RefType: Object = VRef): VRef {
 
 export function vRefFromURI (uri: URL | string): VRef {
   const [partitionURI, fragment] = String(uri).split("#");
-  if (!fragment) return vRef("", null, null, new URL(partitionURI));
+  if (!fragment) return vRef("", null, null, createValaaURI(partitionURI));
   const [rawId, referenceOptions] = fragment.split("?");
   // TODO(iridian): validate rawId against [-_0-9a-zA-Z] and do base64 -> base64url conversion
   // which needs codebase wide changes.
-  if (!referenceOptions) return vRef(rawId, null, null, new URL(partitionURI));
+  if (!referenceOptions) return vRef(rawId, null, null, createValaaURI(partitionURI));
   // const options = {};
   let coupling;
   for (const [key, value] of referenceOptions.split("&").map(pair => pair.split("="))) {
     if (key === "coupling") coupling = value;
     else throw new Error(`ValaaReference option '${key}' not implemented yet`);
   }
-  return vRef(rawId, coupling, undefined, new URL(partitionURI));
+  return vRef(rawId, coupling, undefined, createValaaURI(partitionURI));
 }
 
 /**

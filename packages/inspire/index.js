@@ -4,10 +4,7 @@
 // at the moment it still is the top level entry point, but this might change.
 import "@babel/polyfill";
 import injectTapEventPlugin from "react-tap-event-plugin";
-import { URL, URLSearchParams } from "whatwg-url";
-
-window.URL = URL;
-window.URLSearchParams = URLSearchParams;
+import URL from "url-parse";
 
 import { getURIQueryField } from "~/raem/tools/PartitionURI";
 
@@ -20,6 +17,8 @@ import { exportValaaPlugin, getGlobal, Logger, LogEventGenerator, outputError }
     from "~/tools";
 
 import * as mediaDecoders from "./mediaDecoders";
+
+window.URL = URL;
 
 injectTapEventPlugin();
 
