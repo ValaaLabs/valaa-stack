@@ -179,6 +179,17 @@ const availablePools = [
 ];
 let activePools = [];
 
+// When a command begins with ./ or contains valma- it is considered a direct file valma command.
+// It's parent directory is added as "file" pool so that other scripts there are also available.
+if ((globalYargv.command || "").includes("valma-")
+    || (globalYargv.command || "").slice(0, 2) === "./") {
+  if (globalYargv.isCompleting) process.exit(0); // Let bash filename completion do its thing.
+  const match = globalYargv.command.match(/(.*\/)?(\.?)valma-(.*?)(.js)?$/);
+  const filePoolPath = path.posix.resolve((match && match[1]) || "");
+  availablePools.unshift({ name: "file", path: filePoolPath });
+  globalYargv.command = match ? `${match[2]}${match[3]}` : "";
+}
+
 const packageConfigStatus = {
   path: path.posix.join(process.cwd(), "package.json"), updated: false,
 };
