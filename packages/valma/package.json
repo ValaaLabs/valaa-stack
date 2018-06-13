@@ -37,6 +37,7 @@
     ".valma-status_10-header": "bin/.valma-status_10-header.js"
   },
   "dependencies": {
+    "cardinal": "^2.1.1",
     "glob-to-regexp": "^0.4.0",
     "inquirer": "^5.2.0",
     "minimatch": "^3.0.4",

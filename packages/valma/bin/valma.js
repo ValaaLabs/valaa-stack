@@ -8,6 +8,8 @@ const path = require("path");
 const shell = require("shelljs");
 const semver = require("semver");
 const yargs = require("yargs");
+const cardinal = require("cardinal");
+const tomorrowNight = require("cardinal/themes/tomorrow-night");
 
 
 /* eslint-disable vars-on-top, no-loop-func, no-restricted-syntax, no-cond-assign,
@@ -471,6 +473,11 @@ function _sharedYargs (yargs_, strict = true) {
           alias: "describe", type: "boolean", default: false, global: true,
           description: "Show the description block of the matching sub-command(s)",
         },
+        s: {
+          group: "Shared options:",
+          alias: "script", type: "boolean", default: false, global: true,
+          description: "Show the script code",
+        },
       });
 }
 
@@ -622,12 +629,15 @@ function executeExternal (executable, argv = [], spawnOptions = {}) {
 }
 
 function _extractIntrospectOptions (yargv) {
-  if (!yargv.info && !yargv.describe && !yargv.version && !yargv.help) { return undefined; }
+  if (!yargv.info && !yargv.describe && !yargv.version && !yargv.help && !yargv.script) {
+    return undefined;
+  }
   return {
     info: yargv.info,
     describe: yargv.describe,
     version: yargv.version,
     help: yargv.help,
+    script: yargv.script,
   };
 }
 
@@ -686,7 +696,14 @@ function _outputIntrospection (introspect, commands) {
         console.log(info[0]);
         ret = info[0];
       }
-      if (introspect.describe && module && module.describe) {
+      if (introspect.script) {
+        if (shell.test("-f", info[3])) {
+          const scriptSource = String(shell.head({ "-n": 1000000 }, info[3]));
+          console.log(cardinal.highlight(scriptSource, { theme: tomorrowNight, linenos: true }));
+        } else {
+          console.log(`cannot find command '${name}' script source at:`, info[3]);
+        }
+      } else if (introspect.describe && module && module.describe) {
         console.log();
         console.log(module.describe);
         console.log();
