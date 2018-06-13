@@ -103,30 +103,51 @@ const vlm = yargs.vlm = {
   // Calls valma sub-command with argv.
   callValma,
 
-  // Executes an external command with argv.
+  // Executes an external command and returns a promise of the command stdandard output as string.
   executeExternal,
 
-  // Opens interactive inquirer prompt and return a completion promise.
-  inquire: inquirer.createPromptModule(),
-
-  // Contents of package.json
+  // Contents of package.json (contains pending updates as well)
   packageConfig: undefined,
 
-  // Contents of valma.json
+  // Contents of valma.json (contains pending updates as well)
   valmaConfig: undefined,
 
-  // Registers pending updates to the package.json config file which are immediately available in
-  // vlm.packageConfig but will be written to file only immediately before valma execution exits or
+  // Registers pending updates to the package.json config file (immediately available in
+  // vlm.packageConfig) which are written to file only immediately before valma execution exits or
   // an external command is about to be executed.
+  // TODO(iridian): Improve the flush semantics, maybe to flush-on-subcommand-success - now it's
+  // just silly.
   updatePackageConfig,
 
-  // Registers pending updates to the valma.json config file which are immediately available in
-  // vlm.valmaConfig but will be written to file only immediately before valma execution exits or
+  // Registers pending updates to the valma.json config file (immediately available in
+  // vlm.valmaConfig) which are written to file only immediately before valma execution exits or
   // an external command is about to be executed.
+  // TODO(iridian): Improve the flush semantics, maybe to flush-on-subcommand-success - now it's
+  // just silly.
   updateValmaConfig,
 
   // Returns a list of available sub-command names which match the given command glob.
   matchPoolCommandNames,
+
+  // Opens interactive inquirer prompt and returns a completion promise.
+  // See https://github.com/SBoudrias/Inquirer.js/
+  inquire: inquirer.createPromptModule(),
+
+  // shelljs namespace of portable Unix commands
+  // See https://github.com/shelljs/shelljs
+  shell,
+
+  // semver namespace of the npm semver parsing tools
+  // See https://github.com/npm/node-semver
+  semver,
+
+  // minimatch namespace of the glob matching tools
+  // See https://github.com/isaacs/minimatch
+  minimatch,
+
+  // node.js path.posix tools - all shell commands expect posix-style paths.
+  // See https://nodejs.org/api/path.html
+  path: path.posix,
 };
 
 vlm.isCompleting = (process.argv[2] === "--get-yargs-completions");
@@ -348,8 +369,8 @@ async function callValma (command, argv = []) {
   }
 
   if (!Object.keys(activeCommands).length && !isWildCardCommand) {
-    console.log(`vlm: cannot find command '${command}' from pools:`,
-    ...activePools.map(emptyPool => `"${path.posix.join(emptyPool.path, commandGlob)}"`));
+    console.log(`vlm: cannot find command '${command}' from active pools:`,
+        ...activePools.map(activePool => `"${path.posix.join(activePool.path, commandGlob)}"`));
     return -1;
   }
 
@@ -417,8 +438,10 @@ async function callValma (command, argv = []) {
         }
         ret.push(await module.handler(subYargv));
         if (contextVLM.echo && (matchingCommand !== command)) {
+          let retValue = JSON.stringify(ret[ret.length - 1]);
+          if (retValue === undefined) retValue = "undefined";
           console.log("    <<- vlm", subCommand,
-              ":", JSON.stringify(ret[ret.length - 1]).slice(0, 20), ret.length > 20 ? "..." : "");
+              ":", retValue.slice(0, 20), retValue.length > 20 ? "..." : "");
         }
       }
     }
