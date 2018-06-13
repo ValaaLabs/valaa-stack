@@ -129,7 +129,9 @@ exports.handler = async (yargv) => {
     console.log(`\nvalma-assemble-packages: assembling package '${name}' into`, targetDirectory);
     shell.mkdir("-p", targetDirectory);
     shell.cp("-R", path.posix.join(sourceDirectory, "*"), targetDirectory);
-    if (shell.test("-f", path.posix.join(sourceDirectory, ".babelrc"))) {
+    if (shell.test("-f", path.posix.join(sourceDirectory, ".babelrc"))
+        || shell.test("-f", path.posix.join(sourceDirectory, ".babelrc.js"))
+        || shell.test("-f", path.posix.join(sourceDirectory, "babel.config.js"))) {
       shell.exec(`NODE_ENV=${yargv.nodeEnv} babel ${sourceDirectory} --out-dir ${targetDirectory}`);
     }
     if (yargv.unlink) {
