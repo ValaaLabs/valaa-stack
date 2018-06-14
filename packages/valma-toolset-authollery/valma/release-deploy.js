@@ -1,8 +1,7 @@
-const shell = require("shelljs");
-const path = require("path");
+#!/usr/bin/env vlm
 
-exports.command = "deploy-release [moduleglob]";
-exports.summary = "deploys the prepared releases to their corresponding backends";
+exports.command = "release-deploy [moduleglob]";
+exports.summary = "Deploy previously prepared releases to their deployment targets";
 exports.describe = `${exports.summary}`;
 
 exports.builder = (yargs) => yargs.options({
@@ -22,59 +21,62 @@ exports.handler = (yargv) => {
   const packageConfig = vlm.packageConfig;
   const packageName = packageConfig.name.replace(/\//g, "_");
 
-  const releasePath = path.posix.join(yargv.source, `${packageName}-${packageConfig.version}`);
+  const releasePath = vlm.path.join(yargv.source, `${packageName}-${packageConfig.version}`);
 
   if (!yargv.prerelease && (packageConfig.version.indexOf("-prerelease") !== -1)) {
-    throw new Error(`valma-deploy-release: cannot deploy a release with a '-prerelease' version${
+    throw new Error(`valma-release-deploy: cannot deploy a release with a '-prerelease' version${
         ""} (provide '--prerelease' option to override).`);
   }
 
-  if (!shell.test("-d", releasePath)) {
-    throw new Error(`valma-deploy-release: cannot find a release build for version '${
+  if (!vlm.shell.test("-d", releasePath)) {
+    throw new Error(`valma-release-deploy: cannot find a release build for version '${
         packageConfig.version}' version in "${releasePath}".`);
   }
-  console.log("\nvalma-deploy-release: deploying", packageConfig.name, packageConfig.version,
+  console.log("\nvalma-release-deploy: deploying", packageConfig.name, packageConfig.version,
       "from", releasePath);
 
   Object.assign(vlm, {
     locateModuleRelease,
     locateModuleComponentRelease,
   });
-  return vlm.callValma(".deploy-release/**/*", [releasePath]);
+  return vlm.callValma(".release-deploy/**/*", [releasePath]);
 
   function locateModuleRelease (moduleName, moduleDescription = "module") {
-    const logPrefix = `valma-deploy-release/${moduleName}`;
+    const logPrefix = `valma-release-deploy/${moduleName}`;
     const moduleConfig = ((vlm.valmaConfig || {}).module || {})[moduleName];
     if (!moduleConfig) {
       throw new Error(`${logPrefix}: valma.json:module["${moduleName}"] missing`);
     }
-    if (!shell.test("-d", releasePath)) {
+    if (!vlm.shell.test("-d", releasePath)) {
       throw new Error(`${logPrefix}: releasePath directory '${releasePath}' missing`);
     }
-    const moduleReleasePath = path.posix.join(releasePath, moduleName);
-    if (!shell.test("-d", moduleReleasePath)) {
+    const moduleReleasePath = vlm.path.join(releasePath, moduleName);
+    if (!vlm.shell.test("-d", moduleReleasePath)) {
       if (vlm.verbosity >= 1) {
         console.log(`${logPrefix}: skipping ${moduleDescription} deploy: no release at '${
           moduleReleasePath}'`);
       }
-    };
+      return {};
+    }
+    console.log(`${logPrefix}: deploying ${moduleDescription} release from '${
+        moduleReleasePath}'`);
     return { moduleConfig, moduleReleasePath };
   }
 
   function locateModuleComponentRelease (owningModuleName, componentName,
         componentDescription = "component") {
-    const logPrefix = `valma-deploy-release/${componentName}`;
+    const logPrefix = `valma-release-deploy/${componentName}`;
     const componentConfig = ((vlm.valmaConfig || {}).module || {})[componentName];
-    const componentReleasePath = path.posix.join(releasePath, owningModuleName, componentName);
-    if (!shell.test("-d", componentReleasePath)) {
+    const componentReleasePath = vlm.path.join(releasePath, owningModuleName, componentName);
+    if (!vlm.shell.test("-d", componentReleasePath)) {
       if (vlm.verbosity >= 1) {
         console.log(`${logPrefix}: skipping ${componentDescription} deploy: no release at '${
           componentReleasePath}'`);
       }
-      return undefined;
+      return {};
     }
     console.log(`${logPrefix}: deploying ${componentDescription} release from '${
         componentReleasePath}'`);
-    return componentReleasePath;
+    return { componentConfig, componentReleasePath };
   }
 };

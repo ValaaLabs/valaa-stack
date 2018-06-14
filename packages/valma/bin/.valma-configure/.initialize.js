@@ -7,9 +7,9 @@ exports.describe = `${exports.summary}. Type determines the function and structu
 exports.builder = (yargs) => {
   const vlm = yargs.vlm;
   const valaa = vlm.packageConfig.valaa || {};
-  const typeChoices = vlm.matchPoolCommandNames(".configure/.type/*")
+  const typeChoices = vlm.listMatchingCommands(".configure/.type/*")
       .map(n => n.match(/^.configure\/.type\/([^/]*)/)[1]);
-  const domainChoices = vlm.matchPoolCommandNames(".configure/.domain/*")
+  const domainChoices = vlm.listMatchingCommands(".configure/.domain/*")
       .map(n => n.match(/^.configure\/.domain\/([^/]*)/)[1]);
   return yargs.options({
     type: {

@@ -1,8 +1,7 @@
-const path = require("path");
-const shell = require("shelljs");
+#!/usr/bin/env vlm
 
-exports.command = "build-release";
-exports.summary = "builds all modified authollery components (preparing for deploy)";
+exports.command = "release-build";
+exports.summary = "Build all modified authollery components (preparing for deploy)";
 exports.describe = `${exports.summary} into a temporary dist target`;
 
 exports.builder = (yargs) => yargs.options({
@@ -21,28 +20,28 @@ exports.handler = (yargv) => {
   const packageConfig = vlm.packageConfig;
   const packageName = packageConfig.name.replace(/\//g, "_");
 
-  const releasePath = path.posix.join(yargv.target, `${packageName}-${packageConfig.version}`);
-  if (shell.test("-d", releasePath)) {
+  const releasePath = vlm.path.join(yargv.target, `${packageName}-${packageConfig.version}`);
+  if (vlm.shell.test("-d", releasePath)) {
     if (packageConfig.version.indexOf("-prerelease") !== -1) {
-      console.warn("valma-build-release: removing an existing '-prerelease' build target:",
+      console.warn("valma-release-build: removing an existing '-prerelease' build target:",
           releasePath);
-      shell.rm("-rf", releasePath);
+      vlm.shell.rm("-rf", releasePath);
     } else {
-      throw new Error(`valma-build-release: existing build for non-prerelease version ${
+      throw new Error(`valma-release-build: existing build for non-prerelease version ${
         packageConfig.version} found at ${releasePath}. Bump the version number?`);
     }
   }
 
-  shell.mkdir("-p", releasePath);
+  vlm.shell.mkdir("-p", releasePath);
 
-  console.log("valma-build-release: building version", packageConfig.version, "of",
+  console.log("valma-release-build: building version", packageConfig.version, "of",
       packageConfig.name, "into", releasePath);
 
   Object.assign(vlm, {
     prepareModuleBuild,
     prepareModuleComponentBuild,
   });
-  return vlm.callValma(".build-release/**/*", [releasePath]);
+  return vlm.callValma(".release-build/**/*", [releasePath]);
 
   /**
    * Validates module build pre-conditions and returns the module target dist path where the actual
@@ -54,25 +53,25 @@ exports.handler = (yargv) => {
    */
   function prepareModuleBuild (moduleName, moduleDescription = "module",
       desiredVersionHash) {
-    if (!shell.test("-d", releasePath)) {
-      throw new Error(`valma-build-release/${moduleName}: releasePath directory '${
+    if (!vlm.shell.test("-d", releasePath)) {
+      throw new Error(`valma-release-build/${moduleName}: releasePath directory '${
           releasePath}' missing`);
     }
     const moduleConfig = ((this.valmaConfig || {}).module || {})[moduleName];
     if (!moduleConfig) return {};
     if ((moduleConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {
       if (this.verbosity >= 1) {
-        console.log(`valma-build-release/${moduleName
+        console.log(`valma-release-build/${moduleName
             }: skipping the build of already deployed release version ${desiredVersionHash
             } of module ${moduleDescription}`);
       }
       return {};
     }
-    const moduleReleasePath = path.posix.join(releasePath, moduleName);
-    console.log(`valma-build-release/${moduleName}: building ${moduleDescription} release in`,
+    const moduleReleasePath = vlm.path.join(releasePath, moduleName);
+    console.log(`valma-release-build/${moduleName}: building ${moduleDescription} release in`,
         moduleReleasePath);
-    shell.rm("-rf", moduleReleasePath);
-    shell.mkdir("-p", moduleReleasePath);
+    vlm.shell.rm("-rf", moduleReleasePath);
+    vlm.shell.mkdir("-p", moduleReleasePath);
     return { moduleConfig, moduleReleasePath };
   }
 
@@ -82,17 +81,17 @@ exports.handler = (yargv) => {
     if (!componentConfig) return {};
     if ((componentConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {
       if (this.verbosity >= 1) {
-        console.log(`valma-build-release/${componentName
+        console.log(`valma-release-build/${componentName
             }: skipping the build of already deployed release version ${desiredVersionHash
             } of component ${componentDescription}`);
       }
       return {};
     }
-    const componentReleasePath = path.posix.join(releasePath, owningModuleName, componentName);
-    console.log(`valma-build-release/${componentName}: building ${componentDescription
+    const componentReleasePath = vlm.path.join(releasePath, owningModuleName, componentName);
+    console.log(`valma-release-build/${componentName}: building ${componentDescription
         } release in '${componentReleasePath}'`);
-    shell.rm("-rf", componentReleasePath);
-    shell.mkdir("-p", componentReleasePath);
+    vlm.shell.rm("-rf", componentReleasePath);
+    vlm.shell.mkdir("-p", componentReleasePath);
     return { componentConfig, componentReleasePath };
   }
 };

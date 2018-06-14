@@ -29,7 +29,7 @@ const nodeCheck = ">=8.10.0";
 const npmCheck = ">=5.0.0";
 
 const defaultPaths = {
-  packagePool: path.posix.resolve("localbin/"),
+  localPool: path.posix.resolve("valma.bin/"),
   dependedPoolSubdirectory: "node_modules/.bin/",
   globalPool: process.env.VLM_GLOBAL_POOL || (shell.which("vlm") || "").slice(0, -3),
 };
@@ -164,7 +164,7 @@ sharing the folders between separate packages).`,
         },
         "package-pool": {
           group: "Execution options:",
-          type: "string", default: defaultPaths.packagePool, global: false,
+          type: "string", default: defaultPaths.localPool, global: false,
           description: "Package pool path is the first pool to be searched",
         },
         "depended-pool-subdirectory": {
@@ -261,7 +261,7 @@ if (vlm.verbosity >= 2) {
 
 const availablePools = [];
 // When a command begins with ./ or contains valma- it is considered a direct file valma command.
-// It's parent directory is made the initial "file" pool, replacing the "package" pool of regular
+// It's parent directory is made the initial "file" pool, replacing the "local" pool of regular
 // valma commands. The depended pools are searched from this path.
 if ((globalYargv.command || "").includes("valma-")
     || (globalYargv.command || "").slice(0, 2) === "./") {
@@ -271,7 +271,7 @@ if ((globalYargv.command || "").includes("valma-")
   const filePoolPath = path.posix.resolve((match && match[1]) || "");
   availablePools.push({ name: "file", path: filePoolPath });
 } else {
-  availablePools.push({ name: "package", path: globalYargv.packagePool });
+  availablePools.push({ name: "local", path: globalYargv.localPool });
 }
 availablePools.push(..._locateDependedPools(
     availablePools[0].path, globalYargv.dependedPoolSubdirectory));

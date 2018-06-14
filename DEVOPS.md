@@ -101,7 +101,7 @@ various `command pools`.
 > `global` pool.
 
 For example typing `vlm status` in some directory context would forward
-the command to `localbin/valma-status` first if one exists and falling
+the command to `valma.bin/valma-status` first if one exists and falling
 back to the more generic versions if not. The call eventually resolves
 at the global `/usr/bin/valma-status`. Its implementation then calls
 `vlm .status/**/*` which calls all scripts matching the glob
@@ -160,8 +160,8 @@ Below is a rough correlation of similar concepts across utilities.
 Utility    |Tool          |Payload                    |Providers   |Consumed via      |Upstream|Configuration |Modified via        |Produced via       |Authority  |Distributed via
 -----------|--------------|---------------------------|------------|------------------|--------|--------------|--------------------|-------------------|-----------|------------------
 files      |`git`         |files in `./*`             |github.com  |`git clone`       |N/A     |`.git/*`      |`branch` `commit`   |`git push` & PR    |human      |merge PR to & `git push master`
-packages   |`npm`, `vlm`  |files in `/node_modules/..`|npmjs.com   |`depend` `require`|`files` |`package.json`|ups. `src/*` `bin/*`|upstream           |hybrid     |`assemble-package` `publish-package`
-authorities|`vlm`         |APIs, site & gateway files |IaaS, custom|browsers, various |`files` |upstream *    |upstream *          |upstream           |hybrid     |`build-release` `deploy-release`
+packages   |`npm`, `vlm`  |files in `/node_modules/..`|npmjs.com   |`depend` `require`|`files` |`package.json`|ups. `src/*` `bin/*`|upstream           |hybrid     |`package-assemble` `package-publish`
+authorities|`vlm`         |APIs, site & gateway files |IaaS, custom|browsers, various |`files` |upstream *    |upstream *          |upstream           |hybrid     |`release-build` `release-deploy`
 partitions |`vlm`, gateway|event logs, blobs          |authorities |event & blob APIs |N/A     |N/A           |gateway prophet     |command & blob APIs|authorities|automatic, custom
 
 - `Utility` - the utility layer which is being described
@@ -185,7 +185,7 @@ repositories. Making updates to such utility content thus requires:
 
 1. modifying the corresponding upstream git repository
 2. distributing the git changes (a PR followed with `git push master`)
-3. distributing the utility update (`publish-package` or `deploy-release`).
+3. distributing the utility update (`package-publish` or `release-deploy`).
 
 Step 3 can be automated by tooling in particular domains as a response
 to particularily formed git repository updates.
@@ -223,7 +223,7 @@ a need to diversity the languages arises
 a [private npm registry](https://docs.npmjs.com/misc/registry#can-i-run-my-own-private-registry)
 can be set up for that purpose.
 
-valma package commands: `vlm assemble-packages` `vlm publish-packages`
+valma package commands: `vlm package-assemble` `vlm package-publish`
 
 
 ## 4.4. Authorities utility layer has the authority deployments on infrastructure services
@@ -300,7 +300,7 @@ authollery to update authorities (although it is still recommended to
 keep such ValaaSpace applications deployments separate from the
 authorities they are used to control).
 
-valma authollery commands: `vlm build-release` `vlm deploy-release`
+valma authollery commands: `vlm release-build` `vlm release-deploy`
 
 
 ### 4.4.1. Valaa authorities vs. ValOS authorities

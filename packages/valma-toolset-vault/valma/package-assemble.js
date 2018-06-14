@@ -1,8 +1,7 @@
-const path = require("path");
-const shell = require("shelljs");
+#!/usr/bin/env vlm
 
-exports.command = "assemble-packages";
-exports.summary = "assembles all current modified vault packages (preparing for publish)";
+exports.command = "package-assemble";
+exports.summary = "Assemble all current modified vault packages (preparing for publish)";
 exports.describe = `${exports.summary} into a temporary dist target.
 
 Uses lerna to handle the monorepo sub-packages update detection, versioning,
@@ -24,7 +23,7 @@ the new version. This behaviour can be omitted with --skip-versioning.
 
 Using the command
 
-'sudo vlm assemble-packages --skip-versioning --overwrite --link --post="chown -R $USER.$USER *"'
+'sudo vlm package-assemble --skip-versioning --overwrite --link --post="chown -R $USER.$USER *"'
 
 the packages can be iteratively tested and developed locally even with other
 packages depending on and being tested against them. To have other packages
@@ -35,7 +34,7 @@ be then manually added by running following command in the depending package:
 
 After the initial run the packages can be updated without 'sudo' with
 
-'vlm assemble-packages --skip-versioning --overwrite'
+'vlm package-assemble --skip-versioning --overwrite'
 
 as long as no new files have been added (re-run the full command in that case).
 
@@ -55,7 +54,7 @@ exports.builder = (yargs) => yargs.options({
     description: "Source packages directory. Must match one lerna.json entry."
   },
   "node-env": {
-    type: "string", default: "assemble-packages",
+    type: "string", default: "package-assemble",
     description: "NODE_ENV environment variable for the babel builds"
         + " (used for packages with .babelrc defined)"
   },
@@ -86,38 +85,40 @@ exports.builder = (yargs) => yargs.options({
 });
 
 exports.handler = async (yargv) => {
+  const vlm = yargv.vlm;
   const publishDist = yargv.target;
-  shell.mkdir("-p", publishDist);
-  if (!yargv.overwrite && shell.ls("-lA", publishDist).length) {
-    console.error(`valma-assemble-packages: target directory '${publishDist}' is not empty`);
+  vlm.shell.mkdir("-p", publishDist);
+  if (!yargv.overwrite && vlm.shell.ls("-lA", publishDist).length) {
+    console.error(`valma-package-assemble: target directory '${publishDist}' is not empty`);
     process.exit(-1);
   }
 
   let updatedPackageNames;
   if (!yargv.force) {
-    const updatedPackages = shell.exec(`npx -c "lerna updated --json  --loglevel=silent"`);
+    const updatedPackages = vlm.shell.exec(`npx -c "lerna updated --json  --loglevel=silent"`);
     if (updatedPackages.code) {
-      console.log(`valma-assemble-packages: no updated packages found (or other lerna error, code ${
+      console.log(`valma-package-assemble: no updated packages found (or other lerna error, code ${
           updatedPackages.code})`);
       return;
     }
     updatedPackageNames = JSON.parse(updatedPackages).map(entry => entry.name);
   }
-  const sourcePackageJSONPaths = shell.find("-l", path.posix.join(yargv.source, "*/package.json"));
+  const sourcePackageJSONPaths = vlm.shell.find("-l",
+      vlm.path.join(yargv.source, "*/package.json"));
   const successfulPackages = [];
 
   const assemblePackages = sourcePackageJSONPaths.map(sourcePackageJSONPath => {
     const sourceDirectory = sourcePackageJSONPath.match(/^(.*)package.json$/)[1];
-    const packagePath = path.posix.join(process.cwd(), sourceDirectory, "package.json");
+    const packagePath = vlm.path.join(process.cwd(), sourceDirectory, "package.json");
     // eslint-disable-next-line import/no-dynamic-require
     const packageConfig = require(packagePath);
     const name = packageConfig.name;
     if (updatedPackageNames && !updatedPackageNames.includes(name)) return undefined;
     if (packageConfig.private) {
-      console.log(`\nvalma-assemble-packages: skipping private package '${name}'`);
+      console.log(`\nvalma-package-assemble: skipping private package '${name}'`);
       return undefined;
     }
-    const targetDirectory = path.posix.join(publishDist, name);
+    const targetDirectory = vlm.path.join(publishDist, name);
     return {
       name, sourceDirectory, packagePath, packageConfig, targetDirectory, sourcePackageJSONPath,
     };
@@ -126,67 +127,68 @@ exports.handler = async (yargv) => {
   const finalizers = assemblePackages.map(({
     name, sourceDirectory, packagePath, packageConfig, targetDirectory, sourcePackageJSONPath,
   }) => {
-    console.log(`\nvalma-assemble-packages: assembling package '${name}' into`, targetDirectory);
-    shell.mkdir("-p", targetDirectory);
-    shell.cp("-R", path.posix.join(sourceDirectory, "*"), targetDirectory);
-    if (shell.test("-f", path.posix.join(sourceDirectory, ".babelrc"))
-        || shell.test("-f", path.posix.join(sourceDirectory, ".babelrc.js"))
-        || shell.test("-f", path.posix.join(sourceDirectory, "babel.config.js"))) {
-      shell.exec(`NODE_ENV=${yargv.nodeEnv} babel ${sourceDirectory} --out-dir ${targetDirectory}`);
+    console.log(`\nvalma-package-assemble: assembling package '${name}' into`, targetDirectory);
+    vlm.shell.mkdir("-p", targetDirectory);
+    vlm.shell.cp("-R", vlm.path.join(sourceDirectory, "*"), targetDirectory);
+    if (vlm.shell.test("-f", vlm.path.join(sourceDirectory, ".babelrc"))
+        || vlm.shell.test("-f", vlm.path.join(sourceDirectory, ".babelrc.js"))
+        || vlm.shell.test("-f", vlm.path.join(sourceDirectory, "babel.config.js"))) {
+      vlm.shell.exec(
+          `NODE_ENV=${yargv.nodeEnv} babel ${sourceDirectory} --out-dir ${targetDirectory}`);
     }
     if (yargv.unlink) {
-      console.log(`\nvalma-assemble-packages: 'npm unlink' for package '${name}' (in '${
+      console.log(`\nvalma-package-assemble: 'npm unlink' for package '${name}' (in '${
           targetDirectory}')`);
-      shell.exec(`cd ${targetDirectory} && npm unlink`);
+      vlm.shell.exec(`cd ${targetDirectory} && npm unlink`);
     }
     successfulPackages.push({ packageConfig, packagePath });
     return { sourcePath: sourcePackageJSONPath, targetPath: targetDirectory };
   }).filter(finalizer => finalizer);
 
-  console.log("valma-assemble-packages: no catastrophic errors found during assembly");
+  console.log("valma-package-assemble: no catastrophic errors found during assembly");
 
   const noUpdate = yargv.skipVersioning;
   if (noUpdate) {
-    console.log("valma-assemble-packages: --skip-versioning requested:",
+    console.log("valma-package-assemble: --skip-versioning requested:",
         "no version update, no git commit, no git tag, no package.json finalizer copying");
   } else {
-    console.log("valma-assemble-packages: no errors found during assembly:",
+    console.log("valma-package-assemble: no errors found during assembly:",
         "updating version, making git commit and creating lerna git tag");
     const forceFlags = yargv.force ? "--force-publish=*" : "";
-    shell.exec(`npx -c "lerna publish --skip-npm --yes --loglevel=silent ${forceFlags}"`);
-    console.log("valma-assemble-packages:",
+    vlm.shell.exec(`npx -c "lerna publish --skip-npm --yes --loglevel=silent ${forceFlags}"`);
+    console.log("valma-package-assemble:",
         "finalizing assembled packages with version-updated package.json's");
     [].concat(...finalizers).forEach((operation) => {
-      shell.cp(operation.sourcePath, operation.targetPath);
+      vlm.shell.cp(operation.sourcePath, operation.targetPath);
     });
   }
 
   if (yargv.link) {
     assemblePackages.forEach(({ name, targetDirectory }) => {
-      console.log(`\nvalma-assemble-packages: 'npm link' for package '${name}' (in '${
+      console.log(`\nvalma-package-assemble: 'npm link' for package '${name}' (in '${
         targetDirectory}')`);
-      shell.exec(`cd ${targetDirectory} && npm link`);
+      vlm.shell.exec(`cd ${targetDirectory} && npm link`);
     });
   }
 
   if (yargv.post) {
     assemblePackages.forEach(({ name, targetDirectory }) => {
-      console.log(`\nvalma-assemble-packages: '${yargv.post}' for package '${name}' (in '${
+      console.log(`\nvalma-package-assemble: '${yargv.post}' for package '${name}' (in '${
         targetDirectory}')`);
-      shell.exec(`cd ${targetDirectory} && ${yargv.post}`);
+      vlm.shell.exec(`cd ${targetDirectory} && ${yargv.post}`);
     });
   }
 
   const align = successfulPackages.reduce((acc, { packageConfig }) =>
       ((acc > packageConfig.name.length) ? acc : packageConfig.name.length), 0);
 
-  console.log("valma-assemble-packages: successfully",
+  console.log("valma-package-assemble: successfully",
       noUpdate ? "reassembled" : "assembled", finalizers.length, "packages",
           ...(updatedPackageNames
               ? ["(out of", updatedPackageNames.length, "marked as updated):"]
               : ["(from all --force selected packages)"]));
   successfulPackages.forEach(({ packageConfig, packagePath }) => {
-    const updatedConfig = JSON.parse(shell.head({ "-n": 1000000 }, packagePath));
+    const updatedConfig = JSON.parse(vlm.shell.head({ "-n": 1000000 }, packagePath));
     const versionChange = noUpdate && (updatedConfig.version === packageConfig.version)
             ? `kept at ${packageConfig.version}`
         : !noUpdate ? `updated to ${updatedConfig.version} from ${packageConfig.version}`

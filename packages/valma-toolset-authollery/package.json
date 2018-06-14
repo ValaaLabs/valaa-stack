@@ -13,10 +13,10 @@
     "domain": "infrastructure"
   },
   "bin": {
-    ".valma-configure_.type_.authollery_00-available-stacks": "bin/.valma-configure_.type_.authollery_00-available-stacks.js",
-    ".valma-status_.type_.authollery_10-authollery": "bin/.valma-status_.type_.authollery_10-authollery.js",
-    "valma-build-release": "bin/valma-build-release.js",
-    "valma-deploy-release": "bin/valma-deploy-release.js"
+    ".valma-configure_.type_.authollery_00-available-stacks": "valma/configure_.type_.authollery_00-available-stacks.js",
+    ".valma-status_.type_.authollery_10-authollery": "valma/status_.type_.authollery_10-authollery.js",
+    "valma-release-build": "valma/release-build.js",
+    "valma-release-deploy": "valma/release-deploy.js"
   },
   "dependencies": {
     "lerna": "^2.11.0",

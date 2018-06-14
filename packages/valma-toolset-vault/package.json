@@ -13,8 +13,8 @@
     "access": "public"
   },
   "bin": {
-    "valma-assemble-packages": "bin/valma-assemble-packages.js",
-    "valma-publish-packages": "bin/valma-publish-packages.js"
+    "valma-package-assemble": "valma/package-assemble.js",
+    "valma-package-publish": "valma/package-publish.js",
   },
   "dependencies": {
     "lerna": "^2.11.0",

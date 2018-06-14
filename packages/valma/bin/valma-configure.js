@@ -40,7 +40,7 @@ exports.handler = async (yargv) => {
         describeText) {
     const underscoredScript = script.replace(/\//g, "_");
     const command = script.replace("valma-", "");
-    const scriptPath = `bin/${scriptFile}`;
+    const scriptPath = `valma/${scriptFile}`;
     let verb = "already exports";
     while (!(vlm.packageConfig.bin || {})[underscoredScript]) {
       const choices = ["Create", "skip"];

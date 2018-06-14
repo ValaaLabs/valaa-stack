@@ -9,6 +9,9 @@
     "type": "vault",
     "domain": "kernel"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "vlm": "vlm ",
     "start": "vlm revelations-dev-server ",
@@ -20,13 +23,10 @@
     "test": "jest",
     "test-e2e": "karma start",
     "build": "webpack ",
-    "assemble-packages": "vlm assemble-packages ",
-    "create-authollery": "vlm create-authollery ",
-    "publish-packages": "vlm publish-packages "
+    "package-assemble": "vlm package-assemble ",
+    "package-publish": "vlm package-publish ",
+    "create-authollery": "vlm create-authollery "
   },
-  "workspaces": [
-    "packages/*"
-  ],
   "bin": {},
   "jest": {
     "collectCoverage": false,

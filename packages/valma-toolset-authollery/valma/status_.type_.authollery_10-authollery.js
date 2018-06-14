@@ -1,5 +1,5 @@
 exports.command = ".status/10-authollery";
-exports.summary = "displays the generic information header for the current repository";
+exports.summary = "Display the authollery status";
 exports.describe = `${exports.summary}`;
 
 exports.builder = (yargs) => yargs;

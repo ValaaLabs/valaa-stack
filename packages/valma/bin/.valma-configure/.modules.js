@@ -11,7 +11,7 @@ exports.builder = (yargs) => {
     throw new Error(".valma-configure/.modules: current directory is not a valma repository; "
         + "valma.json missing (maybe run 'vlm init'?)");
   }
-  const availableScripts = yargs.vlm.matchPoolCommandNames(
+  const availableScripts = yargs.vlm.listMatchingCommands(
           `.configure/{,.type/.${valaa.type}/,.domain/.${valaa.domain}/}.module/**/*`);
   const availableModules = availableScripts.map(n => n.match(/\/.module\/(.*)$/)[1]);
   const selectedModules = Object.keys(valmaConfig.module || {}).filter(k => valmaConfig.module[k]);

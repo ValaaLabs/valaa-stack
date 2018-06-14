@@ -12,24 +12,24 @@ to be used against arbitrary systems this is often not feasible. To overcome
 this limitation and still maintain consistency following strategy is used:
 
 1. the release process is divided to two stages which are separately initiated
-   by valma commands 'build-release' and 'deploy-release'.
+   by valma commands 'release-build' and 'release-deploy'.
    This separation is to ensure eventual completion of deployments and equally
    importantly to facilitate easier diagnostics and understanding of the
    process details for DevOps.
-2. The output of the 'build-release' stage is the release itself: an isolated
+2. The output of the 'release-build' stage is the release itself: an isolated
    set of files in a local directory, usually "dist/release/<version>". These
-   release files contain the diff-sets which the 'deploy-release' consumes.
+   release files contain the diff-sets which the 'release-deploy' consumes.
    The release files are intended to be perused and understood by DevOps.
 4. The release is divided into atomic, versioned sub-releases with to ensure
    consistency during each point during the full deployment. Sub-releases have
    their own versions and can have (non-cyclic) dependencies to each other.
 5. A single sub-release is typically created by a single valma module/component
-   (with authollery as its domain) by the build-release detail command scripts.
-6. build-release scripts evaluate the local authollery modifications and
+   (with authollery as its domain) by the release-build detail command scripts.
+6. release-build scripts evaluate the local authollery modifications and
    compares them to the actually deployed state. This difference is used to
    construct the minimal set of atomic, locally persisted, individually
    versioned sub-releases.
-7. deploy-release stage deploy each sub-release and ensures that a deployment
+7. release-deploy stage deploy each sub-release and ensures that a deployment
    for all dependents complete before their depender deploys are initiated.
 `;
 
@@ -43,8 +43,8 @@ exports.handler = async (yargv) => {
   const shortName = /([^/]*)$/.exec(name)[1];
   if (isModule || (valaa.type === "component")) {
     await vlm.askToCreateValmaScriptSkeleton(
-        `.valma-build-release/${isModule ? "" : ".component/"}${name}`,
-        `valma-build-release__${shortName}.js`,
+        `.valma-release-build/${isModule ? "" : ".component/"}${name}`,
+        `valma-release-build__${shortName}.js`,
         `${valaa.type} sub-release build`,
         `Build a sub-release of the ${valaa.type} ${name}.`,
         isModule ? `` :
@@ -52,8 +52,8 @@ exports.handler = async (yargv) => {
 explicitly call the build scripts of each of its buildable components.`);
 
     await vlm.askToCreateValmaScriptSkeleton(
-        `.valma-deploy-release/${isModule ? "" : ".component/"}${name}`,
-        `valma-deploy-release__${shortName}.js`,
+        `.valma-release-deploy/${isModule ? "" : ".component/"}${name}`,
+        `valma-release-deploy__${shortName}.js`,
         `${valaa.type} sub-release deploy`,
         `Deploy the pre-built sub-release of the ${valaa.type} ${name}.`,
         isModule ? `` :
