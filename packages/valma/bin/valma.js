@@ -9,96 +9,33 @@ const shell = require("shelljs");
 const semver = require("semver");
 const yargs = require("yargs");
 const cardinal = require("cardinal");
-const tomorrowNight = require("cardinal/themes/tomorrow-night");
-
+cardinal.tomorrowNight = require("cardinal/themes/tomorrow-night");
 
 /* eslint-disable vars-on-top, no-loop-func, no-restricted-syntax, no-cond-assign,
                   import/no-dynamic-require
+*/
+
+/*
+   #    ######    ###
+  # #   #     #    #
+ #   #  #     #    #
+#     # ######     #
+####### #          #
+#     # #          #
+#     # #         ###
 */
 
 const nodeCheck = ">=8.10.0";
 const npmCheck = ">=5.0.0";
 
 const defaultPaths = {
-  packagePool: "localbin/",
-  dependedPool: "node_modules/.bin/",
+  packagePool: path.posix.resolve("localbin/"),
+  dependedPoolSubdirectory: "node_modules/.bin/",
   globalPool: process.env.VLM_GLOBAL_POOL || (shell.which("vlm") || "").slice(0, -3),
 };
 
-const valmaCommandExports = {
-  command: "$0 [-dhiluv] [command]",
-  summary: "Dispatch a valma command to its command script",
-  describe: `Valma (or 'vlm') is a command script dispatcher.
-
-Any npm package which exports scripts prefixed with 'valma-' (or '.valma-' for
-unlisted scripts) in their package.json bin section is called a valma module.
-The corresponding command name of a script is the name stripped of 'valma-'
-and all '_' converted to '/'. When such a module is added as a devDependency
-for a package, valma will then be able to locate and dispatch calls to those
-scripts when called from inside that package.
-
-There are two types of valma scripts: listed and unlisted.
-Listed scripts can be seen with 'vlm' or 'vlm --help'. They are intended to be
-called directly from the command line.
-Unlisted scripts are all valma scripts whose name begins with a '.' (or any of
-their path parts for nested scripts). These scripts can still be called with
-valma normally but are intended to be used indirectly by other valma scripts.
-
-Note: valma treats the underscore '_' equal to '/' in all command pattern
-matching contexts. While use of '_' is otherwise optional, it is specifically
-mandatory to use '_' inside the package.json bin section export names (npm
-doesn't support bin '/' or at least not sharing the folders between separate
-packages).`,
-
-  builder: (yargs_) => yargs_
-  //    .usage(valmaCommandExports.command, valmaCommandExports.summary, iy => iy)
-      .options({
-        interactive: {
-          group: "Global options:",
-          type: "boolean", default: true, global: false,
-          description: "Prompt for missing required fields",
-        },
-        echo: {
-          group: "Global options:",
-          type: "boolean", default: true, global: false,
-          description: "Echo all external and sub-command calls and returns",
-        },
-        promote: {
-          group: "Global options:",
-          type: "boolean", default: true, global: false,
-          description: "Promote to 'vlm' in the most specific pool available",
-        },
-        "node-env": {
-          group: "Global options:",
-          type: "boolean", default: true, global: false,
-          description: "Adds node environment if it is missing",
-        },
-        "bash-completion": {
-          group: "Global options:",
-          type: "boolean", global: false,
-          description: "Output bash completion script",
-        },
-        "package-pool": {
-          group: "Global options:",
-          type: "string", default: defaultPaths.packagePool, global: false,
-          description: "Package pool path is the first pool to be searched",
-        },
-        "depended-pool": {
-          group: "Global options:",
-          type: "string", default: defaultPaths.dependedPool, global: false,
-          description: "Depended pool path is the second pool to be searched",
-        },
-        "global-pool": {
-          group: "Global options:",
-          type: "string", default: defaultPaths.globalPool || null, global: false,
-          description: "Global pool path is the third pool to be searched",
-        },
-      }),
-  handler, // Defined below.
-};
-
-// Valma singleton and the script API calls - these are available to all command scripts via both
-// yargs.vlm in builder as well as yargv.vlm in handler.
+// vlm - the Valma global API singleton - these are available to all command scripts via both
+// yargs.vlm (in scripts exports.builder) as well as yargv.vlm (in scripts exports.handler).
 const vlm = yargs.vlm = {
   // Calls valma sub-command with argv.
   callValma,
@@ -127,7 +64,8 @@ const vlm = yargs.vlm = {
   updateValmaConfig,
 
   // Returns a list of available sub-command names which match the given command glob.
-  matchPoolCommandNames,
+  listMatchingCommands,
+  listMatchingUnlistedCommands,
 
   // Opens interactive inquirer prompt and returns a completion promise.
   // See https://github.com/SBoudrias/Inquirer.js/
@@ -148,16 +86,165 @@ const vlm = yargs.vlm = {
   // node.js path.posix tools - all shell commands expect posix-style paths.
   // See https://nodejs.org/api/path.html
   path: path.posix,
+
+  // minimatch namespace of the glob matching tools
+  // See https://github.com/isaacs/minimatch
+  cardinal,
 };
+
+const valmaExports = {
+  command: "vlm [-<flags>] [--<option>=<value> ...] <command> [parameters]",
+  summary: "Dispatch a valma command to its command script",
+  describe: `Valma (or 'vlm') is a command script dispatcher.
+
+Any npm package which exports scripts prefixed with 'valma-' (or
+'.valma-' for unlisted scripts) in their package.json bin section is
+called a valma module. The corresponding command name of a script is
+the name stripped of 'valma-' and all '_' converted to '/'. When such
+a module is added as a devDependency for a package, valma will then be
+able to locate and dispatch calls to those scripts when called from
+inside that package.
+
+There are two types of valma scripts: listed and unlisted.
+Listed scripts can be seen with 'vlm' or 'vlm --help'. They are
+intended to be called directly from the command line. Unlisted scripts
+are all valma scripts whose name begins with a '.' (or any of their
+path parts for nested scripts). These scripts can still be called with
+valma normally but are intended to be used indirectly by other valma
+scripts.
+
+Note: valma treats the underscore '_' equal to '/' in all command
+pattern matching contexts. While use of '_' is otherwise optional, it
+is specifically mandatory to use '_' inside the package.json bin
+section export names (npm doesn't support bin '/' or at least not
+sharing the folders between separate packages).`,
+
+  builder: (yargs_) => yargs_
+  //    .usage(valmaExports.command, valmaExports.summary, iy => iy)
+      .options({
+        v: {
+          group: "Introspection options:",
+          alias: "verbose", count: true, global: false,
+          description: "Be noisy. -vv... -> be more noisy.",
+        },
+        p: {
+          group: "Introspection options:",
+          alias: "pools", type: "boolean", default: false, global: false,
+          description: "Separate commands by pools (highest priority pool last)",
+        },
+        echo: {
+          group: "Introspection options:",
+          type: "boolean", default: true, global: false,
+          description: "Echo all external and sub-command calls with their return values",
+        },
+        "bash-completion": {
+          group: "Introspection options:",
+          type: "boolean", global: false,
+          description: "Output bash completion script",
+        },
+        u: {
+          group: "Execution options:",
+          alias: "unlisted", type: "boolean", default: false, global: false,
+          description: "Include unlisted and disabled commands in /all/ matchings",
+        },
+        interactive: {
+          group: "Execution options:",
+          type: "boolean", default: true, global: false,
+          description: "Prompt for missing required fields",
+        },
+        promote: {
+          group: "Execution options:",
+          type: "boolean", default: true, global: false,
+          description: "Promote to 'vlm' in the most specific pool available",
+        },
+        "node-env": {
+          group: "Execution options:",
+          type: "boolean", default: true, global: false,
+          description: "Add node environment if it is missing",
+        },
+        "package-pool": {
+          group: "Execution options:",
+          type: "string", default: defaultPaths.packagePool, global: false,
+          description: "Package pool path is the first pool to be searched",
+        },
+        "depended-pool-subdirectory": {
+          group: "Execution options:",
+          type: "string", default: defaultPaths.dependedPoolSubdirectory, global: false,
+          description: "Depended pools are all package-pool parents with this sub-directory",
+        },
+        "global-pool": {
+          group: "Execution options:",
+          type: "string", default: defaultPaths.globalPool || null, global: false,
+          description: "Global pool path is the last pool to be searched",
+        },
+      }),
+  handler, // Defined below.
+};
+
+function _sharedYargs (yargs_, strict = true) {
+  return yargs_
+      .strict(strict)
+      .help(false)
+      .version(false)
+      .wrap(yargs_.terminalWidth() < 140 ? yargs_.terminalWidth() : 140)
+      .group("help", "Introspection options:")
+      .group("version", "Introspection options:")
+      .option({
+        l: {
+          group: "Introspection options:",
+          alias: "list", type: "boolean", default: false, global: true,
+          description: "Only shows the matching command(s) without executing them",
+        },
+        h: {
+          group: "Introspection options:",
+          alias: "help", type: "boolean", default: false, global: true,
+          description: "Show the main help of the command",
+        },
+        r: {
+          group: "Introspection options:",
+          alias: "version", type: "boolean", default: false, global: true,
+          description: "Show the version of the matching command(s)",
+        },
+        s: {
+          group: "Introspection options:",
+          alias: "summary", type: "boolean", default: false, global: true,
+          description: "Show the summary of the command(s)",
+        },
+        i: {
+          group: "Introspection options:",
+          alias: "info", type: "boolean", default: false, global: true,
+          description: "Show the info block of the command(s)",
+        },
+        d: {
+          group: "Introspection options:",
+          alias: "describe", type: "boolean", default: false, global: true,
+          description: "Show the description of the command(s)",
+        },
+        c: {
+          group: "Introspection options:",
+          alias: "code", type: "boolean", default: false, global: true,
+          description: "Show the script code of the command(s)",
+        },
+      });
+}
+
+/*
+  ###                               ##
+   #     #    #     #     #####    #  #      #    #    ##       #    #    #
+   #     ##   #     #       #       ##       ##  ##   #  #      #    ##   #
+   #     # #  #     #       #      ###       # ## #  #    #     #    # #  #
+   #     #  # #     #       #     #   # #    #    #  ######     #    #  # #
+   #     #   ##     #       #     #    #     #    #  #    #     #    #   ##
+  ###    #    #     #       #      #### #    #    #  #    #     #    #    #
+*/
 
 vlm.isCompleting = (process.argv[2] === "--get-yargs-completions");
 const processArgv = vlm.isCompleting ? process.argv.slice(3) : process.argv.slice(2);
 
 _sharedYargs(yargs, !vlm.isCompleting);
-const globalYargs = valmaCommandExports.builder(yargs);
+const globalYargs = valmaExports.builder(yargs);
 const globalYargv = _parseUntilCommand(globalYargs, processArgv, "command");
 
-vlm.unlisted = globalYargv.unlisted;
 if (!vlm.isCompleting) {
   vlm.verbosity = globalYargv.verbose;
   vlm.interactive = globalYargv.interactive;
@@ -167,28 +254,30 @@ if (!vlm.isCompleting) {
 if (vlm.verbosity >= 2) {
   console.log("vlm chatty: phase 1, argv:", JSON.stringify(process.argv),
       "\n\tcommand:", globalYargv.command, JSON.stringify(globalYargv._));
-}
-if (vlm.verbosity >= 3) {
-  console.log("vlm voluble: globalYargv:", globalYargv);
+  if (vlm.verbosity >= 3) {
+    console.log("vlm voluble: globalYargv:", globalYargv);
+  }
 }
 
-const availablePools = [
-  { name: "package", path: globalYargv.packagePool, rootPath: process.cwd() },
-  { name: "depended", path: globalYargv.dependedPool, rootPath: process.cwd() },
-  { name: "global", path: globalYargv.globalPool },
-];
-let activePools = [];
-
+const availablePools = [];
 // When a command begins with ./ or contains valma- it is considered a direct file valma command.
-// It's parent directory is added as "file" pool so that other scripts there are also available.
+// It's parent directory is made the initial "file" pool, replacing the "package" pool of regular
+// valma commands. The depended pools are searched from this path.
 if ((globalYargv.command || "").includes("valma-")
     || (globalYargv.command || "").slice(0, 2) === "./") {
   if (globalYargv.isCompleting) process.exit(0); // Let bash filename completion do its thing.
   const match = globalYargv.command.match(/(.*\/)?(\.?)valma-(.*?)(.js)?$/);
-  const filePoolPath = path.posix.resolve((match && match[1]) || "");
-  availablePools.unshift({ name: "file", path: filePoolPath });
   globalYargv.command = match ? `${match[2]}${match[3]}` : "";
+  const filePoolPath = path.posix.resolve((match && match[1]) || "");
+  availablePools.push({ name: "file", path: filePoolPath });
+} else {
+  availablePools.push({ name: "package", path: globalYargv.packagePool });
 }
+availablePools.push(..._locateDependedPools(
+    availablePools[0].path, globalYargv.dependedPoolSubdirectory));
+availablePools.push(  { name: "global", path: globalYargv.globalPool });
+
+let activePools = [];
 
 const packageConfigStatus = {
   path: path.posix.join(process.cwd(), "package.json"), updated: false,
@@ -197,10 +286,9 @@ const valmaConfigStatus = {
   path: path.posix.join(process.cwd(), "valma.json"), updated: false,
 };
 
-// Main entry.
 
 vlm.contextYargv = globalYargv;
-valmaCommandExports
+valmaExports
     .handler(globalYargv)
     .then(result => (result !== undefined) && process.exit(result));
 
@@ -285,6 +373,16 @@ async function handler (yargv) {
   return 0;
 }
 
+/*
+                                #     #
+  ####     ##    #       #      #     #    ##    #       #    #    ##
+ #    #   #  #   #       #      #     #   #  #   #       ##  ##   #  #
+ #       #    #  #       #      #     #  #    #  #       # ## #  #    #
+ #       ######  #       #       #   #   ######  #       #    #  ######
+ #    #  #    #  #       #        # #    #    #  #       #    #  #    #
+  ####   #    #  ######  ######    #     #    #  ######  #    #  #    #
+*/
+
 async function callValmaWithEcho (command, argv = []) {
   if (vlm.echo) console.log("    ->> vlm", command, ...argv);
   const ret = await callValma.call(this, command, argv);
@@ -303,7 +401,8 @@ async function callValma (command, argv = []) {
       : _valmaGlobFromCommand(command || "*"));
   const isWildCardCommand = !command || (command.indexOf("*") !== -1);
   const activeCommands = {};
-  const introspect = _extractIntrospectOptions(contextYargv);
+  const introspect = _extractIntrospectOptions(valmaExports, contextYargv, command,
+      isWildCardCommand);
 
   // Phase 3: filter available command pools against the command glob
   if (contextVLM.verbosity >= 2) {
@@ -321,22 +420,30 @@ async function callValma (command, argv = []) {
       const commandName = _valmaCommandFromPath(file.name);
       pool.commands[commandName] = {
         commandName, pool, file,
-        modulePath: path.posix.join(pool.absolutePath, file.name),
+        modulePath: path.posix.join(pool.path, file.name),
       };
       if (activeCommands[commandName]) return;
-      const activeCommand = activeCommands[commandName] = pool.commands[commandName];
-      if (contextVLM.isCompleting || !shell.test("-e", activeCommand.modulePath)) return;
-      const module = activeCommand.module = require(activeCommand.modulePath);
-      if (contextVLM.verbosity >= 3) {
-        console.log("vlm voluble: phase 3.5, pool.absolutePath:", pool.absolutePath,
-            ", file.name:", file.name);
+      const activeCommand = pool.commands[commandName];
+      if (!contextVLM.isCompleting && shell.test("-e", activeCommand.modulePath)) {
+        const module = activeCommand.module = require(activeCommand.modulePath);
+        if (contextVLM.verbosity >= 3) {
+          console.log("vlm voluble: phase 3.5, module:", activeCommand.modulePath,
+              ", file.name:", file.name);
+        }
+        if (module && (module.command !== undefined) && (module.describe !== undefined)
+            && (module.handler !== undefined)) {
+          const builder = ((!module.disabled
+                  || ((typeof module.disabled === "function") && !module.disabled(yargs)))
+              && module.builder) || undefined;
+          activeCommand.disabled = !builder;
+          if (!builder && !contextYargv.unlisted) return undefined;
+          yargs.command(module.command, module.summary || module.describe, builder, () => {});
+        } else if (!introspect && !contextYargv.list) {
+          throw new Error(`vlm: invalid script module '${activeCommand.modulePath
+              }', export 'command', 'describe' or 'handler' missing`);
+        }
       }
-      if (module && (module.command !== undefined) && (module.describe !== undefined)) {
-        yargs.command(module.command, module.summary || module.describe, module.builder, () => {});
-      } else if (!introspect && !contextYargv.list) {
-        throw new Error(`vlm: invalid script module '${activeCommand.modulePath
-            }', export 'command' or 'describe' missing`);
-      }
+      activeCommands[commandName] = activeCommand;
     });
   }
 
@@ -365,21 +472,19 @@ async function callValma (command, argv = []) {
   }
 
   if (introspect) {
-    const ret = _outputIntrospection(introspect, command
-        ? activeCommands
-        : { vlm: {
-          commandName: "vlm", module: valmaCommandExports,
-          modulePath: __filename, pool: { path: path.dirname(process.argv[1]) }
-        } });
-    return isWildCardCommand ? ret : ret[0];
-  } else if (!command) {
-    if (!contextYargv.list) {
-      console.log("Simple usage: vlm [--help] [-l | --list] <command> [-- <args>]\n");
+    let introspectedCommands = activeCommands;
+    if (!command && introspect.entryIntro && !contextYargv.list) {
+      delete introspect.name;
+      introspectedCommands = { vlm: {
+        commandName: "vlm", module: valmaExports, modulePath: __filename,
+        pool: { path: path.dirname(process.argv[1]) }
+      } };
     }
-    return _outputSimpleUsage(commandGlob);
+    const ret = _outputIntrospection(introspect, introspectedCommands, commandGlob);
+    return isWildCardCommand ? ret : ret[0];
   }
 
-  if (!Object.keys(activeCommands).length && !isWildCardCommand) {
+  if (!isWildCardCommand && !Object.keys(activeCommands).length) {
     console.log(`vlm: cannot find command '${command}' from active pools:`,
         ...activePools.map(activePool => `"${path.posix.join(activePool.path, commandGlob)}"`));
     return -1;
@@ -420,22 +525,25 @@ async function callValma (command, argv = []) {
       };
       yargs.help().command(module.command, module.describe);
       const subCommand = `${matchingCommand} ${commandArgs}`;
-      subYargs = module.builder(subYargs);
+      subYargs = (!module.disabled
+            || ((typeof module.disabled === "function") && module.disabled(subYargs)))
+          && module.builder(subYargs);
       if (listedCommands) {
         listedCommands[matchingCommand] = { ...activeCommand, disabled: !subYargs };
         continue;
       }
       if (!subYargs) {
-        if (contextVLM.verbosity >= 1) {
-          console.log("vlm warning: skipping disabled command", matchingCommand,
-              "(its builder returns falsy)");
+        if (!isWildCardCommand || (contextVLM.verbosity >= 1)) {
+          console.log(`vlm warning: skipping disabled command '${matchingCommand
+              }' (its exports.builder returns falsy)`);
         }
         continue;
       }
       const subYargv = subYargs.parse(subCommand, { vlm: subVLM });
-      const subIntrospect = _extractIntrospectOptions(subYargv);
+      const subIntrospect = _extractIntrospectOptions(module, subYargv, subCommand);
       if (subIntrospect) {
-        ret = ret.concat(_outputIntrospection(subIntrospect, { [matchingCommand]: activeCommand }));
+        ret = ret.concat(
+            _outputIntrospection(subIntrospect, { [matchingCommand]: activeCommand }, command));
       } else {
         if (contextVLM.verbosity >= 3) {
           console.log("vlm voluble: phase 5: forwarding to:", subCommand,
@@ -458,62 +566,20 @@ async function callValma (command, argv = []) {
     }
   }
   if (listedCommands) {
-    _outputIntrospection({ info: true }, listedCommands);
+    _outputIntrospection({ info: true }, listedCommands, command);
   }
   return isWildCardCommand ? ret : ret[0];
 }
 
-function _sharedYargs (yargs_, strict = true) {
-  return yargs_
-      .strict(strict)
-      .help(false)
-      .version(false)
-      .wrap(yargs_.terminalWidth() < 140 ? yargs_.terminalWidth() : 140)
-      .group("help", "Shared options:")
-      .group("version", "Shared options:")
-      .option({
-        version: {
-          group: "Shared options:",
-          type: "boolean", default: false, global: true,
-          description: "Show the version of the matching command(s)",
-        },
-        v: {
-          group: "Shared options:",
-          alias: "verbose", count: true, global: true,
-          description: "Be noisy. -vv... -> be more noisy.",
-        },
-        u: {
-          group: "Shared options:",
-          alias: "unlisted", type: "boolean", default: false, global: true,
-          description: "Includes unlisted sub-command(s) in matching",
-        },
-        h: {
-          group: "Shared options:",
-          alias: "help", type: "boolean", default: false, global: true,
-          description: "Show the help block of the matching sub-command(s)",
-        },
-        l: {
-          group: "Shared options:",
-          alias: "list", type: "boolean", default: false, global: true,
-          description: "Only lists the matching sub-command(s) without executing",
-        },
-        i: {
-          group: "Shared options:",
-          alias: "info", type: "boolean", default: false, global: true,
-          description: "Show the info block of the matching sub-command(s)",
-        },
-        d: {
-          group: "Shared options:",
-          alias: "describe", type: "boolean", default: false, global: true,
-          description: "Show the description block of the matching sub-command(s)",
-        },
-        s: {
-          group: "Shared options:",
-          alias: "script", type: "boolean", default: false, global: true,
-          description: "Show the script code",
-        },
-      });
-}
+/*
+######
+#     #  ######   #####    ##       #    #
+#     #  #          #     #  #      #    #
+#     #  #####      #    #    #     #    #
+#     #  #          #    ######     #    #
+#     #  #          #    #    #     #    #
+######   ######     #    #    #     #    ######
+*/
 
 function _parseUntilCommand (yargs_, argv_, commandKey = "command") {
   const commandIndex = argv_.findIndex(arg => (arg[0] !== "-"));
@@ -569,12 +635,24 @@ function _rightpad (text, align = 0) {
   return `${text}${" ".repeat(pad < 0 ? 0 : pad)}`;
 }
 
+function _locateDependedPools (initialPoolPath, subdirectory) {
+  let pathBase = initialPoolPath;
+  let name = "depended";
+  const ret = [];
+  while (pathBase && (pathBase !== "/")) {
+    pathBase = path.posix.join(pathBase, "..");
+    const poolPath = path.posix.join(pathBase, subdirectory);
+    if (shell.test("-d", poolPath)) ret.push({ name, path: poolPath });
+    name = `${name}/..`;
+  }
+  return ret;
+}
+
 function _refreshActivePools (tryShortCircuit) {
   activePools = [];
   let specificEnoughVLMSeen = false;
   for (const pool of availablePools) {
     if (!pool.path || !shell.test("-d", pool.path)) continue;
-    pool.absolutePath = pool.rootPath ? path.posix.resolve(pool.rootPath, pool.path) : pool.path;
     let poolHasVLM = false;
     pool.listing = shell.ls("-lAR", pool.path)
         .filter(file => {
@@ -583,7 +661,7 @@ function _refreshActivePools (tryShortCircuit) {
           return false;
         });
     activePools.push(pool);
-    if (process.argv[1].indexOf(pool.absolutePath) === 0) specificEnoughVLMSeen = true;
+    if (process.argv[1].indexOf(pool.path) === 0) specificEnoughVLMSeen = true;
     const shortCircuit = tryShortCircuit
         && tryShortCircuit(pool, poolHasVLM, specificEnoughVLMSeen);
     if (shortCircuit) return shortCircuit;
@@ -593,13 +671,13 @@ function _refreshActivePools (tryShortCircuit) {
 
 function _forwardToValmaInPool (pool, needNodeEnv) {
   if (!process.env.VLM_PATH) {
-    process.env.VLM_PATH = pool.absolutePath;
-    process.env.PATH = `${pool.absolutePath}:${process.env.PATH}`;
+    process.env.VLM_PATH = pool.path;
+    process.env.PATH = `${pool.path}:${process.env.PATH}`;
   }
   if (!process.env.VLM_GLOBAL_POOL && globalYargv.globalPool) {
     process.env.VLM_GLOBAL_POOL = globalYargv.globalPool;
   }
-  const vlmPath = path.posix.join(pool.absolutePath, "vlm");
+  const vlmPath = path.posix.join(pool.path, "vlm");
   let childProcess;
   if (needNodeEnv) {
     const argString = processArgv.map(a => JSON.stringify(a)).join(" ");
@@ -622,22 +700,27 @@ function _forwardToValmaInPool (pool, needNodeEnv) {
   }
 }
 
-function matchPoolCommandNames (command) {
+function listMatchingCommands (command, matchUnlisted = false) {
   const minimatcher = _underToSlash(_valmaGlobFromCommand(command || "*"));
   const ret = [].concat(...activePools.map(pool => pool.listing
       .map(file => _underToSlash(file.name))
       .filter(name => {
-        const ret_ = minimatch(name, minimatcher, { dot: vlm.unlisted });
+        const ret_ = minimatch(name, minimatcher, { dot: matchUnlisted });
         return ret_;
       })
       .map(name => _valmaCommandFromPath(name))
   )).filter((v, i, a) => (a.indexOf(v) === i));
   if (vlm.verbosity >= 2) {
-    console.log("vlm chatty: matchPoolCommandNames", command,
+    console.log("vlm chatty:",
+        matchUnlisted ? "listMatchingCommands" : "listMatchingUnlistedCommands", command,
         "\n\tminimatcher:", minimatcher,
         "\n\tresults:", ret);
   }
   return ret;
+}
+
+function listMatchingUnlistedCommands (command) {
+  return listMatchingCommands.call(this, command, true);
 }
 
 function executeExternal (executable, argv = [], spawnOptions = {}) {
@@ -662,89 +745,106 @@ function executeExternal (executable, argv = [], spawnOptions = {}) {
   });
 }
 
-function _extractIntrospectOptions (yargv) {
-  if (!yargv.info && !yargv.describe && !yargv.version && !yargv.help && !yargv.script) {
-    return undefined;
-  }
+function _extractIntrospectOptions (module, yargv, command, isWildcard) {
+  const entryIntro
+      = yargv.version || yargv.summary || yargv.info || yargv.code || yargv.describe;
+  if (command && !yargv.help && !entryIntro) return undefined;
+  const usage = !command && !entryIntro;
   return {
-    info: yargv.info,
-    describe: yargv.describe,
-    version: yargv.version,
+    module,
+    usage,
     help: yargv.help,
-    script: yargv.script,
+    name: isWildcard,
+    // entry intro section
+    entryIntro,
+    version: yargv.version,
+    summary: yargv.summary || usage,
+    info: yargv.info,
+    code: yargv.code,
+    describe: yargv.describe,
   };
 }
 
-function _outputSimpleUsage (commandGlob) {
-  let align = 0;
-  for (const p of activePools) {
-    Object.keys(p.commands).forEach(name => { if (name.length > align) align = name.length; });
-  }
-  for (const listPool of activePools) {
-    if (!Object.keys(listPool.commands).length) {
-      console.log(`#\t'${listPool.name}' pool empty (matching "${listPool.path}${commandGlob}")`);
-    } else {
-      console.log(`#\t'${listPool.name}' pool commands (matching "${
-          listPool.path}${commandGlob}"):`);
-      let versionAlign = 0;
-      Object.keys(listPool.commands).sort().map(commandName => {
-        const info = _commandInfo(listPool.commands[commandName].modulePath);
-        if (info[0].length > versionAlign) versionAlign = info[0].length;
-        return { commandName, info };
-      }).forEach(({ commandName, info }) => {
-        _outputCommandInfo([[commandName, align], "|", [info[0], versionAlign], "|", info[1]]);
-      });
-
-      console.log();
-    }
-  }
-  return 0;
-}
-
-function _outputIntrospection (introspect, commands) {
+function _outputIntrospection (introspect, commands, commandGlob) {
   if (introspect.help) {
+    yargs.vlm = vlm;
     yargs.showHelp("log");
     return [];
   }
-  let align = 0;
-  let versionAlign = 0;
-  Object.keys(commands).forEach(n => {
-    const newLength = n.length + (commands[n].disabled ? 2 : 0);
-    if (newLength > align) align = newLength;
-  });
-  const infos = Object.values(commands).map((command) => {
-    if (!command) return {};
-    const info = _commandInfo(command.modulePath, command.pool.path);
-    if (info[0].length > versionAlign) versionAlign = info[0].length;
-    return { name: command.commandName, module: command.module, info };
-  });
-  infos.sort((l, r) => l.name < r.name);
-  return infos.map(({ name, module, info }) => {
-    let ret;
-    if (info) {
+  if (introspect.usage) {
+    console.log("# Simple usage:", introspect.module.command);
+    console.log();
+    console.log(`# Available commands${globalYargv.unlisted ? " (incl. unlisted)" : ""}:`);
+  }
+  if (!globalYargv.pools) {
+    return _outputInfos(commands);
+  }
+  for (const pool of [...activePools].reverse()) {
+    if (!Object.keys(pool.commands).length) {
+      console.log(`## Pool ${pool.name}' empty (matching "${pool.path}${commandGlob}")`);
+    } else {
+      console.log(`## Pool ${pool.name}' commands (matching "${pool.path}${commandGlob}"):`);
+      _outputInfos(pool.commands, pool.path);
+      console.log();
+    }
+  }
+
+  function _outputInfos (commands, poolPath) {
+    let nameAlign = 0;
+    let versionAlign = 0;
+    const infos = Object.keys(commands)
+    .sort()
+    .map((commandName) => {
+      const command = commands[commandName];
+      if (!command || (command.disabled && !contextYargv.unlisted)) return {};
+      const nameLength = commandName.length + (command.disabled ? 2 : 0);
+      if (nameLength > nameAlign) nameAlign = nameLength;
+      const info = _commandInfo(command.modulePath, poolPath || command.pool.path);
+      if (info[0].length > versionAlign) versionAlign = info[0].length;
+      return { name: commandName, module: command.module, info };
+    });
+    if (introspect.name) {
+      const headers = [
+        ...(introspect.name ? [_rightpad("command", nameAlign), "|"] : []),
+        ...(introspect.summary ? [_rightpad("summary", 71), "|"] : []),
+        ...(introspect.version ? [_rightpad("version", versionAlign), "|"] : []),
+        ...(introspect.info ? ["package | pool | path", "|"] : []),
+      ];
+      console.log(...headers.slice(0, -1));
+      console.log(...headers.slice(0, -1).map(h => h === "|" ? "|" : h.replace(/./g, "-")));
+    }
+    infos.map(({ name, module, info }) => {
+      if (!info) return undefined;
+      let ret = {};
       const name_ = commands[name].disabled ? `(${name})` : name;
-      if (introspect.info) {
-        _outputCommandInfo([[name_, align], "|", [info[0], versionAlign], "|", ...info.slice(1)]);
-        ret = info[0];
-      } else if (introspect.version) {
-        console.log(info[0]);
-        ret = info[0];
-      }
-      if (introspect.script) {
+      const infoRow = [
+        ...(introspect.name ? ["|", [(ret.name = name_), nameAlign]] : []),
+        ...(introspect.summary ? ["|", [(ret.summary = !module
+              ? "<script file not found>"
+              : module.summary
+                  || module.describe.match(/^(.[^\n]*)/)[1].slice(0, 71).replace(/\|/g, ";")), 71]]
+          : []),
+        ...(introspect.version ? ["|", [(ret.version = info[0]), versionAlign]] : []),
+        ...(introspect.info ? ["|", (ret.info = info.slice(1)).join(" | ")] : []),
+      ];
+      _outputCommandInfo(infoRow.slice(1));
+      if (introspect.code) {
         if (shell.test("-f", info[3])) {
           const scriptSource = String(shell.head({ "-n": 1000000 }, info[3]));
-          console.log(cardinal.highlight(scriptSource, { theme: tomorrowNight, linenos: true }));
+          console.log(cardinal.highlight(scriptSource,
+              { theme: cardinal.tomorrowNight, linenos: true }));
         } else {
-          console.log(`cannot find command '${name}' script source at:`, info[3]);
+          console.log(`Cannot read command '${name}' script source from:`, info[3]);
         }
       } else if (introspect.describe && module && module.describe) {
         console.log();
         console.log(module.describe);
         console.log();
       }
-    }
-    return ret;
-  }).filter(v => v);
+      if (Object.keys(ret).length === 1) return ret[Object.keys(ret)[0]];
+      return ret;
+    }).filter(v => v);
+  }
 }
 
 function _commandInfo (commandPath, poolPath) {
