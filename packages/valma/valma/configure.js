@@ -4,6 +4,7 @@ exports.command = "configure [moduleglob]";
 exports.summary = "Configure the current valaa repository and its valma modules";
 exports.describe = `${exports.summary}.`;
 
+exports.disabled = (yargs) => !((yargs.vlm || {}).packageConfig || {}).valaa;
 exports.builder = (yargs) => yargs.options({
   reconfigure: {
     type: "boolean", default: false, global: true,

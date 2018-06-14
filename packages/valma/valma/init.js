@@ -4,6 +4,7 @@ exports.command = "init";
 exports.summary = "Initialize the current directory as a Valaa repository from scratch";
 exports.describe = `${exports.summary}.`;
 
+exports.disabled = (yargs) => ((yargs.vlm || {}).packageConfig || {}).valaa;
 exports.builder = (yargs) => yargs;
 
 exports.handler = async (yargv) => {

@@ -1,7 +1,7 @@
 {
-  "name": "@valos/revelations-dev-server",
+  "name": "@valos/valma-toolset-revealer",
   "version": "0.30.0-prerelease.10",
-  "description": "Development tool for launching webpack-dev-server using copy of revelations/* as content",
+  "description": "Tools for developing and building revelations ie. static web deliverables",
   "license": "MIT",
   "author": "Valaa Technologies Ltd",
   "private": false,
@@ -16,6 +16,8 @@
     "valma-revelations-dev-server": "valma/revelations-dev-server.js"
   },
   "dependencies": {
-    "webpack-dev-server": "^2.9.3"
+    "compression-webpack-plugin": "^1.1.11",
+    "webpack-dev-server": "^2.9.3",
+    "webpack": "^3.8.1"
   }
 }
