@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const { spawn } = require("child_process");
+const colors = require("colors/safe");
 const fs = require("fs");
 const inquirer = require("inquirer");
 const minimatch = require("minimatch");
@@ -66,6 +67,10 @@ const vlm = yargs.vlm = {
   // Returns a list of available sub-command names which match the given command glob.
   listMatchingCommands,
   listMatchingUnlistedCommands,
+
+  // Enables usage of ANSI colors using the safe variant of Marak's colors
+  // See https://github.com/Marak/colors.js
+  colors,
 
   // Opens interactive inquirer prompt and returns a completion promise.
   // See https://github.com/SBoudrias/Inquirer.js/
@@ -162,10 +167,10 @@ sharing the folders between separate packages).`,
           type: "boolean", default: true, global: false,
           description: "Add node environment if it is missing",
         },
-        "package-pool": {
+        "local-pool": {
           group: "Execution options:",
           type: "string", default: defaultPaths.localPool, global: false,
-          description: "Package pool path is the first pool to be searched",
+          description: "Local pool path is the first pool to be searched",
         },
         "depended-pool-subdirectory": {
           group: "Execution options:",
@@ -437,7 +442,8 @@ async function callValma (command, argv = []) {
               && module.builder) || undefined;
           activeCommand.disabled = !builder;
           if (!builder && !contextYargv.unlisted) return undefined;
-          yargs.command(module.command, module.summary || module.describe, builder, () => {});
+          yargs.command(module.command, module.summary || module.describe,
+              ...(builder ? [builder] : []), () => {});
         } else if (!introspect && !contextYargv.list) {
           throw new Error(`vlm: invalid script module '${activeCommand.modulePath
               }', export 'command', 'describe' or 'handler' missing`);
@@ -480,7 +486,8 @@ async function callValma (command, argv = []) {
         pool: { path: path.dirname(process.argv[1]) }
       } };
     }
-    const ret = _outputIntrospection(introspect, introspectedCommands, commandGlob);
+    const ret = _outputIntrospection(introspect, introspectedCommands, commandGlob,
+        contextYargv.unlisted);
     return isWildCardCommand ? ret : ret[0];
   }
 
@@ -525,9 +532,9 @@ async function callValma (command, argv = []) {
       };
       yargs.help().command(module.command, module.describe);
       const subCommand = `${matchingCommand} ${commandArgs}`;
-      subYargs = (!module.disabled
-            || ((typeof module.disabled === "function") && module.disabled(subYargs)))
-          && module.builder(subYargs);
+      const disabled = module.disabled
+          && ((typeof module.disabled !== "function") || module.disabled(subYargs));
+      subYargs = !disabled && module.builder(subYargs);
       if (listedCommands) {
         listedCommands[matchingCommand] = { ...activeCommand, disabled: !subYargs };
         continue;
@@ -543,7 +550,8 @@ async function callValma (command, argv = []) {
       const subIntrospect = _extractIntrospectOptions(module, subYargv, subCommand);
       if (subIntrospect) {
         ret = ret.concat(
-            _outputIntrospection(subIntrospect, { [matchingCommand]: activeCommand }, command));
+            _outputIntrospection(subIntrospect, { [matchingCommand]: activeCommand }, command,
+                  subYargv.unlisted));
       } else {
         if (contextVLM.verbosity >= 3) {
           console.log("vlm voluble: phase 5: forwarding to:", subCommand,
@@ -566,7 +574,7 @@ async function callValma (command, argv = []) {
     }
   }
   if (listedCommands) {
-    _outputIntrospection({ info: true }, listedCommands, command);
+    _outputIntrospection({ info: true }, listedCommands, command, contextYargv.unlisted);
   }
   return isWildCardCommand ? ret : ret[0];
 }
@@ -765,7 +773,7 @@ function _extractIntrospectOptions (module, yargv, command, isWildcard) {
   };
 }
 
-function _outputIntrospection (introspect, commands, commandGlob) {
+function _outputIntrospection (introspect, commands, commandGlob, unlisted) {
   if (introspect.help) {
     yargs.vlm = vlm;
     yargs.showHelp("log");
@@ -774,7 +782,7 @@ function _outputIntrospection (introspect, commands, commandGlob) {
   if (introspect.usage) {
     console.log("# Simple usage:", introspect.module.command);
     console.log();
-    console.log(`# Available commands${globalYargv.unlisted ? " (incl. unlisted)" : ""}:`);
+    console.log(`# Available commands${unlisted ? " (incl. unlisted)" : ""}:`);
   }
   if (!globalYargv.pools) {
     return _outputInfos(commands);
@@ -796,7 +804,7 @@ function _outputIntrospection (introspect, commands, commandGlob) {
     .sort()
     .map((commandName) => {
       const command = commands[commandName];
-      if (!command || (command.disabled && !contextYargv.unlisted)) return {};
+      if (!command || (command.disabled && !unlisted)) return {};
       const nameLength = commandName.length + (command.disabled ? 2 : 0);
       if (nameLength > nameAlign) nameAlign = nameLength;
       const info = _commandInfo(command.modulePath, poolPath || command.pool.path);

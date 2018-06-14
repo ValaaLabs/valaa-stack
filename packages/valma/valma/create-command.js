@@ -1,50 +1,56 @@
 #!/usr/bin/env vlm
 
 exports.command = "create-command";
-exports.summary = "Create and export a valma command script skeleton";
-exports.describe = `${exports.summary}. The script file is placed under current directory valma/${
-    ""} and the export is placed into package.json bin section.`;
+exports.summary = "Create a valma command script skeleton";
+exports.describe = `${exports.summary}.
+The script file is placed under valma/ with a symlink to it in
+valma.bin/ , making the command immediately visible to valma.
+`;
 
-exports.builder = (yargs) => {
-  return yargs.vlm.packageConfig && yargs.options({
-    command: {
-      type: "string", description: "The name of the new valma command (set as exports.command)",
-      interactive: { type: "input", when: "if-undefined" }
-    },
-    filename: {
-      type: "string", description: "The new command skeleton file name under valma/",
-      interactive: { type: "input", when: "if-undefined" }
-    },
-    local: {
-      type: "boolean", default: false,
-      description: "Export command as valma.bin/ symlink instead of in package.json:bin",
-    },
-    summary: {
-      type: "string", description: "One line summary of the new command (set as exports.summary)",
-      interactive: { type: "input", when: "if-undefined" },
-    },
-    brief: {
-      type: "string", description: "Couple word description of the new command for logging",
-    },
-    describe: {
-      type: "string", description: "Full description of the new command (set as exports.describe)",
-    },
-  });
-}
+exports.disabled = (yargs) => !yargs.vlm.packageConfig;
+exports.builder = (yargs) => yargs.options({
+  command: {
+    type: "string", description: "The name of the new valma command (set as exports.command)",
+    interactive: { type: "input", when: "if-undefined" }
+  },
+  filename: {
+    type: "string", description: "The new command skeleton filename in valma/ (leave empty for default)",
+    interactive: { type: "input", when: "if-undefined" }
+  },
+  export: {
+    type: "boolean", default: false,
+    description: "Export command in package.json:bin section instead of valma.bin/ symlinking",
+  },
+  summary: {
+    type: "string", description: "One line summary of the new command (set as exports.summary)",
+    interactive: { type: "input", when: "if-undefined" },
+  },
+  brief: {
+    type: "string", description: "Description of couple words of the new command for logging",
+  },
+  describe: {
+    type: "string", description: "Full description of the new command (set as exports.describe)",
+  },
+});
 
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
   const command = yargv.command;
   const commandParts = command.replace(/\//g, "_").match(/^(\.)?(.*)$/);
   const commandExportName = `${commandParts[1] || ""}valma-${commandParts[2]}`;
-  const scriptPath = `valma/${yargv.filename}`;
+  const scriptPath = `valma/${yargv.filename || `${commandParts[2]}.js`}`;
   let verb = "already exports";
+  let local = !yargv.export;
+  console.log("prbblbl");
   while (!(vlm.packageConfig.bin || {})[commandExportName]) {
-    const choices = ["Create", "skip"];
+    const choices = ["Create", "skip", local ? "export instead" : "local instead"];
     if (yargv.describe) choices.push("help");
+    const linkMessage = local
+        ? `'valma.bin/${commandExportName}'`
+        : `'package.json':bin["${commandExportName}"]`;
     const answer = await vlm.inquire([{
-      message: `Create a ${yargv.brief || ""} valma command script template as package.json:bin["${
-          commandExportName}"] -> "${scriptPath}"?`,
+      message: `Create a ${yargv.brief || yargv.brief || local ? "local" : "exported"
+          } valma command script template as ${linkMessage} -> '${scriptPath}'?`,
       type: "list", name: "choice", default: choices[0], choices,
     }]);
     if (answer.choice === "skip") {
@@ -53,16 +59,33 @@ exports.handler = async (yargv) => {
     }
     if (answer.choice === "help") {
       console.log(describeText);
-      if (yargv.brief) {
-        console.log(`This step creates a ${yargv.brief} valma command script template\n`);
-      }
+      console.log(`This step creates a ${yargv.brief || local ? "local" : "exported"
+          } valma command script template\n`);
       continue;
     }
-    vlm.shell.mkdir("-p", "bin");
-    vlm.shell.ShellString(_createBody(command, yargv.summary, yargv.describe))
-        .to(scriptPath);
-    vlm.updatePackageConfig({ bin: { [commandExportName]: scriptPath } });
-    verb = "now exports";
+    if (answer.choice === "export instead") { local = false; continue; }
+    if (answer.choice === "local instead") { local = true; continue; }
+    if (!vlm.shell.test("-e", scriptPath)) {
+      vlm.shell.mkdir("-p", vlm.path.dirname(scriptPath));
+      vlm.shell.ShellString(_createBody(command, yargv.summary, yargv.describe)).to(scriptPath);
+    } else {
+      console.log(`valma-create-command: not overwriting already existing script '${scriptPath}'`);
+    }
+    const symlinkPath = vlm.path.join("valma.bin", commandExportName);
+    if (!local) {
+      vlm.updatePackageConfig({ bin: { [commandExportName]: scriptPath } });
+      verb = "now exports";
+    } else if (!vlm.shell.test("-e", symlinkPath)) {
+      vlm.shell.mkdir("-p", vlm.path.dirname(symlinkPath));
+      vlm.shell.ln("-s", `../${scriptPath}`, symlinkPath);
+      verb = "now symlinks";
+      break;
+    } else {
+      console.log(`valma-create-command: cannot create local symlink at '${symlinkPath
+          }' which already exists`);
+      verb = "already symlinks";
+      break;
+    }
   }
   console.log(`valma-create-command: this repository ${verb} valma command ${command}`);
 };
@@ -74,28 +97,31 @@ function _createBody (command, summary, describe) {
 exports.summary = "${summary || ""}";
 exports.describe = \`\${exports.summary}.\n${describe || ""}\`;
 
+// Example template which displays the command name itself and package name where it is ran
+// Only enabled inside package
+exports.disabled = (yargs) => !yargs.vlm.packageConfig;
 exports.builder = (yargs) => {
-  return yargs;
-/*
   const vlm = yargs.vlm;
-  return undefined; // if the command should be dynamically disabled.
   return yargs.options({
-    myText: {
-      type: "string", default: "lorem", description: "lorem ipsum dolor sit amet",
+    name: {
+      type: "string", description: "current package name",
+      default: vlm.packageConfig.name,
       interactive: { type: "input", when: "if-undefined" },
-      // See https://github.com/SBoudrias/Inquirer.js/ for other interactive attributes
+      // See https://github.com/SBoudrias/Inquirer.js/ for more interactive attributes
     },
-    myFlag: {
-      type: "boolean", default: true, description: "consectetur adipiscing elit",
-      interactive: { type: "confirm", when: "if-undefined" },
+    color: {
+      type: "string", description: "message color",
+      default: "reset", choices: ["reset", "red", "black"],
+      interactive: { type: "list", when: "always" },
+      // See https://github.com/SBoudrias/Inquirer.js/ for more interactive attributes
     },
-    // See https://github.com/yargs/yargs/blob/HEAD/docs/api.md for other yargs options
+    // See https://github.com/yargs/yargs/blob/HEAD/docs/api.md for more yargs options
   });
-*/
 }
 
 exports.handler = (yargv) => {
   const vlm = yargv.vlm;
+  console.log(vlm.colors[yargv.color](\`This is '${command}' running inside '\${yargv.name}'\`));
 };
 `;
 }
