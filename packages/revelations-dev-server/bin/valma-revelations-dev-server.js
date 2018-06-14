@@ -1,10 +1,7 @@
-#!/usr/bin/env node
-
-const shell = require("shelljs");
-const path = require("path");
+#!/usr/bin/env vlm
 
 exports.command = "revelations-dev-server [distContentBase]";
-exports.summary = "Launches a webpack-dev-server at localhost";
+exports.summary = "Launch a webpack-dev-server at localhost";
 exports.describe = `${exports.summary} using given <contentBase> as content root`;
 
 exports.builder = function builder (yargs) {
@@ -36,11 +33,11 @@ exports.builder = function builder (yargs) {
 exports.handler = function handler (yargv) {
   const vlm = yargv.vlm;
   const contentBase = yargv.distContentBase || "dist/revelations";
-  if (!shell.test("-d", contentBase)) {
+  if (!vlm.shell.test("-d", contentBase)) {
     console.log("Creating and populating an initially missing content base directory", contentBase,
         `(for this first time only) from ${yargv.source}`);
-    shell.mkdir("-p", contentBase);
-    shell.cp("-R", path.posix.join(yargv.source, "*"), contentBase);
+    vlm.shell.mkdir("-p", contentBase);
+    vlm.shell.cp("-R", vlm.path.join(yargv.source, "*"), contentBase);
   }
   return vlm.executeExternal("npx", [
     "-c", `webpack-dev-server ${""

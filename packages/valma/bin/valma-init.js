@@ -1,3 +1,5 @@
+#!/usr/bin/env vlm
+
 exports.command = "init";
 exports.summary = "Initialize the current directory as a Valaa repository from scratch";
 exports.describe = `${exports.summary}.`;

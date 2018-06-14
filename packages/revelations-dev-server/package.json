@@ -16,7 +16,6 @@
     "valma-revelations-dev-server": "bin/valma-revelations-dev-server.js"
   },
   "dependencies": {
-    "shelljs": "^0.8.2",
     "webpack-dev-server": "^2.9.3"
   }
 }

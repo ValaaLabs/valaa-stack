@@ -1,5 +1,9 @@
 {
   "name": "@valos/valma-toolset-vault",
+  "valaa": {
+    "type": "toolset",
+    "domain": "infrastructure"
+  },
   "version": "0.30.0-prerelease.10",
   "description": "A valma toolset for managing vault package monorepositories",
   "license": "MIT",
@@ -7,10 +11,6 @@
   "private": false,
   "publishConfig": {
     "access": "public"
-  },
-  "valaa": {
-    "type": "toolset",
-    "domain": "infrastructure"
   },
   "bin": {
     "valma-assemble-packages": "bin/valma-assemble-packages.js",

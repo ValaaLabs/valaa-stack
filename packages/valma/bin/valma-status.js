@@ -1,3 +1,5 @@
+#!/usr/bin/env vlm
+
 exports.command = "status [moduleglob]";
 exports.summary = "Display the status of the current repository and its valma modules";
 exports.describe = `${exports.summary

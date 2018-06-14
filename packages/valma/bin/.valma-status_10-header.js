@@ -1,3 +1,5 @@
+#!/usr/bin/env vlm
+
 exports.command = ".status/10-header";
 exports.summary = "Display the generic information header for the current repository";
 exports.describe = `${exports.summary}.`;

@@ -1,4 +1,4 @@
-const shell = require("shelljs");
+#!/usr/bin/env vlm
 
 exports.command = "configure [moduleglob]";
 exports.summary = "Configure the current valaa repository and its valma modules";
@@ -59,8 +59,8 @@ exports.handler = async (yargv) => {
         console.log(`This step creates a ${briefText} script template for this component\n`);
         continue;
       }
-      shell.mkdir("-p", "bin");
-      shell.ShellString(
+      vlm.shell.mkdir("-p", "bin");
+      vlm.shell.ShellString(
 `exports.command = "${command}";
 exports.summary = "${summaryText || ""}";
 exports.describe = \`\${exports.summary}.\n${describeText || ""}\`;
