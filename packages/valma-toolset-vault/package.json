@@ -15,11 +15,34 @@
   "bin": {
     "valma-package-assemble": "valma/package-assemble.js",
     "valma-package-publish": "valma/package-publish.js",
+    ".valma-configure_.type_.vault_copy-config-templates": "valma/configure__copy-config-templates.js"
   },
   "dependencies": {
+    "@babel/cli": "^7.0.0-beta.51",
+    "@babel/core": "^7.0.0-beta.51",
+    "@babel/plugin-proposal-decorators": "^7.0.0-beta.51",
+    "@babel/plugin-transform-flow-strip-types": "^7.0.0-beta.51",
+    "@babel/plugin-transform-runtime": "^7.0.0-beta.51",
+    "@babel/polyfill": "^7.0.0-beta.51",
+    "@babel/preset-env": "^7.0.0-beta.51",
+    "@babel/preset-react": "^7.0.0-beta.51",
+    "@babel/preset-stage-0": "^7.0.0-beta.51",
+    "@babel/runtime": "^7.0.0-beta.51",
     "@valos/valma-toolset-revealer": "0.30.0-prerelease.10",
+    "babel-core": "^7.0.0-0",
+    "babel-eslint": "^7.1.0",
+    "babel-jest": "^23.0.1",
+    "babel-loader": "^8.0.0-beta.3",
+    "babel-plugin-module-resolver": "^3.1.1",
+    "babel-plugin-root-import": "^5.1.0",
+    "eslint": "3.19.0",
+    "eslint-config-airbnb": "^12.0.0",
+    "eslint-import-resolver-babel-plugin-root-import": "^1.1.1",
+    "eslint-plugin-flowtype": "^2.28.2",
+    "eslint-plugin-import": "^1.16.0",
+    "flow": "^0.2.3",
+    "flow-bin": "^0.36.0",
     "lerna": "^2.11.0",
-    "shelljs": "^0.8.2",
     "valma": "^0.30.0-prerelease.10"
   }
 }

@@ -11,9 +11,9 @@ notably the version increase semantics is configured there.
 Lerna is not used for constructing the actual packages. This is done by a
 flat recursive cp to the target at the moment.
 
-Invokes babel for all projects with '.babelrc' in their root. If the vault
-has a shared .babelrc for all packages, a symlink from this root to each
-project should be created.
+Invokes babel for all projects with babel.config.js in their root. If the
+vault has a shared babel.config.js for all packages, a symlink from this
+root to each project should be created.
 
 When assembling lerna will automatically update the shared version for all
 packages and their cross-dependencies and make a git commit and git tag for
@@ -53,10 +53,10 @@ exports.builder = (yargs) => yargs.options({
     type: "string", default: "packages",
     description: "Source packages directory. Must match one lerna.json entry."
   },
-  "node-env": {
+  "babel-target-env": {
     type: "string", default: "package-assemble",
-    description: "NODE_ENV environment variable for the babel builds"
-        + " (used for packages with .babelrc defined)"
+    description: "TARGET_ENV environment variable for the babel builds"
+        + " (used for packages with babel configuration in their root)"
   },
   force: {
     type: "boolean", default: false,
@@ -130,11 +130,9 @@ exports.handler = async (yargv) => {
     console.log(`\nvalma-package-assemble: assembling package '${name}' into`, targetDirectory);
     vlm.shell.mkdir("-p", targetDirectory);
     vlm.shell.cp("-R", vlm.path.join(sourceDirectory, "*"), targetDirectory);
-    if (vlm.shell.test("-f", vlm.path.join(sourceDirectory, ".babelrc"))
-        || vlm.shell.test("-f", vlm.path.join(sourceDirectory, ".babelrc.js"))
-        || vlm.shell.test("-f", vlm.path.join(sourceDirectory, "babel.config.js"))) {
-      vlm.shell.exec(
-          `NODE_ENV=${yargv.nodeEnv} babel ${sourceDirectory} --out-dir ${targetDirectory}`);
+    if (vlm.shell.test("-f", vlm.path.join(sourceDirectory, "babel.config.js"))) {
+      vlm.shell.exec(`TARGET_ENV=${yargv.babelTargetEnv} babel ${sourceDirectory} --out-dir ${
+          targetDirectory}`);
     }
     if (yargv.unlink) {
       console.log(`\nvalma-package-assemble: 'npm unlink' for package '${name}' (in '${

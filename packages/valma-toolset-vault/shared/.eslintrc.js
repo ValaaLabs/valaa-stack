@@ -1,4 +1,4 @@
-{
+module.exports = {
   "parser": "babel-eslint",
   "extends": "airbnb", // With two major exceptions: double quotes and space before paren in function definition
   "env": {
@@ -89,4 +89,4 @@
   "settings": {
     "import/resolver": "babel-plugin-root-import"
   }
-}
+};
