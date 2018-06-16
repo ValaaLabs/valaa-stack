@@ -12,4 +12,4 @@ exports.handler = async (yargv) => {
   await vlm.executeExternal("yarn",
       ["install", "--save-dev", "@valos/valma-toolset-authollery"]);
   return vlm.callValma(`.configure/.type/.authollery/**/*`);
-}
+};

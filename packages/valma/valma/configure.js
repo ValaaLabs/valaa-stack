@@ -34,7 +34,7 @@ exports.handler = async (yargv) => {
     await vlm.callValma(`.configure/.type/${vlm.packageConfig.valaa.type}`);
     await vlm.callValma(`.configure/.modules`, yargv._.slice(1));
   }
-  await vlm.callValma(`.configure/{,.type/.${valaa.type}/,.domain/.${valaa.type}/}.module/${
+  await vlm.callValma(`.configure/{,.type/.${valaa.type}/,.domain/.${valaa.domain}/}.module/${
       yargv.moduleglob || ""}{*/**/,}*`);
 
   async function askToCreateValmaScriptSkeleton (script, scriptFile, briefText, summaryText,

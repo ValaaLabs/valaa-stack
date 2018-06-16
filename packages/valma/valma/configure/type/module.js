@@ -15,4 +15,4 @@ exports.handler = async (yargv) => {
 the domain of this module gets configured.`);
 
   return yargv.vlm.callValma(`.configure/.type/.module/**/*`);
-}
+};

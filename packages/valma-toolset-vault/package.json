@@ -15,7 +15,7 @@
   "bin": {
     "valma-package-assemble": "valma/package-assemble.js",
     "valma-package-publish": "valma/package-publish.js",
-    ".valma-configure_.type_.vault_copy-config-templates": "valma/configure__copy-config-templates.js"
+    ".valma-configure_.type_.vault_copy-vault-templates": "valma/configure__copy-vault-templates.js"
   },
   "dependencies": {
     "@babel/cli": "^7.0.0-beta.51",
@@ -28,7 +28,6 @@
     "@babel/preset-react": "^7.0.0-beta.51",
     "@babel/preset-stage-0": "^7.0.0-beta.51",
     "@babel/runtime": "^7.0.0-beta.51",
-    "@valos/valma-toolset-revealer": "0.30.0-prerelease.10",
     "babel-core": "^7.0.0-0",
     "babel-eslint": "^7.1.0",
     "babel-jest": "^23.0.1",

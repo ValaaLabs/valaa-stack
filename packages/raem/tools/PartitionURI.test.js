@@ -17,6 +17,5 @@ describe("Basic operations", () => {
     const authorityURIString = getPartitionAuthorityURIStringFrom(roundTripURI);
     expect(String(authorityURIString))
         .toEqual(sourceURIString);
-
   });
 });

@@ -288,7 +288,7 @@ if ((globalYargv.command || "").includes("valma-")
 }
 availablePools.push(..._locateDependedPools(
     availablePools[0].path, globalYargv.dependedPoolSubdirectory));
-availablePools.push(  { name: "global", path: globalYargv.globalPool });
+availablePools.push({ name: "global", path: globalYargv.globalPool });
 
 let activePools = [];
 
@@ -405,7 +405,6 @@ async function handler (yargv) {
 
 async function callValmaWithEcho (command, argv = []) {
   if (vlm.echo) console.log(colors.echo("    ->> vlm", command, ...argv));
-  let ret;
   try {
     const ret = await callValma.call(this, command, argv);
     if (vlm.echo) {
@@ -465,7 +464,7 @@ async function callValma (command, argv = []) {
                   || ((typeof module.disabled === "function") && !module.disabled(yargs)))
               && module.builder) || undefined;
           activeCommand.disabled = !builder;
-          if (!builder && !contextYargv.matchAll) return undefined;
+          if (!builder && !contextYargv.matchAll) return;
           yargs.command(module.command, module.summary || module.describe,
               ...(builder ? [builder] : []), () => {});
         } else if (!introspect && !contextYargv.dryRun) {
@@ -818,10 +817,10 @@ function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
     yargs.showHelp("log");
     return [];
   }
-  let commands = commands_;
+  let activeCommands = commands_;
   if (introspect.identityCommand) {
     if (introspect.entryIntro) {
-      commands = introspect.identityCommand;
+      activeCommands = introspect.identityCommand;
     } else {
       console.log(colors.bold("# Usage:", introspect.module.command));
       console.log();
@@ -829,8 +828,9 @@ function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
     }
   }
   if (!globalYargv.pools) {
-    return _outputInfos(commands);
+    return _outputInfos(activeCommands);
   }
+  let outerRet = [];
   for (const pool of [...activePools].reverse()) {
     if (!Object.keys(pool.commands).length) {
       console.log(colors.bold(
@@ -838,10 +838,11 @@ function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
     } else {
       console.log(colors.bold(
           `## Pool '${pool.name}' commands (matching "${pool.path}${commandGlob}"):`));
-      _outputInfos(pool.commands, pool.path);
+      outerRet = outerRet.concat(_outputInfos(pool.commands, pool.path));
       console.log();
     }
   }
+  return outerRet;
 
   function _outputInfos (commands, poolPath) {
     let nameAlign = 0;
@@ -858,7 +859,7 @@ function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
 
       const nameLength = name.length + (command.disabled ? 2 : 0);
       if (nameLength > nameAlign) nameAlign = nameLength;
-      const usage = module && module.command || `${name} <script missing>`;
+      const usage = (module && module.command) || `${name} <script missing>`;
       if (usage.length > usageAlign) usageAlign = usage.length;
 
       if (info[0].length > versionAlign) versionAlign = info[0].length;
@@ -872,12 +873,12 @@ function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
         ...(introspect.showVersion ? [_rightpad("version", versionAlign), "|"] : []),
         ...(introspect.showInfo ? ["package | command pool | script path", "|"] : []),
       ];
-      console.log(...headers.slice(0, -1).map(h => h === "|" ? "|" : colors.bold(h)));
-      console.log(...headers.slice(0, -1).map(h => h === "|" ? "|" : h.replace(/./g, "-")));
+      console.log(...headers.slice(0, -1).map(h => (h === "|" ? "|" : colors.bold(h))));
+      console.log(...headers.slice(0, -1).map(h => (h === "|" ? "|" : h.replace(/./g, "-"))));
     }
-    infos.map(({ name, module, usage, info }) => {
+    return infos.map(({ name, module, usage, info }) => {
       if (!info) return undefined;
-      let ret = {};
+      const ret = {};
       const name_ = commands[name].disabled ? `(${name})` : name;
       const infoRow = [
         ...(introspect.showName

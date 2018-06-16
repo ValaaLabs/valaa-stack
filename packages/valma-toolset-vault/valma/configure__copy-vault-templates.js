@@ -9,6 +9,6 @@ exports.builder = (yargs) => yargs;
 exports.handler = (yargv) => {
   const vlm = yargv.vlm;
   const sourceGlob = vlm.path.join(__dirname, "../templates/{.,}*");
-  console.log("Copying templates from ", sourceGlob, "without overwriting existing files");
+  console.log("Copying vault templates from ", sourceGlob, "without overwriting existing files");
   vlm.shell.cp("-n", sourceGlob, ".");
 };

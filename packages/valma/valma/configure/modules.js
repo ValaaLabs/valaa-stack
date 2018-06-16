@@ -27,7 +27,7 @@ exports.builder = (yargs) => {
 
 exports.handler = (yargv) => {
   const valmaConfig = yargv.vlm.valmaConfig;
-  if (!valmaConfig) return yargv;
+  if (!valmaConfig) return;
 
   const activeModules = valmaConfig.module || {};
   const module = {};

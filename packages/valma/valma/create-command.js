@@ -58,7 +58,7 @@ exports.handler = async (yargv) => {
       break;
     }
     if (answer.choice === "help") {
-      console.log(describeText);
+      console.log(yargv.describe);
       console.log(`This step creates a ${yargv.brief || local ? "local" : "exported"
           } valma command script template\n`);
       continue;
@@ -92,7 +92,7 @@ exports.handler = async (yargv) => {
 
 function _createBody (command, summary, describe) {
   const header = (command[0] === ".") || command.includes("/.") ? "" : "#!/usr/bin/env vlm\n\n";
-  return`${header
+  return `${header
 }exports.command = "${command}";
 exports.summary = "${summary || ""}";
 exports.describe = \`\${exports.summary}.\n${describe || ""}\`;
@@ -117,7 +117,7 @@ exports.builder = (yargs) => {
     },
     // See https://github.com/yargs/yargs/blob/HEAD/docs/api.md for more yargs options
   });
-}
+};
 
 exports.handler = (yargv) => {
   const vlm = yargv.vlm;

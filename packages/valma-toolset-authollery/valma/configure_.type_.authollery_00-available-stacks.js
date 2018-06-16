@@ -16,7 +16,7 @@ exports.builder = (yargs) => {
 exports.handler = (yargv) => {
   if ((yargv.vlm.packageConfig.valaa || {}).type !== "authollery") return;
   yargv.vlm.updateValmaConfig({
-    "authollery": {
+    authollery: {
       stack: yargv.stack,
     },
   });

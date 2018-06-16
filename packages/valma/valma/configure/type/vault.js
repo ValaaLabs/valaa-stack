@@ -7,6 +7,8 @@ exports.builder = (yargs) => yargs;
 
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
-  await vlm.executeExternal("yarn", ["install", "--save-dev", "@valos/valma-toolset-vault"]);
+  if (!((vlm.packageConfig || {}).devDependencies || {})["@valos/valma-toolset-vault"]) {
+    await vlm.executeExternal("yarn", ["add", "-W", "--dev", "@valos/valma-toolset-vault"]);
+  }
   return vlm.callValma(`.configure/.type/.vault/**/*`);
 };

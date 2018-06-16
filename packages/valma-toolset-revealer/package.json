@@ -1,5 +1,9 @@
 {
   "name": "@valos/valma-toolset-revealer",
+  "valaa": {
+    "type": "toolset",
+    "domain": "gateway"
+  },
   "version": "0.30.0-prerelease.10",
   "description": "Tools for developing and building revelations ie. static web deliverables",
   "license": "MIT",
@@ -7,10 +11,6 @@
   "private": false,
   "publishConfig": {
     "access": "public"
-  },
-  "valaa": {
-    "type": "toolset",
-    "domain": "gateway"
   },
   "bin": {
     "valma-revelations-dev-server": "valma/revelations-dev-server.js"

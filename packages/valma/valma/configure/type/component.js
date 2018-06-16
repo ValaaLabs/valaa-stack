@@ -21,4 +21,4 @@ this script.
 `);
 
   return yargv.vlm.callValma(`.configure/.type/.component/**/*`);
-}
+};
