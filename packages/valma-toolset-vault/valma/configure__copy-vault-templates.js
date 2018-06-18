@@ -1,4 +1,4 @@
-exports.command = ".configure/.type/.vault/copy-config-templates";
+exports.command = ".configure/.type/.vault/copy-vault-templates";
 exports.summary = "Initializes vault monorepo config files from templates";
 exports.describe = `${exports.summary}.
 Config templates are located in the package @valos/valma-toolset-vault

@@ -17,6 +17,7 @@
     "start": "vlm revealer-dev-server ",
     "dev": "TARGET_ENV=local vlm revealer-dev-server ",
     "prod": "TARGET_ENV=production vlm revealer-dev-server ",
+    "clean": "lerna clean --yes",
     "eslint": "eslint .",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "lint": "npm run eslint",
@@ -39,6 +40,6 @@
     "karma-chrome-launcher": "^2.2.0",
     "karma-jasmine": "^1.1.0",
     "karma-webpack": "^2.0.4",
-    "valma": "file:packages/valma",
+    "valma": "0.30.0-prerelease.10"
   }
 }

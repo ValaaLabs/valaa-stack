@@ -42,7 +42,7 @@ exports.handler = async (yargv) => {
         console.log("Skipped 'yarn init'.");
         break;
       }
-      await vlm.executeExternal("yarn", ["init"]);
+      await vlm.executeScript("yarn", ["init"]);
       break;
     }
     return true;
@@ -127,7 +127,7 @@ exports.handler = async (yargv) => {
         console.log("no devDependencies provided, skipping 'yarn install --save-dev'");
       } else {
         try {
-          await vlm.executeExternal("yarn",
+          await vlm.executeScript("yarn",
               ["install", "--save-dev"].concat(answer.devDependencies.split(" ")));
         } catch (error) {
           console.log();

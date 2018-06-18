@@ -47,11 +47,11 @@ exports.handler = function handler (yargv) {
     vlm.shell.mkdir("-p", contentBase);
     vlm.shell.cp("-R", vlm.path.join(yargv.source, "*"), contentBase);
   }
-  return vlm.executeExternal("npx", [
-    "-c", `webpack-dev-server ${""
-        } ${yargv.inline ? "--inline" : ""
-        } ${yargv.progress ? "--progress" : ""
-        } ${yargv.open ? "--open" : ""
-        } --host ${yargv.host} --content-base ${contentBase}`
+  return vlm.executeScript("webpack-dev-server", [
+    yargv.inline && "--inline",
+    yargv.progress && "--progress",
+    yargv.opena && "--open",
+    "--host", yargv.host,
+    "--content-base", contentBase,
   ]);
 };

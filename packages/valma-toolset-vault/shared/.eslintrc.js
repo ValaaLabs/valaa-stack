@@ -68,6 +68,7 @@ module.exports = {
     "one-var-declaration-per-line": 0, // same as above
 
     "import/extensions": 0,
+    "import/no-dynamic-require": 0, // Too many infrastructure tools use dynamic requires to warrant putting selective disables aroudn
     "import/no-extraneous-dependencies": 0,
     "import/no-unresolved": 0,
     "import/prefer-default-export": 0, // lambda's and flow often necessitate a single named export

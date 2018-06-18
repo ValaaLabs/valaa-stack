@@ -1,10 +1,11 @@
 exports.command = ".configure/.type/component";
 exports.summary = "Configure a Valma component repository";
-exports.describe = `${exports.summary}. Valma components are used as dependencies for valma${
-    ""} modules. Components are implementation detail building blocks of the modules; they${
-    ""} provide a way to have separate version tracking from the module itself. As an${
-    ""} implementation detail components don't appear in listings (they are known and called by${
-    ""} their parent modules directly).`;
+exports.describe = `${exports.summary}.
+Valma components are used as direct dependencies of valma modules.
+Components are implementation detail building blocks of the modules;
+they provide a way to have separate version tracking from the module
+itself. As such, components don't appear in listings but instead are
+always known and called by their parent modules directly.`;
 
 exports.builder = (yargs) => yargs;
 

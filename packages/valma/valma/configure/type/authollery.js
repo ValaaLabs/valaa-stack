@@ -9,7 +9,7 @@ exports.builder = (yargs) => yargs;
 
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
-  await vlm.executeExternal("yarn",
+  await vlm.executeScript("yarn",
       ["install", "--save-dev", "@valos/valma-toolset-authollery"]);
   return vlm.callValma(`.configure/.type/.authollery/**/*`);
 };
