@@ -4,7 +4,7 @@
     "type": "toolset",
     "domain": "infrastructure"
   },
-  "version": "0.30.0-prerelease.10",
+  "version": "0.30.0-prerelease.11",
   "description": "A convenience Valaa CLI tool to context-dependent infrastructure command scripts",
   "license": "MIT",
   "author": "Valaa Technologies Ltd",
