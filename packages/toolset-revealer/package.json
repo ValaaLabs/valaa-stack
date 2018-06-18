@@ -1,5 +1,5 @@
 {
-  "name": "@valos/valma-toolset-revealer",
+  "name": "@valos/toolset-revealer",
   "valaa": {
     "type": "toolset",
     "domain": "gateway"
@@ -14,7 +14,7 @@
   },
   "bin": {
     "valma-revealer-dev-server": "valma/revealer-dev-server.js",
-    ".valma-configure_.module_@valos_revealer": "valma/configure__revealer.js"
+    ".valma-configure_.toolset_@valos_toolset-revealer": "valma/configure__revealer.js"
   },
   "dependencies": {
     "autoprefixer": "^8.6.2",

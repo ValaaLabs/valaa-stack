@@ -1,5 +1,9 @@
 {
-  "name": "@valos/valma-toolset-authollery",
+  "name": "@valos/toolset-authollery",
+  "valaa": {
+    "type": "toolset",
+    "domain": "authollery"
+  },
   "version": "0.30.0-prerelease.10",
   "description": "A valma toolset for managing autholleries",
   "license": "MIT",
@@ -8,10 +12,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "valaa": {
-    "type": "toolset",
-    "domain": "infrastructure"
-  },
   "bin": {
     ".valma-configure_.type_.authollery_00-available-stacks": "valma/configure_.type_.authollery_00-available-stacks.js",
     ".valma-status_.type_.authollery_10-authollery": "valma/status_.type_.authollery_10-authollery.js",
@@ -19,7 +19,7 @@
     "valma-release-deploy": "valma/release-deploy.js"
   },
   "dependencies": {
-    "@valos/valma-toolset-revealer": "0.30.0-prerelease.10",
+    "@valos/toolset-revealer": "0.30.0-prerelease.10",
     "lerna": "^2.11.0",
     "valma": "^0.30.0-prerelease.10"
   }

@@ -1,4 +1,4 @@
-// @valos/test/mocks/styleMock.js
+// @valos/toolset-vault/jest/styleMock.js
 // This is for mocking .css imports inside jest
 
 module.exports = {};

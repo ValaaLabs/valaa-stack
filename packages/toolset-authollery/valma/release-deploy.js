@@ -1,6 +1,6 @@
 #!/usr/bin/env vlm
 
-exports.command = "release-deploy [moduleglob]";
+exports.command = "release-deploy [toolsetglob]";
 exports.summary = "Deploy previously prepared releases to their deployment targets";
 exports.describe = `${exports.summary}`;
 
@@ -36,47 +36,46 @@ exports.handler = (yargv) => {
       "from", releasePath);
 
   Object.assign(vlm, {
-    locateModuleRelease,
-    locateModuleComponentRelease,
+    locateToolsetRelease,
+    locateToolsetToolRelease,
   });
   return vlm.callValma(".release-deploy/**/*", [releasePath]);
 
-  function locateModuleRelease (moduleName, moduleDescription = "module") {
-    const logPrefix = `valma-release-deploy/${moduleName}`;
-    const moduleConfig = ((vlm.valmaConfig || {}).module || {})[moduleName];
-    if (!moduleConfig) {
-      throw new Error(`${logPrefix}: valma.json:module["${moduleName}"] missing`);
+  function locateToolsetRelease (toolsetName, toolsetDescription = "toolset") {
+    const logPrefix = `valma-release-deploy/${toolsetName}`;
+    const toolsetConfig = ((vlm.valmaConfig || {}).toolset || {})[toolsetName];
+    if (!toolsetConfig) {
+      throw new Error(`${logPrefix}: valma.json:toolset['${toolsetName}] missing`);
     }
     if (!vlm.shell.test("-d", releasePath)) {
       throw new Error(`${logPrefix}: releasePath directory '${releasePath}' missing`);
     }
-    const moduleReleasePath = vlm.path.join(releasePath, moduleName);
-    if (!vlm.shell.test("-d", moduleReleasePath)) {
+    const toolsetReleasePath = vlm.path.join(releasePath, toolsetName);
+    if (!vlm.shell.test("-d", toolsetReleasePath)) {
       if (vlm.verbosity >= 1) {
-        console.log(`${logPrefix}: skipping ${moduleDescription} deploy: no release at '${
-          moduleReleasePath}'`);
+        console.log(`${logPrefix}: skipping ${toolsetDescription} deploy: no release at '${
+          toolsetReleasePath}'`);
       }
       return {};
     }
-    console.log(`${logPrefix}: deploying ${moduleDescription} release from '${
-        moduleReleasePath}'`);
-    return { moduleConfig, moduleReleasePath };
+    console.log(`${logPrefix}: deploying ${toolsetDescription} release from '${
+        toolsetReleasePath}'`);
+    return { toolsetConfig, toolsetReleasePath };
   }
 
-  function locateModuleComponentRelease (owningModuleName, componentName,
-        componentDescription = "component") {
-    const logPrefix = `valma-release-deploy/${componentName}`;
-    const componentConfig = ((vlm.valmaConfig || {}).module || {})[componentName];
-    const componentReleasePath = vlm.path.join(releasePath, owningModuleName, componentName);
-    if (!vlm.shell.test("-d", componentReleasePath)) {
+  function locateToolsetToolRelease (owningToolsetName, toolName, toolDescription = "tool") {
+    const logPrefix = `valma-release-deploy/${toolName}`;
+    const toolConfig = ((vlm.valmaConfig || {}).toolset || {})[toolName];
+    const toolReleasePath = vlm.path.join(releasePath, owningToolsetName, toolName);
+    if (!vlm.shell.test("-d", toolReleasePath)) {
       if (vlm.verbosity >= 1) {
-        console.log(`${logPrefix}: skipping ${componentDescription} deploy: no release at '${
-          componentReleasePath}'`);
+        console.log(`${logPrefix}: skipping ${toolDescription} deploy: no release at '${
+          toolReleasePath}'`);
       }
       return {};
     }
-    console.log(`${logPrefix}: deploying ${componentDescription} release from '${
-        componentReleasePath}'`);
-    return { componentConfig, componentReleasePath };
+    console.log(`${logPrefix}: deploying ${toolDescription} release from '${
+        toolReleasePath}'`);
+    return { toolConfig, toolReleasePath };
   }
 };

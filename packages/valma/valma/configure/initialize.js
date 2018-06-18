@@ -2,7 +2,7 @@ exports.command = ".configure/.initialize";
 exports.summary = "Initialize valaa repository type and domain from available options";
 exports.describe = `${exports.summary}. Type determines the function and structure of the${
     ""} repository. Domain describes the higher level role of this repository. Both affect${
-    ""} the available tools and modules for the repository.`;
+    ""} the available toolsets for the repository.`;
 
 exports.builder = (yargs) => {
   const vlm = yargs.vlm;
@@ -29,6 +29,5 @@ exports.handler = (yargv) => yargv.vlm.updatePackageConfig({
   valaa: {
     type: yargv.type,
     domain: yargv.domain,
-    modules: {},
   },
 });

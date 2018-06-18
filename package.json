@@ -25,12 +25,11 @@
     "test-e2e": "karma start",
     "build": "webpack ",
     "package-assemble": "vlm package-assemble ",
-    "package-publish": "vlm package-publish ",
-    "create-authollery": "vlm create-authollery "
+    "package-publish": "vlm package-publish "
   },
   "devDependencies": {
-    "@valos/valma-toolset-revealer": "0.30.0-prerelease.10",
-    "@valos/valma-toolset-vault": "^0.30.0-prerelease.10",
+    "@valos/toolset-revealer": "0.30.0-prerelease.10",
+    "@valos/toolset-vault": "^0.30.0-prerelease.10",
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.5.0",
     "gulp": "^3.9.1",

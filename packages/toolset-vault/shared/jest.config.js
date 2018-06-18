@@ -9,10 +9,10 @@ module.exports = {
   verbose: true,
   testRegex: "packages.*\\.test\\.js$",
   moduleNameMapper: {
-    "\\.(css|less)$": "<rootDir>/node_modules/@valos/valma-toolset-vault/jest/styleMock.js"
+    "\\.(css|less)$": "<rootDir>/node_modules/@valos/toolset-vault/jest/styleMock.js"
   },
   setupFiles: [
-    "<rootDir>/node_modules/@valos/valma-toolset-vault/jest/init.js"
+    "<rootDir>/node_modules/@valos/toolset-vault/jest/init.js"
   ],
   transform: {
     ".*": "<rootDir>/node_modules/babel-jest"

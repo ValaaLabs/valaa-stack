@@ -1,8 +1,8 @@
 exports.command = ".configure/revealer";
-exports.summary = "Configures revealer for webpacking revelations bundles for this repository";
+exports.summary = "Configures revealer for webpacking revelation bundles";
 exports.describe = `${exports.summary}.
 Mostly this relates to setting up the webpack entry and output config.
-The templates are located in the package @valos/valma-toolset-revealer
+The templates are located in the package @valos/toolset-revealer
 directory templates/* which import the bulk of the configs from the
 sibling directory shared/*.
 `;
@@ -11,7 +11,7 @@ sibling directory shared/*.
 // Only enabled inside package
 exports.disabled = (yargs) =>
     !yargs.vlm.packageConfig
-    || (yargs.vlm.valmaConfig || {})["@valos/valma-toolset-revealer"];
+    || (yargs.vlm.valmaConfig || {})["@valos/toolset-revealer"];
 exports.builder = (yargs) => yargs;
 
 exports.handler = (yargv) => {
@@ -20,5 +20,5 @@ exports.handler = (yargv) => {
   console.log("Copying revealer template files from ", sourceGlob,
       "without overwriting existing files");
   vlm.shell.cp("-n", sourceGlob, ".");
-  console.log("Edit project root webpack.config.js to configure webpack entry point and output.")
+  console.log("Edit project root webpack.config.js to configure webpack entry point and output.");
 };

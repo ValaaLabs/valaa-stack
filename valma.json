@@ -1,6 +1,6 @@
 {
   "toolset": {
-    "@valos/valma-toolset-revealer": {
+    "@valos/toolset-revealer": {
       "webpack": {
         "entry": ["./packages/inspire/index.js"],
         "output": {
