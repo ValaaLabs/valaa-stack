@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 
-const { spawn } = require("child_process");
-const colors = require("colors/safe");
+const childProcess = require("child_process");
 const fs = require("fs");
+const path = require("path");
+const util = require("util");
+
+const cardinal = require("cardinal");
+const colors = require("colors/safe");
 const inquirer = require("inquirer");
 const minimatch = require("minimatch");
-const path = require("path");
-const shell = require("shelljs");
 const semver = require("semver");
+const shell = require("shelljs");
 const yargs = require("yargs");
-const cardinal = require("cardinal");
 cardinal.tomorrowNight = require("cardinal/themes/tomorrow-night");
 
 /* eslint-disable vars-on-top, no-loop-func, no-restricted-syntax, no-cond-assign,
@@ -47,7 +49,7 @@ const vlm = yargs.vlm = {
   callValma,
 
   // Executes an external command and returns a promise of the command stdandard output as string.
-  executeExternal,
+  executeScript,
 
   // Contents of package.json (contains pending updates as well)
   packageConfig: undefined,
@@ -102,7 +104,7 @@ const vlm = yargs.vlm = {
   cardinal,
 };
 
-const valmaExports = {
+module.exports = {
   command: "vlm [-<flags>] [--<option>=<value> ...] <command> [parameters]",
   summary: "Dispatch a valma command to its command script",
   describe: `Valma (or 'vlm') is a command script dispatcher.
@@ -130,7 +132,7 @@ section export names (npm doesn't support bin '/' or at least not
 sharing the folders between separate packages).`,
 
   builder: (yargs_) => yargs_
-  //    .usage(valmaExports.command, valmaExports.summary, iy => iy)
+  //    .usage(module.exports.command, module.exports.summary, iy => iy)
       .options({
         v: {
           group: "Introspection options:",
@@ -165,12 +167,17 @@ sharing the folders between separate packages).`,
         promote: {
           group: "Options:",
           type: "boolean", default: true, global: false,
-          description: "Promote to 'vlm' in the most specific pool available",
+          description: "Promote to 'vlm' in the most specific pool available via forward",
         },
-        "node-env": {
+        "npm-config": {
           group: "Options:",
           type: "boolean", default: true, global: false,
-          description: "Add node environment if it is missing",
+          description: "Add node environment if it is missing via forward",
+        },
+        forward: {
+          group: "Options:",
+          type: "boolean", default: true, global: false,
+          description: "Allow vlm forwarding due to promote, node-env or need to load vlm path",
         },
         "local-pool": {
           group: "Options:",
@@ -255,7 +262,7 @@ vlm.isCompleting = (process.argv[2] === "--get-yargs-completions");
 const processArgv = vlm.isCompleting ? process.argv.slice(3) : process.argv.slice(2);
 
 _sharedYargs(yargs, !vlm.isCompleting);
-const globalYargs = valmaExports.builder(yargs);
+const globalYargs = module.exports.builder(yargs);
 const globalYargv = _parseUntilCommand(globalYargs, processArgv, "command");
 
 if (!vlm.isCompleting) {
@@ -301,7 +308,7 @@ const valmaConfigStatus = {
 
 
 vlm.contextYargv = globalYargv;
-valmaExports
+module.exports
     .handler(globalYargv)
     .then(result => (result !== undefined) && process.exit(result));
 
@@ -312,12 +319,12 @@ async function handler (yargv) {
   // need forwarding).
   const fullyBuiltin = vlm.isCompleting || !yargv.command;
 
-  const needNode = !fullyBuiltin && yargv.nodeEnv && !process.env.npm_package_name;
+  const needNPM = !fullyBuiltin && yargv.npmConfig && !process.env.npm_package_name;
   const needVLMPath = !fullyBuiltin && !process.env.VLM_PATH;
   const needForward = !fullyBuiltin && needVLMPath;
 
   if (vlm.verbosity >= 3) {
-    console.log("vlm voluble: fullyBuiltin:", fullyBuiltin, ", needNode:", needNode,
+    console.log("vlm voluble: fullyBuiltin:", fullyBuiltin, ", needNPM:", needNPM,
             ", needVLMPath:", needVLMPath,
         "\n\tcwd:", process.cwd(),
         "\n\tprocess.env.VLM_GLOBAL_POOL:", process.env.VLM_GLOBAL_POOL,
@@ -329,22 +336,35 @@ async function handler (yargv) {
 
   // Phase 2: Load pools and forward to 'vlm' if needed (if a more specific 'vlm' is found or if the
   // node environment or 'vlm' needs to be loaded)
-  if (_refreshActivePools((pool, poolHasVLM, specificEnoughVLMSeen) => {
+  const forwardPool = _refreshActivePools((pool, poolHasVLM, specificEnoughVLMSeen) => {
     if (vlm.verbosity >= 3) {
       console.log("vlm voluble:", pool.path, !poolHasVLM, fullyBuiltin, !needForward,
           specificEnoughVLMSeen);
     }
-    if (!poolHasVLM || fullyBuiltin || (specificEnoughVLMSeen && !needForward)
+    if (!globalYargv.forward || fullyBuiltin || !poolHasVLM
+        || (specificEnoughVLMSeen && !needForward)
         || (!specificEnoughVLMSeen && !yargv.promote)) return undefined;
-    _forwardToValmaInPool(pool, needNode);
-    return true;
-  })) return undefined; // Forward was found.
+    return pool;
+  });
+  if (forwardPool && await _forwardToValmaInPool(forwardPool, needNPM)) {
+    // Call was handled by a forward require to another valma.
+    return undefined;
+  }
 
   if (vlm.isCompleting) {
     vlm.contextYargv = globalYargv;
     vlm.callValma(yargv.command, yargv._);
     return 0;
   }
+
+  process.on("SIGINT", () => {
+    console.error(colors.error("vlm interrupted:"), "killing all child processes");
+    setTimeout(() => process.exit(-1));
+  });
+  process.on("SIGTERM", () => {
+    console.error(colors.error("vlm terminated:"), "killing all child processes");
+    setTimeout(() => process.exit(-1));
+  });
 
   // Do validations.
 
@@ -355,9 +375,8 @@ async function handler (yargv) {
       })])), "\n");
   }
 
-  if (!fullyBuiltin && needVLMPath) {
-    console.error(colors.error("vlm leaving: could not locate 'vlm' forward in any pool",
-        "while trying to load node environment variables"));
+  if (!fullyBuiltin && needVLMPath && !process.env.VLM_PATH) {
+    console.error(colors.error("vlm leaving: could not find 'vlm' in PATH or in any pool"));
     process.exit(-1);
   }
 
@@ -366,17 +385,17 @@ async function handler (yargv) {
         `vlm warning: node ${nodeCheck} recommended, got`, process.versions.node));
   }
 
-  const npmVersion = (process.env.npm_config_user_agent || "").match(/npm\/([^ ]*) /);
-  if (npmVersion && !semver.satisfies(npmVersion[1], npmCheck)) {
-    console.warn(colors.warning(
-        `vlm warning: npm ${npmCheck} recommended, got`, npmVersion[1]));
-  }
-
   _reloadPackageAndValmaConfigs();
 
-  if (needNode && vlm.packageConfig) {
-    console.warn(colors.warning(
-        "vlm warning: could not load node environment"));
+  if (!process.env.npm_config_user_agent) {
+    if (needNPM && vlm.packageConfig) {
+      console.warn(colors.warning("vlm warning: could not load NPM config environment variables"));
+    }
+  } else {
+    const npmVersion = (process.env.npm_config_user_agent || "").match(/npm\/([^ ]*) /);
+    if (npmVersion && !semver.satisfies(npmVersion[1], npmCheck)) {
+      console.warn(colors.warning(`vlm warning: npm ${npmCheck} recommended, got`, npmVersion[1]));
+    }
   }
 
   try {
@@ -429,7 +448,7 @@ async function callValma (command, argv = []) {
       : _valmaGlobFromCommand(command || "*"));
   const isWildCardCommand = !command || (command.indexOf("*") !== -1);
   const activeCommands = {};
-  const introspect = _determineIntrospection(valmaExports, contextYargv, command,
+  const introspect = _determineIntrospection(module.exports, contextYargv, command,
       isWildCardCommand);
 
   // Phase 3: filter available command pools against the command glob
@@ -695,34 +714,78 @@ function _refreshActivePools (tryShortCircuit) {
   return undefined;
 }
 
-function _forwardToValmaInPool (pool, needNodeEnv) {
-  if (!process.env.VLM_PATH) {
-    process.env.VLM_PATH = pool.path;
-    process.env.PATH = `${pool.path}:${process.env.PATH}`;
+/**
+ * Assigns all necessary missing environment variables to process.env
+ *
+ * Specifically these variables are not added to the actual surrounding shell environment: this
+ * means that all valma commands must execute external scripts via vlm.executeScript call as it sets
+ * these environment variables for the called script (executeScript also handles dry-running,
+ * logging etc).
+ *
+ * @param {*} pool
+ * @param {*} needNPMConfig
+ */
+async function _forwardToValmaInPool (vlmPool, needNPMConfig) {
+  Object.assign(process.env, {
+    VLM_PATH: process.env.VLM_PATH || vlmPool.path,
+    VLM_GLOBAL_POOL: process.env.VLM_GLOBAL_POOL || globalYargv.globalPool,
+    INIT_CWD: process.cwd(),
+    PATH: `${[
+      vlmPool.path,
+      activePools[activePools.length - 1].path,
+      activePools[0].path,
+    ].join(":")}:${process.env.PATH}`,
+    _: path.posix.join(vlmPool.path, "vlm"),
+  });
+  if (needNPMConfig) {
+    await _loadNPMConfigVariables();
   }
-  if (!process.env.VLM_GLOBAL_POOL && globalYargv.globalPool) {
-    process.env.VLM_GLOBAL_POOL = globalYargv.globalPool;
-  }
-  const vlmPath = path.posix.join(pool.path, "vlm");
-  let childProcess;
-  if (needNodeEnv) {
-    const argString = processArgv.map(a => JSON.stringify(a)).join(" ");
-    if (vlm.verbosity) {
-      console.log(`vlm inform: forwarding via spawn: "npx -c '${vlmPath} ${argString}'"`);
+  const myRealVLM = fs.realpathSync(process.argv[1]);
+  const forwardRealVLM = fs.realpathSync(path.join(vlmPool.path, "vlm"));
+  if (myRealVLM !== forwardRealVLM) {
+    if (vlm.verbosity >= 1) {
+      console.log("vlm inform: promote-requiring ", forwardRealVLM, "via pool", vlmPool.path);
     }
-    childProcess = spawn("npx", ["-c", `${vlmPath} ${argString}`],
-        { env: process.env, stdio: ["inherit", "inherit", "inherit"], detached: true });
-  } else {
-    if (vlm.verbosity) {
-      console.log(`vlm inform: forwarding via spawn: "${vlmPath}`, ...processArgv, `"`);
-    }
-    childProcess = spawn(vlmPath, processArgv,
-        { env: process.env, stdio: ["inherit", "inherit", "inherit"], detached: true });
+    require(forwardRealVLM);
+    return true;
   }
-  if (childProcess) {
-    // These don't actually do anything? The forwarded valma process dies to ctrl-c anyway.
-    process.on("SIGTERM", () => { childProcess.kill("SIGTERM"); });
-    process.on("SIGINT", () => { childProcess.kill("SIGINT"); });
+  // childProcess = childProcess.execFileSync(vlmPath, processArgv,
+  //  { env: process.env, stdio: ["inherit", "inherit", "inherit"], detached: true });
+  return false;
+}
+
+/**
+ * Load all npm config variables to process.env as if running valma via 'npx -c'
+ * FIXME(iridian): horribly broken.
+ */
+async function _loadNPMConfigVariables () {
+  /*
+  Broken: current implementation is a silly attempt - only npm config list -l --json options are
+  loaded, omitting all npm_lifetime, npm_package_ config etc. options.
+  A better overall solution to handling operations which need npm config might be to have valma
+  commands explicitly specify that they need those commands but otherwise not load npm at all.
+  A reliable method of achieving this is to call such commands with 'npx -c' (but it's still fing
+  slow as it spawns node, npm and whatnot.
+  Upside of current solution is that running "npm config list" is very fast, and can be optimized
+  further too: npm can be programmatically invoked.
+  */
+  console.warn(colors.warning(
+      "vlm warning: did not load npm_package_* variables (not implemented)"));
+  Object.assign(process.env, {
+    npm_execpath: "/usr/lib/node_modules/npm/bin/npm-cli.js",
+    npm_lifecycle_event: "env",
+    npm_lifecycle_script: "env",
+    npm_node_execpath: "/usr/bin/node",
+  });
+  const execFile = util.promisify(childProcess.execFile);
+  const { stdout, stderr } = await execFile("npm", ["config", "list", "-l", "--json"]);
+  if (stderr) {
+    console.error(colors.error("vlm leaving: cannot locate npm config environment"));
+    process.exit(-1);
+  }
+  const npmConfig = JSON.parse(stdout);
+  for (const npmVariable of Object.keys(npmConfig)) {
+    process.env[`npm_config_${npmVariable.replace(/-/g, "_")}`] = npmConfig[npmVariable];
   }
 }
 
@@ -749,21 +812,48 @@ function listAllMatchingCommands (command) {
   return listMatchingCommands.call(this, command, true);
 }
 
-function executeExternal (executable, argv = [], spawnOptions = {}) {
+/**
+ * Execute given executable as per child_process.spawn.
+ * Extra spawnOptions:
+ *   noDryRun: if true this call will be executed even if --dry-run is requested.
+ *   dryRunReturn: during dry runs this call will return immediately with the value of this option.
+ *
+ * All argv must be strings, all non-strings and falsy values will be filtered out.
+ *
+ * @param {*} executable
+ * @param {*} [argv=[]]
+ * @param {*} [spawnOptions={}]
+ * @returns
+ */
+function executeScript (executable, argv = [], spawnOptions = {}) {
   return new Promise((resolve, failure) => {
     _flushPendingConfigWrites(vlm);
-    if (vlm.echo) console.log(colors.echo("    -->", executable, ...argv));
-    if (vlm.contextYargv && vlm.contextYargv.dryRun) {
+    const filteredArgv = argv.filter(arg => arg && (typeof arg === "string"));
+    if (vlm.echo) console.log(colors.echo("    -->", executable, ...filteredArgv));
+    if (vlm.contextYargv && vlm.contextYargv.dryRun && !spawnOptions.noDryRun) {
       console.log("vlm --dry-run: skipping execution and returning undefined");
-      _onDone(0);
+      _onDone(spawnOptions.dryRunReturn || 0);
     } else {
-      const subProcess = spawn(executable, argv, Object.assign(
-          { env: process.env, stdio: ["inherit", "inherit", "inherit"] }, spawnOptions
-      ));
+      const subProcess = childProcess.spawn(
+          executable,
+          filteredArgv, {
+            stdio: ["inherit", "inherit", "inherit"],
+            ...spawnOptions,
+            detached: true,
+          },
+      );
       subProcess.on("exit", _onDone);
       subProcess.on("error", _onDone);
-      process.on("SIGTERM", () => { subProcess.kill("SIGTERM"); });
-      process.on("SIGINT", () => { subProcess.kill("SIGINT"); });
+      process.on("SIGINT", () => {
+        console.warn(colors.warning("vlm killing:"), executable, ...filteredArgv);
+        process.kill(-subProcess.pid, "SIGTERM");
+        process.kill(-subProcess.pid, "SIGKILL");
+      });
+      process.on("SIGTERM", () => {
+        console.warn(colors.warning("vlm killing:"), executable, ...filteredArgv);
+        process.kill(-subProcess.pid, "SIGTERM");
+        process.kill(-subProcess.pid, "SIGKILL");
+      });
     }
     function _onDone (code, signal) {
       if (code || signal) {

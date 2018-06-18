@@ -5,7 +5,7 @@
     "domain": "gateway"
   },
   "version": "0.30.0-prerelease.10",
-  "description": "Tools for developing and building revelations ie. static web deliverables",
+  "description": "Tools for building revelations both for development and deployment purposes",
   "license": "MIT",
   "author": "Valaa Technologies Ltd",
   "private": false,
@@ -13,10 +13,17 @@
     "access": "public"
   },
   "bin": {
-    "valma-revelations-dev-server": "valma/revelations-dev-server.js"
+    "valma-revealer-dev-server": "valma/revealer-dev-server.js",
+    ".valma-configure_.module_@valos_revealer": "valma/configure__revealer.js"
   },
   "dependencies": {
+    "autoprefixer": "^8.6.2",
     "compression-webpack-plugin": "^1.1.11",
+    "css-loader": "^0.26.1",
+    "postcss-loader": "^2.0.8",
+    "style-loader": "^0.13.1",
+    "uglify-js": "git://github.com/mishoo/UglifyJS2#harmony-v2.8.22",
+    "uglifyjs-webpack-plugin": "^1.0.0-rc.0",
     "webpack-dev-server": "^2.9.3",
     "webpack": "^3.8.1"
   }

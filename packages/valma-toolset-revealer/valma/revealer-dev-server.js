@@ -1,20 +1,28 @@
 #!/usr/bin/env vlm
 
-exports.command = "revelations-dev-server [distContentBase]";
-exports.summary = "Launch a webpack-dev-server at localhost";
-exports.describe = `${exports.summary} using given <contentBase> as content root`;
+const defaultDistContentBase = "dist/revealer";
+const defaultSource = "./revelations/";
+
+exports.command = "revealer-dev-server [distContentBase]";
+exports.summary = "Launch a webpack-dev-server at localhost serving a local revelation";
+exports.describe = `${exports.summary}.
+The revelation consists of two parts: webpack output and static files.
+Webpack output is configured by the project root webpack.config.js and
+the static files are served from the optionally given distContentBase
+(default '${defaultDistContentBase}'). If this distContenBase path
+doesn't exist it is created by copying all files from the directory
+provided by --source (default ${defaultSource}).`;
 
 exports.builder = function builder (yargs) {
   return yargs
       .option({
         source: {
           type: "string", default: "./revelations/",
-          description:
-              "the source revelations directory used to populate the contentBase if it is empty",
+          description: "The revelations source directory for populating an empty distContentBase",
         },
         host: {
           type: "string", default: "0.0.0.0",
-          description: "the local ip where the server is bound"
+          description: "The local ip where the server will be bound"
         },
         inline: {
           type: "boolean", default: true,
@@ -27,12 +35,12 @@ exports.builder = function builder (yargs) {
         open: {
           type: "boolean", default: true,
           description: "webpack-dev-server --open option"
-        }
+        },
       });
 };
 exports.handler = function handler (yargv) {
   const vlm = yargv.vlm;
-  const contentBase = yargv.distContentBase || "dist/revelations";
+  const contentBase = yargv.distContentBase || "dist/revealer";
   if (!vlm.shell.test("-d", contentBase)) {
     console.log("Creating and populating an initially missing content base directory", contentBase,
         `(for this first time only) from ${yargv.source}`);
