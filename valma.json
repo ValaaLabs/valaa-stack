@@ -1,0 +1,14 @@
+{
+  "toolset": {
+    "@valos/valma-toolset-revealer": {
+      "webpack": {
+        "entry": ["./packages/inspire/index.js"],
+        "output": {
+          "path": "dist/revealer/valaa/inspire/",
+          "publicPath": "/",
+          "filename": "valaa-inspire.js"
+        }
+      }
+    }
+  }
+}

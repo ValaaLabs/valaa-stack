@@ -8,19 +8,5 @@ valmaConfigRevealerSection.output.path = path.posix.resolve(valmaConfigRevealerS
 module.exports = {
   ...shared,
   ...valmaConfigRevealerSection,
-  devServer: {
-    ...shared.devServer,
-    publicPath: `/valaa/inspire/`,
-  },
-  module: {
-    ...shared.module,
-    rules: [
-      { use: { loader: "babel-loader" }, test: /\.js$/, exclude: /node_modules/, },
-      ...shared.module.rules.map(rule => (
-          rule.use && (rule.use[0] === "style-loader")
-              ? { ...rule, include: "/packages/" }
-          : rule
-      ))
-    ],
-  },
+  // Add overrides here
 };

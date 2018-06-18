@@ -14,9 +14,9 @@
   ],
   "scripts": {
     "vlm": "vlm ",
-    "start": "vlm revelations-dev-server ",
-    "dev": "TARGET_ENV=local vlm revelations-dev-server ",
-    "prod": "TARGET_ENV=production vlm revelations-dev-server ",
+    "start": "vlm revealer-dev-server ",
+    "dev": "TARGET_ENV=local vlm revealer-dev-server ",
+    "prod": "TARGET_ENV=production vlm revealer-dev-server ",
     "eslint": "eslint .",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "lint": "npm run eslint",
@@ -28,11 +28,8 @@
     "create-authollery": "vlm create-authollery "
   },
   "devDependencies": {
-    "@valos/valma-toolset-authollery": "0.30.0-prerelease.10",
+    "@valos/valma-toolset-revealer": "0.30.0-prerelease.10",
     "@valos/valma-toolset-vault": "^0.30.0-prerelease.10",
-    "autoprefixer": "^8.6.2",
-    "compression-webpack-plugin": "^1.1.11",
-    "css-loader": "^0.26.1",
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.5.0",
     "gulp": "^3.9.1",
@@ -42,12 +39,6 @@
     "karma-chrome-launcher": "^2.2.0",
     "karma-jasmine": "^1.1.0",
     "karma-webpack": "^2.0.4",
-    "postcss-loader": "^2.0.8",
-    "shelljs": "^0.8.2",
-    "style-loader": "^0.13.1",
-    "uglify-js": "git://github.com/mishoo/UglifyJS2#harmony-v2.8.22",
-    "uglifyjs-webpack-plugin": "^1.0.0-rc.0",
     "valma": "file:packages/valma",
-    "webpack": "^3.8.1"
   }
 }
