@@ -103,8 +103,10 @@ export default class ValaaReference {
         throw new Error(`partitionURI already exists when trying to assign '${
             partitionURI}' into ${this.toString()}`);
       }
-      invariantifyObject(partitionURI, "setPartitionURI.partitionURI",
-          { instanceof: URL, allowEmpty: true });
+      if ((typeof partitionURI !== "object") || !partitionURI || !partitionURI.href) {
+        invariantifyObject(partitionURI, "setPartitionURI.partitionURI",
+            { instanceof: URL, allowEmpty: true });
+      }
       this._partitionURI = partitionURI;
     } catch (error) {
       throw wrapError(error, `During ${this.debugId()}\n .setPartitionURI(), with:`,

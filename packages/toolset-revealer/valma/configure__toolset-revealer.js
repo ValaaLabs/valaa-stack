@@ -1,11 +1,10 @@
-exports.command = ".configure/revealer";
+exports.command = ".configure/.toolset/@valos/toolset-revealer";
 exports.summary = "Configures revealer for webpacking revelation bundles";
 exports.describe = `${exports.summary}.
 Mostly this relates to setting up the webpack entry and output config.
 The templates are located in the package @valos/toolset-revealer
 directory templates/* which import the bulk of the configs from the
-sibling directory shared/*.
-`;
+sibling directory shared/*.`;
 
 // Example template which displays the command name itself and package name where it is ran
 // Only enabled inside package

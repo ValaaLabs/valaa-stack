@@ -1,3 +1,27 @@
+/*
+# ValOS style guide
+
+The ValOS style is defined via a union of formal machine readable rules in files listed below and
+the informal human readable rules inside comments.
+Files specifying formal style rules:
+- @valos/toolset-vault/shared/.eslintrc.js
+- @valos/toolset-vault/templates/.editorconfig
+
+Note: While ValOS style is formally based on airbnb style in practice it has diverged notably.
+
+## Informal rules
+
+### Formatting non-structured inline documentation in CLI contexts
+
+One of the two options must be used for newlines in individual
+documentation pieces:
+1. manually line-break with max 71 characters per line.
+2. only separate paragraphs and leave line-breaking to the CLI tool.
+
+The tool itself is recommended to be consistent with the choice over
+all pieces.
+*/
+
 module.exports = {
   "parser": "babel-eslint",
   "extends": "airbnb", // With two major exceptions: double quotes and space before paren in function definition
@@ -23,7 +47,6 @@ module.exports = {
   ],
 
   "rules": {
-
     // ## Major exceptions to AirBnB style
 
     // These are the exceptions with larger impact and thus ones with more thought and rationale.
@@ -72,15 +95,6 @@ module.exports = {
     "import/no-extraneous-dependencies": 0,
     "import/no-unresolved": 0,
     "import/prefer-default-export": 0, // lambda's and flow often necessitate a single named export
-
-    "react/forbid-prop-types": 0,
-    "react/sort-comp": 0, // for some reason getters/setters are enabled, which is quite annoying
-    "react/jsx-filename-extension": 0, // having a different extension gives little value, toolchain detects the JSX anyway
-    "react/jsx-indent": 0, // tired of fighting against how the jsx-indent feels like it knows better
-    "react/prefer-stateless-function": 0, // stateless/stateful change can happen: need to restructure is annoying and provides little value
-
-    "jsx-a11y/no-static-element-interactions": 0,
-
 
     // ## Warning directives
 

@@ -4,4 +4,4 @@ exports.describe = `${exports.summary}.`;
 
 exports.builder = (yargs) => yargs;
 
-exports.handler = (yargv) => yargv.vlm.callValma(`.configure/.domain/.infrastructure/**/*`);
+exports.handler = (yargv) => yargv.vlm.invoke(`.configure/.domain/.infrastructure/**/*`);

@@ -4,8 +4,7 @@ exports.command = "create-command";
 exports.summary = "Create a valma command script skeleton";
 exports.describe = `${exports.summary}.
 The script file is placed under valma/ with a symlink to it in
-valma.bin/ , making the command immediately visible to valma.
-`;
+valma.bin/ , making the command immediately visible to valma.`;
 
 exports.disabled = (yargs) => !yargs.vlm.packageConfig;
 exports.builder = (yargs) => yargs.options({

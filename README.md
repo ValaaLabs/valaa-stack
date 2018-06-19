@@ -15,6 +15,14 @@ resource model.
 Valaa Open System is open source software released under an
 [MIT license](https://github.com/ValaaLabs/inspire/blob/master/LICENSE).
 
+### Contributing
+
+For the time being contact iridian at valaa dot com.
+
+### Style guide is a combination of machine and human readable rules
+
+Specified in [the shared eslint configuration](packages/toolset-vault/shared/.eslintrc.js)
+
 ## @valos/vault repository in github.com/valaatech/vault
 
 @valos/vault repository has three main roles:

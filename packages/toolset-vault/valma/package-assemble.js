@@ -2,7 +2,7 @@
 
 exports.command = "package-assemble";
 exports.summary = "Assemble all current modified vault packages (preparing for publish)";
-exports.describe = `${exports.summary} into a temporary dist target.
+exports.describe = `${exports.summary}.
 
 Uses lerna to handle the monorepo sub-packages update detection, versioning,
 and git interactions. Configuration for lerna is in lerna.json:
@@ -40,8 +40,7 @@ as long as no new files have been added (re-run the full command in that case).
 
 Note: the --post options is used to reset the ownership back to original user
 as as 'sudo npm link' uses hard links.
-Read more about npm link: https://docs.npmjs.com/cli/link .
-`;
+Read more about npm link: https://docs.npmjs.com/cli/link .`;
 
 
 exports.builder = (yargs) => yargs.options({
@@ -94,7 +93,9 @@ exports.handler = async (yargv) => {
   }
 
   let updatedPackageNames;
-  if (!yargv.force) {
+  if (yargv._.length > 1) {
+    updatedPackageNames = yargv._.slice(1);
+  } else if (!yargv.force) {
     const updatedPackages = vlm.shell.exec(`npx -c "lerna updated --json  --loglevel=silent"`);
     if (updatedPackages.code) {
       console.log(`valma-package-assemble: no updated packages found (or other lerna error, code ${
@@ -107,7 +108,7 @@ exports.handler = async (yargv) => {
       vlm.path.join(yargv.source, "*/package.json"));
   const successfulPackages = [];
 
-  const assemblePackages = sourcePackageJSONPaths.map(sourcePackageJSONPath => {
+  let assemblePackages = sourcePackageJSONPaths.map(sourcePackageJSONPath => {
     const sourceDirectory = sourcePackageJSONPath.match(/^(.*)package.json$/)[1];
     const packagePath = vlm.path.join(process.cwd(), sourceDirectory, "package.json");
     // eslint-disable-next-line import/no-dynamic-require
@@ -124,12 +125,22 @@ exports.handler = async (yargv) => {
     };
   }).filter(p => p);
 
+  if (updatedPackageNames) {
+    const orderedAssemblePackages = [];
+    updatedPackageNames.forEach(name => {
+      const assemblyFound = assemblePackages.find(entry => entry.name === name);
+      if (assemblyFound) orderedAssemblePackages.push(assemblyFound);
+    });
+    assemblePackages = orderedAssemblePackages;
+  }
+
   const finalizers = assemblePackages.map(({
     name, sourceDirectory, packagePath, packageConfig, targetDirectory, sourcePackageJSONPath,
   }) => {
     console.log(`\nvalma-package-assemble: assembling package '${name}' into`, targetDirectory);
     vlm.shell.mkdir("-p", targetDirectory);
     vlm.shell.cp("-R", vlm.path.join(sourceDirectory, "*"), targetDirectory);
+    vlm.shell.rm("-rf", vlm.path.join(targetDirectory, "node_modules"));
     if (vlm.shell.test("-f", vlm.path.join(sourceDirectory, "babel.config.js"))) {
       vlm.shell.exec(`TARGET_ENV=${yargv.babelTargetEnv} babel ${sourceDirectory} --out-dir ${
           targetDirectory}`);

@@ -1,8 +1,9 @@
 #!/usr/bin/env vlm
 
 exports.command = "release-build";
-exports.summary = "Build all authollery toolset sub-releases with modified config";
+exports.summary = "Build all toolset sub-releases which have source modifications";
 exports.describe = `${exports.summary}.
+
 These sub-releases are placed under the provided dist target. This
 command is first part of the two-part deployment with release-deploy
 making the actual deployment.`;
@@ -41,60 +42,63 @@ exports.handler = (yargv) => {
       packageConfig.name, "into", releasePath);
 
   Object.assign(vlm, {
+    releasePath,
     prepareToolsetBuild,
     prepareToolsetToolBuild,
   });
-  return vlm.callValma(".release-build/**/*", [releasePath]);
-
-  /**
-   * Validates toolset build pre-conditions and returns the toolset target dist path where the
-   * actual build will be placed.
-   *
-   * @param {*} toolsetName
-   * @param {*} releasePath
-   * @returns
-   */
-  function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-release",
-      desiredVersionHash) {
-    if (!vlm.shell.test("-d", releasePath)) {
-      throw new Error(`valma-release-build/${toolsetName}: releasePath directory '${
-          releasePath}' missing`);
-    }
-    const toolsetConfig = ((this.valmaConfig || {}).toolset || {})[toolsetName];
-    if (!toolsetConfig) return {};
-    if ((toolsetConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {
-      if (this.verbosity >= 1) {
-        console.log(`valma-release-build/${toolsetName
-            }: skipping the build of already deployed release version ${desiredVersionHash
-            } by toolset ${toolsetDescription}`);
-      }
-      return {};
-    }
-    const toolsetReleasePath = vlm.path.join(releasePath, toolsetName);
-    console.log(`valma-release-build/${toolsetName}: building ${toolsetDescription} release in`,
-        toolsetReleasePath);
-    vlm.shell.rm("-rf", toolsetReleasePath);
-    vlm.shell.mkdir("-p", toolsetReleasePath);
-    return { toolsetConfig, toolsetReleasePath };
-  }
-
-  function prepareToolsetToolBuild (owningToolsetName, toolName,
-      toolDescription = "tool sub-release", desiredVersionHash) {
-    const toolConfig = ((this.valmaConfig || {}).tool || {})[toolName];
-    if (!toolConfig) return {};
-    if ((toolConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {
-      if (this.verbosity >= 1) {
-        console.log(`valma-release-build/${toolName
-            }: skipping the build of already deployed release version ${desiredVersionHash
-            } of tool ${toolDescription}`);
-      }
-      return {};
-    }
-    const toolReleasePath = vlm.path.join(releasePath, owningToolsetName, toolName);
-    console.log(`valma-release-build/${toolName}: building ${toolDescription
-        } release in '${toolReleasePath}'`);
-    vlm.shell.rm("-rf", toolReleasePath);
-    vlm.shell.mkdir("-p", toolReleasePath);
-    return { toolConfig, toolReleasePath };
-  }
+  return vlm.invoke(".release-build/**/*", [releasePath]);
 };
+
+/**
+ * Validates toolset build pre-conditions and returns the toolset target dist path where the
+ * actual build will be placed.
+ *
+ * @param {*} toolsetName
+ * @param {*} releasePath
+ * @returns
+ */
+function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-release",
+    desiredVersionHash) {
+  const releasePath = this.releasePath;
+  if (!this.shell.test("-d", releasePath)) {
+    throw new Error(`valma-release-build/${toolsetName}: releasePath directory '${
+        releasePath}' missing`);
+  }
+  const toolsetConfig = ((this.valmaConfig || {}).toolset || {})[toolsetName];
+  if (!toolsetConfig) return {};
+  if ((toolsetConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {
+    if (this.verbosity >= 1) {
+      console.log(`valma-release-build/${toolsetName
+          }: skipping the build of already deployed release version ${desiredVersionHash
+          } by toolset ${toolsetDescription}`);
+    }
+    return {};
+  }
+  const toolsetReleasePath = this.path.join(releasePath, toolsetName);
+  console.log(`valma-release-build/${toolsetName}: building ${toolsetDescription} release in`,
+      toolsetReleasePath);
+  this.shell.rm("-rf", toolsetReleasePath);
+  this.shell.mkdir("-p", toolsetReleasePath);
+  this.toolset = toolsetName;
+  return { toolsetConfig, toolsetReleasePath };
+}
+
+function prepareToolsetToolBuild (owningToolsetName, toolName,
+    toolDescription = "tool sub-release", desiredVersionHash) {
+  const toolConfig = ((this.valmaConfig || {}).tool || {})[toolName];
+  if (!toolConfig) return {};
+  if ((toolConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {
+    if (this.verbosity >= 1) {
+      console.log(`valma-release-build/${toolName
+          }: skipping the build of already deployed release version ${desiredVersionHash
+          } of tool ${toolDescription}`);
+    }
+    return {};
+  }
+  const toolReleasePath = this.path.join(this.releasePath, owningToolsetName, toolName);
+  console.log(`valma-release-build/${toolName}: building ${toolDescription
+      } release in '${toolReleasePath}'`);
+  this.shell.rm("-rf", toolReleasePath);
+  this.shell.mkdir("-p", toolReleasePath);
+  return { toolConfig, toolReleasePath };
+}

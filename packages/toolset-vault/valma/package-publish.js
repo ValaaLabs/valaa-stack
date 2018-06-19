@@ -2,7 +2,7 @@
 
 exports.command = "package-publish [packageglob]";
 exports.summary = "Publish previously assembled packages to their registries";
-exports.describe = `${exports.summary} for publishing by valma-package-assemble`;
+exports.describe = `${exports.summary}.`;
 
 exports.builder = (yargs) => yargs.options({
   source: {

@@ -1,9 +1,8 @@
 exports.command = ".configure/.type/.vault/copy-vault-templates";
-exports.summary = "Initializes vault monorepo config files from templates";
+exports.summary = "Initialize vault monorepo config files from templates";
 exports.describe = `${exports.summary}.
 Config templates are located in the package @valos/toolset-vault
-directory templates/*.
-`;
+directory templates/*.`;
 
 exports.builder = (yargs) => yargs;
 exports.handler = (yargv) => {

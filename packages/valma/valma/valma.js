@@ -46,26 +46,26 @@ colors.error = (...rest) => colors.bold(colors.red(...rest));
 // yargs.vlm (in scripts exports.builder) as well as yargv.vlm (in scripts exports.handler).
 const vlm = yargs.vlm = {
   // Calls valma sub-command with argv.
-  callValma,
+  invoke,
 
   // Executes an external command and returns a promise of the command stdandard output as string.
   executeScript,
 
-  // Contents of package.json (contains pending updates as well)
+  // Immutable contents of package.json (contains pending updates as well)
   packageConfig: undefined,
 
-  // Contents of valma.json (contains pending updates as well)
+  // Immutable contents of valma.json (contains pending updates as well)
   valmaConfig: undefined,
 
-  // Registers pending updates to the package.json config file (immediately available in
+  // Registers pending updates to the package.json config file (immediately updates
   // vlm.packageConfig) which are written to file only immediately before valma execution exits or
   // an external command is about to be executed.
   // TODO(iridian): Improve the flush semantics, maybe to flush-on-subcommand-success - now it's
   // just silly.
   updatePackageConfig,
 
-  // Registers pending updates to the valma.json config file (immediately available in
-  // vlm.valmaConfig) which are written to file only immediately before valma execution exits or
+  // Registers pending updates to the valma.json config file (immediately updates vlm.valmaConfig)
+  // which are written to file only immediately before valma execution exits or
   // an external command is about to be executed.
   // TODO(iridian): Improve the flush semantics, maybe to flush-on-subcommand-success - now it's
   // just silly.
@@ -102,6 +102,17 @@ const vlm = yargs.vlm = {
   // minimatch namespace of the glob matching tools
   // See https://github.com/isaacs/minimatch
   cardinal,
+
+
+  // Syntactic sugar
+
+  readFile: util.promisify(fs.readFile),
+
+  inquireConfirm: async (message, default_ = true) => {
+    return (await vlm.inquire({
+      type: "confirm", name: "confirm", message, default: default_,
+    })).confirm;
+  }
 };
 
 module.exports = {
@@ -109,27 +120,29 @@ module.exports = {
   summary: "Dispatch a valma command to its command script",
   describe: `Valma (or 'vlm') is a command script dispatcher.
 
-Any npm package which exports scripts prefixed with 'valma-' (or
-'.valma-' for hidden scripts) in their package.json bin section is
-called a valma module. The corresponding command name of a script is
-the name stripped of 'valma-' and all '_' converted to '/'. When such
-a module is added as a devDependency for a package, valma will then be
-able to locate and dispatch calls to those scripts when called from
-inside that package.
+Any npm package can export new valma commands by exporting .js command
+scripts via its package.json .bin stanza. When such a package is added
+as a devDependency for a repository valma will then be able to locate
+and invoke those commands from anywhere inside the repository.
 
-There are two types of valma scripts: listed and hidden.
-Listed scripts can be seen with 'vlm' or 'vlm --help'. They are
-intended to be called directly from the command line. Hidden scripts
-are all valma scripts whose name begins with a '.' (or if any of their
-path parts begins with it). These scripts can still be called with
-valma normally but are intended to be used indirectly by other valma
-scripts.
+Valma commands are hierarchical and can contain '/' in their names.
+Valma invokations can use glob matching to make full use of these
+hierarchical path parts (notably using the distinction between '*' and
+'**').
 
-Note: valma treats the underscore '_' equal to '/' in all command
-pattern matching contexts. While use of '_' is otherwise optional, it
-is specifically mandatory to use '_' inside the package.json bin
-section export names (npm doesn't support bin '/' or at least not
-sharing the folders between separate packages).`,
+A command for which any path part begins with '.' is hidden, all other
+commands are listed. Listed scripts can be seen with 'vlm',
+'vlm --help' or 'vlm -d' and they are typically intended to be called
+by the user via the command line. Hidden scripts don't appear in
+listings and are intended to be called by other valma scripts. They can
+nevertheless be called directly and can be listed with option -a.
+
+The export name in the npm package.json .bin stanza must be the command
+name prefixed with 'valma-' (or '.valma-' if a hidden command begins
+with a '.'). Additionally export name must have all '/' replaced with
+'_' due to npm limitations. Valma will always treat '_' and '/'
+characters to be equal although '/' is recommended anywhere possible.
+`,
 
   builder: (yargs_) => yargs_
   //    .usage(module.exports.command, module.exports.summary, iy => iy)
@@ -214,6 +227,11 @@ function _sharedYargs (yargs_, strict = true) {
           group: "Options:",
           alias: "dry-run", type: "boolean", default: false, global: true,
           description: "Do not execute but display all the matching command(s)",
+        },
+        N: {
+          group: "Introspection options:",
+          alias: "show-name", type: "boolean", default: false, global: true,
+          description: "Show the command name of the matching command(s)",
         },
         U: {
           group: "Introspection options:",
@@ -353,7 +371,7 @@ async function handler (yargv) {
 
   if (vlm.isCompleting) {
     vlm.contextYargv = globalYargv;
-    vlm.callValma(yargv.command, yargv._);
+    vlm.invoke(yargv.command, yargv._);
     return 0;
   }
 
@@ -387,6 +405,12 @@ async function handler (yargv) {
 
   _reloadPackageAndValmaConfigs();
 
+  if (vlm.packageConfig
+      && path.resolve("node_modules") !== path.resolve(availablePools[1].path, "..")) {
+    console.warn(colors.warning(`vlm warning: node_modules missing - dependent commands missing.`),
+        `\nRun '${colors.green("yarn install")}' to make dependent commands available.\n`);
+  }
+
   if (!process.env.npm_config_user_agent) {
     if (needNPM && vlm.packageConfig) {
       console.warn(colors.warning("vlm warning: could not load NPM config environment variables"));
@@ -401,8 +425,8 @@ async function handler (yargv) {
   try {
     const subVLM = Object.create(vlm);
     subVLM.contextYargv = yargv;
-    const maybeRet = subVLM.callValma(yargv.command, yargv._);
-    subVLM.callValma = callValmaWithEcho;
+    const maybeRet = subVLM.invoke(yargv.command, yargv._);
+    subVLM.invoke = callValmaWithEcho;
     await maybeRet;
 
     _flushPendingConfigWrites(vlm);
@@ -425,7 +449,7 @@ async function handler (yargv) {
 async function callValmaWithEcho (command, argv = []) {
   if (vlm.echo) console.log(colors.echo("    ->> vlm", command, ...argv));
   try {
-    const ret = await callValma.call(this, command, argv);
+    const ret = await invoke.call(this, command, argv);
     if (vlm.echo) {
       console.warn(colors.echo("    <<- vlm", command, ":",
           (JSON.stringify(ret) || "undefined").slice(0, 40)));
@@ -437,9 +461,9 @@ async function callValmaWithEcho (command, argv = []) {
   }
 }
 
-async function callValma (command, argv = []) {
+async function invoke (command, argv = []) {
   if (!Array.isArray(argv)) {
-    throw new Error(`vlm.callValma: argv must be an array, got ${typeof argv}`);
+    throw new Error(`vlm.invoke: argv must be an array, got ${typeof argv}`);
   }
   const contextVLM = this || vlm;
   const contextYargv = this && this.contextYargv;
@@ -460,8 +484,10 @@ async function callValma (command, argv = []) {
   for (const pool of activePools) {
     pool.commands = {};
     pool.listing.forEach(file => {
-      // console.log("matching:", _isDirectory(file), _underToSlash(file.name), commandGlob, ": ",
-      //    minimatch(_underToSlash(file.name), commandGlob, { dot: contextYargv.matchAll }));
+      if (contextVLM.verbosity >= 3) {
+        console.log("vlm voluble: matching:", _isDirectory(file), _underToSlash(file.name),
+            commandGlob, ": ", minimatch(_underToSlash(file.name), commandGlob, { dot: contextYargv.matchAll }));
+      }
       if (_isDirectory(file)) return;
       if (!minimatch(_underToSlash(file.name), commandGlob, { dot: contextYargv.matchAll })) return;
       const commandName = _valmaCommandFromPath(file.name);
@@ -479,13 +505,13 @@ async function callValma (command, argv = []) {
         }
         if (module && (module.command !== undefined) && (module.describe !== undefined)
             && (module.handler !== undefined)) {
-          const builder = ((!module.disabled
-                  || ((typeof module.disabled === "function") && !module.disabled(yargs)))
-              && module.builder) || undefined;
-          activeCommand.disabled = !builder;
-          if (!builder && !contextYargv.matchAll) return;
-          yargs.command(module.command, module.summary || module.describe,
-              ...(builder ? [builder] : []), () => {});
+          activeCommand.disabled = !module.builder
+              || (module.disabled
+                  && ((typeof module.disabled !== "function") || module.disabled(yargs)));
+          if (!activeCommand.disabled || contextYargv.matchAll) {
+            yargs.command(module.command, module.summary || module.describe,
+              ...(!activeCommand.disable && module.builder ? [module.builder] : []), () => {});
+          }
         } else if (!introspect && !contextYargv.dryRun) {
           throw new Error(`vlm: invalid script module '${activeCommand.modulePath
               }', export 'command', 'describe' or 'handler' missing`);
@@ -522,7 +548,7 @@ async function callValma (command, argv = []) {
 
   if (introspect) {
     const ret = _outputIntrospection(introspect, activeCommands, commandGlob,
-        contextYargv.matchAll);
+        contextYargv.matchAll || !isWildCardCommand);
     return isWildCardCommand ? ret : ret[0];
   }
 
@@ -553,7 +579,7 @@ async function callValma (command, argv = []) {
         continue;
       }
       const subVLM = Object.create(contextVLM);
-      let subYargs = Object.create(yargs);
+      const subYargs = Object.create(yargs);
       subYargs.vlm = subVLM;
       const interactiveOptions = {};
       // Hook to yargs.option/options calls so we can extract the interactive options.
@@ -567,27 +593,30 @@ async function callValma (command, argv = []) {
       };
       yargs.help().command(module.command, module.describe);
       const subCommand = `${matchingCommand} ${commandArgs}`;
-      const disabled = module.disabled
-          && ((typeof module.disabled !== "function") || module.disabled(subYargs));
-      subYargs = !disabled && module.builder(subYargs);
+      const disabled = (module.disabled
+          && ((typeof module.disabled !== "function") || module.disabled(subYargs)))
+          || !module.builder(subYargs);
       if (dryRunCommands) {
-        dryRunCommands[matchingCommand] = { ...activeCommand, disabled: !subYargs };
-        continue;
-      }
-      if (!subYargs) {
-        if (!isWildCardCommand || (contextVLM.verbosity >= 1)) {
-          console.log(`vlm inform: skipping disabled command '${matchingCommand
-              }' (its exports.builder returns falsy)`);
-        }
+        dryRunCommands[matchingCommand] = { ...activeCommand, disabled };
         continue;
       }
       const subYargv = subYargs.parse(subCommand, { vlm: subVLM });
       const subIntrospect = _determineIntrospection(module, subYargv, subCommand);
       if (subIntrospect) {
-        ret = ret.concat(
-            _outputIntrospection(subIntrospect, { [matchingCommand]: activeCommand }, command,
-                  subYargv.matchAll));
+        ret = ret.concat(_outputIntrospection(
+            subIntrospect, { [matchingCommand]: activeCommand }, command,
+            subYargv.matchAll || !isWildCardCommand));
+      } else if (isWildCardCommand && disabled) {
+        if (contextVLM.verbosity >= 1) {
+          console.log(`vlm inform: skipping disabled command '${matchingCommand
+              }' (its exports.disabled resolves to true or exports.builder returns falsy)`);
+        }
+        continue;
       } else {
+        if (contextVLM.verbosity >= 1) {
+          console.warn(colors.warning(`vlm warning: invoking a disabled command '${matchingCommand
+              }' (its exports.disabled resolves to true or exports.builder returns falsy)`));
+        }
         if (contextVLM.verbosity >= 3) {
           console.log("vlm voluble: phase 5: forwarding to:", subCommand,
               "\n\tsubArgv:", subYargv,
@@ -610,7 +639,7 @@ async function callValma (command, argv = []) {
   }
   if (dryRunCommands) {
     _outputIntrospection(_determineIntrospection(module, contextYargv),
-        dryRunCommands, command, contextYargv.matchAll);
+        dryRunCommands, command, contextYargv.matchAll || !isWildCardCommand);
   }
   return isWildCardCommand ? ret : ret[0];
 }
@@ -744,8 +773,10 @@ async function _forwardToValmaInPool (vlmPool, needNPMConfig) {
   const forwardRealVLM = fs.realpathSync(path.join(vlmPool.path, "vlm"));
   if (myRealVLM !== forwardRealVLM) {
     if (vlm.verbosity >= 1) {
-      console.log("vlm inform: promote-requiring ", forwardRealVLM, "via pool", vlmPool.path);
+      console.log("vlm inform: promote-requiring ", forwardRealVLM, "via pool", vlmPool.path,
+          "from", myRealVLM);
     }
+    process.argv[1] = forwardRealVLM;
     require(forwardRealVLM);
     return true;
   }
@@ -785,7 +816,10 @@ async function _loadNPMConfigVariables () {
   }
   const npmConfig = JSON.parse(stdout);
   for (const npmVariable of Object.keys(npmConfig)) {
-    process.env[`npm_config_${npmVariable.replace(/-/g, "_")}`] = npmConfig[npmVariable];
+    const value = npmConfig[npmVariable];
+
+    process.env[`npm_config_${npmVariable.replace(/-/g, "_")}`] =
+        typeof value === "string" ? value : "";
   }
 }
 
@@ -934,7 +968,7 @@ function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
   }
   return outerRet;
 
-  function _outputInfos (commands, poolPath) {
+  function _outputInfos (commands, explicitPoolPath) {
     let nameAlign = 0;
     let usageAlign = 0;
     let versionAlign = 0;
@@ -943,7 +977,7 @@ function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
     .map((name) => {
       const command = commands[name];
       if (!command || (command.disabled && !listAll)) return {};
-      const info = _commandInfo(command.modulePath, poolPath || command.pool.path);
+      const info = _commandInfo(command.modulePath, explicitPoolPath || command.pool.path);
       const module = command.module
           || ((info[0] !== "<missing_command_script>") && require(info[3]));
 
@@ -957,7 +991,7 @@ function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
     });
     if (introspect.showHeaders) {
       const headers = [
-        ...(introspect.showName ? [_rightpad("command", nameAlign), "|"] : []),
+        ...(introspect.showName ? [_rightpad("command name", nameAlign), "|"] : []),
         ...(introspect.showUsage ? [_rightpad("command usage", usageAlign), "|"] : []),
         ...(introspect.showSummary ? [_rightpad("summary", 71), "|"] : []),
         ...(introspect.showVersion ? [_rightpad("version", versionAlign), "|"] : []),
@@ -982,11 +1016,10 @@ function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
         ...(introspect.showVersion ? ["|", [(ret.version = info[0]), versionAlign]] : []),
         ...(introspect.showInfo ? ["|", (ret.info = info.slice(1)).join(" | ")] : []),
       ];
-      _outputCommandInfo(infoRow.slice(1));
+      if (infoRow.length > 1) _outputCommandInfo(infoRow.slice(1));
       if (introspect.showDescribe && module && module.describe) {
-        console.log();
+        if (infoRow.length > 1) console.log();
         console.log(module.describe);
-        console.log();
       }
       if (introspect.showCode) {
         if (shell.test("-f", info[3])) {
@@ -1059,7 +1092,12 @@ async function _tryInteractive (subYargv, interactiveOptions) {
     questions.push(question);
   }
   if (!Object.keys(questions).length) return subYargv;
-  const answers = await vlm.inquire(questions);
+  const answers = {};
+  for (const question of questions) {
+    do {
+      Object.assign(answers, await vlm.inquire([question]));
+    } while (question.confirm && !await question.confirm(answers[question.name], answers));
+  }
   return Object.assign(subYargv, answers);
 }
 
@@ -1067,9 +1105,11 @@ async function _tryInteractive (subYargv, interactiveOptions) {
 function _reloadPackageAndValmaConfigs () {
   if (shell.test("-f", packageConfigStatus.path)) {
     vlm.packageConfig = JSON.parse(shell.head({ "-n": 1000000 }, packageConfigStatus.path));
+    _deepFreeze(vlm.packageConfig);
   }
   if (shell.test("-f", valmaConfigStatus.path)) {
     vlm.valmaConfig = JSON.parse(shell.head({ "-n": 1000000 }, valmaConfigStatus.path));
+    _deepFreeze(vlm.valmaConfig);
   }
 }
 
@@ -1077,8 +1117,12 @@ function updatePackageConfig (updates) {
   if (!vlm.packageConfig) {
     throw new Error("vlm.updatePackageConfig: cannot update package.json as it doesn't exist");
   }
-  _deepAssign(vlm.packageConfig, updates, packageConfigStatus);
-  if (vlm.verbosity) console.log("vlm inform: package.json updates:", updates);
+  const updatedConfig = _deepAssign(vlm.packageConfig, updates);
+  if (updatedConfig !== vlm.packageConfig) {
+    packageConfigStatus.updated = true;
+    vlm.packageConfig = updatedConfig;
+    if (vlm.verbosity) console.log("vlm inform: package.json updated with:", updates);
+  }
 }
 
 function updateValmaConfig (updates) {
@@ -1086,23 +1130,34 @@ function updateValmaConfig (updates) {
     vlm.valmaConfig = {};
     valmaConfigStatus.updated = true;
   }
-  _deepAssign(vlm.valmaConfig, updates, valmaConfigStatus);
-  if (vlm.verbosity) console.log("vlm inform: valma.json updates:", updates);
+  const updatedConfig = _deepAssign(vlm.valmaConfig, updates);
+  if (updatedConfig !== vlm.valmaConfig) {
+    valmaConfigStatus.updated = true;
+    vlm.valmaConfig = updatedConfig;
+    if (vlm.verbosity) console.log("vlm inform: valma.json updated with:", updates);
+  }
 }
 
-function _deepAssign (target, source, updateStatus) {
+function _deepFreeze (object) {
+  if (typeof object !== "object" || !object) return;
+  Object.freeze(object);
+  Object.values(object).forEach(_deepFreeze);
+}
+
+function _deepAssign (target, source) {
   if (typeof source === "undefined") return target;
   if (Array.isArray(target)) return target.concat(source);
   if ((typeof source !== "object") || (source === null)
       || (typeof target !== "object") || (target === null)) return source;
+  let objectTarget = target;
   Object.keys(source).forEach(sourceKey => {
-    const newValue = _deepAssign(target[sourceKey], source[sourceKey], updateStatus);
-    if (newValue !== target[sourceKey]) {
-      if (!updateStatus.updated) updateStatus.updated = true;
-      target[sourceKey] = newValue;
+    const newValue = _deepAssign(target[sourceKey], source[sourceKey]);
+    if (newValue !== objectTarget[sourceKey]) {
+      if (objectTarget === target) objectTarget = { ...target };
+      objectTarget[sourceKey] = newValue;
     }
   });
-  return target;
+  return objectTarget;
 }
 
 function _flushPendingConfigWrites () {
@@ -1125,7 +1180,7 @@ function _flushPackageConfig () {
     if (reorderedConfig[key] === undefined) reorderedConfig[key] = vlm.packageConfig[key];
   });
   const packageConfigString = JSON.stringify(reorderedConfig, null, 2);
-  shell.ShellString(packageConfigString).to(packageConfigStatus.path);
+  shell.ShellString(`${packageConfigString}\n`).to(packageConfigStatus.path);
   packageConfigStatus.updated = false;
 }
 

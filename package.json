@@ -22,23 +22,15 @@
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "lint": "npm run eslint",
     "test": "jest",
-    "test-e2e": "karma start",
     "build": "webpack ",
     "package-assemble": "vlm package-assemble ",
     "package-publish": "vlm package-publish "
   },
   "devDependencies": {
-    "@valos/toolset-revealer": "0.30.0-prerelease.10",
-    "@valos/toolset-vault": "^0.30.0-prerelease.10",
+    "@valos/toolset-revealer": ">0.30.0-prerelease",
+    "@valos/toolset-vault": ">0.30.0-prerelease",
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.5.0",
-    "gulp": "^3.9.1",
-    "gulp-command": "^0.1.2",
-    "jasmine-core": "^2.8.0",
-    "karma": "^1.7.1",
-    "karma-chrome-launcher": "^2.2.0",
-    "karma-jasmine": "^1.1.0",
-    "karma-webpack": "^2.0.4",
-    "valma": "0.30.0-prerelease.10"
+    "valma": ">0.30.0-prerelease"
   }
 }

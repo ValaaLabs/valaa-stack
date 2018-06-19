@@ -13,8 +13,9 @@
     "access": "public"
   },
   "bin": {
+    "valma-revealer-build": "valma/revealer-build.js",
     "valma-revealer-dev-server": "valma/revealer-dev-server.js",
-    ".valma-configure_.toolset_@valos_toolset-revealer": "valma/configure__revealer.js"
+    ".valma-configure_.toolset_@valos_toolset-revealer": "valma/configure__toolset-revealer.js"
   },
   "dependencies": {
     "autoprefixer": "^8.6.2",

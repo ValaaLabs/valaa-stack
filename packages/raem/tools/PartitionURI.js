@@ -92,8 +92,10 @@ export function getURIQueryField (uri: URL | string, fieldName: string): ?any {
 }
 
 export function getPartitionRawIdFrom (partitionURI: PartitionURI): string {
-  invariantifyObject(partitionURI, "partitionURI",
-    { instanceof: URL, allowEmpty: true });
+  if ((typeof partitionURI !== "object") || !partitionURI || !partitionURI.href) {
+    console.log("YEAH:", typeof partitionURI, !partitionURI, !partitionURI.href);
+    invariantifyObject(partitionURI, "partitionURI", { instanceof: URL, allowEmpty: true });
+  }
   return decodeURIComponent(partitionURI.query.id);
 }
 

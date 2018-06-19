@@ -12,8 +12,10 @@ exports.handler = (yargv) => {
   if (valaa && valaa.type && valaa.domain) {
     console.log(`${valaa.domain} ${valaa.type} ${config.name}@${config.version}`);
   } else {
-    console.log(`package '${config && config.name
-        }' is not a valaa repository; package.json doesn't have the valaa section or it doesn't${
-        ""} have .valaa.domain/type set (maybe run 'vlm init' to initialize?)`);
+    console.log(
+`package '${config && config.name}' is not a valaa repository. Either
+package.json doesn't have the .valaa stanza or its .domain or .type is
+not set. Call 'vlm init' to initialize.
+`);
   }
 };

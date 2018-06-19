@@ -2,7 +2,17 @@
 
 exports.command = "init";
 exports.summary = "Initialize the current directory as a Valaa repository from scratch";
-exports.describe = `${exports.summary}.`;
+exports.describe = `${exports.summary}.
+
+This process will walk you through creating and configuring a new
+valma repository in the current working directory from scratch.
+
+Valma init has following interactive phases:
+1. Initialization of package.json via 'yarn init'
+2. Initialization of repository valaa type and domain
+3. Addition of new known workshops via 'yarn add --dev'
+4. Selection of in-use toolsets from those listed in the workshops
+5. Configuration of in-use toolsets and tools via 'vlm configure'`;
 
 exports.disabled = (yargs) => ((yargs.vlm || {}).packageConfig || {}).valaa;
 exports.builder = (yargs) => yargs;
@@ -10,9 +20,7 @@ exports.builder = (yargs) => yargs;
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
   vlm.echo = true;
-  console.log("This tool will walk you through creating and configuring a new valma repository",
-      "in the current working directory.");
-  console.log();
+  console.log(exports.describe.match(/[^\n]*\n(.*)/)[1]);
 
   return await _configurePackageJSON()
       && await _configureValaaTypeAndDomain()
@@ -25,17 +33,20 @@ exports.handler = async (yargv) => {
           .concat(["help", "quit"]);
       const answer = await vlm.inquire([{
         message: vlm.packageConfig
-            ? "Reconfigure the existing root package.json with 'yarn init'?"
-            : "Initialize the root package.json with 'yarn init'?",
+            ? "Reconfigure the existing package.json with 'yarn init'?"
+            : "Initialize the package.json with 'yarn init'?",
         type: "list", name: "choice", default: choices[0], choices,
       }]);
       if (answer.choice === "quit") return false;
       if (answer.choice === "help") {
         console.log();
-        console.log("Valaa repositories use yarn extensively for version, dependency and script");
-        console.log("management; package.json is the central yarn configuration file. 'yarn init'");
-        console.log("will initialize it.");
-        console.log();
+        console.log(
+`This phase uses 'yarn init' to initialize package.json via a series of
+interactive questions.
+Valaa repositories use yarn extensively for version, dependency and
+script management; package.json is the central package configuration
+file for yarn (and for npm, for which yarn is an analogue).
+`);
         continue;
       }
       if (answer.choice === "Skip") {
@@ -55,33 +66,31 @@ exports.handler = async (yargv) => {
               : vlm.packageConfig.valaa ? ["Skip", "reconfigure"] : ["Initialize"])
           .concat(["help", "quit"]);
       const answer = await vlm.inquire([{
-        message: justConfigured
-                ? "Confirm selection or reconfigure repository Valaa type and domain?"
-            : vlm.packageConfig.valaa ? "Reconfigure repository Valaa type and domain?"
-            : "Initialize repository Valaa type and domain?",
+        message:
+            justConfigured
+                ? `Confirm selection or reconfigure: ${
+                    JSON.stringify({ ...vlm.packageConfig.valaa })}?`
+            : vlm.packageConfig.valaa
+                ? `Reconfigure repository valaa stanza: ${
+                    JSON.stringify({ ...vlm.packageConfig.valaa })}?`
+            : "Initialize repository valaa type and domain?",
         type: "list", name: "choice", default: choices[0], choices,
       }]);
       justConfigured = false;
       if (answer.choice === "quit") return false;
       if (answer.choice === "help") {
         console.log();
-        await vlm.callValma(".configure/.initialize", ["--info"]);
+        await vlm.invoke(".configure/.initialize", ["--show-describe"]);
         console.log();
         continue;
       }
       if (answer.choice === "Confirm") break;
       if (answer.choice === "Skip") {
-        console.log("Skipped repository valaa reconfigure.");
+        console.log("Skipped repository valaa type and domain reconfigure.");
         return true;
       }
       vlm.reconfigure = true;
-      await vlm.callValma(".configure/.initialize");
-      console.log();
-      console.log("You are selecting domain", vlm.packageConfig.valaa.domain, "with description:");
-      await vlm.callValma(`.configure/.domain/${vlm.packageConfig.valaa.domain}`, ["--describe"]);
-      console.log();
-      console.log("You are selecting type", vlm.packageConfig.valaa.type, "with description:");
-      await vlm.callValma(`.configure/.type/${vlm.packageConfig.valaa.type}`, ["--describe"]);
+      await vlm.invoke(".configure/.initialize");
       justConfigured = true;
     }
     return true;
@@ -95,44 +104,42 @@ exports.handler = async (yargv) => {
           : ["Yes", "skip", "help", "quit"];
       let answer = await vlm.inquire([{
         message: wasError
-            ? "Retry adding valma modules or module collections as devDependencies?"
+            ? "Retry adding workshops (or direct toolsets) as devDependencies?"
             : vlm.packageConfig.devDependencies
-                ? "Add more valma modules or module collections as devDependencies?"
-                : "Add initial valma modules or module collections as devDependencies?",
+                ? "Add more workshops (or direct toolsets) as devDependencies?"
+                : "Add initial workshops (or direct toolsets) as devDependencies?",
         type: "list", name: "choice", default: choices[0], choices,
       }]);
       wasError = false;
       if (answer.choice === "quit") return false;
       if (answer.choice === "help") {
         console.log();
-        console.log("This valma-init step is a convenience step for adding an initial set of valma");
-        console.log("modules as devDependencies. This makes the valma configure scripts of those");
-        console.log("modules available for the next init step for this repository.");
-        console.log();
-        console.log("Providing a package which has several valma modules as its dependencies");
-        console.log("(a 'module collection') is a convenient way to add many valma modules at once.");
-        console.log();
+        console.log(
+`This phase uses 'yarn add --dev' to add workshops as devDependencies.
+This allows the toolsets in those workshops to be available for the
+following configure phase.
+`);
         continue;
       }
       if (answer.choice === "Skip") break;
       if (answer.choice === "skip") {
-        console.log("Skipped adding valma modules as devDependencies.");
+        console.log("Skipped 'yarn add --dev'.");
         break;
       }
       answer = await vlm.inquire([{
         type: "input", name: "devDependencies",
-        message: "enter a space-separated list of valma modules for 'yarn install --save-dev':\n",
+        message: "enter a space-separated list of workshops for 'yarn add --dev':\n",
       }]);
       if (!answer || !answer.devDependencies) {
-        console.log("no devDependencies provided, skipping 'yarn install --save-dev'");
+        console.log("No devDependencies provided, skipping 'yarn add --dev' phase");
       } else {
         try {
           await vlm.executeScript("yarn",
-              ["install", "--save-dev"].concat(answer.devDependencies.split(" ")));
+              ["add", "--dev"].concat(answer.devDependencies.split(" ")));
         } catch (error) {
           console.log();
-          console.error(`An exception caught during external command 'yarn install --save-dev ${
-              answer.devDependencies}':`, error);
+          console.error(`An exception caught during external command 'yarn add --dev ${
+              answer.devDependencies}':\n`, error);
           wasError = true;
         }
       }
@@ -153,15 +160,15 @@ exports.handler = async (yargv) => {
       if (answer.choice === "quit") return false;
       if (answer.choice === "help") {
         console.log();
-        await vlm.callValma("configure", ["--info"]);
+        await vlm.invoke("configure", ["--info"]);
         console.log();
         continue;
       }
       if (answer.choice === "Skip") {
-        console.log("Skipped 'vlm configure'");
+        console.log("Skipped 'vlm configure'.");
         break;
       }
-      await vlm.callValma("configure");
+      await vlm.invoke("configure");
       break;
     }
     return true;

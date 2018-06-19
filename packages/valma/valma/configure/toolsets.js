@@ -1,7 +1,18 @@
 exports.command = ".configure/.toolsets";
-exports.summary = "Enable and disable valma toolsets from the pool of available toolsets";
-exports.describe = `${exports.summary}. The set of available toolsets is those matching the glob${
-    ""} '.configure/{,.type/.<type>/,.domain/.<domain>/}.toolset/**/*' (note the empty selector)`;
+exports.summary = "Select and/or stow in-use toolsets from the set of known toolsets";
+exports.describe = `${exports.summary}.
+
+The set of known toolsets is defined by the set of all valma 'toolset
+configure' commands listed by the invokation (note the empty selector):
+
+vlm -da '.configure/{,.type/.<type>/,.domain/.<domain>/}.toolset/**/*'
+
+An invokation 'vlm configure' will invoke these toolset configure
+command for all toolsets that are selected to be in use.
+
+Toolsets are usually sourced via depending on workshop packages.
+Toolsets from file and global pools can be used but should be avoided
+as such toolsets are not guaranteed to be always available.`;
 
 exports.builder = (yargs) => {
   const valaa = yargs.vlm.packageConfig.valaa;
@@ -22,7 +33,7 @@ exports.builder = (yargs) => {
       choices: availableToolsets.concat(
           toolsetsInUse.filter(toolset => !availableToolsets.includes(toolset))),
       interactive: { type: "checkbox", when: "always" },
-      description: "toolsets in use",
+      description: "Toolsets currently in use (check to select, uncheck to stow)",
     },
   });
 };

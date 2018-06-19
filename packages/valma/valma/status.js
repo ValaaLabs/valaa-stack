@@ -1,30 +1,32 @@
 #!/usr/bin/env vlm
 
-exports.command = "status [moduleglob]";
-exports.summary = "Display the status of the current repository and its valma modules";
+exports.command = "status [toolsetglob]";
+exports.summary = "Display the status of the current package repository";
 exports.describe = `${exports.summary}.
-If moduleglob is specified the status is limited to status scripts
-matching '.status/{moduleglob}*', otherwise all status scripts by
+
+If toolsetglob is specified the status is limited to status scripts
+matching '.status/{toolsetglob}*', otherwise all status scripts by
 '.status/**/*' are used.`;
 
+exports.disabled = (yargs) => !yargs.vlm.packageConfig;
 exports.builder = (yargs) => yargs;
 
 exports.handler = async (yargv) => {
-  if (!yargv.vlm.packageConfig) {
-    console.error("valma-status: current directory is not a repository;",
-        "package.json does not exist or is not a file");
+  const vlm = yargv.vlm;
+  if (!vlm.packageConfig) {
+    console.error(vlm.colors.error("valma-status: current directory is not a package repository;",
+        "package.json doesn't exist or is not valid."));
     return undefined;
   }
-  await yargv.vlm.callValma(`.status/${yargv.moduleglob || "**/"}*`, yargv._.slice(1));
-  const valaa = yargv.vlm.packageConfig.valaa;
+  await vlm.invoke(`.status/${yargv.toolsetglob || "**/"}*`, yargv._.slice(1));
+  const valaa = vlm.packageConfig.valaa;
   const ret = [];
   if (valaa && valaa.type) {
-    ret.push(yargv.vlm.callValma(`.status/.type/.${valaa.type}/${yargv.moduleglob || "**/"}*`,
+    ret.push(vlm.invoke(`.status/.type/.${valaa.type}/${yargv.toolsetglob || "**/"}*`,
         yargv._.slice(1)));
   }
   if (valaa && valaa.domain) {
-    ret.push(yargv.vlm.callValma(`.status/.domain/.${valaa.domain}/${yargv.moduleglob || "**/"}*`,
-        yargv._.slice(1)));
+    ret.push(vlm.invoke(`.status/.domain/.${valaa.domain}/${yargv.toolsetglob || "**/"}*`));
   }
   return Promise.all(ret);
 };
