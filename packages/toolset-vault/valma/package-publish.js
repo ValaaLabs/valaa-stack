@@ -1,30 +1,50 @@
 #!/usr/bin/env vlm
 
-exports.command = "package-publish [packageglob]";
-exports.summary = "Publish previously assembled packages to their registries";
+exports.command = "package-publish";
+exports.summary = "Publish package assemblies to their registries";
 exports.describe = `${exports.summary}.`;
 
 exports.builder = (yargs) => yargs.options({
   source: {
     type: "string", default: "dist/packages",
-    description: `source directory for the packages that are to be published. ${
-        ""}Each package in this directory will be deleted after successful publish.`
-  }
+    description: `Source directory for the package assemblies that are to be published.`
+  },
+  "delete-published": {
+    type: "boolean", default: true,
+    description: `Delete successfully published package assemblies.`,
+  },
+  publisher: {
+    type: "string", default: "npm",
+    description: `The command used to publish individual packages assemblies.`,
+  },
 });
 
 exports.handler = (yargv) => {
   const vlm = yargv.vlm;
-  const packageGlob = !yargv.packageglob ? "**" : vlm.path.join("**", yargv.packageglob, "**");
-  const packagePaths = vlm.shell.find(vlm.path.join(yargv.source, packageGlob, "package.json"))
-      .filter(packageJsonPath => !packageJsonPath.includes("node_modules"))
-      .map(packageJsonPath => packageJsonPath.match(/(.*)\/package.json/)[1]);
-  for (const packagePath of packagePaths) {
-    const publishResult = vlm.shell.exec(`npm publish ${packagePath}`);
-    if (!publishResult.code && packagePath) {
-      vlm.shell.rm("-rf", packagePath);
-    } else {
-      console.log(`valma-package-publish: 'npm publish ${packagePath}' resulted in error code`,
-          publishResult.code, publishResult);
+  const assemblyGlobs = yargv._.length > 1 ? yargv._.slice(1) : [""];
+  const assemblyPaths = assemblyGlobs.reduce((paths, glob) => {
+    const pathListing = vlm.shell.find(vlm.path.join(
+        yargv.source, !glob ? "**" : vlm.path.join("**", glob, "**"), "package.json"));
+    return pathListing.code ? paths : paths.concat(
+        ...pathListing.map(p => !p.includes("node_modules") && p.match(/(.*)\/package.json/)[1])
+            .filter(p => p && !paths.includes(p)));
+  }, []);
+  if (yargv.publisher) {
+    vlm.info(`Publishing ${assemblyPaths.length} package assemblies (via globs '${
+            assemblyGlobs.join("', '")}') using '${yargv.publisher}':`,
+        ...assemblyPaths.map(p => `\n\t${p}`));
+    for (const packagePath of assemblyPaths) {
+      const publishResult = vlm.shell.exec(`${yargv.publisher} publish ${packagePath}`);
+      if (!publishResult.code && packagePath) {
+        vlm.info(`Successfully published with '${yargv.publisher} publish ${packagePath}'`);
+        if (yargv.deletePublished) {
+          vlm.info("\tremoving the package assembly");
+          vlm.shell.rm("-rf", packagePath);
+        }
+      } else {
+        vlm.error(`Error during '${yargv.publisher} publish ${packagePath}':`,
+            publishResult.code, publishResult);
+      }
     }
   }
 };

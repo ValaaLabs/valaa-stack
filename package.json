@@ -31,6 +31,7 @@
     "@valos/toolset-vault": ">0.30.0-prerelease",
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.5.0",
-    "valma": ">0.30.0-prerelease"
+    "valma": ">0.30.0-prerelease",
+    "yalc": "^1.0.0-pre.22"
   }
 }

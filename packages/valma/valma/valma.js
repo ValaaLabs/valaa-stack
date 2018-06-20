@@ -1309,9 +1309,12 @@ function _createVargs (args, cwd) {
       return [];
     }
     if (effects.length) {
-      const { argv } = yargsParser(effects, { ...options, default: {} });
+      const { argv } = yargsParser(effects, options);
       for (const effect of Object.keys(argv)) {
-        if ((effect !== "_") && argv[effect]) vargv[effect] = argv[effect];
+        if (((effect !== "_") && argv[effect])
+            || (options.default[effect] && (options.default[effect] !== argv[effect]))) {
+          vargv[effect] = argv[effect];
+        }
       }
     }
     return vargv;

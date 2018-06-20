@@ -4,44 +4,38 @@ exports.command = "package-assemble";
 exports.summary = "Assemble all current modified vault packages (preparing for publish)";
 exports.describe = `${exports.summary}.
 
-Uses lerna to handle the monorepo sub-packages update detection, versioning,
-and git interactions. Configuration for lerna is in lerna.json:
-notably the version increase semantics is configured there.
+Uses lerna to handle the monorepo sub-packages update detection,
+versioning, and git interactions. Configuration for lerna is in
+lerna.json: notably the version increase semantics is configured there.
 
-Lerna is not used for constructing the actual packages. This is done by a
-flat recursive cp to the target at the moment.
+Lerna is not used for constructing the actual packages. This is done by
+a flat recursive cp to the target at the moment.
 
-Invokes babel for all projects with babel.config.js in their root. If the
-vault has a shared babel.config.js for all packages, a symlink from this
-root to each project should be created.
+Invokes babel for all projects with babel.config.js in their root. If
+the vault has a shared babel.config.js for all packages, a symlink from
+this root to each project should be created.
 
-When assembling lerna will automatically update the shared version for all
-packages and their cross-dependencies and make a git commit and git tag for
-the new version. This behaviour can be omitted with --no-versioning.
+When assembling lerna will automatically update the shared version for
+all packages and their cross-dependencies and make a git commit and git
+tag for the new version.
+This behaviour can be omitted with --no-versioning.
 
-  Iterative development with --link:
+  Iterative development with yalc and packabe-publish:
 
-Using the command
+Once a set of packages has been been built to the target, run:
 
-'sudo vlm package-assemble --no-versioning --overwrite --post="chown -R $USER.$USER *"'
+'vlm package-publish --publisher=yalc'
 
-the packages can be iteratively tested and developed locally even with other
-packages depending on and being tested against them. To have other packages
-depend on such an assembled, iteratively developed package the dependency must
-be then manually added by running following command in the depending package:
+This will make the package assemblies available in a local yalc
+'registry'; see https://github.com/whitecolor/yalc for more details on
+how to use such packages by other depending packages. Reassembling
+and pushing those changes through yalc to dependents can be done with:
 
-'npm link <assembled-package-name>'
+'vlm package-assemble --reassemble --post-execute="yalc push"'
 
-After the initial run the packages can be updated without 'sudo' with
-
-'vlm package-assemble --no-versioning --overwrite'
-
-as long as no new files have been added (re-run the full command in that case).
-
-Note: the --post options is used to reset the ownership back to original user
-as as 'sudo npm link' uses hard links.
-Read more about npm link: https://docs.npmjs.com/cli/link .`;
-
+This allows packages to be developed iteratively locally while having
+other packages depend and be tested against them.
+`;
 
 exports.builder = (yargs) => yargs.options({
   target: {
@@ -81,8 +75,9 @@ exports.builder = (yargs) => yargs.options({
   },
   reassemble: {
     type: "boolean",
-    description: `Reassembles packages pending publication. Causes --overwrite --pending.`,
-    causes: ["overwrite"],
+    description: `Reassembles packages pending publication.${
+        ""} Causes --only-pending --overwrite --no-versioning.`,
+    causes: ["only-pending", "overwrite", "no-versioning"],
   },
   "post-execute": {
     type: "string",
@@ -161,6 +156,7 @@ exports.handler = async (yargv) => {
       } = selection;
 
       vlm.info(`Assembling package '${name}'`, "into", targetDirectory);
+      if (yargv.overwrite) vlm.shell.rm("-rf", targetDirectory);
       vlm.shell.mkdir("-p", targetDirectory);
       vlm.shell.cp("-R", vlm.path.join(sourceDirectory, "*"), targetDirectory);
       vlm.shell.rm("-rf", vlm.path.join(targetDirectory, "node_modules"));
