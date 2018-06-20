@@ -234,7 +234,7 @@ characters to be equal although '/' is recommended anywhere possible.
         },
         p: {
           group: "Introspection options:",
-          alias: "pools", type: "boolean", default: false, global: false,
+          alias: "pools", type: "boolean", global: false,
           description: "Show separate pools (highest priority pool last)",
         },
         echo: {
@@ -249,7 +249,7 @@ characters to be equal although '/' is recommended anywhere possible.
         },
         a: {
           group: "Options:",
-          alias: "match-all", type: "boolean", default: false, global: false,
+          alias: "match-all", type: "boolean", global: false,
           description: "Include unlisted and disabled commands in /all/ matchings",
         },
         interactive: {
@@ -300,47 +300,47 @@ function _addSharedOptions (vargs_, strict = true) {
       .option({
         h: {
           group: "Introspection options:",
-          alias: "help", type: "boolean", default: false, global: true,
+          alias: "help", type: "boolean", global: true,
           description: "Show the main help of the command",
         },
         d: {
           group: "Options:",
-          alias: "dry-run", type: "boolean", default: false, global: true,
+          alias: "dry-run", type: "boolean", global: true,
           description: "Do not execute but display all the matching command(s)",
         },
         N: {
           group: "Introspection options:",
-          alias: "show-name", type: "boolean", default: false, global: true,
+          alias: "show-name", type: "boolean", global: true,
           description: "Show the command name of the matching command(s)",
         },
         U: {
           group: "Introspection options:",
-          alias: "show-usage", type: "boolean", default: false, global: true,
+          alias: "show-usage", type: "boolean", global: true,
           description: "Show the full usage of the matching command(s)",
         },
         V: {
           group: "Introspection options:",
-          alias: "version", type: "boolean", default: false, global: true,
+          alias: "version", type: "boolean", global: true,
           description: "Show the version of the matching command(s)",
         },
         S: {
           group: "Introspection options:",
-          alias: "show-summary", type: "boolean", default: false, global: true,
+          alias: "show-summary", type: "boolean", global: true,
           description: "Show the summary of the command(s)",
         },
         I: {
           group: "Introspection options:",
-          alias: "show-info", type: "boolean", default: false, global: true,
+          alias: "show-info", type: "boolean", global: true,
           description: "Show the info block of the command(s)",
         },
         D: {
           group: "Introspection options:",
-          alias: "show-describe", type: "boolean", default: false, global: true,
+          alias: "show-describe", type: "boolean", global: true,
           description: "Show the description of the command(s)",
         },
         C: {
           group: "Introspection options:",
-          alias: "show-code", type: "boolean", default: false, global: true,
+          alias: "show-code", type: "boolean", global: true,
           description: "Show the script code of the command(s)",
         },
       });
@@ -363,11 +363,9 @@ _addSharedOptions(vargs, !vlm.isCompleting);
 const globalVargs = module.exports.builder(vargs);
 const globalVargv = _parseUntilCommand(globalVargs, processArgv, "command");
 
-if (!vlm.isCompleting) {
-  vlm.verbosity = globalVargv.verbose;
-  vlm.interactive = globalVargv.interactive;
-  if (!globalVargv.echo) vlm.echo = function () {};
-}
+vlm.verbosity = vlm.isCompleting ? 0 : globalVargv.verbose;
+vlm.interactive = vlm.isCompleting ? 0 : globalVargv.interactive;
+if (!globalVargv.echo || vlm.isCompleting) vlm.echo = function () {};
 
 vlm.ifVerbose(1).babble("phase 1, init:", "determine global options and available pools.",
     `\n\tcommand: ${vlm.colors.command(globalVargv.command)
@@ -486,7 +484,7 @@ async function handler (vargv) {
   _reloadPackageAndValmaConfigs();
 
   if (vlm.packageConfig
-      && path.resolve("node_modules") !== path.resolve(availablePools[1].path, "..")) {
+      && (path.resolve("node_modules") !== path.resolve(availablePools[1].path, ".."))) {
     vlm.warn("node_modules missing:", "some dependent commands will likely be missing.",
         `\nRun '${colors.green("yarn install")}' to make dependent commands available.\n`);
   }

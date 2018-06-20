@@ -58,11 +58,11 @@ exports.builder = (yargs) => yargs.options({
         + " (used for packages with babel configuration in their root)",
   },
   overwrite: {
-    type: "boolean", default: false,
+    type: "boolean",
     description: "Allow overwriting existing builds in the target directory",
   },
   "only-pending": {
-    type: "boolean", default: false,
+    type: "boolean",
     description: `Limit the selection to packages currently existing in the target directory.${
         ""} Causes --overwrite`,
     causes: ["overwrite"],
@@ -80,7 +80,7 @@ exports.builder = (yargs) => yargs.options({
     description: "Actually copy and transpile files to the target",
   },
   reassemble: {
-    type: "boolean", default: false,
+    type: "boolean",
     description: `Reassembles packages pending publication. Causes --overwrite --pending.`,
     causes: ["overwrite"],
   },
@@ -186,7 +186,7 @@ exports.handler = async (yargv) => {
     vlm.info("Updating version, making git commit, creating a lerna git tag and",
         "updating target package.json's");
     await vlm.execute("lerna", [
-      "publish", "--skip-npm", "--yes", "--loglevel=silent", yargv.force && "--force-publish=*"
+      "publish", "--skip-npm", "--yes", "--loglevel=silent", !yargv.onlyChanged && "--force-publish=*"
     ]);
     if (!yargv.assemble && (!yargv.overwrite || !yargv.onlyPending)) {
       vlm.info("Skipping package.json version updates", "as",
