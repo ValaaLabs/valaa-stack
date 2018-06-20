@@ -47,10 +47,10 @@ exports.handler = function handler (yargv) {
     vlm.shell.mkdir("-p", contentBase);
     vlm.shell.cp("-R", vlm.path.join(yargv.source, "*"), contentBase);
   }
-  return vlm.executeScript("webpack-dev-server", [
+  return vlm.execute("webpack-dev-server", [
     yargv.inline && "--inline",
     yargv.progress && "--progress",
-    yargv.opena && "--open",
+    yargv.open && "--open",
     "--host", yargv.host,
     "--content-base", contentBase,
   ]);

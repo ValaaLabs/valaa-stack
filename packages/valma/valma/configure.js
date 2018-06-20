@@ -44,9 +44,9 @@ exports.handler = async (yargv) => {
       yargv.toolsetGlob || ""}{*/**/,}*`);
 };
 
-function confirmToolsetExists (toolsetName, warningText) {
+function confirmToolsetExists (toolsetName, toolName) {
   if (((this.valmaConfig || {}).toolset || {})[value]) return true;
-  console.warn(this.colors.warning(`${warningText} warning:`),
+  this.tailor({ toolName }).warn(
       `cannot find toolset '${toolsetName}' from active toolsets:`,
       Object.keys((this.valmaConfig || {}).toolset || {}).join(", "));
   return false;

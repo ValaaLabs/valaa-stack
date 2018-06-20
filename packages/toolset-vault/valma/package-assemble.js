@@ -46,16 +46,16 @@ Read more about npm link: https://docs.npmjs.com/cli/link .`;
 exports.builder = (yargs) => yargs.options({
   target: {
     type: "string", default: "dist/packages",
-    description: "Target directory for building the packages (must be empty or not exist)"
+    description: "Target directory for building the packages (must be empty or not exist)",
   },
   source: {
     type: "string", default: "packages",
-    description: "Source packages directory. Must match one lerna.json entry."
+    description: "Source packages directory. Must match one lerna.json entry.",
   },
   "babel-target-env": {
     type: "string", default: "package-assemble",
     description: "TARGET_ENV environment variable for the babel builds"
-        + " (used for packages with babel configuration in their root)"
+        + " (used for packages with babel configuration in their root)",
   },
   force: {
     type: "boolean", default: false,

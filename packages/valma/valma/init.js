@@ -53,7 +53,7 @@ file for yarn (and for npm, for which yarn is an analogue).
         console.log("Skipped 'yarn init'.");
         break;
       }
-      await vlm.executeScript("yarn", ["init"]);
+      await vlm.execute("yarn", ["init"]);
       break;
     }
     return true;
@@ -134,7 +134,7 @@ following configure phase.
         console.log("No devDependencies provided, skipping 'yarn add --dev' phase");
       } else {
         try {
-          await vlm.executeScript("yarn",
+          await vlm.execute("yarn",
               ["add", "--dev"].concat(answer.devDependencies.split(" ")));
         } catch (error) {
           console.log();
