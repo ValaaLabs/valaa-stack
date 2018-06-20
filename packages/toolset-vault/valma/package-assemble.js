@@ -17,13 +17,13 @@ root to each project should be created.
 
 When assembling lerna will automatically update the shared version for all
 packages and their cross-dependencies and make a git commit and git tag for
-the new version. This behaviour can be omitted with --skip-versioning.
+the new version. This behaviour can be omitted with --no-versioning.
 
   Iterative development with --link:
 
 Using the command
 
-'sudo vlm package-assemble --skip-versioning --overwrite --link --post="chown -R $USER.$USER *"'
+'sudo vlm package-assemble --no-versioning --overwrite --post="chown -R $USER.$USER *"'
 
 the packages can be iteratively tested and developed locally even with other
 packages depending on and being tested against them. To have other packages
@@ -34,7 +34,7 @@ be then manually added by running following command in the depending package:
 
 After the initial run the packages can be updated without 'sudo' with
 
-'vlm package-assemble --skip-versioning --overwrite'
+'vlm package-assemble --no-versioning --overwrite'
 
 as long as no new files have been added (re-run the full command in that case).
 
@@ -57,152 +57,189 @@ exports.builder = (yargs) => yargs.options({
     description: "TARGET_ENV environment variable for the babel builds"
         + " (used for packages with babel configuration in their root)",
   },
-  force: {
-    type: "boolean", default: false,
-    description: "Build packages even if they have not been updated"
-  },
   overwrite: {
     type: "boolean", default: false,
-    description: "Allow overwriting existing packages in the target directory"
+    description: "Allow overwriting existing builds in the target directory",
   },
-  "skip-versioning": {
+  "only-pending": {
     type: "boolean", default: false,
-    description: "Skip bumping the version, making a git tag and making a git commit"
+    description: `Limit the selection to packages currently existing in the target directory.${
+        ""} Causes --overwrite`,
+    causes: ["overwrite"],
   },
-  link: {
+  "only-changed": {
+    type: "boolean", default: true,
+    description: "Limit the selection to packages with changes.",
+  },
+  versioning: {
+    type: "boolean", default: true,
+    description: "Bump the version, make a git commit and a git tag with lerna",
+  },
+  assemble: {
+    type: "boolean", default: true,
+    description: "Actually copy and transpile files to the target",
+  },
+  reassemble: {
     type: "boolean", default: false,
-    description: "Run 'npm link' for each assembled package"
+    description: `Reassembles packages pending publication. Causes --overwrite --pending.`,
+    causes: ["overwrite"],
   },
-  unlink: {
-    type: "boolean", default: false, implies: ["overwrite", "skip-versioning"],
-    description: "Run 'npm unlink' for each assembled package"
-  },
-  post: {
+  "post-execute": {
     type: "string",
-    description: "Run a command for each assembled package after the assembly is done",
-  }
+    description: "The command to execute inside each built package after the assembly",
+  },
 });
 
 exports.handler = async (yargv) => {
-  const vlm = yargv.vlm;
+  const vlm = yargv.vlm.tailor({ toolName: "package-assemble" });
   const publishDist = yargv.target;
   vlm.shell.mkdir("-p", publishDist);
-  if (!yargv.overwrite && vlm.shell.ls("-lA", publishDist).length) {
-    console.error(`valma-package-assemble: target directory '${publishDist}' is not empty`);
-    process.exit(-1);
+  const targetListing = vlm.shell.ls("-lA", publishDist);
+  if (!yargv.overwrite && targetListing.length) {
+    vlm.warn(`Target directory '${publishDist}' is not empty:`,
+        targetListing.filter(f => f).map(f => f.name));
   }
 
+  let requestGlobs = yargv._.length >= 1 ? ["**/*"] : yargv._.slice(1);
   let updatedPackageNames;
-  if (yargv._.length > 1) {
-    updatedPackageNames = yargv._.slice(1);
-  } else if (!yargv.force) {
-    const updatedPackages = vlm.shell.exec(`npx -c "lerna updated --json  --loglevel=silent"`);
+  vlm.info("Selecting packages matching:", ...requestGlobs);
+  if (yargv.onlyChanged) {
+    vlm.info("Limiting selection to only changed packages");
+    const updatedPackages = vlm.shell.exec(`npx -c "lerna updated --json --loglevel=silent"`);
     if (updatedPackages.code) {
-      console.log(`valma-package-assemble: no updated packages found (or other lerna error, code ${
-          updatedPackages.code})`);
+      vlm.warning("No updated packages found, exiting",
+          `(or lerna error with code ${updatedPackages.code}`);
       return;
     }
-    updatedPackageNames = JSON.parse(updatedPackages).map(entry => entry.name);
+    updatedPackageNames = JSON.parse(updatedPackages).map(p => p.name);
   }
   const sourcePackageJSONPaths = vlm.shell.find("-l",
       vlm.path.join(yargv.source, "*/package.json"));
-  const successfulPackages = [];
 
-  let assemblePackages = sourcePackageJSONPaths.map(sourcePackageJSONPath => {
+  let selections = sourcePackageJSONPaths.map(sourcePackageJSONPath => {
     const sourceDirectory = sourcePackageJSONPath.match(/^(.*)package.json$/)[1];
     const packagePath = vlm.path.join(process.cwd(), sourceDirectory, "package.json");
     // eslint-disable-next-line import/no-dynamic-require
     const packageConfig = require(packagePath);
     const name = packageConfig.name;
-    if (updatedPackageNames && !updatedPackageNames.includes(name)) return undefined;
-    if (packageConfig.private) {
-      console.log(`\nvalma-package-assemble: skipping private package '${name}'`);
-      return undefined;
-    }
     const targetDirectory = vlm.path.join(publishDist, name);
-    return {
+    const ret = {
       name, sourceDirectory, packagePath, packageConfig, targetDirectory, sourcePackageJSONPath,
     };
-  }).filter(p => p);
+    if (yargv.onlyChanged && !updatedPackageNames.includes(name)) return undefined;
+    if (!requestGlobs.find(glob => vlm.minimatch(name, glob))) return undefined;
+    if (vlm.shell.test("-d", targetDirectory)) {
+      ret.exists = true;
+    } else if (yargv.onlyPending) return undefined;
+    if (packageConfig.private) {
+      vlm.warning(`Skipping private package '${name}'`);
+      ret.failure = "private package";
+    }
+    return ret;
+  });
+  {
+    const orderedSelections = [];
+    requestGlobs.forEach(glob => orderedSelections.push(...selections.filter(
+        entry => entry && !orderedSelections.includes(entry) && vlm.minimatch(entry.name, glob))));
+    selections = orderedSelections;
+  }
+  vlm.info("Selected packages:", ...selections.map(({ name }) => name))
 
-  if (updatedPackageNames) {
-    const orderedAssemblePackages = [];
-    updatedPackageNames.forEach(name => {
-      const assemblyFound = assemblePackages.find(entry => entry.name === name);
-      if (assemblyFound) orderedAssemblePackages.push(assemblyFound);
+  if (!yargv.assemble) {
+    vlm.info(`--no-assemble requested`, "skipping the assembly of", selections.length, "packages");
+  } else {
+    selections.forEach(selection => {
+      if (selection.failure) return;
+      if (selection.exists && !yargv.overwrite) {
+        vlm.error(`Cannot assemble package '${name}'`,
+            `an existing assembly exists at '${targetDirectory}' and no --overwrite is specified)`);
+        selection.failure = "pending assembly found";
+        return;
+      }
+      const {
+        name, sourceDirectory, packagePath, packageConfig, targetDirectory, sourcePackageJSONPath,
+      } = selection;
+
+      vlm.info(`Assembling package '${name}'`, "into", targetDirectory);
+      vlm.shell.mkdir("-p", targetDirectory);
+      vlm.shell.cp("-R", vlm.path.join(sourceDirectory, "*"), targetDirectory);
+      vlm.shell.rm("-rf", vlm.path.join(targetDirectory, "node_modules"));
+      if (vlm.shell.test("-f", vlm.path.join(sourceDirectory, "babel.config.js"))) {
+        const result = vlm.shell.exec(
+            `TARGET_ENV=${yargv.babelTargetEnv} babel ${sourceDirectory} --out-dir ${
+                targetDirectory}`);
+        if (!String(result).match(/Successfully compiled/)) {
+          selection.failure = "babel transpilation not successful";
+          vlm.error(`${selection.failure} for ${name}`);
+          return;
+        }
+      }
+      selection.assembled = true;
     });
-    assemblePackages = orderedAssemblePackages;
+    vlm.info("No catastrophic errors during assembly");
   }
 
-  const finalizers = assemblePackages.map(({
-    name, sourceDirectory, packagePath, packageConfig, targetDirectory, sourcePackageJSONPath,
-  }) => {
-    console.log(`\nvalma-package-assemble: assembling package '${name}' into`, targetDirectory);
-    vlm.shell.mkdir("-p", targetDirectory);
-    vlm.shell.cp("-R", vlm.path.join(sourceDirectory, "*"), targetDirectory);
-    vlm.shell.rm("-rf", vlm.path.join(targetDirectory, "node_modules"));
-    if (vlm.shell.test("-f", vlm.path.join(sourceDirectory, "babel.config.js"))) {
-      vlm.shell.exec(`TARGET_ENV=${yargv.babelTargetEnv} babel ${sourceDirectory} --out-dir ${
-          targetDirectory}`);
-    }
-    if (yargv.unlink) {
-      console.log(`\nvalma-package-assemble: 'npm unlink' for package '${name}' (in '${
-          targetDirectory}')`);
-      vlm.shell.exec(`cd ${targetDirectory} && npm unlink`);
-    }
-    successfulPackages.push({ packageConfig, packagePath });
-    return { sourcePath: sourcePackageJSONPath, targetPath: targetDirectory };
-  }).filter(finalizer => finalizer);
-
-  console.log("valma-package-assemble: no catastrophic errors found during assembly");
-
-  const noUpdate = yargv.skipVersioning;
-  if (noUpdate) {
-    console.log("valma-package-assemble: --skip-versioning requested:",
+  if (!yargv.versioning) {
+    vlm.info("--no-versioning requested:",
         "no version update, no git commit, no git tag, no package.json finalizer copying");
   } else {
-    console.log("valma-package-assemble: no errors found during assembly:",
-        "updating version, making git commit and creating lerna git tag");
-    const forceFlags = yargv.force ? "--force-publish=*" : "";
-    vlm.shell.exec(`npx -c "lerna publish --skip-npm --yes --loglevel=silent ${forceFlags}"`);
-    console.log("valma-package-assemble:",
-        "finalizing assembled packages with version-updated package.json's");
-    [].concat(...finalizers).forEach((operation) => {
-      vlm.shell.cp(operation.sourcePath, operation.targetPath);
+    vlm.info("Updating version, making git commit, creating a lerna git tag and",
+        "updating target package.json's");
+    await vlm.execute("lerna", [
+      "publish", "--skip-npm", "--yes", "--loglevel=silent", yargv.force && "--force-publish=*"
+    ]);
+    if (!yargv.assemble && (!yargv.overwrite || !yargv.onlyPending)) {
+      vlm.info("Skipping package.json version updates", "as",
+          yargv.assemble ? "--no-assemble"
+          : !yargv.overwrite ? "--no-overwrite" : "--no-only-pending", "was specified");
+    } else {
+      vlm.info("Updating version-updated package.json to assembled packages");
+      selections.forEach(({ name, sourcePackageJSONPath, targetDirectory, assembled }) => {
+        if (!sourcePackageJSONPath) return;
+        if (assembled || (!yargv.assemble && yargv.overwrite && yargv.onlyPending)) {
+          vlm.shell.cp(sourcePackageJSONPath, targetDirectory);
+          return;
+        }
+        if (!yargv.overwrite || !yargv.onlyPending || yargv.assemble) {
+          vlm.warn(`Skipped copying updated '${name}' package.json to non-assembled package as`,
+              ...(yargv.assemble ? ["--assemble"] : []),
+              ...(!yargv.overwrite ? ["--no-overwrite"] : []),
+              ...(!yargv.onlyPending ? ["--no-only-pending"] : []), "was specified");
+        }
+      });
+    }
+  }
+
+  if (yargv.postExecute) {
+    selections.forEach(({ name, targetDirectory, assembled }) => {
+      if (!assembled && yargv.assemble) {
+        vlm.info(`Skipping post-execute '${yargv.postExecute}' for '${name}'`,
+            `assembly was requested but not successful for this package`);
+      } else {
+        vlm.info(`post-execute '${yargv.postExecute}' for '${name}'`, `(in '${targetDirectory}')`);
+        vlm.shell.exec(`cd ${targetDirectory} && ${yargv.postExecute}`);
+      }
     });
   }
 
-  if (yargv.link) {
-    assemblePackages.forEach(({ name, targetDirectory }) => {
-      console.log(`\nvalma-package-assemble: 'npm link' for package '${name}' (in '${
-        targetDirectory}')`);
-      vlm.shell.exec(`cd ${targetDirectory} && npm link`);
-    });
-  }
-
-  if (yargv.post) {
-    assemblePackages.forEach(({ name, targetDirectory }) => {
-      console.log(`\nvalma-package-assemble: '${yargv.post}' for package '${name}' (in '${
-        targetDirectory}')`);
-      vlm.shell.exec(`cd ${targetDirectory} && ${yargv.post}`);
-    });
-  }
-
-  const align = successfulPackages.reduce((acc, { packageConfig }) =>
-      ((acc > packageConfig.name.length) ? acc : packageConfig.name.length), 0);
-
-  console.log("valma-package-assemble: successfully",
-      noUpdate ? "reassembled" : "assembled", finalizers.length, "packages",
-          ...(updatedPackageNames
-              ? ["(out of", updatedPackageNames.length, "marked as updated):"]
-              : ["(from all --force selected packages)"]));
-  successfulPackages.forEach(({ packageConfig, packagePath }) => {
-    const updatedConfig = JSON.parse(vlm.shell.head({ "-n": 1000000 }, packagePath));
-    const versionChange = noUpdate && (updatedConfig.version === packageConfig.version)
-            ? `kept at ${packageConfig.version}`
-        : !noUpdate ? `updated to ${updatedConfig.version} from ${packageConfig.version}`
-        : `unexpectedly updated to ${updatedConfig.version} from ${packageConfig.version}`;
-    console.log(`\t${updatedConfig.name}${" ".repeat(align - updatedConfig.name.length)}:`,
-        versionChange);
+  const align = selections.reduce((acc, { name }) => ((acc > name.length) ? acc : name.length), 0);
+  let successes = 0;
+  selections.forEach(({ name, packageConfig, packagePath, failure }) => {
+    const newConfig = JSON.parse(vlm.shell.head({ "-n": 1000000 }, packagePath));
+    if (!failure) ++successes;
+    const header = `\t${name}${" ".repeat(align - name.length)}:`;
+    const conclusion = failure ? `failed: ${failure}`
+        : newConfig.version === packageConfig.version
+            ? `success: version kept at ${packageConfig.version}`
+        : yargv.versioning
+            ? `success: version updated to ${newConfig.version} from ${packageConfig.version}`
+        : `success: surprise version update to ${newConfig.version} from ${packageConfig.version}`;
+    if (failure) vlm.error(header, conclusion);
+    else vlm.info(header, conclusion);
   });
+  if (successes === selections.length) {
+    vlm.info(`Successfully assembled all packages`, "(of", selections.length, "selected packages)");
+  } else {
+    vlm.error(`Assembled only ${successes} out of ${selections.length} selected packages`);
+  }
 };

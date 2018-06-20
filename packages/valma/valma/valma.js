@@ -137,38 +137,58 @@ const vlm = vargs.vlm = {
     return this;
   },
 
+  // Flat direct forward to console.log
   log: function log (...rest) {
     console.log(...rest);
     return this;
   },
+  // For echoing the valma wildcard matchings, invokations and external executions back to the
+  // console.
   echo: function echo (...rest) {
     console.info(this.colors.echo(...rest));
     return this;
   },
+  // When something unexpected happens which doesn't necessarily prevent the command from finishing
+  // but might nevertheless be the root cause of errors later.
+  // An example is a missing node_modules due to a lacking 'yarn install': this doesn't prevent
+  // 'vlm --help' but would very likely be the cause for a 'cannot find command' error.
   warn: function warn (msg, ...rest) {
     console.warn(this.colors.warning(`${this.toolName} warns:`, msg), ...rest);
     return this;
   },
+  // When something is definitely wrong and operation cannot do everything that was expected
+  // but might still complete.
   error: function error (msg, ...rest) {
     console.error(this.colors.error(`${this.toolName} laments:`, msg), ...rest);
     return this;
   },
+  // When something is catastrophically wrong and operation terminates immediately.
   exception: function exception (error, ...rest) {
-    console.error(this.colors.error(`${this.toolName} grieves:`, String(error)), ...rest);
+    console.error(this.colors.error(`${this.toolName} panics:`, String(error)), ...rest);
     return this;
   },
+  // Info messages are mildly informative, non-noisy, unexceptional yet quite important. They
+  // provide a steady stream of relevant information about reality an attuned devop expects to see.
+  // In so doing they enable the devop to notice a divergence between reality and their own
+  // expectations as soon as possible and take corrective action. In particular, they are used to:
+  // 1. confirm choices that were made or tell about choices that will need to be made
+  // 2. inform about execution pathways taken (like --dry-run or prod-vs-dev environment)
+  // 3. communicate about the progress of the operation phases,
+  // etc.
   info: function info (msg, ...rest) {
     console.info(this.colors.info(`${this.toolName} informs:`, msg), ...rest);
     return this;
   },
-  // babble and expound are non-conditional diagnostics messages.
+  // Babble and expound are for learning and debugging. They are messages an attuned devop doesn't
+  // want to see as they are noisy and don't fit any of the info criterias above.
+  // They should always be gated behind --verbose.
   // Babble is for messages which take only couple lines.
   babble: function chat (msg, ...rest) {
     console.info(this.colors.info(`${this.toolName} babbles:`, msg), ...rest);
     return this;
   },
 
-  // Expound messages can be immense
+  // Expound messages can be arbitrarily immense.
   expound: function expound (msg, ...rest) {
     console.info(this.colors.info(`${this.toolName} expounds:`, msg), ...rest);
     return this;
