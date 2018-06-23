@@ -44,42 +44,36 @@ exports.handler = (yargv) => {
 };
 
 function locateToolsetRelease (toolsetName, toolsetDescription = "toolset") {
+  const logger = this.tailor({ commandName: `valma-release-deploy/${toolsetName}` });
   const releasePath = this.releasePath;
-  const logPrefix = `valma-release-deploy/${toolsetName}`;
   const toolsetConfig = ((this.valmaConfig || {}).toolset || {})[toolsetName];
   if (!toolsetConfig) {
-    throw new Error(`${logPrefix}: valma.json:toolset['${toolsetName}] missing`);
+    throw new Error(`${this.commandName}: valma.json:toolset['${toolsetName}] missing`);
   }
   if (!this.shell.test("-d", releasePath)) {
-    throw new Error(`${logPrefix}: releasePath directory '${releasePath}' missing`);
+    throw new Error(`${this.commandName}: releasePath directory '${releasePath}' missing`);
   }
   const toolsetReleasePath = this.path.join(releasePath, toolsetName);
   if (!this.shell.test("-d", toolsetReleasePath)) {
-    if (this.verbosity >= 1) {
-      console.log(`${logPrefix}: skipping ${toolsetDescription} deploy: no release at '${
-        toolsetReleasePath}'`);
-    }
+    logger.ifVerbose(1)
+        .info(`skipping ${toolsetDescription} deploy: no release at '${toolsetReleasePath}'`);
     return {};
   }
-  console.log(`${logPrefix}: deploying ${toolsetDescription} release from '${
-      toolsetReleasePath}'`);
+  logger.info(`deploying ${toolsetDescription} release from '${toolsetReleasePath}'`);
   this.toolset = toolsetName;
   return { toolsetConfig, toolsetReleasePath };
 }
 
 function locateToolsetToolRelease (owningToolsetName, toolName, toolDescription = "tool") {
+  const logger = this.tailor({ commandName: `valma-release-deploy/${toolName}` });
   const releasePath = this.releasePath;
-  const logPrefix = `valma-release-deploy/${toolName}`;
   const toolConfig = ((this.valmaConfig || {}).toolset || {})[toolName];
   const toolReleasePath = this.path.join(releasePath, owningToolsetName, toolName);
   if (!this.shell.test("-d", toolReleasePath)) {
-    if (this.verbosity >= 1) {
-      console.log(`${logPrefix}: skipping ${toolDescription} deploy: no release at '${
-        toolReleasePath}'`);
-    }
+    logger.ifVerbose(1)
+        .info(`skipping ${toolDescription} deploy: no release at '${toolReleasePath}'`);
     return {};
   }
-  console.log(`${logPrefix}: deploying ${toolDescription} release from '${
-      toolReleasePath}'`);
+  logger.info(`deploying ${toolDescription} release from '${toolReleasePath}'`);
   return { toolConfig, toolReleasePath };
 }

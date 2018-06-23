@@ -86,7 +86,7 @@ exports.builder = (yargs) => yargs.options({
 });
 
 exports.handler = async (yargv) => {
-  const vlm = yargv.vlm.tailor({ toolName: "package-assemble" });
+  const vlm = yargv.vlm;
   const publishDist = yargv.target;
   vlm.shell.mkdir("-p", publishDist);
   const targetListing = vlm.shell.ls("-lA", publishDist);
@@ -95,7 +95,7 @@ exports.handler = async (yargv) => {
         targetListing.filter(f => f).map(f => f.name));
   }
 
-  let requestGlobs = yargv._.length >= 1 ? ["**/*"] : yargv._.slice(1);
+  const requestGlobs = yargv._.length >= 1 ? ["**/*"] : yargv._.slice(1);
   let updatedPackageNames;
   vlm.info("Selecting packages matching:", ...requestGlobs);
   if (yargv.onlyChanged) {
@@ -138,22 +138,21 @@ exports.handler = async (yargv) => {
         entry => entry && !orderedSelections.includes(entry) && vlm.minimatch(entry.name, glob))));
     selections = orderedSelections;
   }
-  vlm.info("Selected packages:", ...selections.map(({ name }) => name))
+  vlm.info(`Selected ${selections.length} packages for assembly:\n\t`,
+      ...selections.map(({ name }) => name));
 
   if (!yargv.assemble) {
     vlm.info(`--no-assemble requested`, "skipping the assembly of", selections.length, "packages");
   } else {
     selections.forEach(selection => {
-      if (selection.failure) return;
-      if (selection.exists && !yargv.overwrite) {
+      const { name, sourceDirectory, targetDirectory, exists, failure } = selection;
+      if (failure) return;
+      if (exists && !yargv.overwrite) {
         vlm.error(`Cannot assemble package '${name}'`,
             `an existing assembly exists at '${targetDirectory}' and no --overwrite is specified)`);
         selection.failure = "pending assembly found";
         return;
       }
-      const {
-        name, sourceDirectory, packagePath, packageConfig, targetDirectory, sourcePackageJSONPath,
-      } = selection;
 
       vlm.info(`Assembling package '${name}'`, "into", targetDirectory);
       if (yargv.overwrite) vlm.shell.rm("-rf", targetDirectory);

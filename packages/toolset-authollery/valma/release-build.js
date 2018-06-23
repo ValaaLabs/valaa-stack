@@ -27,8 +27,7 @@ exports.handler = (yargv) => {
   const releasePath = vlm.path.join(yargv.target, `${packageName}-${packageConfig.version}`);
   if (vlm.shell.test("-d", releasePath)) {
     if (packageConfig.version.indexOf("-prerelease") !== -1) {
-      console.warn("valma-release-build: removing an existing '-prerelease' build target:",
-          releasePath);
+      vlm.warn("removing an existing '-prerelease' build target:", releasePath);
       vlm.shell.rm("-rf", releasePath);
     } else {
       throw new Error(`valma-release-build: existing build for non-prerelease version ${
@@ -38,7 +37,7 @@ exports.handler = (yargv) => {
 
   vlm.shell.mkdir("-p", releasePath);
 
-  console.log("valma-release-build: building version", packageConfig.version, "of",
+  vlm.info("building version", packageConfig.version, "of",
       packageConfig.name, "into", releasePath);
 
   Object.assign(vlm, {
@@ -59,6 +58,7 @@ exports.handler = (yargv) => {
  */
 function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-release",
     desiredVersionHash) {
+  const logger = this.tailor({ commandName: `valma-release-build/${toolsetName}` });
   const releasePath = this.releasePath;
   if (!this.shell.test("-d", releasePath)) {
     throw new Error(`valma-release-build/${toolsetName}: releasePath directory '${
@@ -67,16 +67,13 @@ function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-rel
   const toolsetConfig = ((this.valmaConfig || {}).toolset || {})[toolsetName];
   if (!toolsetConfig) return {};
   if ((toolsetConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {
-    if (this.verbosity >= 1) {
-      console.log(`valma-release-build/${toolsetName
-          }: skipping the build of already deployed release version ${desiredVersionHash
-          } by toolset ${toolsetDescription}`);
-    }
+    logger.ifVerbose(1)
+        .info(`skipping the build of already deployed release version ${desiredVersionHash
+              } by toolset ${toolsetDescription}`);
     return {};
   }
   const toolsetReleasePath = this.path.join(releasePath, toolsetName);
-  console.log(`valma-release-build/${toolsetName}: building ${toolsetDescription} release in`,
-      toolsetReleasePath);
+  logger.info(`building ${toolsetDescription} release in`, toolsetReleasePath);
   this.shell.rm("-rf", toolsetReleasePath);
   this.shell.mkdir("-p", toolsetReleasePath);
   this.toolset = toolsetName;
@@ -85,19 +82,17 @@ function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-rel
 
 function prepareToolsetToolBuild (owningToolsetName, toolName,
     toolDescription = "tool sub-release", desiredVersionHash) {
+  const logger = this.tailor({ commandName: `valma-release-build/${toolName}` });
   const toolConfig = ((this.valmaConfig || {}).tool || {})[toolName];
   if (!toolConfig) return {};
   if ((toolConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {
-    if (this.verbosity >= 1) {
-      console.log(`valma-release-build/${toolName
-          }: skipping the build of already deployed release version ${desiredVersionHash
-          } of tool ${toolDescription}`);
-    }
+    logger.ifVerbose(1)
+        .info(`skipping the build of already deployed release version ${desiredVersionHash
+            } of tool ${toolDescription}`);
     return {};
   }
   const toolReleasePath = this.path.join(this.releasePath, owningToolsetName, toolName);
-  console.log(`valma-release-build/${toolName}: building ${toolDescription
-      } release in '${toolReleasePath}'`);
+  logger.info(`building ${toolDescription} release in '${toolReleasePath}'`);
   this.shell.rm("-rf", toolReleasePath);
   this.shell.mkdir("-p", toolReleasePath);
   return { toolConfig, toolReleasePath };

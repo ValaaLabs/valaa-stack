@@ -1,22 +1,10 @@
 # Valaa Open System DevOps, or how to grasp the ValOS and handle the authorities
 
+## 1. Introduction and ValOS specification
+
 This document has two purposes. Firstly it provides the initial
 specification of Valaa Open System (`ValOS`) and secondly it serves as
 the introduction for [Development Operations](https://en.wikipedia.org/wiki/DevOps).
-
-The main infrastructural concepts investigated in this document are the
-vertical, purpose and people oriented `domains` and the horizontal,
-service and tool oriented `utility layers`. Each domain makes use of
-many utility layers - each utility layer serves several domains.
-
-The main DevOps tools are `git` and `npm` reinforced with the custom
-Valaa Manager convenience tool `valma` (`vlm` on the command line).
-
-As most domains are specified in other documents and `valma` itself is
-trivial, the utility layers form the bulk of this document. They are
-thus investigated last.
-
-## 1. ValOS specification
 
 ValOS specification is provided as quoted and numbered ValOS rules.
 
@@ -38,6 +26,35 @@ ValOS specification is provided as quoted and numbered ValOS rules.
 > `valos-vault-1.5`: All packages which conform to ValOS specification
 > are called `Valaa packages`. These packages are inclusively
 > considered part of the `Valaa ecosystem`.
+
+The system is structured into a plethora of purpose-oriented vertical
+`domains` and into four content oriented horizontal `utility layers`.
+
+Each utility layer is named by the content or service is provides and
+builds or depends on the previous layers.
+- `files` layer provides files via git repositories
+- `packages` layer provides npm packages via npm registry.
+   These packages are created by git repositories called `vaults`.
+- `authorities` layer provides the Valaa live authority service APIs.
+   Authorities are controlled by git repositories called `autholleries`.
+- `partitions` layer provides the resource content as partition
+   events and blobs. These are served via authority service APIs.
+
+TODO(iridian): Figure out and describe the concrete role of domains.
+
+A DevOp manages these layers by scripts that are delivered inside the
+packages alongside their main content. A command line tool called
+Valaa Manager or `valma` is used to discover and `invoke` these
+scripts as `valma commands`.
+
+From a DevOps perspective `valma`, `vault` and `authollery` are the
+three concrete core mechanisms that everything else ties into.
+
+Valma and specific domains are specified in other documents and as such
+are only briefly described here.
+The utility layers are common to everything form the bulk of this
+document. They are fully specified at the last part of this document
+after all the brief descriptions.
 
 ## 2. ValOS `domains` are cross-stack slices, each with a well-defined purpose
 
@@ -160,7 +177,7 @@ Below is a rough correlation of similar concepts across utilities.
 Utility    |Tool          |Payload                    |Providers   |Consumed via      |Upstream|Configuration |Modified via        |Produced via       |Authority  |Distributed via
 -----------|--------------|---------------------------|------------|------------------|--------|--------------|--------------------|-------------------|-----------|------------------
 files      |`git`         |files in `./*`             |github.com  |`git clone`       |N/A     |`.git/*`      |`branch` `commit`   |`git push` & PR    |human      |merge PR to & `git push master`
-packages   |`npm`, `vlm`  |files in `/node_modules/..`|npmjs.com   |`depend` `require`|`files` |`package.json`|ups. `src/*` `bin/*`|upstream           |hybrid     |`package-assemble` `package-publish`
+packages   |`vlm`, `yarn` |files in `/node_modules/..`|npmjs.com   |`depend` `require`|`files` |`package.json`|ups. `src/*` `bin/*`|upstream           |hybrid     |`package-assemble` `package-publish`
 authorities|`vlm`         |APIs, site & gateway files |IaaS, custom|browsers, various |`files` |upstream *    |upstream *          |upstream           |hybrid     |`release-build` `release-deploy`
 partitions |`vlm`, gateway|event logs, blobs          |authorities |event & blob APIs |N/A     |N/A           |gateway prophet     |command & blob APIs|authorities|automatic, custom
 

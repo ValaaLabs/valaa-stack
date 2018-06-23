@@ -64,8 +64,7 @@ exports.handler = async (yargv) => {
     description: "The toolset within which this tool should build a release.",
     interactive: {
       type: "input", when: "if-undefined",
-      confirm: value => yargs.vlm.confirmToolsetExists(
-          value, \`valma-release-build ${shortName}\`),
+      confirm: value => yargs.vlm.confirmToolsetExists(value),
     },
   },
 });`,
@@ -107,8 +106,7 @@ toolsets which use this tool.`,
     description: "The toolset from within which this tool should deploy a release.",
     interactive: {
       type: "input", when: "if-undefined",
-      confirm: value => yargs.vlm.confirmToolsetExists(
-          value, \`valma-release-deploy ${shortName}\`),
+      confirm: value => yargs.vlm.confirmToolsetExists(value),
     },
   },
 });`,

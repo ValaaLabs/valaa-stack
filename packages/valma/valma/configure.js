@@ -44,16 +44,15 @@ exports.handler = async (yargv) => {
       yargv.toolsetGlob || ""}{*/**/,}*`);
 };
 
-function confirmToolsetExists (toolsetName, toolName) {
-  if (((this.valmaConfig || {}).toolset || {})[value]) return true;
-  this.tailor({ toolName }).warn(
-      `cannot find toolset '${toolsetName}' from active toolsets:`,
+function confirmToolsetExists (toolsetName) {
+  if (((this.valmaConfig || {}).toolset || {})[toolsetName]) return true;
+  this.warn(`cannot find toolset '${toolsetName}' from active toolsets:`,
       Object.keys((this.valmaConfig || {}).toolset || {}).join(", "));
   return false;
 }
 
 function tryGetToolsetConfig (toolsetName) {
-  return ((vlm.valmaConfig || {}).toolset || {})[toolsetName];
+  return ((this.valmaConfig || {}).toolset || {})[toolsetName];
 }
 
 function tryGetToolsetToolConfig (toolsetName, toolName) {
@@ -100,13 +99,13 @@ exports.describe = \`\${exports.summary}.${describe ? `\n\n${describe}` : ""}\`;
 
 ${expandSection("disabled", disabled)}${expandSection("builder", builder)}
 ${expandSection("handler", handler)}${footer}`).to(scriptPath);
-  this.updatePackageConfig({ bin: { [underscoredScript]: scriptPath } });
+    this.updatePackageConfig({ bin: { [underscoredScript]: scriptPath } });
     verb = "now exports";
   }
   if (this.verbosity >= 1) {
     console.log(`valma-configure inform: repository ${verb} valma command ${command}`);
   }
-  function expandSection(sectionName, template) {
-    return template === undefined ? "" : `exports.${sectionName} = ${template}\n`;
+  function expandSection (sectionName, template) {
+    return (template === undefined) ? "" : `exports.${sectionName} = ${template}\n`;
   }
 }

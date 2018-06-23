@@ -117,22 +117,21 @@ const vlm = vargs.vlm = {
 
   readFile: util.promisify(fs.readFile),
 
-  inquireConfirm: async (message, default_ = true) => {
-    return (await vlm.inquire({
-      type: "confirm", name: "confirm", message, default: default_,
-    })).confirm;
-  },
+  inquireConfirm: async (message, default_ = true) =>
+      (await vlm.inquire({
+        type: "confirm", name: "confirm", message, default: default_,
+      })).confirm,
 
-  toolName: "vlm",
+  commandName: "vlm",
 
   ifVerbose: function ifVerbose (minimumVerbosity, callback) {
+    function ssh () { return this; }
     if (this.verbosity < minimumVerbosity) {
-      function ssh () { return this; };
       return {
         ifVerbose: ssh, log: ssh, echo: ssh, warn: ssh, error: ssh, exception: ssh, info: ssh,
         babble: ssh, expound: ssh,
       };
-    };
+    }
     if (callback) callback.call(this);
     return this;
   },
@@ -153,18 +152,18 @@ const vlm = vargs.vlm = {
   // An example is a missing node_modules due to a lacking 'yarn install': this doesn't prevent
   // 'vlm --help' but would very likely be the cause for a 'cannot find command' error.
   warn: function warn (msg, ...rest) {
-    console.warn(this.colors.warning(`${this.toolName} warns:`, msg), ...rest);
+    console.warn(this.colors.warning(`${this.commandName} warns:`, msg), ...rest);
     return this;
   },
   // When something is definitely wrong and operation cannot do everything that was expected
   // but might still complete.
   error: function error (msg, ...rest) {
-    console.error(this.colors.error(`${this.toolName} laments:`, msg), ...rest);
+    console.error(this.colors.error(`${this.commandName} laments:`, msg), ...rest);
     return this;
   },
   // When something is catastrophically wrong and operation terminates immediately.
   exception: function exception (error, ...rest) {
-    console.error(this.colors.error(`${this.toolName} panics:`, String(error)), ...rest);
+    console.error(this.colors.error(`${this.commandName} panics:`, String(error)), ...rest);
     return this;
   },
   // Info messages are mildly informative, non-noisy, unexceptional yet quite important. They
@@ -176,7 +175,7 @@ const vlm = vargs.vlm = {
   // 3. communicate about the progress of the operation phases,
   // etc.
   info: function info (msg, ...rest) {
-    console.info(this.colors.info(`${this.toolName} informs:`, msg), ...rest);
+    console.info(this.colors.info(`${this.commandName} informs:`, msg), ...rest);
     return this;
   },
   // Babble and expound are for learning and debugging. They are messages an attuned devop doesn't
@@ -184,13 +183,13 @@ const vlm = vargs.vlm = {
   // They should always be gated behind --verbose.
   // Babble is for messages which take only couple lines.
   babble: function chat (msg, ...rest) {
-    console.info(this.colors.info(`${this.toolName} babbles:`, msg), ...rest);
+    console.info(this.colors.info(`${this.commandName} babbles:`, msg), ...rest);
     return this;
   },
 
   // Expound messages can be arbitrarily immense.
   expound: function expound (msg, ...rest) {
-    console.info(this.colors.info(`${this.toolName} expounds:`, msg), ...rest);
+    console.info(this.colors.info(`${this.commandName} expounds:`, msg), ...rest);
     return this;
   },
 };
@@ -365,7 +364,7 @@ const globalVargv = _parseUntilCommand(globalVargs, processArgv, "command");
 
 vlm.verbosity = vlm.isCompleting ? 0 : globalVargv.verbose;
 vlm.interactive = vlm.isCompleting ? 0 : globalVargv.interactive;
-if (!globalVargv.echo || vlm.isCompleting) vlm.echo = function () {};
+if (!globalVargv.echo || vlm.isCompleting) vlm.echo = function noEcho () {};
 
 vlm.ifVerbose(1).babble("phase 1, init:", "determine global options and available pools.",
     `\n\tcommand: ${vlm.colors.command(globalVargv.command)
@@ -563,7 +562,7 @@ async function invoke (command, argv = []) {
           "\n\tisWildcard:", isWildcardCommand, ", introspect options:", !!introspect);
   this.ifVerbose(2)
       .expound("introspect:", introspect)
-      .expound("contextVargv:", { ...contextVargv, vlm: "<hidden>" });
+      .expound("contextVargv:", { ...contextVargv, vlm: "<hidden>" });
 
   for (const pool of activePools) {
     pool.commands = {};
@@ -573,7 +572,7 @@ async function invoke (command, argv = []) {
       this.ifVerbose(3)
           .babble(`evaluating file ${file.name}`, "matches:", matches,
               "vs glob:", commandGlob, ", dir:", _isDirectory(file), ", slashedName:", slashedName);
-      if (!matches || _isDirectory(file)) return;
+      if (!matches || _isDirectory(file)) return;
       const commandName = _valmaCommandFromPath(file.name);
       pool.commands[commandName] = {
         commandName, pool, file,
@@ -644,6 +643,7 @@ async function invoke (command, argv = []) {
       .babble("phase 4, dispatch:", ...(dryRunCommands ? ["--dry-run"] : []),
           this.colors.command(commandGlob), ...argv,
           "\n\tactive commands:", ...Object.keys(activeCommands).map(c => vlm.colors.command(c)));
+  vargs.help();
 
   // Reverse to have matching global command names execute first (while obeying overrides)
   for (const activePool of activePools.slice().reverse()) {
@@ -663,7 +663,8 @@ async function invoke (command, argv = []) {
       const subVLM = Object.create(this);
       const subVargs = Object.create(vargs);
       subVargs.vlm = subVLM;
-      vargs.help().command(module.command, module.describe);
+      subVargs.vlm.commandName = matchingCommand;
+      vargs.command(module.command, module.describe);
       const subCommand = `${matchingCommand} ${commandArgs}`;
       const disabled = (module.disabled
           && ((typeof module.disabled !== "function")
@@ -681,7 +682,7 @@ async function invoke (command, argv = []) {
               disabled ? `: disabled, ${disabled}` : ""
       ).ifVerbose(4)
           .expound("\tsubArgv:", subVargv)
-          .expound("\tsubIntrospect:", subIntrospect)
+          .expound("\tsubIntrospect:", subIntrospect);
 
       if (subIntrospect) {
         ret = ret.concat(_outputIntrospection(
@@ -1318,6 +1319,6 @@ function _createVargs (args, cwd) {
       }
     }
     return vargv;
-  }
+  };
   return ret;
 }

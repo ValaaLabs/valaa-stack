@@ -58,8 +58,7 @@ which directly depends on this tool must explicit call this command.`,
     description: "The toolset for which this tool should be configured.",
     interactive: {
       type: "input", when: "if-undefined",
-      confirm: value => yargs.vlm.confirmToolsetExists(
-          value, \`valma-configure \${toolName}\`),
+      confirm: value => yargs.vlm.confirmToolsetExists(value),
     },
   },
 });`,

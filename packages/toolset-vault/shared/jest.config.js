@@ -8,6 +8,10 @@ module.exports = {
   ],
   verbose: true,
   testRegex: "packages.*\\.test\\.js$",
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "/dist/",
+  ],
   moduleNameMapper: {
     "\\.(css|less)$": "<rootDir>/node_modules/@valos/toolset-vault/jest/styleMock.js"
   },

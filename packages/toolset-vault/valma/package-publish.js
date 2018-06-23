@@ -30,9 +30,10 @@ exports.handler = (yargv) => {
             .filter(p => p && !paths.includes(p)));
   }, []);
   if (yargv.publisher) {
+    const nameRegex = new RegExp(`^${yargv.source}/(.*)$`);
     vlm.info(`Publishing ${assemblyPaths.length} package assemblies (via globs '${
-            assemblyGlobs.join("', '")}') using '${yargv.publisher}':`,
-        ...assemblyPaths.map(p => `\n\t${p}`));
+            assemblyGlobs.join("', '")}') using '${yargv.publisher}':\n\t`,
+        ...assemblyPaths.map(p => p.match(nameRegex)[1]));
     for (const packagePath of assemblyPaths) {
       const publishResult = vlm.shell.exec(`${yargv.publisher} publish ${packagePath}`);
       if (!publishResult.code && packagePath) {
