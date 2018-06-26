@@ -36,8 +36,8 @@ const nodeCheck = ">=8.10.0";
 const npmCheck = ">=5.0.0";
 
 const defaultPaths = {
-  localPool: path.posix.resolve("valma.bin/"),
-  dependedPoolSubdirectory: "node_modules/.bin/",
+  poolBase: path.posix.resolve("."),
+  poolDirectories: ["node_modules/.bin/", "valma.bin/"],
   globalPool: process.env.VLM_GLOBAL_POOL || (shell.which("vlm") || "").slice(0, -3),
 };
 
@@ -294,8 +294,8 @@ characters to be equal although '/' is recommended anywhere possible.
         },
         p: {
           group: "Introspection options:",
-          alias: "pools", type: "boolean", global: false,
-          description: "Show separate pools (highest priority pool last)",
+          alias: "pools", type: "boolean", global: true,
+          description: "Show overridden and disabled pool commands.",
         },
         echo: {
           group: "Introspection options:",
@@ -332,15 +332,15 @@ characters to be equal although '/' is recommended anywhere possible.
           type: "boolean", default: true, global: false,
           description: "Allow vlm forwarding due to promote, node-env or need to load vlm path",
         },
-        "local-pool": {
+        "pool-base": {
           group: "Options:",
-          type: "string", default: defaultPaths.localPool, global: false,
-          description: "Local pool path is the first pool to be searched",
+          type: "string", default: defaultPaths.poolBase, global: false,
+          description: "Initial pool base path for gathering pools through all parent paths.",
         },
-        "depended-pool-subdirectory": {
-          group: "Options:",
-          type: "string", default: defaultPaths.dependedPoolSubdirectory, global: false,
-          description: "Depended pools are all package-pool parents with this sub-directory",
+        "pool-directories": {
+          group: "Options:", array: true,
+          type: "string", default: defaultPaths.poolDirectories, global: false,
+          description: "Pool directories are appended to current pool base to locate pools",
         },
         "global-pool": {
           group: "Options:",
@@ -440,20 +440,18 @@ vlm.ifVerbose(1).babble("phase 1, init:", "determine global options and availabl
 
 const availablePools = [];
 // When a command begins with ./ or contains valma- it is considered a direct file valma command.
-// It's parent directory is made the initial "file" pool, replacing the "local" pool of regular
-// valma commands. The depended pools are searched from this path.
+// It's parent directory is made the initial "file" pool.
+let poolBase = globalVargv.poolBase;
 if ((globalVargv.command || "").includes("valma-")
     || (globalVargv.command || "").slice(0, 2) === "./") {
   if (globalVargv.isCompleting) process.exit(0); // Let bash filename completion do its thing.
   const match = globalVargv.command.match(/(.*\/)?(\.?)valma-(.*?)(.js)?$/);
   globalVargv.command = match ? `${match[2]}${match[3]}` : "";
-  const filePoolPath = path.posix.resolve((match && match[1]) || "");
+  const filePoolPath = vlm.path.resolve((match && match[1]) || "");
   availablePools.push({ name: "file", path: filePoolPath });
-} else {
-  availablePools.push({ name: "local", path: globalVargv.localPool });
+  poolBase = filePoolPath;
 }
-availablePools.push(..._locateDependedPools(
-    availablePools[0].path, globalVargv.dependedPoolSubdirectory));
+availablePools.push(..._locateDependedPools(poolBase, globalVargv.poolDirectories));
 availablePools.push({ name: "global", path: globalVargv.globalPool });
 
 vlm.ifVerbose(2)
@@ -566,12 +564,6 @@ async function handler (vargv) {
 
   _reloadPackageAndValmaConfigs();
 
-  if (vlm.packageConfig
-      && (path.resolve("node_modules") !== path.resolve(availablePools[1].path, ".."))) {
-    vlm.warn("node_modules missing:", "some dependent commands will likely be missing.",
-        `\nRun '${colors.green("yarn install")}' to make dependent commands available.\n`);
-  }
-
   if (!process.env.npm_config_user_agent) {
     if (needNPM && vlm.packageConfig) {
       vlm.warn("could not load NPM config environment variables");
@@ -635,7 +627,6 @@ async function invoke (command, argv = []) {
       ? _valmaGlobFromCommandPrefix(command, contextVargv.matchAll)
       : _valmaGlobFromCommand(command || "*"));
   const isWildcardCommand = !command || (command.indexOf("*") !== -1);
-  const activeCommands = {};
   const introspect = _determineIntrospection(module.exports, contextVargv, command,
       isWildcardCommand);
 
@@ -648,43 +639,7 @@ async function invoke (command, argv = []) {
       .expound("introspect:", introspect)
       .expound("contextVargv:", { ...contextVargv, vlm: "<hidden>" });
 
-  for (const pool of activePools) {
-    pool.commands = {};
-    pool.listing.forEach(file => {
-      const slashedName = _underToSlash(file.name);
-      const matches = minimatch(slashedName, commandGlob, { dot: contextVargv.matchAll });
-      this.ifVerbose(3)
-          .babble(`evaluating file ${file.name}`, "matches:", matches,
-              "vs glob:", commandGlob, ", dir:", _isDirectory(file), ", slashedName:", slashedName);
-      if (!matches || _isDirectory(file)) return;
-      const commandName = _valmaCommandFromPath(file.name);
-      pool.commands[commandName] = {
-        commandName, pool, file,
-        modulePath: path.posix.join(pool.path, file.name),
-      };
-      if (activeCommands[commandName]) return;
-      const activeCommand = pool.commands[commandName];
-      if (!this.isCompleting && shell.test("-e", activeCommand.modulePath)) {
-        const module = activeCommand.module = require(activeCommand.modulePath);
-        this.ifVerbose(3)
-            .babble("    module found at path", activeCommand.modulePath);
-        if (module && (module.command !== undefined) && (module.describe !== undefined)
-            && (module.handler !== undefined)) {
-          activeCommand.disabled = !module.builder
-              || (module.disabled
-                  && ((typeof module.disabled !== "function") || module.disabled(vargs)));
-          if (!activeCommand.disabled || contextVargv.matchAll) {
-            vargs.command(module.command, module.summary || module.describe,
-              ...(!activeCommand.disable && module.builder ? [module.builder] : []), () => {});
-          }
-        } else if (!introspect && !contextVargv.dryRun) {
-          throw new Error(`invalid script module '${activeCommand.modulePath
-              }', export 'command', 'describe' or 'handler' missing`);
-        }
-      }
-      activeCommands[commandName] = activeCommand;
-    });
-  }
+  const activeCommands = _selectActiveCommands(this, activePools, commandGlob, introspect);
 
   if (this.isCompleting || contextVargv.bashCompletion) {
     vargs.completion("bash-completion", (current, argvSoFar) => {
@@ -877,16 +832,26 @@ function _rightpad (text, align = 0) {
   return `${text}${" ".repeat(pad < 0 ? 0 : pad)}`;
 }
 
-function _locateDependedPools (initialPoolPath, subdirectory) {
-  let pathBase = initialPoolPath;
-  let name = "depended";
+function _locateDependedPools (initialPoolBase, poolDirectories) {
+  let pathBase = initialPoolBase;
   const ret = [];
-  while (pathBase && (pathBase !== "/")) {
-    pathBase = path.posix.join(pathBase, "..");
-    const poolPath = path.posix.join(pathBase, subdirectory);
-    if (shell.test("-d", poolPath)) ret.push({ name, path: poolPath });
-    name = `${name}/..`;
-  }
+  while (pathBase) {
+    poolDirectories.map(candidate => {
+      const poolPath = vlm.path.join(pathBase, candidate);
+      if (shell.test("-d", poolPath)) {
+        ret.push({ name: `${pathBase.match(/([^/]*)\/?$/)[1]}/${candidate}`, path: poolPath });
+        return;
+      }
+      const packageJsonPath = vlm.path.join(pathBase, "package.json");
+      if (candidate.match(/^node_modules/) && shell.test("-f", packageJsonPath)) {
+        vlm.warn(`node_modules missing for ${packageJsonPath}:`,
+            "some dependent commands will likely be missing.",
+            `\nRun '${colors.executable("yarn install")}' to make dependent commands available.\n`);
+      }
+    });
+    if (pathBase === "/") break;
+    pathBase = vlm.path.join(pathBase, "..");
+  };
   return ret;
 }
 
@@ -911,7 +876,57 @@ function _refreshActivePools (tryShortCircuit) {
   return undefined;
 }
 
+function _selectActiveCommands (contextVLM, activePools, commandGlob, introspect) {
+  const ret = {};
+  for (const pool of activePools) {
+    pool.commands = {};
+    pool.stats = {};
+    pool.listing.forEach(file => {
+      const slashedName = _underToSlash(file.name);
+      const matches = minimatch(slashedName, commandGlob,
+          { dot: contextVLM.contextVargv.matchAll });
+      contextVLM.ifVerbose(3)
+          .babble(`evaluating file ${file.name}`, "matches:", matches, "vs glob:", commandGlob,
+          ", dir:", _isDirectory(file), ", slashedName:", slashedName);
+      if (!matches) {
+        pool.stats.nonmatching = (pool.stats.nonmatching || 0) + 1;
+        return;
+      }
+      if (_isDirectory(file)) return;
+      const commandName = _valmaCommandFromPath(file.name);
+      pool.commands[commandName] = {
+        commandName, pool, file,
+        modulePath: vlm.path.join(pool.path, file.name),
+      };
+      if (ret[commandName]) {
+        pool.stats.overridden = (pool.stats.overridden || 0) + 1;
+        return;
+      }
+      const activeCommand = pool.commands[commandName];
+      if (!contextVLM.isCompleting && shell.test("-e", activeCommand.modulePath)) {
+        const module = activeCommand.module = require(activeCommand.modulePath);
+        contextVLM.ifVerbose(3)
+            .babble("    module found at path", activeCommand.modulePath);
+        if (module && (module.command !== undefined) && (module.describe !== undefined)
+            && (module.handler !== undefined)) {
+          activeCommand.disabled = !module.builder
+              || (module.disabled
+                  && ((typeof module.disabled !== "function") || module.disabled(vargs)));
+          if (!activeCommand.disabled || contextVLM.contextVargv.matchAll) {
+            vargs.command(module.command, module.summary || module.describe,
+              ...(!activeCommand.disable && module.builder ? [module.builder] : []), () => {});
+          } else {
+            pool.stats.disabled = (pool.stats.disabled || 0) + 1;
+          }
+        } else if (!introspect && !contextVargv.dryRun) {
+          throw new Error(`invalid script module '${activeCommand.modulePath
+              }', export 'command', 'describe' or 'handler' missing`);
+        }
+      }
+      ret[commandName] = activeCommand;
+    });
   }
+  return ret;
 }
 
 /**
@@ -1078,33 +1093,30 @@ function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
       vlm.log(colors.bold(`# Commands${listAll ? " (incl. hidden/disabled)" : ""}:`));
     }
   }
-  if (!globalVargv.pools) {
-    return _outputInfos(activeCommands);
-  }
   let outerRet = [];
   for (const pool of [...activePools].reverse()) {
-    if (!Object.keys(pool.commands).length) {
-      console.log(colors.bold(
-          `## Pool '${pool.name}' empty (matching "${pool.path}${commandGlob}")`));
-    } else {
-      console.log(colors.bold(
-          `## Pool '${pool.name}' commands (matching "${pool.path}${commandGlob}"):`));
-      outerRet = outerRet.concat(_outputInfos(pool.commands, pool.path));
-      console.log();
-    }
+    const isEmpty = !Object.keys(pool.commands).length;
+    vlm.log(colors.bold(`## ${vlm.path.join(pool.name, commandGlob)} ${
+        isEmpty ? "has no shown commands" : "commands:"}`),
+        `(${vlm.colors.info(Object.keys(pool.stats || {})
+            .map(s => `${s}: ${pool.stats[s]}`).join(", "))
+        })`);
+    if (!isEmpty) outerRet = outerRet.concat(_outputInfos(pool, globalVargv.pools));
   }
   return outerRet;
 
-  function _outputInfos (commands, explicitPoolPath) {
+  function _outputInfos (pool, showHidden) {
     let nameAlign = 0;
     let usageAlign = 0;
     let versionAlign = 0;
-    const infos = Object.keys(commands)
+    const infos = Object.keys(pool.commands)
     .sort()
     .map((name) => {
-      const command = commands[name];
-      if (!command || (command.disabled && !listAll)) return {};
-      const info = _commandInfo(command.modulePath, explicitPoolPath || command.pool.path);
+      const command = pool.commands[name];
+      if (!command || (!showHidden && (command.disabled || (activeCommands[name] !== command)))) {
+        return {};
+      }
+      const info = _commandInfo(command.modulePath, pool.path);
       const module = command.module
           || ((info[0] !== "<missing_command_script>") && require(info[3]));
 
@@ -1114,7 +1126,7 @@ function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
       if (usage.length > usageAlign) usageAlign = usage.length;
 
       if (info[0].length > versionAlign) versionAlign = info[0].length;
-      return { name, module, usage, info };
+      return { command, name, module, usage, info };
     });
     if (introspect.showHeaders) {
       const headers = [
@@ -1124,17 +1136,18 @@ function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
         ...(introspect.showVersion ? [_rightpad("version", versionAlign), "|"] : []),
         ...(introspect.showInfo ? ["package | command pool | script path", "|"] : []),
       ];
-      console.log(...headers.slice(0, -1).map(h => (h === "|" ? "|" : colors.bold(h))));
-      console.log(...headers.slice(0, -1).map(h => (h === "|" ? "|" : h.replace(/./g, "-"))));
+      vlm.log(...headers.slice(0, -1).map(h => (h === "|" ? "|" : colors.bold(h))));
+      vlm.log(...headers.slice(0, -1).map(h => (h === "|" ? "|" : h.replace(/./g, "-"))));
     }
-    return infos.map(({ name, module, usage, info }) => {
+    return infos.map(({ command, name, module, usage, info }) => {
       if (!info) return undefined;
       const ret = {};
-      const name_ = commands[name].disabled ? `(${name})` : name;
+      const name_ = pool.commands[name].disabled ? `(${name})` : name;
+      const commandStyle = (activeCommands[name] === command) ? colors.command : colors.overridden;
       const infoRow = [
         ...(introspect.showName
-              ? ["|", [(ret.name = name) && name_, nameAlign, colors.command]] : []),
-        ...(introspect.showUsage ? ["|", [ret.usage = usage, usageAlign, colors.command]] : []),
+              ? ["|", [(ret.name = name) && name_, nameAlign, commandStyle]] : []),
+        ...(introspect.showUsage ? ["|", [ret.usage = usage, usageAlign, commandStyle]] : []),
         ...(introspect.showSummary ? ["|", [(ret.summary = !module
               ? "<script file not found>"
               : module.summary
