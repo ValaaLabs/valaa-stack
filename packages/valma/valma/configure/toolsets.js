@@ -14,42 +14,64 @@ Toolsets are usually sourced via depending on workshop packages.
 Toolsets from file and global pools can be used but should be avoided
 as such toolsets are not guaranteed to be always available.`;
 
+exports.disabled = (yargs) => {
+  const valaa = ((yargs.vlm || {}).packageConfig || {}).valaa;
+  return !valaa || !valaa.type || !valaa.domain || !yargs.vlm.valmaConfig;
+};
 exports.builder = (yargs) => {
-  const valaa = yargs.vlm.packageConfig.valaa;
-  if (!valaa || !valaa.type || !valaa.domain) return undefined;
   const valmaConfig = yargs.vlm.valmaConfig;
-  if (!valmaConfig) {
-    throw new Error(".valma-configure/.toolsets: current directory is not a valma repository; "
-        + "valma.json missing (maybe run 'vlm init'?)");
-  }
-  const availableScripts = yargs.vlm.listMatchingCommands(
-          `.configure/{,.type/.${valaa.type}/,.domain/.${valaa.domain}/}.toolset/**/*`);
-  const availableToolsets = availableScripts.map(n => n.match(/\/.toolset\/(.*)$/)[1]);
-  const toolsetsInUse = Object.keys(valmaConfig.toolset || {})
-      .filter(k => valmaConfig.toolset[k]);
+  if (!valmaConfig) throw new Error("valma.json missing (maybe run 'vlm init'?)");
+  if (this.disabled(yargs)) throw new Error("package.json missing stanza .valaa.type/.domain");
+  const valaa = yargs.vlm.packageConfig.valaa;
+  const valmaToolsets = yargs.vlm
+      .listMatchingCommands(
+          `.configure/{,.type/.${valaa.type}/,.domain/.${valaa.domain}/}.toolset/**/*`)
+      .map(n => n.match(/\/.toolset\/(.*)$/)[1]);
+  const configuredToolsets = Object.keys(valmaConfig.toolset || {});
+  const usedToolsets = configuredToolsets
+      .filter(name => (valmaConfig.toolset[name] || {})["in-use"]);
+  const allToolsets = valmaToolsets.concat(
+      configuredToolsets.filter(toolset => !valmaToolsets.includes(toolset)));
   return yargs.options({
     toolsets: {
-      type: "string", default: toolsetsInUse,
-      choices: availableToolsets.concat(
-          toolsetsInUse.filter(toolset => !availableToolsets.includes(toolset))),
+      type: "string", default: usedToolsets, choices: allToolsets,
       interactive: { type: "checkbox", when: "always" },
-      description: "Toolsets currently in use (check to select, uncheck to stow)",
+      description: "Grab toolsets to use from the known toolsets (check to grab, uncheck to stow)",
     },
   });
 };
 
-exports.handler = (yargv) => {
-  const valmaConfig = yargv.vlm.valmaConfig;
+exports.handler = async (yargv) => {
+  const vlm = yargv.vlm;
+  const valmaConfig = vlm.valmaConfig;
   if (!valmaConfig) return;
 
-  const activeToolsets = valmaConfig.toolset || {};
+  const configuredToolsets = valmaConfig.toolset || {};
+  const newToolsets = yargv.toolsets || [];
   const toolset = {};
+  const ret = {};
 
-  const stowToolsets = Object.keys(activeToolsets).filter(n => !yargv.toolsets.includes(n));
+  const stowToolsets = Object.keys(configuredToolsets)
+      .filter(n => (!newToolsets.includes(n) && !configuredToolsets[n]["in-use"]));
   // TODO: add confirmation for configurations that are about to be eliminated with null
-  stowToolsets.forEach(n => { toolset[n] = null; });
-  const useToolsets = yargv.toolsets.filter(n => !activeToolsets[n]);
-  useToolsets.forEach(n => { toolset[n] = {}; });
-
-  yargv.vlm.updateValmaConfig({ toolset });
+  if (stowToolsets.length) {
+    vlm.info(`Stowing toolsets:`, ...stowToolsets);
+    stowToolsets.forEach(n => { toolset[n] = { ["in-use"]: false }; });
+    ret.stowed = stowToolsets;
+  }
+  const grabToolsets = newToolsets
+      .filter(n => (configuredToolsets[n] || { ["in-use"]: true })["in-use"]);
+  if (grabToolsets.length) {
+    vlm.info(`Grabbing toolsets:`, ...grabToolsets);
+    const installAsDevDeps = grabToolsets
+        .filter(toolsetName => !(vlm.packageConfig.devDependencies || {})[toolsetName]);
+    if (installAsDevDeps.length) {
+      vlm.info(`Installing toolset as direct dev dependencies:`, installAsDevDeps);
+      await vlm.execute("yarn", ["add", "-W", "--dev", ...installAsDevDeps]);
+    }
+    grabToolsets.forEach(n => { toolset[n] = { ["in-use"]: true }; });
+    ret.grabbed = grabToolsets;
+  }
+  await vlm.updateValmaConfig({ toolset });
+  return ret;
 };

@@ -70,6 +70,11 @@ const vlm = vargs.vlm = {
   // just silly.
   updateValmaConfig,
 
+  getToolsetConfig,
+  getToolConfig,
+  updateToolsetConfig,
+  updateToolConfig,
+
   // Returns a list of available sub-command names which match the given command glob.
   listMatchingCommands,
   listAllMatchingCommands,
@@ -1263,6 +1268,23 @@ function updateValmaConfig (updates) {
         .info("valma.json updated:", updates);
   }
 }
+
+function getToolsetConfig (toolsetName) {
+  return ((this.valmaConfig || {}).toolset || {})[toolsetName];
+};
+
+function getToolConfig (toolsetName, toolName) {
+  return ((((this.valmaConfig || {}).toolset || {})[toolsetName] || {}).tool || {})[toolName];
+};
+
+function updateToolsetConfig (toolsetName, update) {
+  return this.updateValmaConfig({ toolset: { [toolsetName]: update } });
+}
+
+function updateToolConfig (toolsetName, toolName, update) {
+  return this.updateValmaConfig({ toolset: { [toolsetName]: { tool: { [toolName]: update } } } });
+}
+
 
 function _deepFreeze (object) {
   if (typeof object !== "object" || !object) return;
