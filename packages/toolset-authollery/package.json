@@ -13,7 +13,7 @@
     "access": "public"
   },
   "bin": {
-    ".valma-configure_.type_.authollery_00-available-stacks": "valma/configure_.type_.authollery_00-available-stacks.js",
+    ".valma-configure_.type_.authollery_.toolset_@valos_toolset-authollery": "valma/configure__authollery_toolset__toolset-authollery.js",
     ".valma-status_.type_.authollery_10-authollery": "valma/status_.type_.authollery_10-authollery.js",
     "valma-release-build": "valma/release-build.js",
     "valma-release-deploy": "valma/release-deploy.js"

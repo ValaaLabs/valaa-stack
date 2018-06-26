@@ -42,8 +42,8 @@ exports.handler = function handler (yargv) {
   const vlm = yargv.vlm;
   const contentBase = yargv.distContentBase || "dist/revealer";
   if (!vlm.shell.test("-d", contentBase)) {
-    console.log("Creating and populating an initially missing content base directory", contentBase,
-        `(for this first time only) from ${yargv.source}`);
+    vlm.info("Creating and populating an initially missing content base directory",
+        contentBase, `(for this first time only) from ${yargv.source}`);
     vlm.shell.mkdir("-p", contentBase);
     vlm.shell.cp("-R", vlm.path.join(yargv.source, "*"), contentBase);
   }

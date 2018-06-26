@@ -1,5 +1,5 @@
 exports.command = ".configure/.toolsets";
-exports.summary = "Select and/or stow in-use toolsets from the set of known toolsets";
+exports.summary = "Grab and stow toolsets from the set of known toolsets";
 exports.describe = `${exports.summary}.
 
 The set of known toolsets is defined by the set of all valma 'toolset

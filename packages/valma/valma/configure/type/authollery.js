@@ -16,7 +16,6 @@ exports.builder = (yargs) => yargs;
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
   if (!((vlm.packageConfig || {}).devDependencies || {})["@valos/toolset-authollery"]) {
-    await vlm.execute("env");
     await vlm.execute("yarn", ["add", "-W", "--dev", "@valos/toolset-authollery"]);
   }
   return vlm.invoke(`.configure/.type/.authollery/**/*`);

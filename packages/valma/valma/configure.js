@@ -35,13 +35,15 @@ exports.handler = async (yargv) => {
   vlm.tryGetToolsetConfig = tryGetToolsetConfig;
   vlm.tryGetToolsetToolConfig = tryGetToolsetToolConfig;
 
+  const rest = yargv._.slice(1);
+
   if (!yargv.toolsetGlob) {
-    await vlm.invoke(`.configure/.domain/${vlm.packageConfig.valaa.domain}`);
-    await vlm.invoke(`.configure/.type/${vlm.packageConfig.valaa.type}`);
-    await vlm.invoke(`.configure/.toolsets`, yargv._.slice(1));
+    await vlm.invoke(`.configure/.domain/${valaa.domain}`, rest);
+    await vlm.invoke(`.configure/.type/${valaa.type}`, rest);
+    await vlm.invoke(`.configure/.toolsets`, rest);
   }
   return await vlm.invoke(`.configure/{,.type/.${valaa.type}/,.domain/.${valaa.domain}/}.toolset/${
-      yargv.toolsetGlob || ""}{*/**/,}*`);
+      yargv.toolsetGlob || ""}{*/**/,}*`, rest);
 };
 
 function confirmToolsetExists (toolsetName) {
@@ -86,9 +88,8 @@ async function askToCreateValmaScriptSkeleton (script, scriptFile, {
       break;
     }
     if (answer.choice === "help") {
-      console.log(this.colors.bold("This configure step creates a", brief,
-          "command template with following description:"));
-      console.log(describe);
+      this.inform(`This configure step creates a ${brief} command template with description:`);
+      this.speak(describe);
       continue;
     }
     this.shell.mkdir("-p", "bin");
@@ -102,9 +103,8 @@ ${expandSection("handler", handler)}${footer}`).to(scriptPath);
     this.updatePackageConfig({ bin: { [underscoredScript]: scriptPath } });
     verb = "now exports";
   }
-  if (this.verbosity >= 1) {
-    console.log(`valma-configure inform: repository ${verb} valma command ${command}`);
-  }
+  this.inform(`Repository ${this.colors.bold(verb)} valma command '${
+      this.colors.command(command)}'`);
   function expandSection (sectionName, template) {
     return (template === undefined) ? "" : `exports.${sectionName} = ${template}\n`;
   }

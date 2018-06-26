@@ -32,8 +32,8 @@ exports.handler = (yargv) => {
     throw new Error(`valma-release-deploy: cannot find a release build for version '${
         packageConfig.version}' version in "${releasePath}".`);
   }
-  console.log("\nvalma-release-deploy: deploying", packageConfig.name, packageConfig.version,
-      "from", releasePath);
+
+  vlm.info(`deploying '${packageConfig.name}' ${packageConfig.version}`, "from", releasePath);
 
   Object.assign(vlm, {
     releasePath,
@@ -44,7 +44,7 @@ exports.handler = (yargv) => {
 };
 
 function locateToolsetRelease (toolsetName, toolsetDescription = "toolset") {
-  const logger = this.tailor({ commandName: `valma-release-deploy/${toolsetName}` });
+  const logger = this.tailor({ commandName: `release-deploy/${toolsetName}` });
   const releasePath = this.releasePath;
   const toolsetConfig = ((this.valmaConfig || {}).toolset || {})[toolsetName];
   if (!toolsetConfig) {
@@ -65,7 +65,7 @@ function locateToolsetRelease (toolsetName, toolsetDescription = "toolset") {
 }
 
 function locateToolsetToolRelease (owningToolsetName, toolName, toolDescription = "tool") {
-  const logger = this.tailor({ commandName: `valma-release-deploy/${toolName}` });
+  const logger = this.tailor({ commandName: `release-deploy/${toolName}` });
   const releasePath = this.releasePath;
   const toolConfig = ((this.valmaConfig || {}).toolset || {})[toolName];
   const toolReleasePath = this.path.join(releasePath, owningToolsetName, toolName);

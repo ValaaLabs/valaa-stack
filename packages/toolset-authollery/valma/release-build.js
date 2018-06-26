@@ -58,7 +58,7 @@ exports.handler = (yargv) => {
  */
 function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-release",
     desiredVersionHash) {
-  const logger = this.tailor({ commandName: `valma-release-build/${toolsetName}` });
+  const logger = this.tailor({ commandName: `release-build/${toolsetName}` });
   const releasePath = this.releasePath;
   if (!this.shell.test("-d", releasePath)) {
     throw new Error(`valma-release-build/${toolsetName}: releasePath directory '${
@@ -68,7 +68,7 @@ function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-rel
   if (!toolsetConfig) return {};
   if ((toolsetConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {
     logger.ifVerbose(1)
-        .info(`skipping the build of already deployed release version ${desiredVersionHash
+        .info(`Skipping the build of already deployed release version ${desiredVersionHash
               } by toolset ${toolsetDescription}`);
     return {};
   }
@@ -82,7 +82,7 @@ function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-rel
 
 function prepareToolsetToolBuild (owningToolsetName, toolName,
     toolDescription = "tool sub-release", desiredVersionHash) {
-  const logger = this.tailor({ commandName: `valma-release-build/${toolName}` });
+  const logger = this.tailor({ commandName: `release-build/${toolName}` });
   const toolConfig = ((this.valmaConfig || {}).tool || {})[toolName];
   if (!toolConfig) return {};
   if ((toolConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {

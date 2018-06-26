@@ -40,7 +40,6 @@ exports.handler = async (yargv) => {
   const scriptPath = `valma/${yargv.filename || `${commandParts[2]}.js`}`;
   let verb = "already exports";
   let local = !yargv.export;
-  console.log("prbblbl");
   while (!(vlm.packageConfig.bin || {})[commandExportName]) {
     const choices = ["Create", "skip", local ? "export instead" : "local instead"];
     if (yargv.describe) choices.push("help");
@@ -57,8 +56,8 @@ exports.handler = async (yargv) => {
       break;
     }
     if (answer.choice === "help") {
-      console.log(yargv.describe);
-      console.log(`This step creates a ${yargv.brief || local ? "local" : "exported"
+      vlm.speak(yargv.describe);
+      vlm.info(`This step creates a ${yargv.brief || local ? "local" : "exported"
           } valma command script template\n`);
       continue;
     }
@@ -68,7 +67,7 @@ exports.handler = async (yargv) => {
       vlm.shell.mkdir("-p", vlm.path.dirname(scriptPath));
       vlm.shell.ShellString(_createBody(command, yargv.summary, yargv.describe)).to(scriptPath);
     } else {
-      console.log(`valma-create-command: not overwriting already existing script '${scriptPath}'`);
+      vlm.warning(`not overwriting already existing script '${scriptPath}'`);
     }
     const symlinkPath = vlm.path.join("valma.bin", commandExportName);
     if (!local) {
@@ -80,13 +79,13 @@ exports.handler = async (yargv) => {
       verb = "now symlinks";
       break;
     } else {
-      console.log(`valma-create-command: cannot create local symlink at '${symlinkPath
-          }' which already exists`);
+      vlm.warning(`cannot create local symlink at '${symlinkPath}' which already exists`);
       verb = "already symlinks";
       break;
     }
   }
-  console.log(`valma-create-command: this repository ${verb} valma command ${command}`);
+  vlm.info(`This repository ${vlm.colors.bold(verb)} valma command '${
+      vlm.colors.command(command)}'.`);
 };
 
 function _createBody (command, summary, describe) {
@@ -120,7 +119,7 @@ exports.builder = (yargs) => {
 
 exports.handler = (yargv) => {
   const vlm = yargv.vlm;
-  console.log(vlm.colors[yargv.color](\`This is '${command}' running inside '\${yargv.name}'\`));
+  vlm.info(vlm.colors[yargv.color](\`This is '${command}' running inside '\${yargv.name}'\`));
 };
 `;
 }
