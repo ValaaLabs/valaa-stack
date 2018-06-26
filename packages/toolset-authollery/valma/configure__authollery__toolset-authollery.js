@@ -1,11 +1,11 @@
-exports.command = ".configure/.type/.authollery/.toolset/@valos/toolset-authollery";
-exports.summary = "Configure this authollery as an authority controller with toolset-authollery";
+exports.command = ".configure/.type/.authollery/@valos/toolset-authollery";
+exports.summary = "Configure this authollery controller repository with toolset-authollery";
 exports.describe = `${exports.summary}.
 
 Adds valma commands 'release-build' and 'release-deploy'.
 
 Copies vault monorepo config file templates to this vault repository
-root from package @valos/toolset-vault directory templates/.*.`;
+root from package @valos/toolset-authollery directory templates/.*.`;
 
 // Example template which displays the command name itself and package name where it is ran
 // Only enabled inside package

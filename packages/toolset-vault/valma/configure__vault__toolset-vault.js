@@ -1,5 +1,5 @@
-exports.command = ".configure/.type/.vault/.toolset/@valos/toolset-vault";
-exports.summary = "Configure this vault as package monorepository with toolset-vault";
+exports.command = ".configure/.type/.vault/@valos/toolset-vault";
+exports.summary = "Configure this vault monorepository with toolset-vault";
 exports.describe = `${exports.summary}.
 
 Adds valma commands 'package-assemble' and 'package-publish'.

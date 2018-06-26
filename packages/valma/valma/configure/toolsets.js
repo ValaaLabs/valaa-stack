@@ -1,9 +1,10 @@
 exports.command = ".configure/.toolsets";
-exports.summary = "Grab and stow toolsets from the set of known toolsets";
+exports.summary = "Grab and stow toolsets from the set available toolsets";
 exports.describe = `${exports.summary}.
 
-The set of known toolsets is defined by the set of all valma 'toolset
-configure' commands listed by the invokation (note the empty selector):
+The set of available toolsets is defined by the set of all valma
+'toolset configure' commands listed by the invokation (note the empty
+  selector):
 
 vlm -da '.configure/{,.type/.<type>/,.domain/.<domain>/}.toolset/**/*'
 
@@ -36,7 +37,8 @@ exports.builder = (yargs) => {
     toolsets: {
       type: "string", default: usedToolsets, choices: allToolsets,
       interactive: { type: "checkbox", when: "always" },
-      description: "Grab toolsets to use from the known toolsets (check to grab, uncheck to stow)",
+      description:
+          "Grab toolsets to use from the available toolsets (check to grab, uncheck to stow)",
     },
   });
 };
@@ -66,7 +68,7 @@ exports.handler = async (yargv) => {
     const installAsDevDeps = grabToolsets
         .filter(toolsetName => !(vlm.packageConfig.devDependencies || {})[toolsetName]);
     if (installAsDevDeps.length) {
-      vlm.info(`Installing toolset as direct dev dependencies:`, installAsDevDeps);
+      vlm.info(`Installing toolsets as direct dev-dependencies:`, installAsDevDeps);
       await vlm.execute("yarn", ["add", "-W", "--dev", ...installAsDevDeps]);
     }
     grabToolsets.forEach(n => { toolset[n] = { ["in-use"]: true }; });

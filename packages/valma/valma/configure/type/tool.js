@@ -30,8 +30,8 @@ commands and other resources to help with the deployment management.
 Additionally because the tool configuration is always inside its
 parent toolset config this allows the same tool be used by several
 different toolsets in a single repository. Because of this all tool
-commands must accept '--toolset=@myscope/mytoolset' with vlm.toolset as
-default value.`;
+commands must have an option for '--toolset=@myscope/mytoolset' which
+uses yargs.vlm.toolset as its default value.`;
 
 exports.builder = (yargs) => yargs.options({
   brief: {
@@ -41,9 +41,10 @@ exports.builder = (yargs) => yargs.options({
 
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
+  const simpleName = vlm.packageConfig.name.match(/([^/]*)$/)[1];
   await vlm.askToCreateValmaScriptSkeleton(
       `.valma-configure/.tool/${vlm.packageConfig.name}`,
-      `configure__${vlm.packageConfig.name.match(/([^/]*)$/)[1]}.js`, {
+      `configure__${simpleName}.js`, {
         brief: `${yargv.brief || "simple"} configure`,
         header: `const toolName = "${vlm.packageConfig.name}";\n`,
         summary: `Configure this tool package within the given toolset configuration`,

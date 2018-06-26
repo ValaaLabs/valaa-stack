@@ -21,31 +21,39 @@ by running 'vlm configure' afterwards.`;
 
 exports.disabled = (yargs) => !(yargs.vlm.packageConfig || {}).valaa;
 exports.builder = (yargs) => yargs.options({
-  "repository-type": {
+  "restrict": {
     type: "string",
-    description: `Limit this toolset to repositories with this valaa type (empty "" for no limit).`,
+    description: `Restrict this toolset to a valaa type (clear for no restriction):`,
     default: yargs.vlm.packageConfig.valaa.domain,
+    interactive: { type: "input", when: true ? "always" : "if-undefined" },
+  },
+  "grabbable": {
+    description: `Make this toolset grabbable and stowable (falsy for always-on):`,
+    default: true,
     interactive: { type: "input", when: true ? "always" : "if-undefined" },
   },
 });
 
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
-  const repositoryTypeGlob = yargv.repositoryType ? `.type/.${yargv.repositoryType}/` : "";
-  await vlm.askToCreateValmaScriptSkeleton(
-      `.valma-configure/${repositoryTypeGlob}${vlm.packageConfig.name}`,
-      "configure__toolset.js", {
-        brief: "toolset configure",
-        summary: `Configure the toolset ${vlm.packageConfig.name} for the current repository`,
+  const simpleName = vlm.packageConfig.name.match(/([^/]*)$/)[1];
+  await vlm.invoke("create-command", [{
+    command: `.configure/${yargv.restrict ? `.type/.${yargv.restrict}/` : ""}${
+        yargv.grabbable ? ".toolset/" : ""}${vlm.packageConfig.name}`,
+    filename: `configure__${yargv.restrict ? yargv.restrict : ""}${
+        yargv.grabbable ? "_toolset_" : "_"}_${simpleName}.js`,
+    export: true, skeleton: true,
+    brief: "toolset configure",
+    summary: `Configure the toolset '${simpleName}' for the current ${
+        yargv.restrict || "repository"}`,
 
-        describe: repositoryTypeGlob
-            ?
-`This script is called when a repository with valaa type equal to
-'${yargv.repositoryType}' is configured.`
-            :
-`This script is called when any repository depending on this toolset is
-configured.`,
-      });
-
+    describe: yargv.restrict
+        ?
+`This script makes the toolset '${simpleName}' available for
+grabbing by repositories with valaa type '${yargv.restrict}'.`
+        :
+`This script makes the toolset ${simpleName} available for
+grabbing by all repositories.`,
+  }]);
   return yargv.vlm.invoke(`.configure/.type/.toolset/**/*`);
 };

@@ -88,7 +88,7 @@ async function askToCreateValmaScriptSkeleton (script, scriptFile, {
       break;
     }
     if (answer.choice === "help") {
-      this.inform(`This configure step creates a ${brief} command template with description:`);
+      this.info(`This configure step creates a ${brief} command template with description:`);
       this.speak(describe);
       continue;
     }
@@ -103,7 +103,7 @@ ${expandSection("handler", handler)}${footer}`).to(scriptPath);
     this.updatePackageConfig({ bin: { [underscoredScript]: scriptPath } });
     verb = "now exports";
   }
-  this.inform(`Repository ${this.colors.bold(verb)} valma command '${
+  this.info(`Repository ${this.colors.bold(verb)} valma command '${
       this.colors.command(command)}'`);
   function expandSection (sectionName, template) {
     return (template === undefined) ? "" : `exports.${sectionName} = ${template}\n`;

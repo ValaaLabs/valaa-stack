@@ -10,34 +10,38 @@ exports.builder = (yargs) => {
   const vlm = yargs.vlm;
   const valaa = vlm.packageConfig.valaa || {};
   const typeChoices = vlm.listMatchingCommands(".configure/.type/*")
-      .map(n => n.match(/^.configure\/.type\/([^/]*)/)[1]);
+      .map(n => n.match(/^.configure\/.type\/([^/]*)/)[1])
+      .concat("<custom>");
   const domainChoices = vlm.listMatchingCommands(".configure/.domain/*")
-      .map(n => n.match(/^.configure\/.domain\/([^/]*)/)[1]);
+      .map(n => n.match(/^.configure\/.domain\/([^/]*)/)[1])
+      .concat("<custom>");
   return yargs.options({
     type: {
       type: "string", default: valaa.type, choices: typeChoices,
       interactive: {
-        type: "list", when: vlm.reconfigure ? "always" : "if-undefined",
-        confirm: async (selection) => {
-          await vlm.invoke(`.configure/.type/${selection}`, ["--show-describe"]);
-          return await vlm.inquireConfirm(`Confirm valaa.type selection: '${selection}'?`);
-        }
+        type: "list", when: vlm.reconfigure ? "always" : "if-undefined", pageSize: 10,
+        confirm: _inquireIfCustomThenAlwaysConfirm.bind(null, vlm, "type"),
       },
       description: "Select repository package.json stanza valaa.type",
     },
     domain: {
       type: "string", default: valaa.domain, choices: domainChoices,
       interactive: {
-        type: "list", when: vlm.reconfigure ? "always" : "if-undefined",
-        confirm: async (selection) => {
-          await vlm.invoke(`.configure/.domain/${selection}`, ["--show-describe"]);
-          return await vlm.inquireConfirm(`Confirm valaa.domain selection: '${selection}'?`);
-        }
+        type: "list", when: vlm.reconfigure ? "always" : "if-undefined", pageSize: 10,
+        confirm: _inquireIfCustomThenAlwaysConfirm.bind(null, vlm, "domain"),
       },
       description: "Select repository package.json stanza valaa.domain",
     },
   });
 };
+
+async function _inquireIfCustomThenAlwaysConfirm (vlm, category, selection, answers) {
+  if (selection === "<custom>") {
+    answers[category] = await vlm.inquireText(`Enter custom valaa.${category}:`);
+  }
+  await vlm.invoke(`.configure/.${category}/${answers[category]}`, ["--show-describe"]);
+  return await vlm.inquireConfirm(`Confirm valaa.${category} selection: '${answers[category]}'?`);
+}
 
 exports.handler = (yargv) => yargv.vlm.updatePackageConfig({
   valaa: {

@@ -20,9 +20,16 @@ exports.builder = (yargs) => yargs.options({
     type: "boolean", default: false,
     description: "Export command in package.json:bin section instead of valma.bin/ symlinking",
   },
+  skeleton: {
+    type: "boolean", default: false,
+    description: "If true will only create a minimal script skeleton",
+  },
   summary: {
     type: "string", description: "One line summary of the new command (set as exports.summary)",
     interactive: { type: "input", when: "if-undefined" },
+  },
+  header: {
+    type: "string", description: "Lines to place at the beginning of the script skeleton",
   },
   brief: {
     type: "string", description: "Description of couple words of the new command for logging",
@@ -41,14 +48,17 @@ exports.handler = async (yargv) => {
   let verb = "already exports";
   let local = !yargv.export;
   while (!(vlm.packageConfig.bin || {})[commandExportName]) {
-    const choices = ["Create", "skip", local ? "export instead" : "local instead"];
+    const choices = [local ? "Create" : "Export", "skip",
+        local ? "export instead" : "local instead"];
     if (yargv.describe) choices.push("help");
     const linkMessage = local
         ? `'valma.bin/${commandExportName}'`
         : `'package.json':bin["${commandExportName}"]`;
     const answer = await vlm.inquire([{
-      message: `Create a ${yargv.brief || yargv.brief || local ? "local" : "exported"
-          } valma command script template as ${linkMessage} -> '${scriptPath}'?`,
+      message: `${local ? "Create" : "Export"
+          } a ${yargv.brief || (local ? "local command" : "command")
+          } script ${yargv.skeleton ? "skeleton" : "template"
+          } as ${linkMessage} -> '${scriptPath}'?`,
       type: "list", name: "choice", default: choices[0], choices,
     }]);
     if (answer.choice === "skip") {
@@ -57,7 +67,7 @@ exports.handler = async (yargv) => {
     }
     if (answer.choice === "help") {
       vlm.speak(yargv.describe);
-      vlm.info(`This step creates a ${yargv.brief || local ? "local" : "exported"
+      vlm.info(`This step creates a ${yargv.brief || (local ? "local" : "exported")
           } valma command script template\n`);
       continue;
     }
@@ -65,9 +75,12 @@ exports.handler = async (yargv) => {
     if (answer.choice === "local instead") { local = true; continue; }
     if (!vlm.shell.test("-e", scriptPath)) {
       vlm.shell.mkdir("-p", vlm.path.dirname(scriptPath));
-      vlm.shell.ShellString(_createBody(command, yargv.summary, yargv.describe)).to(scriptPath);
+      vlm.shell.ShellString(
+          (yargv.skeleton ? _createSkeleton : _createBody)(
+              command, yargv.summary, yargv.describe, yargv.header))
+          .to(scriptPath);
     } else {
-      vlm.warning(`not overwriting already existing script '${scriptPath}'`);
+      vlm.warn(`not overwriting already existing script '${scriptPath}'`);
     }
     const symlinkPath = vlm.path.join("valma.bin", commandExportName);
     if (!local) {
@@ -79,17 +92,48 @@ exports.handler = async (yargv) => {
       verb = "now symlinks";
       break;
     } else {
-      vlm.warning(`cannot create local symlink at '${symlinkPath}' which already exists`);
+      vlm.warn(`cannot create local symlink at '${symlinkPath}' which already exists`);
       verb = "already symlinks";
       break;
     }
   }
-  vlm.info(`This repository ${vlm.colors.bold(verb)} valma command '${
-      vlm.colors.command(command)}'.`);
+  const message = `This repository ${vlm.colors.bold(verb)} valma command '${
+      vlm.colors.command(command)}'.`;
+  if (verb === "already exports") {
+    vlm.warn(message);
+    vlm.instruct(`You can edit the existing command script at ${vlm.packageConfig.bin[commandExportName]}`);
+  } else {
+    vlm.info(message);
+    vlm.instruct(`You can edit the command ${yargv.skeleton ? "skeleton" : "template"} at ${
+        scriptPath}`);
+  }
+  return { local, verb, [command]: scriptPath };
 };
 
-function _createBody (command, summary, describe) {
-  const header = (command[0] === ".") || command.includes("/.") ? "" : "#!/usr/bin/env vlm\n\n";
+function _createSkeleton (command, summary, describe, header_) {
+  const header = `${(command[0] === ".") || command.includes("/.") ? "" : "#!/usr/bin/env vlm\n\n"
+      }${header_ || ""}`;
+  return `${header
+}exports.command = "${command}";
+exports.summary = "${summary || ""}";
+exports.describe = \`\${exports.summary}.\n${describe || ""}\`;
+
+exports.disabled = (yargs) => !yargs.vlm.packageConfig;
+exports.builder = (yargs) => {
+  const vlm = yargs.vlm;
+  return yargs;
+};
+
+exports.handler = (yargv) => {
+  const vlm = yargv.vlm;
+  return true;
+};
+`;
+}
+
+function _createTemplate (command, summary, describe, header_) {
+  const header = `${(command[0] === ".") || command.includes("/.") ? "" : "#!/usr/bin/env vlm\n\n"
+      }${header_ || ""}`;
   return `${header
 }exports.command = "${command}";
 exports.summary = "${summary || ""}";
