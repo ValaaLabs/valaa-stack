@@ -116,6 +116,10 @@ const vlm = vargs.vlm = {
 
   readFile: util.promisify(fs.readFile),
 
+  inquireText: async (message, default_ = "") =>
+      (await vlm.inquire({
+        type: "input", name: "text", message, default: default_,
+      })).text,
   inquireConfirm: async (message, default_ = true) =>
       (await vlm.inquire({
         type: "confirm", name: "confirm", message, default: default_,
@@ -299,8 +303,23 @@ characters to be equal although '/' is recommended anywhere possible.
         },
         echo: {
           group: "Introspection options:",
-          type: "boolean", default: true, global: false,
+          type: "boolean", default: true, global: true,
           description: "Echo all external and sub-command calls with their return values",
+        },
+        warnings: {
+          group: "Introspection options:",
+          type: "boolean", default: true, global: true,
+          description: "Show warning messages",
+        },
+        babbles: {
+          group: "Introspection options:",
+          type: "boolean", default: true, global: true,
+          description: "Show babble messages",
+        },
+        expounds: {
+          group: "Introspection options:",
+          type: "boolean", default: true, global: true,
+          description: "Show expound messages",
         },
         "bash-completion": {
           group: "Introspection options:",
@@ -425,7 +444,10 @@ const globalVargv = _parseUntilCommand(globalVargs, processArgv, "command");
 
 vlm.verbosity = vlm.isCompleting ? 0 : globalVargv.verbose;
 vlm.interactive = vlm.isCompleting ? 0 : globalVargv.interactive;
-if (!globalVargv.echo || vlm.isCompleting) vlm.echo = function noEcho () {};
+if (!globalVargv.echo || vlm.isCompleting) vlm.echo = function noEcho () { return this; };
+if (!globalVargv.warnings || vlm.isCompleting) vlm.warn = function noWarnings () { return this; };
+if (!globalVargv.babbles || vlm.isCompleting) vlm.babble = function noBabble () { return this; };
+if (!globalVargv.expounds || vlm.isCompleting) vlm.expound = function noExpound () { return this; };
 
 vlm.ifVerbose(1).babble("phase 1, init:", "determine global options and available pools.",
     `\n\tcommand: ${vlm.colors.command(globalVargv.command)
@@ -615,13 +637,25 @@ async function callValmaWithEcho (command, argv = []) {
   }
 }
 
-async function invoke (command, argv = []) {
-  if (!Array.isArray(argv)) {
-    throw new Error(`vlm.invoke: argv must be an array, got ${typeof argv}`);
+async function invoke (command, argv_ = []) {
+  if (!Array.isArray(argv_)) {
+    throw new Error(`vlm.invoke: argv must be an array, got ${typeof argv_}`);
   }
   if (!this || !this.ifVerbose) {
     throw new Error(`vlm.invoke: 'this' must be a valid vlm context`);
   }
+  const argv = [].concat(...argv_.map(entry =>
+      (Array.isArray(entry)
+          ? entry
+      : (!entry || typeof entry !== "object")
+          ? _toArgString(entry)
+          : [].concat(...Object.keys(entry).map(key => _toArgString(entry[key], key))))));
+  function _toArgString (value, key) {
+    if (typeof value === "string") return !key ? value : [`--${key}`, value];
+    if ((typeof value === "boolean") && key) return value ? `--${key}` : `--no-${key}`;
+    return JSON.stringify(value);
+  }
+
   const contextVargv = this.contextVargv;
   const commandGlob = _underToSlash((contextVargv.matchAll || this.isCompleting)
       ? _valmaGlobFromCommandPrefix(command, contextVargv.matchAll)
@@ -654,8 +688,6 @@ async function invoke (command, argv = []) {
     return 0;
   }
 
-  const commandArgs = argv.map(arg => JSON.stringify(arg)).join(" ");
-
   this.ifVerbose(2)
       .expound("activeCommands: {", ...Object.keys(activeCommands).map(
                 key => `\n\t\t${key}: ${activeCommands[key].modulePath}`),
@@ -663,7 +695,7 @@ async function invoke (command, argv = []) {
 
   if (introspect) {
     const ret = _outputIntrospection(introspect, activeCommands, commandGlob,
-        contextVargv.matchAll || !isWildcardCommand);
+        isWildcardCommand, contextVargv.matchAll);
     return isWildcardCommand ? ret : ret[0];
   }
 
@@ -704,7 +736,6 @@ async function invoke (command, argv = []) {
       subVargs.vlm = subVLM;
       subVargs.vlm.commandName = matchingCommand;
       vargs.command(module.command, module.describe);
-      const subCommand = `${matchingCommand} ${commandArgs}`;
       const disabled = (module.disabled
           && ((typeof module.disabled !== "function")
                   ? `exports.disabled == ${String(module.disabled)}`
@@ -715,8 +746,8 @@ async function invoke (command, argv = []) {
         dryRunCommands[matchingCommand] = { ...activeCommand, disabled };
         continue;
       }
-      const subVargv = _parse(subVargs, subCommand, { vlm: subVLM });
-      const subIntrospect = _determineIntrospection(module, subVargv, subCommand);
+      const subVargv = _parse(subVargs, [matchingCommand, ...argv], { vlm: subVLM });
+      const subIntrospect = _determineIntrospection(module, subVargv, matchingCommand);
       this.ifVerbose(3)
           .babble("parsed:", this.colors.command(matchingCommand), this.colors.arguments(...argv),
               disabled ? `: disabled, ${disabled}` : ""
@@ -727,7 +758,7 @@ async function invoke (command, argv = []) {
       if (subIntrospect) {
         ret = ret.concat(_outputIntrospection(
             subIntrospect, { [matchingCommand]: activeCommand }, command,
-            subVargv.matchAll || !isWildcardCommand));
+            isWildcardCommand, subVargv.matchAll));
       } else if (isWildcardCommand && disabled) {
         this.ifVerbose(1)
             .info(`skipping disabled command '${this.colors.command(matchingCommand)}'`,
@@ -739,8 +770,8 @@ async function invoke (command, argv = []) {
         }
         subVargv.vlm.contextVargv = subVargv;
         if (isWildcardCommand) {
-          this.echo("    >>> vlm", this.colors.command(subCommand),
-              this.colors.arguments(commandArgs));
+          this.echo("    >>> vlm", this.colors.command(matchingCommand),
+              this.colors.arguments(...argv));
         }
         await _tryInteractive(subVargv, subVargs);
         ret.push(await module.handler(subVargv));
@@ -748,7 +779,7 @@ async function invoke (command, argv = []) {
           let retValue = JSON.stringify(ret[ret.length - 1]);
           if (retValue === undefined) retValue = "undefined";
           if (isWildcardCommand) {
-            this.echo("    <<< vlm", `${this.colors.command(subCommand)}:`,
+            this.echo("    <<< vlm", `${this.colors.command(matchingCommand)}:`,
                 this.colors.blue(retValue.slice(0, 20), retValue.length > 20 ? "..." : ""));
           }
         }
@@ -757,7 +788,7 @@ async function invoke (command, argv = []) {
   }
   if (dryRunCommands) {
     _outputIntrospection(_determineIntrospection(module, contextVargv),
-        dryRunCommands, command, contextVargv.matchAll || !isWildcardCommand);
+        dryRunCommands, command, isWildcardCommand, contextVargv.matchAll);
   }
   return isWildcardCommand ? ret : ret[0];
 }
@@ -846,7 +877,7 @@ function _locateDependedPools (initialPoolBase, poolDirectories) {
       if (candidate.match(/^node_modules/) && shell.test("-f", packageJsonPath)) {
         vlm.warn(`node_modules missing for ${packageJsonPath}:`,
             "some dependent commands will likely be missing.",
-            `\nRun '${colors.executable("yarn install")}' to make dependent commands available.\n`);
+            `Run '${colors.executable("yarn install")}' to make dependent commands available.\n`);
       }
     });
     if (pathBase === "/") break;
@@ -975,10 +1006,10 @@ function listMatchingCommands (command, matchAll = false) {
       })
       .map(name => _valmaCommandFromPath(name))
   )).filter((v, i, a) => (a.indexOf(v) === i));
-  vlm.ifVerbose(3)
-      .babble(matchAll ? "listMatchingCommands" : "listAllMatchingCommands",
+  vlm.ifVerbose(1)
+      .expound(matchAll ? "listMatchingCommands:" : "listAllMatchingCommands:",
           vlm.colors.command(command),
-          "\n\tminimatcher:", minimatcher,
+          ...(vlm.verbosity > 1 ? [", minimatcher:", minimatcher] : []),
           "\n\tresults:", ret);
   return ret;
 }
@@ -1077,7 +1108,7 @@ function _determineIntrospection (module, vargv, command, isWildcard) {
   return ret;
 }
 
-function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
+function _outputIntrospection (introspect, commands_, commandGlob, isWildcard, matchAll) {
   if (introspect.help) {
     vargs.vlm = vlm;
     vargs.showHelp("log");
@@ -1090,17 +1121,19 @@ function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
     } else {
       vlm.log(colors.bold("# Usage:", introspect.module.command));
       vlm.log();
-      vlm.log(colors.bold(`# Commands${listAll ? " (incl. hidden/disabled)" : ""}:`));
+      vlm.log(colors.bold(`# Commands${matchAll ? " (incl. hidden/disabled)" : ""}:`));
     }
   }
   let outerRet = [];
   for (const pool of [...activePools].reverse()) {
     const isEmpty = !Object.keys(pool.commands).length;
-    vlm.log(colors.bold(`## ${vlm.path.join(pool.name, commandGlob)} ${
+    if (isWildcard) {
+      vlm.log(colors.bold(`## ${vlm.path.join(pool.name, commandGlob)} ${
         isEmpty ? "has no shown commands" : "commands:"}`),
         `(${vlm.colors.info(Object.keys(pool.stats || {})
             .map(s => `${s}: ${pool.stats[s]}`).join(", "))
         })`);
+    }
     if (!isEmpty) outerRet = outerRet.concat(_outputInfos(pool, globalVargv.pools));
   }
   return outerRet;
@@ -1113,7 +1146,8 @@ function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
     .sort()
     .map((name) => {
       const command = pool.commands[name];
-      if (!command || (!showHidden && (command.disabled || (activeCommands[name] !== command)))) {
+      if (!command || (!showHidden
+          && ((command.disabled && isWildcard) || (activeCommands[name] !== command)))) {
         return {};
       }
       const info = _commandInfo(command.modulePath, pool.path);
@@ -1143,7 +1177,8 @@ function _outputIntrospection (introspect, commands_, commandGlob, listAll) {
       if (!info) return undefined;
       const ret = {};
       const name_ = pool.commands[name].disabled ? `(${name})` : name;
-      const commandStyle = (activeCommands[name] === command) ? colors.command : colors.overridden;
+      const commandStyle = (activeCommands[name].pool === command.pool)
+          ? colors.command : colors.overridden;
       const infoRow = [
         ...(introspect.showName
               ? ["|", [(ret.name = name) && name_, nameAlign, commandStyle]] : []),
@@ -1209,7 +1244,7 @@ async function _tryInteractive (subVargv, subYargs) {
     delete question.when;
     if (!question.name) question.name = optionName;
     if (!question.message) question.message = option.summary || option.description;
-    if (!question.choices && option.choices) question.choices = option.choices;
+    if (!question.choices && option.choices) question.choices = [...option.choices];
     if (option.default !== undefined) {
       if (!["list", "checkbox"].includes(question.type)) {
         question.default = option.default;
@@ -1240,6 +1275,8 @@ async function _tryInteractive (subVargv, subYargs) {
       Object.assign(answers, await vlm.inquire([question]));
     } while (question.confirm && !await question.confirm(answers[question.name], answers));
   }
+  // FIXME(iridian): handle de-hyphenations, camelcases etc. all other option variants.
+  // Now only updating the verbatim option.
   return Object.assign(subVargv, answers);
 }
 
@@ -1366,6 +1403,12 @@ function _createVargs (args, cwd) {
       if (attributes.causes) {
         if (!optionState.causes) optionState.causes = {};
         optionState.causes[opt] = attributes.causes;
+      }
+      if (attributes.default && attributes.choices) {
+        attributes.choices =
+            (Array.isArray(attributes.default) ? attributes.default : [attributes.default])
+              .filter(defaultValue => !attributes.choices.includes(defaultValue))
+              .concat(attributes.choices);
       }
     }
     baseOptions.call(this, opt, attributes);
