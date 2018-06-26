@@ -1,0 +1,16 @@
+{
+  "name": "@valos/toolset-vault-operations",
+  "version": "0.30.0-prerelease.13",
+  "valaa": {
+    "type": "toolset",
+    "domain": "files"
+  },
+  "description": "Vault toolset for authollery operations",
+  "main": "index.js",
+  "author": "Valaa Technologies Ltd",
+  "license": "MIT",
+  "private": false,
+  "bin": {
+    ".valma-configure_.type_.vault_.toolset_@valos_toolset-vault-operations": "valma/configure__vault_toolset__toolset-vault-operations.js"
+  }
+}
