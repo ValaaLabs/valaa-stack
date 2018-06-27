@@ -73,10 +73,14 @@ const vlm = vargs.vlm = {
   // just silly.
   updateValmaConfig,
 
+  // TODO(iridian): These should eventually be in a separate library. Fundamentally valma shouldn't
+  // know about toolsets. OTOH valma type and the toolset scripts are part of valma package, so...
   getToolsetConfig,
   getToolConfig,
+  confirmToolsetExists,
   updateToolsetConfig,
   updateToolConfig,
+  createStandardToolsetOption,
 
   // Returns a list of available sub-command names which match the given command glob.
   listMatchingCommands,
@@ -1343,12 +1347,30 @@ function getToolConfig (toolsetName, toolName) {
   return this.getValmaConfig("toolset", toolsetName, "tool", toolName);
 };
 
+function confirmToolsetExists (toolsetName) {
+  if (this.getToolsetConfig(toolsetName)) return true;
+  this.warn(`Cannot find toolset '${toolsetName}' from configured toolsets:`,
+      Object.keys(this.getValmaConfig("toolset") || {}).join(", "));
+  return false;
+}
+
 function updateToolsetConfig (toolsetName, update) {
   return this.updateValmaConfig({ toolset: { [toolsetName]: update } });
 }
 
 function updateToolConfig (toolsetName, toolName, update) {
   return this.updateValmaConfig({ toolset: { [toolsetName]: { tool: { [toolName]: update } } } });
+}
+
+function createStandardToolsetOption (description) {
+  return {
+    type: "string", default: this.toolset,
+    description,
+    interactive: {
+      type: "input", when: "if-undefined",
+      confirm: value => this.confirmToolsetExists(value),
+    },
+  };
 }
 
 

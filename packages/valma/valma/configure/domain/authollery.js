@@ -45,98 +45,71 @@ exports.builder = (yargs) => yargs;
 
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
-  const valaa = (vlm.packageConfig || {}).valaa;
-  const isToolset = (valaa.type === "toolset");
+  const type = vlm.getPackageConfig("valaa", "type");
+  const isTool = (type === "tool") ? true : undefined;
   const name = vlm.packageConfig.name;
   const shortName = /([^/]*)$/.exec(name)[1];
-  if (isToolset || (valaa.type === "tool")) {
-    await vlm.askToCreateValmaScriptSkeleton(
-        `.valma-release-build/${isToolset ? "" : ".tool/"}${name}`,
-        `release-build__${shortName}.js`, {
-          brief: `${valaa.type} sub-release build`,
-          header: `const ${valaa.type}Name = "${name}";\n\n`,
-          summary: `Build a sub-release of the ${valaa.type} ${name}`,
-
-          builder: isToolset ? undefined :
-`(yargs) => yargs.options({
-  toolset: {
-    type: "string", default: yargs.vlm.toolset,
-    description: "The toolset within which this tool should build a release.",
-    interactive: {
-      type: "input", when: "if-undefined",
-      confirm: value => yargs.vlm.confirmToolsetExists(value),
-    },
-  },
-});`,
-          describe: isToolset
-              ?
-`When a release is being built each active toolset must explicitly
-invoke the build commands of all of its buildable tools.`
-              :
-`This tool sub-release build command must be explicitly invoked by
-toolsets which use this tool.`,
-          handler:
-`async (yargv) => {
-  const vlm = yargv.vlm;${isToolset ? "" : `
-  const toolsetName = yargv.toolset;`}
-  const ${valaa.type}Version = await vlm.invoke(exports.command, ["--version"]);
-  const { ${valaa.type}Config, ${valaa.type}ReleasePath } = vlm.prepareToolset${
-      isToolset ? "" : "Tool"}Build(
-      ${isToolset ? "" : "toolsetName, "}${valaa.type}Name, "${shortName}", ${valaa.type}Version);
-  if (!${valaa.type}Config) return;
-
-  vlm.shell.ShellString(${valaa.type}Version).to(vlm.path.join(${
-      valaa.type}ReleasePath, "version-hash"));
-  return;
-};
-`,
-        });
-
-    await vlm.askToCreateValmaScriptSkeleton(
-        `.valma-release-deploy/${isToolset ? "" : ".tool/"}${name}`,
-        `release-deploy__${shortName}.js`, {
-          brief: `${valaa.type} sub-release deploy`,
-          header: `const ${valaa.type}Name = "${name}";\n\n`,
-          summary: `Deploy the sub-release of the ${valaa.type} ${name}`,
-
-          builder: isToolset ? undefined :
-`(yargs) => yargs.options({
-  toolset: {
-    type: "string", default: yargs.vlm.toolset,
-    description: "The toolset from within which this tool should deploy a release.",
-    interactive: {
-      type: "input", when: "if-undefined",
-      confirm: value => yargs.vlm.confirmToolsetExists(value),
-    },
-  },
-});`,
-          describe: isToolset
-              ?
-`When a release is being deployed each active toolset must explicitly
-invoke the deploy commands of all of its deployable tools.`
-              :
-`This tool sub-release deploy command must be explicitly invoked by
-toolsets which use this tool.`,
-          handler:
-`async (yargv) => {
-  const vlm = yargv.vlm;${isToolset ? "" : `
-  const toolsetName = yargv.toolset;`}
-  const { ${valaa.type}Config, ${valaa.type}ReleasePath } = vlm.locateToolset${
-      isToolset ? "" : "Tool"}Release(
-      ${isToolset ? "" : "toolsetName, "}${valaa.type}Name, "${shortName}");
-  if (!${valaa.type}ReleasePath) return;
-
-  const deployedVersionHash = await vlm.readFile(vlm.path.join(${
-      valaa.type}ReleasePath, "version-hash"));
-  const toolsetConfigUpdate = { ${isToolset
-      ? "deployedVersionHash"
-      : `tool: { [toolName]: { deployedVersionHash } }`
-  } };
-  vlm.updateValmaConfig({ toolset: { [toolsetName]: toolsetConfigUpdate } });
-  return;
-};
-`,
-        });
+  if (isTool || (type === "toolset")) {
+    await _createReleaseSubCommand("build");
+    await _createReleaseSubCommand("deploy");
   }
   return vlm.invoke(`.configure/.domain/.authollery/**/*`);
+
+  function _createReleaseSubCommand(subCommandName) {
+    return vlm.invoke("create-command", [{
+      command: `.release-${subCommandName}/${isTool ? ".tool/" : ""}${name}`,
+      filename: `release-${subCommandName}_${isTool ? "tool_" : ""}_${shortName}.js`,
+      brief: `${subCommandName === "build" ? "Build" : "Deploy"} a sub-release`,
+      export: true,
+      header: `const ${type}Name = "${name}";\n\n`,
+      summary: `${subCommandName === "build" ? "Build" : "Deploy"} a sub-release of ${name}`,
+
+      disabled: isTool ? undefined :
+`(yargs) => !(yargs.vlm.getToolsetConfig("toolsetName") || {})["in-use"]`,
+      builder: isTool &&
+`(yargs) => yargs.options({
+  toolset: yargs.vlm.createStandardToolsetOption(
+      "The containing toolset of this tool release ${subCommandName}."),
+})`,
+      describe: isTool
+          ?
+`This tool sub-release ${subCommandName} command must be explicitly invoked by
+toolsets which use this tool.`
+          :
+`When a release is being ${subCommandName === "build" ? "built" : "deployed"
+    } each active toolset must explicitly
+invoke the ${subCommandName} commands of all of its ${subCommandName}able tools.`,
+      handler: (subCommandName === "build")
+          ?
+`async (yargv) => {
+  const vlm = yargv.vlm;${isTool && `
+  const toolsetName = yargv.toolset;`}
+  const ${type}Version = await vlm.invoke(exports.command, ["--version"]);
+  const { ${type}Config, ${type}ReleasePath } = vlm.prepareTool${isTool ? "" : "set"}Build(
+      ${isTool && "toolsetName, "}${type}Name, "${shortName}", ${type}Version);
+  if (!${type}Config) return;
+
+  vlm.shell.ShellString(${type}Version).to(vlm.path.join(${type}ReleasePath, "version-hash"));
+  return;
 };
+`
+        :
+`async (yargv) => {
+  const vlm = yargv.vlm;${isTool && `
+  const toolsetName = yargv.toolset;`}
+  const { ${type}Config, ${type}ReleasePath } = vlm.locateTool${isTool ? "" : "set"}Release(
+      ${isTool && "toolsetName, "}${type}Name, "${shortName}");
+  if (!${type}ReleasePath) return;
+
+  const deployedVersionHash = await vlm.readFile(vlm.path.join(${type}ReleasePath, "version-hash"));
+
+  ${isTool
+    ? "vlm.updateToolConfig(toolsetName, toolName, { deployedVersionHash });"
+    : "vlm.updateToolsetConfig(toolsetName, { deployedVersionHash });"
+  }
+  return;
+};
+`,
+    }]);
+  }
+}

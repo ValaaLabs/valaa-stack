@@ -42,35 +42,29 @@ exports.builder = (yargs) => yargs.options({
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
   const simpleName = vlm.packageConfig.name.match(/([^/]*)$/)[1];
-  await vlm.askToCreateValmaScriptSkeleton(
-      `.valma-configure/.tool/${vlm.packageConfig.name}`,
-      `configure__${simpleName}.js`, {
-        brief: `${yargv.brief || "simple"} configure`,
-        header: `const toolName = "${vlm.packageConfig.name}";\n`,
-        summary: `Configure this tool package within the given toolset configuration`,
+  await vlm.invoke("create-command", [{
+    command: `.configure/.tool/${vlm.packageConfig.name}`,
+    filename: `configure_tool__${simpleName}.js`,
+    brief: `${yargv.brief || "simple"} configure`,
+    header: `const toolName = "${vlm.packageConfig.name}";\n\n`,
+    summary: `Configure this tool package within the given toolset configuration`,
 
-        describe:
+    describe:
 `As a tool this script is not automatically called. The toolset or tool
 which directly depends on this tool must explicit call this command.`,
 
-        builder: `(yargs) => yargs.options({
-  toolset: {
-    type: "string", default: yargs.vlm.toolset,
-    description: "The toolset for which this tool should be configured.",
-    interactive: {
-      type: "input", when: "if-undefined",
-      confirm: value => yargs.vlm.confirmToolsetExists(value),
-    },
-  },
+    builder: `(yargs) => yargs.options({
+toolset: yargs.vlm.createStandardToolsetOption(
+  "The target toolset to add a configuration for this tool."),
 });`,
-        handler: `(yargv) => {
-  const vlm = yargv.vlm;
-  const toolConfig = vlm.tryGetToolsetToolConfig(yargv.toolset, toolName) || {};
-  // Construct a tool config update or bail out.
-  const configUpdate = {};
-  vlm.updateValmaConfig({ toolset: { [yargv.toolset]: { tool: { [toolName]: configUpdate } } } });
+    handler: `(yargv) => {
+const vlm = yargv.vlm;
+const toolConfig = vlm.getToolConfig(yargv.toolset, toolName) || {};
+// Construct a tool config update or bail out.
+const configUpdate = {};
+vlm.updateToolConfig(yargv.toolset, toolName, configUpdate);
 };
 `,
-      });
+  }]);
   return yargv.vlm.invoke(`.configure/.type/.tool/**/*`);
 };

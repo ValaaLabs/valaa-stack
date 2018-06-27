@@ -16,6 +16,9 @@ exports.builder = (yargs) => yargs.options({
     type: "string", description: "The new command skeleton filename in valma/ (leave empty for default)",
     interactive: { type: "input", when: "if-undefined" }
   },
+  brief: {
+    type: "string", description: "Description of couple words of the new command",
+  },
   export: {
     type: "boolean", default: false,
     description: "Export command in package.json:bin section instead of valma.bin/ symlinking",
@@ -31,11 +34,17 @@ exports.builder = (yargs) => yargs.options({
   header: {
     type: "string", description: "Lines to place at the beginning of the script skeleton",
   },
-  brief: {
-    type: "string", description: "Description of couple words of the new command for logging",
-  },
   describe: {
-    type: "string", description: "Full description of the new command (set as exports.describe)",
+    type: "string", description: "Full description of the new command, set as exports.describe",
+  },
+  disabled: {
+    type: "string", description: "Full exports.disabled source (as function callback)",
+  },
+  builder: {
+    type: "string", description: "Full exports.builder source (as function callback)",
+  },
+  handler: {
+    type: "string", description: "Full exports.handler source (as function callback)",
   },
 });
 
@@ -75,10 +84,7 @@ exports.handler = async (yargv) => {
     if (answer.choice === "local instead") { local = true; continue; }
     if (!vlm.shell.test("-e", scriptPath)) {
       vlm.shell.mkdir("-p", vlm.path.dirname(scriptPath));
-      vlm.shell.ShellString(
-          (yargv.skeleton ? _createSkeleton : _createBody)(
-              command, yargv.summary, yargv.describe, yargv.header))
-          .to(scriptPath);
+      vlm.shell.ShellString(_createSource(command, yargv)).to(scriptPath);
     } else {
       vlm.warn(`not overwriting already existing script '${scriptPath}'`);
     }
@@ -110,60 +116,66 @@ exports.handler = async (yargv) => {
   return { local, verb, [command]: scriptPath };
 };
 
-function _createSkeleton (command, summary, describe, header_) {
-  const header = `${(command[0] === ".") || command.includes("/.") ? "" : "#!/usr/bin/env vlm\n\n"
-      }${header_ || ""}`;
-  return `${header
+function _createSource (command, yargv) {
+  // Emit shebang only if the command is a top-level command.
+  const components = yargv.skeleton ? createSkeleton() : createExample();
+  return
+`${(command[0] === ".") || command.includes("/.") ? "" : "#!/usr/bin/env vlm\n\n"
+}${yargv.header || ""
 }exports.command = "${command}";
-exports.summary = "${summary || ""}";
-exports.describe = \`\${exports.summary}.\n${describe || ""}\`;
+exports.summary = "${yargv.summary || yargv.brief || ""}";
+exports.describe = \`\${exports.summary}.${yargv.describe ? `\n\n${yargv.describe}` : ""}\`;
 
-exports.disabled = (yargs) => !yargs.vlm.packageConfig;
-exports.builder = (yargs) => {
+exports.disabled = ${yargv.disabled || components.disabled};
+exports.builder = ${yargv.builder || components.builder};
+
+exports.handler = ${yargv.handler || components.handler};
+`;
+
+  function _createSkeleton () {
+    return {
+      disabled: "(yargs) => !yargs.vlm.packageConfig",
+      builder:
+`(yargs) => {
   const vlm = yargs.vlm;
   return yargs;
-};
-
-exports.handler = (yargv) => {
+}`,
+      handler:
+`(yargv) => {
   const vlm = yargv.vlm;
   return true;
-};
-`;
-}
+}`,
+    };
+  }
 
-function _createTemplate (command, summary, describe, header_) {
-  const header = `${(command[0] === ".") || command.includes("/.") ? "" : "#!/usr/bin/env vlm\n\n"
-      }${header_ || ""}`;
-  return `${header
-}exports.command = "${command}";
-exports.summary = "${summary || ""}";
-exports.describe = \`\${exports.summary}.\n${describe || ""}\`;
-
-// Example template which displays the command name itself and package name where it is ran
-// Only enabled inside package
-exports.disabled = (yargs) => !yargs.vlm.packageConfig;
-exports.builder = (yargs) => {
+  function _createExample () {
+    return {
+      disabled: "(yargs) => !yargs.vlm.packageConfig",
+      builder:
+`(yargs) => {
   const vlm = yargs.vlm;
   return yargs.options({
     name: {
+      // See https://github.com/yargs/yargs/blob/HEAD/docs/api.md for yargs options
       type: "string", description: "current package name",
       default: vlm.packageConfig.name,
+      // See https://github.com/SBoudrias/Inquirer.js/ about interactive attributes
       interactive: { type: "input", when: "if-undefined" },
-      // See https://github.com/SBoudrias/Inquirer.js/ for more interactive attributes
     },
     color: {
       type: "string", description: "message color",
       default: "reset", choices: ["reset", "red", "black"],
       interactive: { type: "list", when: "always" },
-      // See https://github.com/SBoudrias/Inquirer.js/ for more interactive attributes
     },
-    // See https://github.com/yargs/yargs/blob/HEAD/docs/api.md for more yargs options
   });
-};
-
-exports.handler = (yargv) => {
+}`,
+      handler:
+`(yargv) => {
+  // Example template which displays the command name itself and package name where it is ran
+  // Only enabled inside package
   const vlm = yargv.vlm;
   vlm.info(vlm.colors[yargv.color](\`This is '${command}' running inside '\${yargv.name}'\`));
-};
-`;
+}`,
+    };
+  }
 }
