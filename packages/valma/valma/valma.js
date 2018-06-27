@@ -56,6 +56,9 @@ const vlm = vargs.vlm = {
   // Immutable contents of valma.json (contains pending updates as well)
   valmaConfig: undefined,
 
+  getPackageConfig,
+  getValmaConfig,
+
   // Registers pending updates to the package.json config file (immediately updates
   // vlm.packageConfig) which are written to file only immediately before valma execution exits or
   // an external command is about to be executed.
@@ -651,6 +654,7 @@ async function invoke (command, argv_ = []) {
           ? _toArgString(entry)
           : [].concat(...Object.keys(entry).map(key => _toArgString(entry[key], key))))));
   function _toArgString (value, key) {
+    if ((value === undefined) || (value === null)) return [];
     if (typeof value === "string") return !key ? value : [`--${key}`, value];
     if ((typeof value === "boolean") && key) return value ? `--${key}` : `--no-${key}`;
     return JSON.stringify(value);
@@ -1292,6 +1296,16 @@ function _reloadPackageAndValmaConfigs () {
   }
 }
 
+function getPackageConfig (...keys) { return _getConfigAtPath(this.packageConfig, keys); }
+function getValmaConfig (...keys) { return _getConfigAtPath(this.valmaConfig, keys); }
+
+function _getConfigAtPath (root, keys) {
+  [].concat(...keys)
+      .filter(key => (key !== undefined))
+      .reduce((result, key) => ((result && (typeof result === "object")) ? result[key] : undefined),
+          root);
+}
+
 function updatePackageConfig (updates) {
   if (!vlm.packageConfig) {
     throw new Error("vlm.updatePackageConfig: cannot update package.json as it doesn't exist");
@@ -1319,12 +1333,14 @@ function updateValmaConfig (updates) {
   }
 }
 
+// Toolset vlm functions
+
 function getToolsetConfig (toolsetName) {
-  return ((this.valmaConfig || {}).toolset || {})[toolsetName];
+  return this.getValmaConfig("toolset", toolsetName);
 };
 
 function getToolConfig (toolsetName, toolName) {
-  return ((((this.valmaConfig || {}).toolset || {})[toolsetName] || {}).tool || {})[toolName];
+  return this.getValmaConfig("toolset", toolsetName, "tool", toolName);
 };
 
 function updateToolsetConfig (toolsetName, update) {

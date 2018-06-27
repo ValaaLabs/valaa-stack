@@ -9,7 +9,7 @@ root from package @valos/toolset-authollery directory templates/.*.`;
 
 // Example template which displays the command name itself and package name where it is ran
 // Only enabled inside package
-exports.disabled = (yargs) => (((yargs.vlm.packageConfig || {}).valaa || {}).type !== "authollery");
+exports.disabled = (yargs) => yargs.vlm.getPackageConfig("valaa", "type") !== "authollery");
 exports.builder = (yargs) => yargs;
 
 exports.handler = (yargv) => {

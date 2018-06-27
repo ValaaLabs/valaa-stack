@@ -9,7 +9,7 @@ root from package @valos/toolset-vault directory templates/.*.`;
 
 // Example template which displays the command name itself and package name where it is ran
 // Only enabled inside package
-exports.disabled = (yargs) => (((yargs.vlm.packageConfig || {}).valaa || {}).type !== "vault");
+exports.disabled = (yargs) => (yargs.vlm.getPackageConfig("valaa", "type") !== "vault");
 exports.builder = (yargs) => yargs;
 
 exports.handler = (yargv) => {

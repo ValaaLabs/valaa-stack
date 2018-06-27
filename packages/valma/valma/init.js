@@ -14,7 +14,7 @@ Valma init has following interactive phases:
 4. Selection of in-use toolsets from those listed in the workshops
 5. Configuration of in-use toolsets and tools via 'vlm configure'`;
 
-exports.disabled = (yargs) => ((yargs.vlm || {}).packageConfig || {}).valaa;
+exports.disabled = (yargs) => yargs.vlm.getPackageConfig("valaa");
 exports.builder = (yargs) => yargs;
 
 exports.handler = async (yargv) => {

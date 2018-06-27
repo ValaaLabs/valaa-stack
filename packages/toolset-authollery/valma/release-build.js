@@ -43,7 +43,7 @@ exports.handler = (yargv) => {
   Object.assign(vlm, {
     releasePath,
     prepareToolsetBuild,
-    prepareToolsetToolBuild,
+    prepareToolBuild,
   });
   return vlm.invoke(".release-build/**/*", [releasePath]);
 };
@@ -64,7 +64,7 @@ function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-rel
     throw new Error(`valma-release-build/${toolsetName}: releasePath directory '${
         releasePath}' missing`);
   }
-  const toolsetConfig = ((this.valmaConfig || {}).toolset || {})[toolsetName];
+  const toolsetConfig = this.getToolsetConfig(toolsetName);
   if (!toolsetConfig) return {};
   if ((toolsetConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {
     logger.ifVerbose(1)
@@ -80,10 +80,10 @@ function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-rel
   return { toolsetConfig, toolsetReleasePath };
 }
 
-function prepareToolsetToolBuild (owningToolsetName, toolName,
+function prepareToolBuild (toolsetName, toolName,
     toolDescription = "tool sub-release", desiredVersionHash) {
   const logger = this.tailor({ commandName: `release-build/${toolName}` });
-  const toolConfig = ((this.valmaConfig || {}).tool || {})[toolName];
+  const toolConfig = this.getToolConfig(toolsetName, toolName);
   if (!toolConfig) return {};
   if ((toolConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {
     logger.ifVerbose(1)
@@ -91,7 +91,7 @@ function prepareToolsetToolBuild (owningToolsetName, toolName,
             } of tool ${toolDescription}`);
     return {};
   }
-  const toolReleasePath = this.path.join(this.releasePath, owningToolsetName, toolName);
+  const toolReleasePath = this.path.join(this.releasePath, toolsetName, toolName);
   logger.info(`building ${toolDescription} release in '${toolReleasePath}'`);
   this.shell.rm("-rf", toolReleasePath);
   this.shell.mkdir("-p", toolReleasePath);

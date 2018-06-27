@@ -38,7 +38,7 @@ exports.handler = (yargv) => {
   Object.assign(vlm, {
     releasePath,
     locateToolsetRelease,
-    locateToolsetToolRelease,
+    locateToolRelease,
   });
   return vlm.invoke(".release-deploy/**/*", [releasePath]);
 };
@@ -46,7 +46,7 @@ exports.handler = (yargv) => {
 function locateToolsetRelease (toolsetName, toolsetDescription = "toolset") {
   const logger = this.tailor({ commandName: `release-deploy/${toolsetName}` });
   const releasePath = this.releasePath;
-  const toolsetConfig = ((this.valmaConfig || {}).toolset || {})[toolsetName];
+  const toolsetConfig = this.getToolsetConfig(toolsetName);
   if (!toolsetConfig) {
     throw new Error(`${this.commandName}: valma.json:toolset['${toolsetName}] missing`);
   }
@@ -64,11 +64,11 @@ function locateToolsetRelease (toolsetName, toolsetDescription = "toolset") {
   return { toolsetConfig, toolsetReleasePath };
 }
 
-function locateToolsetToolRelease (owningToolsetName, toolName, toolDescription = "tool") {
+function locateToolRelease (toolsetName, toolName, toolDescription = "tool") {
   const logger = this.tailor({ commandName: `release-deploy/${toolName}` });
   const releasePath = this.releasePath;
-  const toolConfig = ((this.valmaConfig || {}).toolset || {})[toolName];
-  const toolReleasePath = this.path.join(releasePath, owningToolsetName, toolName);
+  const toolConfig = this.getToolConfig(toolsetName, toolName);
+  const toolReleasePath = this.path.join(releasePath, toolsetName, toolName);
   if (!this.shell.test("-d", toolReleasePath)) {
     logger.ifVerbose(1)
         .info(`skipping ${toolDescription} deploy: no release at '${toolReleasePath}'`);

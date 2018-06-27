@@ -16,7 +16,7 @@ Toolsets from file and global pools can be used but should be avoided
 as such toolsets are not guaranteed to be always available.`;
 
 exports.disabled = (yargs) => {
-  const valaa = ((yargs.vlm || {}).packageConfig || {}).valaa;
+  const valaa = yargs.vlm.getPackageconfig("valaa");
   return !valaa || !valaa.type || !valaa.domain || !yargs.vlm.valmaConfig;
 };
 exports.builder = (yargs) => {

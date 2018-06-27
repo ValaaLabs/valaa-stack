@@ -6,7 +6,7 @@ exports.describe = `${exports.summary}.
 
 Invokes all the in-use toolset configure commands.`;
 
-exports.disabled = (yargs) => !((yargs.vlm || {}).packageConfig || {}).valaa;
+exports.disabled = (yargs) => !yargs.vlm.getPackageConfig("valaa");
 exports.builder = (yargs) => yargs.options({
   reconfigure: {
     type: "boolean", default: false, global: true,

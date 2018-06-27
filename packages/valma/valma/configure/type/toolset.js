@@ -19,7 +19,7 @@ enabled or disabled on a repository.
 A valma toolsets are added as regular devDependencies and configured
 by running 'vlm configure' afterwards.`;
 
-exports.disabled = (yargs) => !(yargs.vlm.packageConfig || {}).valaa;
+exports.disabled = (yargs) => !yargs.vlm.getPackageConfig("valaa");
 exports.builder = (yargs) => yargs.options({
   "restrict": {
     type: "string",

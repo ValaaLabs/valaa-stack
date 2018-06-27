@@ -12,7 +12,7 @@ Will set package.json .workspaces stanza.
 
 exports.builder = (yargs) => {
   const vlm = yargs.vlm;
-  const current = ((vlm.packageConfig || {}).workspaces || [])[0];
+  const current = vlm.getPackageConfig("workspaces", 0);
   return yargs.options({
     workspaces: {
       type: "string", default: current || "packages/*",
@@ -26,10 +26,10 @@ exports.builder = (yargs) => {
 
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
-  if (!((vlm.packageConfig || {}).devDependencies || {})["@valos/toolset-vault"]) {
+  if (!vlm.getPackageConfig("devDependencies", "@valos/toolset-vault")) {
     await vlm.execute("yarn", ["add", "-W", "--dev", "@valos/toolset-vault"]);
   }
-  if (!vlm.packageConfig.workspaces || (vlm.packageConfig.workspaces[0] !== yargv.workspaces)) {
+  if (vlm.getPackageConfig("workspaces", 0) !== yargv.workspaces) {
     await vlm.updatePackageConfig({ workspaces: [yargv.workspaces] });
     await vlm.execute("yarn", ["install"]);
   }
