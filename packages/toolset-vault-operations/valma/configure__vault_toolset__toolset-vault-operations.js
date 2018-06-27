@@ -7,10 +7,10 @@ grabbing by repositories with valaa type 'vault'.`;
 exports.disabled = (yargs) => !yargs.vlm.packageConfig;
 exports.builder = (yargs) => {
   const vlm = yargs.vlm;
-  return yargs;
+  return vlm && yargs;
 };
 
 exports.handler = (yargv) => {
   const vlm = yargv.vlm;
-  return true;
+  return vlm && true;
 };

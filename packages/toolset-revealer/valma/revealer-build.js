@@ -12,4 +12,5 @@ exports.builder = (yargs) => yargs;
 
 exports.handler = (yargv) => {
   const vlm = yargv.vlm;
+  return vlm && true;
 };

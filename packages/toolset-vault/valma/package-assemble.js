@@ -61,9 +61,9 @@ exports.builder = (yargs) => yargs.options({
         ""} Causes --overwrite`,
     causes: ["overwrite"],
   },
-  "only-changed": {
-    type: "boolean", default: true,
-    description: "Limit the selection to packages with changes.",
+  "allow-unchanged": {
+    type: "boolean",
+    description: "Allows unchanged packages in the selection (default is to exclude them)",
   },
   versioning: {
     type: "boolean", default: true,
@@ -98,8 +98,8 @@ exports.handler = async (yargv) => {
   const requestGlobs = yargv._.length >= 1 ? ["**/*"] : yargv._.slice(1);
   let updatedPackageNames;
   vlm.info("Selecting packages matching:", ...requestGlobs);
-  if (yargv.onlyChanged) {
-    vlm.info("Limiting selection to only changed packages");
+  if (!yargv.allowUnchanged) {
+    vlm.info("Limiting the package selection to only the updated packages:");
     const updatedPackages = vlm.shell.exec(`npx -c "lerna updated --json --loglevel=silent"`);
     if (updatedPackages.code) {
       vlm.warn("No updated packages found, exiting",
@@ -121,7 +121,7 @@ exports.handler = async (yargv) => {
     const ret = {
       name, sourceDirectory, packagePath, packageConfig, targetDirectory, sourcePackageJSONPath,
     };
-    if (yargv.onlyChanged && !updatedPackageNames.includes(name)) return undefined;
+    if (!yargv.allowUnchanged && !updatedPackageNames.includes(name)) return undefined;
     if (!requestGlobs.find(glob => vlm.minimatch(name, glob))) return undefined;
     if (vlm.shell.test("-d", targetDirectory)) {
       ret.exists = true;
@@ -189,7 +189,10 @@ exports.handler = async (yargv) => {
     vlm.info("Updating version, making git commit, creating a lerna git tag and",
         "updating target package.json's");
     await vlm.execute("lerna", [
-      "publish", "--skip-npm", "--yes", "--loglevel=silent", !yargv.onlyChanged && "--force-publish=*"
+      "publish", "--skip-npm", "--yes", "--loglevel=silent",
+      // FIXME(iridian): This is broken: actually updates all package versions, not only those of
+      // the selected packages. Or if this is a feature, it should be documented.
+      yargv.allowUnchanged && "--force-publish=*"
     ]);
     if (!yargv.assemble && (!yargv.overwrite || !yargv.onlyPending)) {
       vlm.info("Skipping package.json version updates", "as",
@@ -242,7 +245,7 @@ exports.handler = async (yargv) => {
             : yargv.versioning
                 ? `success: version updated to ${newConfig.version} from ${packageConfig.version}`
             : `success: surprise version update to ${newConfig.version} from ${
-                packageConfig.version}`)  ;
+                packageConfig.version}`);
     if (failure) vlm.error(header, conclusion);
     else vlm.info(header, conclusion);
   });

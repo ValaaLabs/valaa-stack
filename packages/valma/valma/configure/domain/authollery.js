@@ -55,7 +55,7 @@ exports.handler = async (yargv) => {
   }
   return vlm.invoke(`.configure/.domain/.authollery/**/*`);
 
-  function _createReleaseSubCommand(subCommandName) {
+  function _createReleaseSubCommand (subCommandName) {
     return vlm.invoke("create-command", [{
       command: `.release-${subCommandName}/${isTool ? ".tool/" : ""}${name}`,
       filename: `release-${subCommandName}_${isTool ? "tool_" : ""}_${shortName}.js`,
@@ -112,4 +112,4 @@ invoke the ${subCommandName} commands of all of its ${subCommandName}able tools.
 `,
     }]);
   }
-}
+};

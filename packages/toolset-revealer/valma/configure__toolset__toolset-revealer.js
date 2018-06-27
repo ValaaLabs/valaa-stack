@@ -25,12 +25,12 @@ exports.handler = (yargv) => {
   vlm.instruct("! Edit webpack.config.js to configure webpack entry and output locations.");
   if (!toolsetConfig.webpack) {
     vlm.updateToolsetConfig(toolsetName, {
-      "webpack": {
-        "entry": { "valaa-inspire": "./node_modules/@valos/inspire/index.js" },
-        "output": {
-          "path": "dist/revealer/valaa/inspire/",
-          "publicPath": "/valaa/inspire/",
-          "filename": "[name].js"
+      webpack: {
+        entry: { "valaa-inspire": "./node_modules/@valos/inspire/index.js" },
+        output: {
+          path: "dist/revealer/valaa/inspire/",
+          publicPath: "/valaa/inspire/",
+          filename: "[name].js"
         }
       }
     });

@@ -243,10 +243,10 @@ const vlm = vargs.vlm = {
   },
 };
 
-colors._setTheme = function (obj) {
+colors._setTheme = function _setTheme (obj) {
   Object.keys(obj).forEach(name => {
     this[name] = (Array.isArray(obj[name]) ? obj[name] : [obj[name]])
-        .map(name => this[name].bind(this))
+        .map(name_ => this[name_].bind(this))
         .reduceRight((next, subOp) => (...rest) => subOp(next(...rest)));
   });
 };
@@ -467,7 +467,7 @@ vlm.ifVerbose(1).babble("phase 1, init:", "determine global options and availabl
     "\n\tdefaultPaths:", JSON.stringify(defaultPaths)
 ).ifVerbose(3).expound("global options:", globalVargv);
 
-const availablePools = [];
+const _availablePools = [];
 // When a command begins with ./ or contains valma- it is considered a direct file valma command.
 // It's parent directory is made the initial "file" pool.
 let poolBase = globalVargv.poolBase;
@@ -477,16 +477,16 @@ if ((globalVargv.command || "").includes("valma-")
   const match = globalVargv.command.match(/(.*\/)?(\.?)valma-(.*?)(.js)?$/);
   globalVargv.command = match ? `${match[2]}${match[3]}` : "";
   const filePoolPath = vlm.path.resolve((match && match[1]) || "");
-  availablePools.push({ name: "file", path: filePoolPath });
+  _availablePools.push({ name: "file", path: filePoolPath });
   poolBase = filePoolPath;
 }
-availablePools.push(..._locateDependedPools(poolBase, globalVargv.poolDirectories));
-availablePools.push({ name: "global", path: globalVargv.globalPool });
+_availablePools.push(..._locateDependedPools(poolBase, globalVargv.poolDirectories));
+_availablePools.push({ name: "global", path: globalVargv.globalPool });
 
 vlm.ifVerbose(2)
-    .expound("available pools:", availablePools);
+    .expound("available pools:", _availablePools);
 
-let activePools = [];
+let _activePools = [];
 
 const packageConfigStatus = {
   path: vlm.path.join(process.cwd(), "package.json"), updated: false,
@@ -531,8 +531,8 @@ async function handler (vargv) {
       INIT_CWD: process.cwd(),
       PATH: `${[
         pool.path,
-        activePools[activePools.length - 1].path,
-        activePools[0].path,
+        _activePools[_activePools.length - 1].path,
+        _activePools[0].path,
       ].join(":")}:${process.env.PATH}`,
       _: vlm.path.join(pool.path, "vlm"),
     });
@@ -574,7 +574,7 @@ async function handler (vargv) {
 
   vlm.ifVerbose(2)
       .expound("activePools:",
-          ...[].concat(...activePools.map(pool => ["\n", Object.assign({}, pool, {
+          ...[].concat(..._activePools.map(pool => ["\n", Object.assign({}, pool, {
             listing: vlm.verbosity < 3
                 ? "<hidden>"
                 : Array.isArray(pool.listing) && pool.listing.map(entry => entry.name)
@@ -681,12 +681,12 @@ async function invoke (command, argv_ = []) {
       .expound("introspect:", introspect)
       .expound("contextVargv:", { ...contextVargv, vlm: "<hidden>" });
 
-  const activeCommands = _selectActiveCommands(this, activePools, commandGlob, introspect);
+  const activeCommands = _selectActiveCommands(this, _activePools, commandGlob, introspect);
 
   if (this.isCompleting || contextVargv.bashCompletion) {
     vargs.completion("bash-completion", (current, argvSoFar) => {
       const rule = _underToSlash(_valmaGlobFromCommandPrefix(argvSoFar._[1], argvSoFar.matchAll));
-      const ret = [].concat(...activePools.map(pool => pool.listing
+      const ret = [].concat(..._activePools.map(pool => pool.listing
           .filter(node => !_isDirectory(node) && minimatch(_underToSlash(node.name || ""), rule,
               { dot: argvSoFar.matchAll }))
           .map(node => _valmaCommandFromPath(node.name))));
@@ -709,7 +709,7 @@ async function invoke (command, argv_ = []) {
 
   if (!isWildcardCommand && !Object.keys(activeCommands).length) {
     vlm.error(`cannot find command '${command}' from active pools:`,
-        ...activePools.map(activePool => `\n\t"${vlm.path.join(activePool.path, commandGlob)}"`));
+        ..._activePools.map(activePool => `\n\t"${vlm.path.join(activePool.path, commandGlob)}"`));
     return -1;
   }
 
@@ -725,7 +725,7 @@ async function invoke (command, argv_ = []) {
   vargs.help();
 
   // Reverse to have matching global command names execute first (while obeying overrides)
-  for (const activePool of activePools.slice().reverse()) {
+  for (const activePool of _activePools.slice().reverse()) {
     for (const matchingCommand of Object.keys(activePool.commands).sort()) {
       const activeCommand = activeCommands[matchingCommand];
       if (!activeCommand) continue;
@@ -875,7 +875,7 @@ function _locateDependedPools (initialPoolBase, poolDirectories) {
   let pathBase = initialPoolBase;
   const ret = [];
   while (pathBase) {
-    poolDirectories.map(candidate => {
+    poolDirectories.forEach(candidate => {
       const poolPath = vlm.path.join(pathBase, candidate);
       if (shell.test("-d", poolPath)) {
         ret.push({ name: `${pathBase.match(/([^/]*)\/?$/)[1]}/${candidate}`, path: poolPath });
@@ -890,14 +890,14 @@ function _locateDependedPools (initialPoolBase, poolDirectories) {
     });
     if (pathBase === "/") break;
     pathBase = vlm.path.join(pathBase, "..");
-  };
+  }
   return ret;
 }
 
 function _refreshActivePools (tryShortCircuit) {
-  activePools = [];
+  _activePools = [];
   let specificEnoughVLMSeen = false;
-  for (const pool of availablePools) {
+  for (const pool of _availablePools) {
     if (!pool.path || !shell.test("-d", pool.path)) continue;
     let poolHasVLM = false;
     pool.listing = shell.ls("-lAR", pool.path)
@@ -906,7 +906,7 @@ function _refreshActivePools (tryShortCircuit) {
           if (file.name === "vlm") poolHasVLM = true;
           return false;
         });
-    activePools.push(pool);
+    _activePools.push(pool);
     if (process.argv[1].indexOf(pool.path) === 0) specificEnoughVLMSeen = true;
     const shortCircuit = tryShortCircuit
         && tryShortCircuit(pool, poolHasVLM, specificEnoughVLMSeen);
@@ -957,7 +957,7 @@ function _selectActiveCommands (contextVLM, activePools, commandGlob, introspect
           } else {
             pool.stats.disabled = (pool.stats.disabled || 0) + 1;
           }
-        } else if (!introspect && !contextVargv.dryRun) {
+        } else if (!introspect && !contextVLM.contextVargv.dryRun) {
           throw new Error(`invalid script module '${activeCommand.modulePath
               }', export 'command', 'describe' or 'handler' missing`);
         }
@@ -1006,7 +1006,7 @@ async function _loadNPMConfigVariables () {
 
 function listMatchingCommands (command, matchAll = false) {
   const minimatcher = _underToSlash(_valmaGlobFromCommand(command || "*"));
-  const ret = [].concat(...activePools.map(pool => pool.listing
+  const ret = [].concat(..._activePools.map(pool => pool.listing
       .map(file => _underToSlash(file.name))
       .filter(name => {
         const ret_ = minimatch(name, minimatcher, { dot: matchAll });
@@ -1133,7 +1133,7 @@ function _outputIntrospection (introspect, commands_, commandGlob, isWildcard, m
     }
   }
   let outerRet = [];
-  for (const pool of [...activePools].reverse()) {
+  for (const pool of [..._activePools].reverse()) {
     const isEmpty = !Object.keys(pool.commands).length;
     if (isWildcard) {
       vlm.log(colors.bold(`## ${vlm.path.join(pool.name, commandGlob)} ${
@@ -1341,11 +1341,11 @@ function updateValmaConfig (updates) {
 
 function getToolsetConfig (toolsetName) {
   return this.getValmaConfig("toolset", toolsetName);
-};
+}
 
 function getToolConfig (toolsetName, toolName) {
   return this.getValmaConfig("toolset", toolsetName, "tool", toolName);
-};
+}
 
 function confirmToolsetExists (toolsetName) {
   if (this.getToolsetConfig(toolsetName)) return true;
@@ -1475,7 +1475,8 @@ function _createVargs (args, cwd) {
       const { argv } = yargsParser(effects, { ...options });
       for (const effect of Object.keys(argv)) {
         const defaultValue = options.default[effect];
-        if (effect !== "_" && (argv[effect] !== vargv[effect]) && (argv[effect] !== defaultValue)) {
+        if (effect !== "_" && (argv[effect] !== vargv[effect]) && (argv[effect] !== defaultValue)
+            && (argv[effect] || (defaultValue !== undefined))) {
           if (defaultValue && (vargv[effect] !== defaultValue)) {
             throw new Error(`Conflicting effect '${effect}' has its default value '${defaultValue
                 }' explicitly set to '${vargv[effect]}' and caused to '${argv[effect]}'`);

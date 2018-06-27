@@ -58,7 +58,8 @@ exports.handler = async (yargv) => {
   let local = !yargv.export;
   while (!(vlm.packageConfig.bin || {})[commandExportName]) {
     const choices = [local ? "Create" : "Export", "skip",
-        local ? "export instead" : "local instead"];
+      local ? "export instead" : "local instead"
+    ];
     if (yargv.describe) choices.push("help");
     const linkMessage = local
         ? `'valma.bin/${commandExportName}'`
@@ -118,9 +119,8 @@ exports.handler = async (yargv) => {
 
 function _createSource (command, yargv) {
   // Emit shebang only if the command is a top-level command.
-  const components = yargv.skeleton ? createSkeleton() : createExample();
-  return
-`${(command[0] === ".") || command.includes("/.") ? "" : "#!/usr/bin/env vlm\n\n"
+  const components = yargv.skeleton ? _createSkeleton() : _createExample();
+  return `${(command[0] === ".") || command.includes("/.") ? "" : "#!/usr/bin/env vlm\n\n"
 }${yargv.header || ""
 }exports.command = "${command}";
 exports.summary = "${yargv.summary || yargv.brief || ""}";

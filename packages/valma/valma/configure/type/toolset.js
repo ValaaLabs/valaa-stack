@@ -21,13 +21,13 @@ by running 'vlm configure' afterwards.`;
 
 exports.disabled = (yargs) => !yargs.vlm.getPackageConfig("valaa");
 exports.builder = (yargs) => yargs.options({
-  "restrict": {
+  restrict: {
     type: "string",
     description: `Restrict this toolset to a valaa type (clear for no restriction):`,
     default: yargs.vlm.packageConfig.valaa.domain,
     interactive: { type: "input", when: true ? "always" : "if-undefined" },
   },
-  "grabbable": {
+  grabbable: {
     description: `Make this toolset grabbable and stowable (falsy for always-on):`,
     default: true,
     interactive: { type: "input", when: true ? "always" : "if-undefined" },

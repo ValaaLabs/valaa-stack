@@ -99,8 +99,9 @@ file for yarn (and for npm, for which yarn is an analogue).
       let answer = await vlm.inquire([{
         message: wasError
             ? "Retry adding workshops (or direct toolsets) as devDependencies?"
-            : `${vlm.colors.command('yarn add')} ${vlm.packageConfig.devDependencies
-                ? "more" : "initial"} workshops (or direct toolsets) as devDependencies?`,
+            : `${vlm.colors.command("yarn add")} ${
+                vlm.packageConfig.devDependencies ? "more" : "initial"
+              } workshops (or direct toolsets) as devDependencies?`,
         type: "list", name: "choice", default: choices[0], choices,
       }]);
       wasError = false;
@@ -108,7 +109,7 @@ file for yarn (and for npm, for which yarn is an analogue).
       if (answer.choice === "quit") return false;
       if (answer.choice === "help") {
         vlm.speak();
-        vlm.info("workshop registration"
+        vlm.info("workshop registration",
 `This phase uses '${coloredYarnAdd}' to add workshops as devDependencies.
 This makes the toolsets in those workshops to be immediately available
 for the listings in following phases.
