@@ -1,5 +1,7 @@
+**/node_modules/**
+
 .yalc
 dist
-valma.bin
 revelations
-**/node_modules/**
+temp
+valma.bin

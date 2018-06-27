@@ -2,8 +2,8 @@ const shared = require("@valos/toolset-vault/shared/.eslintrc");
 
 module.exports = Object.assign({}, shared, {
   // Add overrides here
-  rules: {
-    ...shared.rules,
+  // Stick to es5: current version of eslint doesn't seem to support all of es6.
+  rules: Object.assign({}, shared.rules, {
     "react/forbid-prop-types": 0,
     "react/sort-comp": 0, // for some reason getters/setters are enabled, which is quite annoying
     "react/jsx-filename-extension": 0, // having a different extension gives little value, toolchain detects the JSX anyway
@@ -11,5 +11,5 @@ module.exports = Object.assign({}, shared, {
     "react/prefer-stateless-function": 0, // stateless/stateful change can happen: need to restructure is annoying and provides little value
 
     "jsx-a11y/no-static-element-interactions": 0,
-  },
+  }),
 });

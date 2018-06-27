@@ -4,6 +4,7 @@
 *error.log
 *.zip
 
+.yalc
 coverage
 dist
 node_modules
