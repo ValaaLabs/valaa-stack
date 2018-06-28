@@ -16,15 +16,10 @@ exports.builder = (yargs) => yargs.options({
 
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
-  vlm.reconfigure = yargv.reconfigure;
-  if (!vlm.packageConfig) {
-    throw new Error("valma-configure: current directory is not a repository; "
-        + "package.json does not exist");
-  }
-  const valaa = vlm.packageConfig.valaa;
+  const valaa = vlm.getPackageConfig("valaa");
   if (!valaa || !valaa.type || !valaa.domain) {
     throw new Error("valma-configure: current directory is not a valaa repository; "
-        + "package.json doesn't have the valaa section or it doesn't have valaa.type/domain set"
+        + "no package.json with valaa stanza with both type and domain set"
         + "(maybe run 'vlm init' to initialize?)");
   }
   if (!vlm.valmaConfig) {
@@ -36,8 +31,9 @@ exports.handler = async (yargv) => {
   if (!yargv.toolsetGlob) {
     await vlm.invoke(`.configure/.domain/${valaa.domain}`, rest);
     await vlm.invoke(`.configure/.type/${valaa.type}`, rest);
-    await vlm.invoke(`.configure/.toolsets`, rest);
+    await vlm.execute("yarn", "install");
+    await vlm.invoke(`.configure/.select-toolsets`, rest);
   }
-  return await vlm.invoke(`.configure/{,.type/.${valaa.type}/,.domain/.${valaa.domain}/}.toolset/${
+  return await vlm.invoke(`.configure/{.domain/.${valaa.domain}/,.type/.${valaa.type}/,}.toolset/${
       yargv.toolsetGlob || ""}{*/**/,}*`, rest);
 };

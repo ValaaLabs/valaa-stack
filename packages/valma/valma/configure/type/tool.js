@@ -54,8 +54,8 @@ exports.handler = async (yargv) => {
 which directly depends on this tool must explicit call this command.`,
 
     builder: `(yargs) => yargs.options({
-toolset: yargs.vlm.createStandardToolsetOption(
-  "The target toolset to add a configuration for this tool."),
+  toolset: yargs.vlm.createStandardToolsetOption(
+      "The target toolset to add a configuration for this tool."),
 });`,
     handler: `(yargv) => {
 const vlm = yargv.vlm;

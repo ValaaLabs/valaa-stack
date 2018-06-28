@@ -44,10 +44,12 @@ const defaultPaths = {
 // vlm - the Valma global API singleton - these are available to all command scripts via both
 // vargs.vlm (in scripts exports.builder) as well as vargv.vlm (in scripts exports.handler).
 const vlm = vargs.vlm = {
-  // Calls valma sub-command with argv.
+  // Calls valma command with argv.
+  // Any plain objects are expanded to boolean or parameterized flags depending on the value type.
   invoke,
 
   // Executes an external command and returns a promise of the command stdandard output as string.
+  // Any plain objects are expanded to boolean or parameterized flags depending on the value type.
   execute,
 
   // Immutable contents of package.json (contains pending updates as well)
@@ -348,10 +350,15 @@ characters to be equal although '/' is recommended anywhere possible.
           type: "boolean", default: true, global: false,
           description: "Promote to 'vlm' in the most specific pool available via forward",
         },
-        "npm-config": {
+        "npm-config-env": {
           group: "Options:",
           type: "boolean", default: true, global: false,
-          description: "Add node environment if it is missing via forward",
+          description: "Add npm global environment if they are missing",
+        },
+        "package-config-env": {
+          group: "Options:",
+          type: "boolean", default: false, global: false,
+          description: "Add npm package environment variables if they are missing (not implemented)",
         },
         forward: {
           group: "Options:",
@@ -507,7 +514,7 @@ async function handler (vargv) {
   // need forwarding).
   const fullyBuiltin = vlm.isCompleting || !vargv.command;
 
-  const needNPM = !fullyBuiltin && vargv.npmConfig && !process.env.npm_package_name;
+  const needNPM = !fullyBuiltin && vargv.npmConfigEnv && !process.env.npm_package_name;
   const needVLMPath = !fullyBuiltin && !process.env.VLM_PATH;
   const needForward = !fullyBuiltin && needVLMPath;
 
@@ -650,18 +657,6 @@ async function invoke (command, argv_ = []) {
   }
   if (!this || !this.ifVerbose) {
     throw new Error(`vlm.invoke: 'this' must be a valid vlm context`);
-  }
-  const argv = [].concat(...argv_.map(entry =>
-      (Array.isArray(entry)
-          ? entry
-      : (!entry || typeof entry !== "object")
-          ? _toArgString(entry)
-          : [].concat(...Object.keys(entry).map(key => _toArgString(entry[key], key))))));
-  function _toArgString (value, key) {
-    if ((value === undefined) || (value === null)) return [];
-    if (typeof value === "string") return !key ? value : [`--${key}`, value];
-    if ((typeof value === "boolean") && key) return value ? `--${key}` : `--no-${key}`;
-    return JSON.stringify(value);
   }
 
   const contextVargv = this.contextVargv;
@@ -883,8 +878,8 @@ function _locateDependedPools (initialPoolBase, poolDirectories) {
       }
       const packageJsonPath = vlm.path.join(pathBase, "package.json");
       if (candidate.match(/^node_modules/) && shell.test("-f", packageJsonPath)) {
-        vlm.warn(`node_modules missing for ${packageJsonPath}:`,
-            "some dependent commands will likely be missing.",
+        vlm.warn(`node_modules missing for ${packageJsonPath}!`,
+            "\nSome dependent commands will likely be missing.",
             `Run '${colors.executable("yarn install")}' to make dependent commands available.\n`);
       }
     });
@@ -983,7 +978,9 @@ async function _loadNPMConfigVariables () {
   Upside of current solution is that running "npm config list" is very fast, and can be optimized
   further too: npm can be programmatically invoked.
   */
-  vlm.warn("did not load npm_package_* variables (not implemented yet)");
+  if (globalVargv.packageConfigEnv) {
+    vlm.error("did not load npm_package_* variables (not implemented yet)");
+  }
   Object.assign(process.env, {
     npm_execpath: "/usr/lib/node_modules/npm/bin/npm-cli.js",
     npm_lifecycle_event: "env",
@@ -1146,7 +1143,7 @@ function _outputIntrospection (introspect, commands_, commandGlob, isWildcard, m
   }
   return outerRet;
 
-  function _outputInfos (pool, showHidden) {
+  function _outputInfos (pool, showOverridden) {
     let nameAlign = 0;
     let usageAlign = 0;
     let versionAlign = 0;
@@ -1154,8 +1151,8 @@ function _outputIntrospection (introspect, commands_, commandGlob, isWildcard, m
     .sort()
     .map((name) => {
       const command = pool.commands[name];
-      if (!command || (!showHidden
-          && ((command.disabled && isWildcard) || (activeCommands[name] !== command)))) {
+      if (!command || (command.disabled && isWildcard && !matchAll)
+          || (!showOverridden && (activeCommands[name] !== command))) {
         return {};
       }
       const info = _commandInfo(command.modulePath, pool.path);
@@ -1304,7 +1301,7 @@ function getPackageConfig (...keys) { return _getConfigAtPath(this.packageConfig
 function getValmaConfig (...keys) { return _getConfigAtPath(this.valmaConfig, keys); }
 
 function _getConfigAtPath (root, keys) {
-  [].concat(...keys)
+  return [].concat(...keys)
       .filter(key => (key !== undefined))
       .reduce((result, key) => ((result && (typeof result === "object")) ? result[key] : undefined),
           root);
@@ -1339,12 +1336,12 @@ function updateValmaConfig (updates) {
 
 // Toolset vlm functions
 
-function getToolsetConfig (toolsetName) {
-  return this.getValmaConfig("toolset", toolsetName);
+function getToolsetConfig (toolsetName, ...rest) {
+  return this.getValmaConfig("toolset", toolsetName, ...rest);
 }
 
-function getToolConfig (toolsetName, toolName) {
-  return this.getValmaConfig("toolset", toolsetName, "tool", toolName);
+function getToolConfig (toolsetName, toolName, ...rest) {
+  return this.getValmaConfig("toolset", toolsetName, "tool", toolName, ...rest);
 }
 
 function confirmToolsetExists (toolsetName) {

@@ -1,5 +1,5 @@
-exports.command = ".configure/.initialize";
-exports.summary = "Initialize valaa repository type and domain from available options";
+exports.command = ".configure/.valaa-stanza";
+exports.summary = "Configure valaa stanza type and domain from the available options";
 exports.describe = `${exports.summary}.
 
 Type determines the localized role and structure of this repository.
@@ -16,6 +16,10 @@ exports.builder = (yargs) => {
       .map(n => n.match(/^.configure\/.domain\/([^/]*)/)[1])
       .concat("<custom>");
   return yargs.options({
+    reconfigure: {
+      alias: "r", type: "boolean",
+      description: "Reconfigure all vault type configurations",
+    },
     type: {
       type: "string", default: valaa.type, choices: typeChoices,
       interactive: {

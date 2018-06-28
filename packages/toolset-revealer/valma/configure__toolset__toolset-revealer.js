@@ -18,12 +18,12 @@ exports.builder = (yargs) => yargs;
 
 exports.handler = (yargv) => {
   const vlm = yargv.vlm;
-  const toolsetConfig = vlm.getToolsetConfig(toolsetName);
+  const toolsetWebpackConfig = vlm.getToolsetConfig(toolsetName, "webpack");
   const templates = vlm.path.join(__dirname, "../templates/{.,}*");
   vlm.info("Copying revealer template files from ", templates, "(will not clobber existing files)");
   vlm.shell.cp("-n", templates, ".");
   vlm.instruct("! Edit webpack.config.js to configure webpack entry and output locations.");
-  if (!toolsetConfig.webpack) {
+  if (!toolsetWebpackConfig) {
     vlm.updateToolsetConfig(toolsetName, {
       webpack: {
         entry: { "valaa-inspire": "./node_modules/@valos/inspire/index.js" },

@@ -1,4 +1,4 @@
-exports.command = ".configure/.toolsets";
+exports.command = ".configure/.select-toolsets";
 exports.summary = "Grab and stow toolsets from the set available toolsets";
 exports.describe = `${exports.summary}.
 
@@ -16,7 +16,7 @@ Toolsets from file and global pools can be used but should be avoided
 as such toolsets are not guaranteed to be always available.`;
 
 exports.disabled = (yargs) => {
-  const valaa = yargs.vlm.getPackageconfig("valaa");
+  const valaa = yargs.vlm.getPackageConfig("valaa");
   return !valaa || !valaa.type || !valaa.domain || !yargs.vlm.valmaConfig;
 };
 exports.builder = (yargs) => {
@@ -34,6 +34,10 @@ exports.builder = (yargs) => {
   const allToolsets = valmaToolsets.concat(
       configuredToolsets.filter(toolset => !valmaToolsets.includes(toolset)));
   return yargs.options({
+    reconfigure: {
+      alias: "r", type: "boolean",
+      description: "Reconfigure all vault type configurations",
+    },
     toolsets: {
       type: "string", default: usedToolsets, choices: allToolsets,
       interactive: { type: "checkbox", when: "always" },
@@ -66,7 +70,8 @@ exports.handler = async (yargv) => {
   if (grabToolsets.length) {
     vlm.info(`Grabbing toolsets:`, ...grabToolsets);
     const installAsDevDeps = grabToolsets
-        .filter(toolsetName => !(vlm.packageConfig.devDependencies || {})[toolsetName]);
+        .filter(toolsetName => !vlm.getPackageConfig("devDependencies", toolsetName)
+            && !vlm.getPackageConfig("dependencies", toolsetName));
     if (installAsDevDeps.length) {
       vlm.info(`Installing toolsets as direct dev-dependencies:`, installAsDevDeps);
       await vlm.execute("yarn", ["add", "-W", "--dev", ...installAsDevDeps]);

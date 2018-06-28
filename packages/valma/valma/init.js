@@ -9,12 +9,12 @@ valma repository in the current working directory from scratch.
 
 Valma init has following interactive phases:
 1. Initialization of package.json via 'yarn init'
-2. Initialization of repository valaa type and domain
-3. Addition of new known workshops via 'yarn add --dev'
-4. Selection of in-use toolsets from those listed in the workshops
+2. Configuration of repository valaa type and domain via 'vlm .configure/.valaa-stanza'
+3. Addition of new known workshops via 'yarn add -W --dev'
+4. Selection of in-use toolsets from available toolsets via 'vlm .configure/.select-toolsets'
 5. Configuration of in-use toolsets and tools via 'vlm configure'`;
 
-exports.disabled = (yargs) => yargs.vlm.getPackageConfig("valaa");
+exports.disabled = (yargs) => yargs.vlm.getValmaConfig() && "valma.json exists";
 exports.builder = (yargs) => yargs;
 
 exports.handler = async (yargv) => {

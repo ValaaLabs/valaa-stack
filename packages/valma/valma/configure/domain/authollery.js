@@ -48,7 +48,7 @@ exports.handler = async (yargv) => {
   const type = vlm.getPackageConfig("valaa", "type");
   const isTool = (type === "tool") ? true : undefined;
   const name = vlm.packageConfig.name;
-  const shortName = /([^/]*)$/.exec(name)[1];
+  const simpleName = name.match(/([^/]*)$/)[1];
   if (isTool || (type === "toolset")) {
     await _createReleaseSubCommand("build");
     await _createReleaseSubCommand("deploy");
@@ -58,7 +58,7 @@ exports.handler = async (yargv) => {
   function _createReleaseSubCommand (subCommandName) {
     return vlm.invoke("create-command", [{
       command: `.release-${subCommandName}/${isTool ? ".tool/" : ""}${name}`,
-      filename: `release-${subCommandName}_${isTool ? "tool_" : ""}_${shortName}.js`,
+      filename: `release-${subCommandName}_${isTool ? "tool_" : ""}_${simpleName}.js`,
       brief: `${subCommandName === "build" ? "Build" : "Deploy"} a sub-release`,
       export: true,
       header: `const ${type}Name = "${name}";\n\n`,
@@ -86,7 +86,7 @@ invoke the ${subCommandName} commands of all of its ${subCommandName}able tools.
   const toolsetName = yargv.toolset;`}
   const ${type}Version = await vlm.invoke(exports.command, ["--version"]);
   const { ${type}Config, ${type}ReleasePath } = vlm.prepareTool${isTool ? "" : "set"}Build(
-      ${isTool && "toolsetName, "}${type}Name, "${shortName}", ${type}Version);
+      ${isTool && "toolsetName, "}${type}Name, "${simpleName}", ${type}Version);
   if (!${type}Config) return;
 
   vlm.shell.ShellString(${type}Version).to(vlm.path.join(${type}ReleasePath, "version-hash"));
@@ -98,7 +98,7 @@ invoke the ${subCommandName} commands of all of its ${subCommandName}able tools.
   const vlm = yargv.vlm;${isTool && `
   const toolsetName = yargv.toolset;`}
   const { ${type}Config, ${type}ReleasePath } = vlm.locateTool${isTool ? "" : "set"}Release(
-      ${isTool && "toolsetName, "}${type}Name, "${shortName}");
+      ${isTool && "toolsetName, "}${type}Name, "${simpleName}");
   if (!${type}ReleasePath) return;
 
   const deployedVersionHash = await vlm.readFile(vlm.path.join(${type}ReleasePath, "version-hash"));
