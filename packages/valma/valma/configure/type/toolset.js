@@ -21,6 +21,10 @@ by running 'vlm configure' afterwards.`;
 
 exports.disabled = (yargs) => !yargs.vlm.getPackageConfig("valaa");
 exports.builder = (yargs) => yargs.options({
+  reconfigure: {
+    alias: "r", type: "boolean",
+    description: "Reconfigure all toolset type configurations",
+  },
   restrict: {
     type: "string",
     description: `Restrict this toolset to a valaa type (clear for no restriction):`,
@@ -44,6 +48,7 @@ exports.handler = async (yargv) => {
         yargv.grabbable ? "_toolset_" : "_"}_${simpleName}.js`,
     export: true, skeleton: true,
     brief: "toolset configure",
+    header: `const toolsetName = "${vlm.packageConfig.name}";\n`,
     summary: `Configure the toolset '${simpleName}' for the current ${
         yargv.restrict || "repository"}`,
 
@@ -54,6 +59,14 @@ grabbing by repositories with valaa type '${yargv.restrict}'.`
         :
 `This script makes the toolset ${simpleName} available for
 grabbing by all repositories.`,
+
+    disabled: `(yargs) => !yargs.vlm.getToolsetConfig(toolsetName, "in-use")`,
+    builder: `(yargs) => yargs.options({
+  reconfigure: {
+    alias: "r", type: "boolean",
+    description: "Reconfigure all toolset ${simpleName} configurations",
+  },
+});`,
   }]);
-  return yargv.vlm.invoke(`.configure/.type/.toolset/**/*`);
+  return vlm.invoke(`.configure/.type/.toolset/**/*`, { reconfigure: yargv.reconfigure });
 };

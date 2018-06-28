@@ -637,7 +637,8 @@ async function handler (vargv) {
   ####   #    #  ######  ######    #     #    #  ######  #    #  #    #
 */
 
-async function callValmaWithEcho (command, argv = []) {
+async function callValmaWithEcho (command, args) {
+  const argv = _processArgs(args);
   vlm.echo("    ->> vlm", vlm.colors.command(command), vlm.colors.arguments(...argv));
   try {
     const ret = await invoke.call(this, command, argv);
@@ -651,9 +652,9 @@ async function callValmaWithEcho (command, argv = []) {
   }
 }
 
-async function invoke (command, argv_ = []) {
-  if (!Array.isArray(argv_)) {
-    throw new Error(`vlm.invoke: argv must be an array, got ${typeof argv_}`);
+async function invoke (command, argv) {
+  if (!Array.isArray(argv)) {
+    throw new Error(`vlm.invoke: argv must be an array, got ${typeof argv}`);
   }
   if (!this || !this.ifVerbose) {
     throw new Error(`vlm.invoke: 'this' must be a valid vlm context`);
@@ -739,16 +740,17 @@ async function invoke (command, argv_ = []) {
       subVargs.vlm = subVLM;
       subVargs.vlm.commandName = matchingCommand;
       vargs.command(module.command, module.describe);
-      const disabled = (module.disabled
+      let disabled = (module.disabled
           && ((typeof module.disabled !== "function")
                   ? `exports.disabled == ${String(module.disabled)}`
               : (module.disabled(subVargs)
-                  && `exports.disabled => ${String(module.disabled(subVargs))}`)))
-          || (!module.builder(subVargs) && "exports.builder => falsy");
+                  && `exports.disabled => ${String(module.disabled(subVargs))}`)));
       if (dryRunCommands) {
         dryRunCommands[matchingCommand] = { ...activeCommand, disabled };
         continue;
       }
+      if (!module.builder(subVargs) && !disabled) disabled = "exports.builder => falsy";
+
       const subVargv = _parse(subVargs, [matchingCommand, ...argv], { vlm: subVLM });
       const subIntrospect = _determineIntrospection(module, subVargv, matchingCommand);
       this.ifVerbose(3)
@@ -764,7 +766,7 @@ async function invoke (command, argv_ = []) {
             isWildcardCommand, subVargv.matchAll));
       } else if (isWildcardCommand && disabled) {
         this.ifVerbose(1)
-            .info(`skipping disabled command '${this.colors.command(matchingCommand)}'`,
+            .info(`Skipping disabled command '${this.colors.command(matchingCommand)}'`,
                 `during wildcard invokation (${disabled})`);
         continue;
       } else {
@@ -1036,11 +1038,11 @@ function listAllMatchingCommands (command) {
  * @param {*} [spawnOptions={}]
  * @returns
  */
-function execute (executable, argv = [], spawnOptions = {}) {
+function execute (executable, args, spawnOptions = {}) {
   return new Promise((resolve, failure) => {
     _flushPendingConfigWrites(vlm);
-    const filteredArgv = argv.filter(arg => arg && (typeof arg === "string"));
-    vlm.echo("    -->", vlm.colors.executable(executable, ...filteredArgv));
+    const argv = _processArgs(args);
+    vlm.echo("    -->", vlm.colors.executable(executable, ...argv));
     if (vlm.contextVargv && vlm.contextVargv.dryRun && !spawnOptions.noDryRun) {
       vlm.echo("      dry-run: skipping execution and returning:",
           vlm.colors.blue(spawnOptions.dryRunReturn || 0));
@@ -1048,7 +1050,7 @@ function execute (executable, argv = [], spawnOptions = {}) {
     } else {
       const subProcess = childProcess.spawn(
           executable,
-          filteredArgv, {
+          argv, {
             stdio: ["inherit", "inherit", "inherit"],
             ...spawnOptions,
             detached: true,
@@ -1057,12 +1059,12 @@ function execute (executable, argv = [], spawnOptions = {}) {
       subProcess.on("exit", _onDone);
       subProcess.on("error", _onDone);
       process.on("SIGINT", () => {
-        vlm.warn("vlm killing:", vlm.colors.green(executable, ...filteredArgv));
+        vlm.warn("vlm killing:", vlm.colors.green(executable, ...argv));
         process.kill(-subProcess.pid, "SIGTERM");
         process.kill(-subProcess.pid, "SIGKILL");
       });
       process.on("SIGTERM", () => {
-        vlm.warn("vlm killing:", vlm.colors.green(executable, ...filteredArgv));
+        vlm.warn("vlm killing:", vlm.colors.green(executable, ...argv));
         process.kill(-subProcess.pid, "SIGTERM");
         process.kill(-subProcess.pid, "SIGKILL");
       });
@@ -1081,6 +1083,27 @@ function execute (executable, argv = [], spawnOptions = {}) {
       }
     }
   });
+}
+
+// All nulls and undefines are filtered, arrays are flattened/expanded. Booleans are filtered if
+// not inside object values. Objects are expanded with keys as "--key" and rest depending on value
+// type like so: ["y", { foo: "bar", val: true, nothing: null, neg: false, bar: ["xy", false, 0] }]
+//            -> ["y", "--foo", "bar", "--val", "--no-neg", "--bar", "xy", "--no-bar", "--bar", 0]
+function _processArgs (args) {
+  return [].concat(...[].concat(args).map(entry =>
+    (Array.isArray(entry)
+        ? _processArgs(entry)
+    : (!entry || typeof entry !== "object")
+        ? _toArgString(entry)
+        : [].concat(...Object.keys(entry).map(key => _toArgString(entry[key], key))))));
+
+  function _toArgString (value, key) {
+    if ((value === undefined) || (value === null)) return [];
+    if (typeof value === "string") return !key ? value : [`--${key}`, value];
+    if (typeof value === "boolean") return !key ? [] : value ? `--${key}` : `--no-${key}`;
+    if (Array.isArray(value)) return [].concat(...value.map(entry => _toArgString(entry, key)));
+    return JSON.stringify(value);
+  }
 }
 
 function _determineIntrospection (module, vargv, command, isWildcard) {

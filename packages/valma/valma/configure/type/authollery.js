@@ -11,12 +11,17 @@ Autholleries rely heavily on various toolsets to get their job done.
 
 Will add '@valos/toolset-authollery' as devDependency.`;
 
-exports.builder = (yargs) => yargs;
+exports.builder = (yargs) => yargs.options({
+  reconfigure: {
+    alias: "r", type: "boolean",
+    description: "Reconfigure all authollery type configurations",
+  },
+});
 
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
   if (!vlm.getPackageConfig("devDependencies", "@valos/toolset-authollery")) {
     await vlm.execute("yarn", ["add", "-W", "--dev", "@valos/toolset-authollery"]);
   }
-  return vlm.invoke(`.configure/.type/.authollery/**/*`);
+  return vlm.invoke(`.configure/.type/.authollery/**/*`, { reconfigure: yargv.reconfigure });
 };

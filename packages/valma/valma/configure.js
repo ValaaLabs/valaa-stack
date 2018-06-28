@@ -9,9 +9,9 @@ Invokes all the in-use toolset configure commands.`;
 exports.disabled = (yargs) => !yargs.vlm.getPackageConfig("valaa");
 exports.builder = (yargs) => yargs.options({
   reconfigure: {
-    type: "boolean", default: false, global: true,
-    description: "If not set configure will skip all already configured toolsets.",
-  }
+    alias: "r", type: "boolean",
+    description: "Reconfigure all configurations.",
+  },
 });
 
 exports.handler = async (yargv) => {
@@ -26,7 +26,7 @@ exports.handler = async (yargv) => {
     vlm.updateValmaConfig({});
   }
 
-  const rest = yargv._.slice(1);
+  const rest = [{ reconfigure: yargv.reconfigure }, ...yargv._.slice(1)];
 
   if (!yargv.toolsetGlob) {
     await vlm.invoke(`.configure/.domain/${valaa.domain}`, rest);

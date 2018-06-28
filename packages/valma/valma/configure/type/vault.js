@@ -14,6 +14,10 @@ exports.builder = (yargs) => {
   const vlm = yargs.vlm;
   const current = vlm.getPackageConfig("workspaces", 0);
   return yargs.options({
+    reconfigure: {
+      alias: "r", type: "boolean",
+      description: "Reconfigure all vault type configurations",
+    },
     workspaces: {
       type: "string", default: current || "packages/*",
       interactive: {
@@ -33,5 +37,5 @@ exports.handler = async (yargv) => {
     await vlm.updatePackageConfig({ workspaces: [yargv.workspaces] });
     await vlm.execute("yarn", ["install"]);
   }
-  await vlm.invoke(`.configure/.type/.vault/**/*`);
+  return vlm.invoke(`.configure/.type/.vault/**/*`, { reconfigure: yargv.reconfigure });
 };

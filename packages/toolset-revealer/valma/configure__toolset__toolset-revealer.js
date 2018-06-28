@@ -13,8 +13,13 @@ and any customizations in the root webpack.config.js itself.`;
 
 // Example template which displays the command name itself and package name where it is ran
 // Only enabled inside package
-exports.disabled = (yargs) => !yargs.vlm.packageConfig || !yargs.vlm.getToolsetConfig(toolsetName);
-exports.builder = (yargs) => yargs;
+exports.disabled = (yargs) => !yargs.vlm.getToolsetConfig(toolsetName, "in-use");
+exports.builder = (yargs) => yargs.options({
+  reconfigure: {
+    alias: "r", type: "boolean",
+    description: "Reconfigure all toolset-revealer configurations",
+  },
+});
 
 exports.handler = (yargv) => {
   const vlm = yargv.vlm;

@@ -34,6 +34,10 @@ commands must have an option for '--toolset=@myscope/mytoolset' which
 uses yargs.vlm.toolset as its default value.`;
 
 exports.builder = (yargs) => yargs.options({
+  reconfigure: {
+    alias: "r", type: "boolean",
+    description: "Reconfigure all tool type configurations",
+  },
   brief: {
     type: "string", description: "A brief two-three word description of this tool",
   },
@@ -56,6 +60,10 @@ which directly depends on this tool must explicit call this command.`,
     builder: `(yargs) => yargs.options({
   toolset: yargs.vlm.createStandardToolsetOption(
       "The target toolset to add a configuration for this tool."),
+  reconfigure: {
+    alias: "r", type: "boolean",
+    description: "Reconfigure tool ${simpleName} configuration for the given toolset",
+  },
 });`,
     handler: `(yargv) => {
 const vlm = yargv.vlm;
@@ -66,5 +74,5 @@ vlm.updateToolConfig(yargv.toolset, toolName, configUpdate);
 };
 `,
   }]);
-  return yargv.vlm.invoke(`.configure/.type/.tool/**/*`);
+  return vlm.invoke(`.configure/.type/.tool/**/*`, { reconfigure: yargv.reconfigure });
 };

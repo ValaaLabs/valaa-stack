@@ -15,11 +15,17 @@ Valma init has following interactive phases:
 5. Configuration of in-use toolsets and tools via 'vlm configure'`;
 
 exports.disabled = (yargs) => yargs.vlm.getValmaConfig() && "valma.json exists";
-exports.builder = (yargs) => yargs;
+exports.builder = (yargs) => yargs.options({
+  reconfigure: {
+    alias: "r", type: "boolean",
+    description: "Reconfigure all repository configurations",
+  },
+});
 
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
   vlm.speak(exports.describe.match(/[^\n]*\n(.*)/)[1]);
+  const tellIfNoReconfigure = !yargv.reconfigure ? ["(no --reconfigure given)"] : [];
 
   return await _configurePackageJSON()
       && await _configureValaaTypeAndDomain()
@@ -27,7 +33,7 @@ exports.handler = async (yargv) => {
       && await _configureValmaConfig();
 
   async function _configurePackageJSON () {
-    for (;;) {
+    while (yargv.reconfigure || !vlm.packageConfig) {
       const choices = (vlm.packageConfig ? ["Skip", "reconfigure"] : ["Initialize"])
           .concat(["help", "quit"]);
       const answer = await vlm.inquire([{
@@ -35,6 +41,7 @@ exports.handler = async (yargv) => {
             } package.json with 'yarn init'?`,
         type: "list", name: "choice", default: choices[0], choices,
       }]);
+      if (answer.choice === "Skip") break;
       if (answer.choice === "quit") return false;
       if (answer.choice === "help") {
         vlm.speak();
@@ -47,19 +54,16 @@ file for yarn (and for npm, for which yarn is an analogue).
 `);
         continue;
       }
-      if (answer.choice === "Skip") {
-        vlm.info(`Skipped '${vlm.colors.executable("yarn init")}'.`);
-        break;
-      }
       await vlm.execute("yarn", ["init"]);
-      break;
+      return true;
     }
+    vlm.info(`Skipped '${vlm.colors.executable("yarn init")}'.`, ...tellIfNoReconfigure);
     return true;
   }
 
   async function _configureValaaTypeAndDomain () {
     let justConfigured = false;
-    for (;;) {
+    while (yargv.reconfigure || !vlm.packageConfig.valaa || justConfigured) {
       const choices = (justConfigured ? ["Confirm", "reconfigure"]
               : vlm.packageConfig.valaa ? ["Skip", "reconfigure"] : ["Initialize"])
           .concat(["help", "quit"]);
@@ -70,42 +74,42 @@ file for yarn (and for npm, for which yarn is an analogue).
                 } valaa stanza: ${JSON.stringify({ ...vlm.packageConfig.valaa })}?`,
         type: "list", name: "choice", default: choices[0], choices,
       }]);
-      justConfigured = false;
+      if (answer.choice === "Skip") break;
       if (answer.choice === "quit") return false;
       if (answer.choice === "help") {
         vlm.speak();
-        await vlm.invoke(".configure/.initialize", ["--show-describe"]);
+        await vlm.invoke(".configure/.valaa-stanza", ["--show-describe"]);
         vlm.speak();
         continue;
       }
-      if (answer.choice === "Confirm") break;
-      if (answer.choice === "Skip") {
-        vlm.info("Skipped repository valaa type and domain reconfigure.");
-        return true;
-      }
-      vlm.reconfigure = true;
-      await vlm.invoke(".configure/.initialize");
+      if (answer.choice === "Confirm") return true;
+      vlm.reconfigure = yargv.reconfigure;
+      await vlm.invoke(".configure/.valaa-stanza", { reconfigure: yargv.reconfigure });
       justConfigured = true;
     }
+    vlm.info("Skipped repository valaa type and domain configure.", ...tellIfNoReconfigure);
     return true;
   }
 
   async function _addInitialValmaDevDependencies () {
+    const yarnAdd = "yarn add -W --dev";
+    const coloredYarnAdd = vlm.colors.executable(yarnAdd);
     let wasError;
-    for (;;) {
+    const wasInitial = !vlm.packageConfig.devDependencies;
+    while (yargv.reconfigure || wasInitial) {
       const choices = vlm.packageConfig.devDependencies
           ? ["Skip", "yes", "help", "quit"]
           : ["Yes", "skip", "help", "quit"];
       let answer = await vlm.inquire([{
         message: wasError
             ? "Retry adding workshops (or direct toolsets) as devDependencies?"
-            : `${vlm.colors.command("yarn add")} ${
+            : `${vlm.colors.executable("yarn add")} ${
                 vlm.packageConfig.devDependencies ? "more" : "initial"
               } workshops (or direct toolsets) as devDependencies?`,
         type: "list", name: "choice", default: choices[0], choices,
       }]);
       wasError = false;
-      const coloredYarnAdd = vlm.colors.command("yarn add --dev");
+      if (answer.choice === "Skip" || answer.choice === "skip") break;
       if (answer.choice === "quit") return false;
       if (answer.choice === "help") {
         vlm.speak();
@@ -116,11 +120,6 @@ for the listings in following phases.
 `);
         continue;
       }
-      if (answer.choice === "Skip") break;
-      if (answer.choice === "skip") {
-        vlm.info(`Skipped '${vlm.colors.executable("yarn add --dev")}'.`);
-        break;
-      }
       answer = await vlm.inquire([{
         type: "input", name: "devDependencies",
         message: `enter a space-separated list of workshops for '${coloredYarnAdd}':\n`,
@@ -129,27 +128,30 @@ for the listings in following phases.
         vlm.info(`No devDependencies provided, skipping workshop registration phase`);
       } else {
         try {
-          await vlm.execute("yarn", ["add", "--dev"].concat(answer.devDependencies.split(" ")));
+          await vlm.execute("yarn", ["add", "-W", "--dev"]
+              .concat(answer.devDependencies.split(" ")));
         } catch (error) {
           vlm.speak();
-          vlm.exception(`An exception caught during external command '${
-              vlm.colors.executable("yarn add --dev", answer.devDependencies)}':`, error);
+          vlm.exception(`An exception caught during executable '${
+              vlm.colors.executable(yarnAdd, answer.devDependencies)}':`, error);
           wasError = true;
         }
       }
     }
+    vlm.info(`Skipped '${coloredYarnAdd}'.`, ...tellIfNoReconfigure);
     return true;
   }
 
   async function _configureValmaConfig () {
-    for (;;) {
+    while (yargv.reconfigure || !vlm.valmaConfig) {
       const choices = (vlm.valmaConfig ? ["Skip", "reconfigure"] : ["Initialize"])
           .concat(["help", "quit"]);
       const answer = await vlm.inquire([{
-        message: `${vlm.valmaConfig ? "Reconfigure" : "Initialize"} repository valma config with '${
+        message: `${vlm.valmaConfig ? "Reconfigure" : "Configure"} repository with '${
             vlm.colors.command("vlm configure")}'?`,
         type: "list", name: "choice", default: choices[0], choices,
       }]);
+      if (answer.choice === "Skip") break;
       if (answer.choice === "quit") return false;
       if (answer.choice === "help") {
         vlm.speak();
@@ -157,13 +159,9 @@ for the listings in following phases.
         vlm.speak();
         continue;
       }
-      if (answer.choice === "Skip") {
-        vlm.info("Skipped 'vlm configure'.");
-        break;
-      }
-      await vlm.invoke("configure");
-      break;
+      return await vlm.invoke("configure", { reconfigure: yargv.reconfigure });
     }
+    vlm.info("Skipped 'vlm configure'.", ...tellIfNoReconfigure);
     return true;
   }
 };

@@ -41,7 +41,12 @@ following strategy is used:
    a deployment for all dependents complete before their depending
    deployments are initiated.`;
 
-exports.builder = (yargs) => yargs;
+exports.builder = (yargs) => yargs.options({
+  reconfigure: {
+    alias: "r", type: "boolean",
+    description: "Reconfigure all authollery domain configurations",
+  },
+});
 
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
@@ -53,7 +58,7 @@ exports.handler = async (yargv) => {
     await _createReleaseSubCommand("build");
     await _createReleaseSubCommand("deploy");
   }
-  return vlm.invoke(`.configure/.domain/.authollery/**/*`);
+  return vlm.invoke(`.configure/.domain/.authollery/**/*`, { reconfigure: yargv.reconfigure });
 
   function _createReleaseSubCommand (subCommandName) {
     return vlm.invoke("create-command", [{
