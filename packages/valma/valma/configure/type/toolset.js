@@ -41,9 +41,9 @@ exports.builder = (yargs) => yargs.options({
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
   const simpleName = vlm.packageConfig.name.match(/([^/]*)$/)[1];
-  await vlm.invoke("create-command", [{
-    command: `.configure/${yargv.restrict ? `.type/.${yargv.restrict}/` : ""}${
-        yargv.grabbable ? ".toolset/" : ""}${vlm.packageConfig.name}`,
+  const commandName = `.configure/${yargv.restrict ? `.type/.${yargv.restrict}/` : ""}${
+    yargv.grabbable ? ".toolset/" : ""}${vlm.packageConfig.name}`;
+  await vlm.invoke("create-command", [commandName, {
     filename: `configure__${yargv.restrict ? yargv.restrict : ""}${
         yargv.grabbable ? "_toolset_" : "_"}_${simpleName}.js`,
     export: true, skeleton: true,

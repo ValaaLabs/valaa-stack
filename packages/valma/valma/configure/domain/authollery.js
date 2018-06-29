@@ -60,31 +60,31 @@ exports.handler = async (yargv) => {
   }
   return vlm.invoke(`.configure/.domain/.authollery/**/*`, { reconfigure: yargv.reconfigure });
 
-  function _createReleaseSubCommand (subCommandName) {
-    return vlm.invoke("create-command", [{
-      command: `.release-${subCommandName}/${isTool ? ".tool/" : ""}${name}`,
-      filename: `release-${subCommandName}_${isTool ? "tool_" : ""}_${simpleName}.js`,
-      brief: `${subCommandName === "build" ? "Build" : "Deploy"} a sub-release`,
+  function _createReleaseSubCommand (subName) {
+    return vlm.invoke("create-command", [`.release-${subName}/${isTool ? ".tool/" : ""}${name}`, {
+      command: ,
+      filename: `release-${subName}_${isTool ? "tool_" : ""}_${simpleName}.js`,
+      brief: `${subName === "build" ? "Build" : "Deploy"} a sub-release`,
       export: true,
       header: `const ${type}Name = "${name}";\n\n`,
-      describe: `${subCommandName === "build" ? "Build" : "Deploy"} a sub-release of ${name}`,
+      describe: `${subName === "build" ? "Build" : "Deploy"} a sub-release of ${name}`,
 
       disabled: isTool ? undefined :
 `(yargs) => !yargs.vlm.getToolsetConfig(toolsetName, "in-use")`,
       builder: isTool &&
 `(yargs) => yargs.options({
   toolset: yargs.vlm.createStandardToolsetOption(
-      "The containing toolset of this tool release ${subCommandName}."),
+      "The containing toolset of this tool release ${subName}."),
 })`,
       introduction: isTool
           ?
-`This tool sub-release ${subCommandName} command must be explicitly invoked by
+`This tool sub-release ${subName} command must be explicitly invoked by
 toolsets which use this tool.`
           :
-`When a release is being ${subCommandName === "build" ? "built" : "deployed"
+`When a release is being ${subName === "build" ? "built" : "deployed"
     } each active toolset must explicitly
-invoke the ${subCommandName} commands of all of its ${subCommandName}able tools.`,
-      handler: (subCommandName === "build")
+invoke the ${subName} commands of all of its ${subName}able tools.`,
+      handler: (subName === "build")
           ?
 `async (yargv) => {
   const vlm = yargv.vlm;${isTool && `

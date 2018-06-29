@@ -46,8 +46,7 @@ exports.builder = (yargs) => yargs.options({
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
   const simpleName = vlm.packageConfig.name.match(/([^/]*)$/)[1];
-  await vlm.invoke("create-command", [{
-    command: `.configure/.tool/${vlm.packageConfig.name}`,
+  await vlm.invoke("create-command", [`.configure/.tool/${vlm.packageConfig.name}`, {
     filename: `configure_tool__${simpleName}.js`,
     brief: `${yargv.brief || "simple"} configure`,
     header: `const toolName = "${vlm.packageConfig.name}";\n\n`,

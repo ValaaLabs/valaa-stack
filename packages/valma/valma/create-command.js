@@ -1,18 +1,17 @@
 #!/usr/bin/env vlm
 
-exports.command = "create-command";
-exports.describe = "Create a valma command script skeleton";
+exports.command = "create-command name";
+exports.describe = "Create a valma command script with given name";
 exports.introduction = `${exports.describe}.
 
-The script file is placed under valma/ with a symlink to it in
-valma.bin/ , making the command immediately visible to valma.`;
+By default the new command is created as a local valma.bin/ command
+with the source file in valma/, making it the highest priority command
+and immediately available.
+Use --import to make an exported script available for local editing and
+development.`;
 
 exports.disabled = (yargs) => !yargs.vlm.packageConfig;
 exports.builder = (yargs) => yargs.options({
-  command: {
-    type: "string", description: "The name of the new valma command (set as exports.command)",
-    interactive: { type: "input", when: "if-undefined" }
-  },
   filename: {
     type: "string",
     description: "The new command skeleton filename in valma/ (leave empty for default)",
@@ -25,20 +24,22 @@ exports.builder = (yargs) => yargs.options({
     type: "boolean", default: false,
     description: "Export command in package.json:bin section instead of valma.bin/ symlinking",
   },
+  import: {
+    type: "boolean",
+    description: "Copy an existing, accessible command script as the new script",
+  },
   skeleton: {
-    type: "boolean", default: false,
+    type: "boolean",
     description: "If true will only create a minimal script skeleton",
   },
   describe: {
-    type: "string",
-    description: "Max 71 char description of the new command (set as exports.describe)",
-    interactive: { type: "input", when: "if-undefined" },
+    type: "string", description: "Short description of the new command set as exports.describe",
   },
   header: {
     type: "string", description: "Lines to place at the beginning of the script skeleton",
   },
   introduction: {
-    type: "string", description: "Full description of the new command, set as exports.introduction",
+    type: "string", description: "Full description of the new command set as exports.introduction",
   },
   disabled: {
     type: "string", description: "Full exports.disabled source (as function callback)",
@@ -53,14 +54,15 @@ exports.builder = (yargs) => yargs.options({
 
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
-  const command = yargv.command;
+  const command = yargv.name;
   const commandParts = command.replace(/\//g, "_").match(/^(\.)?(.*)$/);
   const commandExportName = `${commandParts[1] || ""}valma-${commandParts[2]}`;
   const scriptPath = `valma/${yargv.filename || `${commandParts[2]}.js`}`;
   let verb = "already exports";
+  let import_ = yargv.import;
   let local = !yargv.export;
   while (!(vlm.packageConfig.bin || {})[commandExportName]) {
-    const choices = [local ? "Create" : "Export", "skip",
+    const choices = [import_ ? "Import" : local ? "Create" : "Export", "skip",
       local ? "export instead" : "local instead"
     ];
     if (yargv.introduction) choices.push("help");
@@ -68,9 +70,10 @@ exports.handler = async (yargv) => {
         ? `'valma.bin/${commandExportName}'`
         : `'package.json':bin["${commandExportName}"]`;
     const answer = await vlm.inquire([{
-      message: `${local ? "Create" : "Export"
-          } a ${yargv.brief || (local ? "local command" : "command")
-          } script ${yargv.skeleton ? "skeleton" : "template"
+      message: `${import_ ? "Import" : local ? "Create" : "Export"
+          } ${yargv.brief
+              || (import_ ? "an existing command" : local ? "a local command" : "a command")
+          } script ${import_ ? "copy" : yargv.skeleton ? "skeleton" : "template"
           } as ${linkMessage} -> '${scriptPath}'?`,
       type: "list", name: "choice", default: choices[0], choices,
     }]);
@@ -88,18 +91,27 @@ exports.handler = async (yargv) => {
     if (answer.choice === "local instead") { local = true; continue; }
     if (!vlm.shell.test("-e", scriptPath)) {
       vlm.shell.mkdir("-p", vlm.path.dirname(scriptPath));
-      vlm.shell.ShellString(_createSource(command, yargv)).to(scriptPath);
+      if (!yargv.import) {
+        vlm.shell.ShellString(_createSource(command, yargv)).to(scriptPath);
+      } else {
+        const resolvedPath = await vlm.invoke(command, ["-R"]);
+        if ((typeof resolvedPath !== "string") || !vlm.shell.test("-f", resolvedPath)) {
+          throw new Error(`Could not find command '${command}' source file for importing`);
+        }
+        vlm.info("Importing existing script source:", resolvedPath);
+        vlm.shell.cp(resolvedPath, scriptPath);
+      }
     } else {
       vlm.warn(`not overwriting already existing script '${scriptPath}'`);
     }
     const symlinkPath = vlm.path.join("valma.bin", commandExportName);
     if (!local) {
       vlm.updatePackageConfig({ bin: { [commandExportName]: scriptPath } });
-      verb = "now exports";
+      verb = "now package.json.bin exports";
     } else if (!vlm.shell.test("-e", symlinkPath)) {
       vlm.shell.mkdir("-p", vlm.path.dirname(symlinkPath));
       vlm.shell.ln("-s", `../${scriptPath}`, symlinkPath);
-      verb = "now symlinks";
+      verb = "now locally valma.bin/ symlinks";
       break;
     } else {
       vlm.warn(`cannot create local symlink at '${symlinkPath}' which already exists`);
