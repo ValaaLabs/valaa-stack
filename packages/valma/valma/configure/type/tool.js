@@ -6,7 +6,7 @@ Tools are a toolset implementation detail. A tool is similar to
 a toolset in that it can have its own repository specific
 configurations. A tool differs from a toolset in that it cannot be
 standalone; it doesn't appear in listings, its always part of one or
-more toolsets and its valma.json config stanzas are placed under
+more toolsets and its toolsets.json config stanzas are placed under
 its parent toolset stanzas.
 
 The main case for tools and toolsets separation came from the release

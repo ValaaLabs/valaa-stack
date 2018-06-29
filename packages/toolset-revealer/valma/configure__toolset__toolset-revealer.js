@@ -39,7 +39,7 @@ exports.handler = (yargv) => {
         }
       }
     });
-    vlm.instruct(`! Edit valma.json:toolset["${toolsetName
+    vlm.instruct(`! Edit toolsets.json:["${toolsetName
         }"].webpack to further configure webpack entry and output locations.`);
   }
   return true;

@@ -17,22 +17,22 @@ as such toolsets are not guaranteed to be always available.`;
 
 exports.disabled = (yargs) => {
   const valaa = yargs.vlm.getPackageConfig("valaa");
-  return !valaa || !valaa.type || !valaa.domain || !yargs.vlm.valmaConfig;
+  return !valaa || !valaa.type || !valaa.domain || !yargs.vlm.getToolsetsConfig();
 };
 exports.builder = (yargs) => {
-  const valmaConfig = yargs.vlm.valmaConfig;
-  if (!valmaConfig) throw new Error("valma.json missing (maybe run 'vlm init'?)");
+  const toolsetsConfig = yargs.vlm.getToolsetsConfig();
+  if (!toolsetsConfig) throw new Error("toolsets.json missing (maybe run 'vlm init'?)");
   if (this.disabled(yargs)) throw new Error("package.json missing stanza .valaa.type/.domain");
   const valaa = yargs.vlm.packageConfig.valaa;
-  const valmaToolsets = yargs.vlm
+  const knownToolsets = yargs.vlm
       .listMatchingCommands(
           `.configure/{,.type/.${valaa.type}/,.domain/.${valaa.domain}/}.toolset/**/*`)
-      .map(n => n.match(/\/.toolset\/(.*)$/)[1]);
-  const configuredToolsets = Object.keys(valmaConfig.toolset || {});
+      .map(name => name.match(/\/.toolset\/(.*)$/)[1]);
+  const configuredToolsets = Object.keys(toolsetsConfig || {});
   const usedToolsets = configuredToolsets
-      .filter(name => (valmaConfig.toolset[name] || {})["in-use"]);
-  const allToolsets = valmaToolsets.concat(
-      configuredToolsets.filter(toolset => !valmaToolsets.includes(toolset)));
+      .filter(name => (toolsetsConfig[name] || {})["in-use"]);
+  const allToolsets = knownToolsets.concat(
+      configuredToolsets.filter(toolset => !knownToolsets.includes(toolset)));
   return yargs.options({
     reconfigure: {
       alias: "r", type: "boolean",
@@ -49,24 +49,23 @@ exports.builder = (yargs) => {
 
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
-  const valmaConfig = vlm.valmaConfig;
-  if (!valmaConfig) return undefined;
+  const toolsetsConfig = vlm.getToolsetsConfig();
+  if (!toolsetsConfig) return undefined;
 
-  const configuredToolsets = valmaConfig.toolset || {};
   const newToolsets = yargv.toolsets || [];
-  const toolset = {};
+  const toolsets = {};
   const ret = {};
 
-  const stowToolsets = Object.keys(configuredToolsets)
-      .filter(n => (!newToolsets.includes(n) && !configuredToolsets[n]["in-use"]));
+  const stowToolsets = Object.keys(toolsetsConfig)
+      .filter(name => (!newToolsets.includes(name) && !toolsetsConfig[name]["in-use"]));
   // TODO: add confirmation for configurations that are about to be eliminated with null
   if (stowToolsets.length) {
     vlm.info(`Stowing toolsets:`, ...stowToolsets);
-    stowToolsets.forEach(n => { toolset[n] = { "in-use": false }; });
+    stowToolsets.forEach(name => { toolsets[name] = { "in-use": false }; });
     ret.stowed = stowToolsets;
   }
   const grabToolsets = newToolsets
-      .filter(n => (configuredToolsets[n] || { "in-use": true })["in-use"]);
+      .filter(name => (toolsetsConfig[name] || { "in-use": true })["in-use"]);
   if (grabToolsets.length) {
     vlm.info(`Grabbing toolsets:`, ...grabToolsets);
     const installAsDevDeps = grabToolsets
@@ -76,9 +75,9 @@ exports.handler = async (yargv) => {
       vlm.info(`Installing toolsets as direct dev-dependencies:`, installAsDevDeps);
       await vlm.execute("yarn", ["add", "-W", "--dev", ...installAsDevDeps]);
     }
-    grabToolsets.forEach(n => { toolset[n] = { "in-use": true }; });
+    grabToolsets.forEach(name => { toolsets[name] = { "in-use": true }; });
     ret.grabbed = grabToolsets;
   }
-  await vlm.updateValmaConfig({ toolset });
+  await vlm.updateToolsetsConfig(toolsets);
   return ret;
 };

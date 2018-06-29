@@ -22,8 +22,8 @@ exports.handler = async (yargv) => {
         + "no package.json with valaa stanza with both type and domain set"
         + "(maybe run 'vlm init' to initialize?)");
   }
-  if (!vlm.valmaConfig) {
-    vlm.updateValmaConfig({});
+  if (!vlm.getToolsetsConfig()) {
+    vlm.updateToolsetsConfig({});
   }
 
   const rest = [{ reconfigure: yargv.reconfigure }, ...yargv._.slice(1)];

@@ -70,7 +70,7 @@ exports.handler = async (yargv) => {
       describe: `${subCommandName === "build" ? "Build" : "Deploy"} a sub-release of ${name}`,
 
       disabled: isTool ? undefined :
-`(yargs) => !(yargs.vlm.getToolsetConfig("toolsetName") || {})["in-use"]`,
+`(yargs) => !yargs.vlm.getToolsetConfig(toolsetName, "in-use")`,
       builder: isTool &&
 `(yargs) => yargs.options({
   toolset: yargs.vlm.createStandardToolsetOption(

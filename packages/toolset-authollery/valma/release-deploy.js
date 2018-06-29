@@ -48,7 +48,7 @@ function locateToolsetRelease (toolsetName, toolsetDescription = "toolset") {
   const releasePath = this.releasePath;
   const toolsetConfig = this.getToolsetConfig(toolsetName);
   if (!toolsetConfig) {
-    throw new Error(`${this.contextCommand}: valma.json:toolset['${toolsetName}] missing`);
+    throw new Error(`${this.contextCommand}: toolsets.json:['${toolsetName}] missing`);
   }
   if (!this.shell.test("-d", releasePath)) {
     throw new Error(`${this.contextCommand}: releasePath directory '${releasePath}' missing`);

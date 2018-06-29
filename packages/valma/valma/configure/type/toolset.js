@@ -4,7 +4,7 @@ exports.introduction = `${exports.describe}.
 
 A valma toolset is a package which provides various resources for
 a depending repository with the ability to have repository specific
-configurations in their 'valma.json'.
+configurations in their 'toolsets.json'.
 These resources might be new valma commands, file templates,
 dependencies to other valma toolsets and tools, to external tools or
 to plain javascript libraries; anything that can be expressed in a

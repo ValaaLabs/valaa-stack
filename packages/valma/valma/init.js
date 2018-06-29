@@ -14,7 +14,7 @@ Valma init has following interactive phases:
 4. Selection of in-use toolsets from available toolsets via 'vlm .configure/.select-toolsets'
 5. Configuration of in-use toolsets and tools via 'vlm configure'`;
 
-exports.disabled = (yargs) => yargs.vlm.getValmaConfig() && "valma.json exists";
+exports.disabled = (yargs) => yargs.vlm.getToolsetsConfig() && "toolsets.json exists";
 exports.builder = (yargs) => yargs.options({
   reconfigure: {
     alias: "r", type: "boolean",
@@ -27,12 +27,12 @@ exports.handler = async (yargv) => {
   vlm.speak(exports.introduction.match(/[^\n]*\n(.*)/)[1]);
   const tellIfNoReconfigure = !yargv.reconfigure ? ["(no --reconfigure given)"] : [];
 
-  return await _configurePackageJSON()
-      && await _configureValaaTypeAndDomain()
+  return await _initPackageJSON()
+      && await _selectValaaTypeAndDomain()
       && await _addInitialValmaDevDependencies()
-      && await _configureValmaConfig();
+      && await _configure();
 
-  async function _configurePackageJSON () {
+  async function _initPackageJSON () {
     while (yargv.reconfigure || !vlm.packageConfig) {
       const choices = (vlm.packageConfig ? ["Skip", "reconfigure"] : ["Initialize"])
           .concat(["help", "quit"]);
@@ -61,7 +61,7 @@ file for yarn (and for npm, for which yarn is an analogue).
     return true;
   }
 
-  async function _configureValaaTypeAndDomain () {
+  async function _selectValaaTypeAndDomain () {
     let justConfigured = false;
     while (yargv.reconfigure || !vlm.packageConfig.valaa || justConfigured) {
       const choices = (justConfigured ? ["Confirm", "reconfigure"]
@@ -142,12 +142,12 @@ for the listings in following phases.
     return true;
   }
 
-  async function _configureValmaConfig () {
-    while (yargv.reconfigure || !vlm.valmaConfig) {
-      const choices = (vlm.valmaConfig ? ["Skip", "reconfigure"] : ["Initialize"])
+  async function _configure () {
+    while (yargv.reconfigure || !vlm.getToolsetsConfig()) {
+      const choices = (vlm.getToolsetsConfig() ? ["Skip", "reconfigure"] : ["Initialize"])
           .concat(["help", "quit"]);
       const answer = await vlm.inquire([{
-        message: `${vlm.valmaConfig ? "Reconfigure" : "Configure"} repository with '${
+        message: `${vlm.getToolsetsConfig() ? "Reconfigure" : "Configure"} repository with '${
             vlm.colors.command("vlm configure")}'?`,
         type: "list", name: "choice", default: choices[0], choices,
       }]);

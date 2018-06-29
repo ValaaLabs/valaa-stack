@@ -1,8 +1,8 @@
 const shared = require("@valos/toolset-revealer/shared/webpack.config");
 const path = require("path");
 
-const valmaConfigRevealerSection = require(`${process.cwd()}/valma.json`)
-    .toolset["@valos/toolset-revealer"].webpack;
+const valmaConfigRevealerSection = require(`${process.cwd()}/toolsets.json`)[
+    "@valos/toolset-revealer"].webpack;
 valmaConfigRevealerSection.output.path = path.posix.resolve(valmaConfigRevealerSection.output.path);
 
 module.exports = {

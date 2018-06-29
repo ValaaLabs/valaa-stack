@@ -55,11 +55,12 @@ const vlm = vargs.vlm = {
   // Immutable contents of package.json (contains pending updates as well)
   packageConfig: undefined,
 
-  // Immutable contents of valma.json (contains pending updates as well)
-  valmaConfig: undefined,
+  // Immutable contents of toolsets.json (contains pending updates as well)
+  toolsetsConfig: undefined,
 
   getPackageConfig,
   getValmaConfig,
+  getToolsetsConfig,
 
   // Registers pending updates to the package.json config file (immediately updates
   // vlm.packageConfig) which are written to file only immediately before valma execution exits or
@@ -68,12 +69,12 @@ const vlm = vargs.vlm = {
   // just silly.
   updatePackageConfig,
 
-  // Registers pending updates to the valma.json config file (immediately updates vlm.valmaConfig)
-  // which are written to file only immediately before valma execution exits or
+  // Registers pending updates to the toolsets.json config file (immediately updates
+  // vlm.toolsetsConfig) which are written to file only immediately before valma execution exits or
   // an external command is about to be executed.
   // TODO(iridian): Improve the flush semantics, maybe to flush-on-subcommand-success - now it's
   // just silly.
-  updateValmaConfig,
+  updateToolsetsConfig,
 
   // TODO(iridian): These should eventually be in a separate library. Fundamentally valma shouldn't
   // know about toolsets. OTOH valma type and the toolset scripts are part of valma package, so...
@@ -521,8 +522,8 @@ let _activePools = [];
 const packageConfigStatus = {
   path: vlm.path.join(process.cwd(), "package.json"), updated: false,
 };
-const valmaConfigStatus = {
-  path: vlm.path.join(process.cwd(), "valma.json"), updated: false,
+const toolsetsConfigStatus = {
+  path: vlm.path.join(process.cwd(), "toolsets.json"), updated: false,
 };
 
 vlm.contextVargv = globalVargv;
@@ -621,7 +622,7 @@ async function handler (vargv) {
         "recommended to have at least", nodeCheck);
   }
 
-  _reloadPackageAndValmaConfigs();
+  _reloadPackageAndToolsetsConfigs();
 
   if (!process.env.npm_config_user_agent) {
     if (needNPM && vlm.packageConfig) {
@@ -1103,7 +1104,7 @@ function execute (executable, args, spawnOptions = {}) {
         failure(code || signal);
       } else {
         _refreshActivePools();
-        _reloadPackageAndValmaConfigs();
+        _reloadPackageAndToolsetsConfigs();
         vlm.echo("    <--", `${vlm.colors.green(executable)}:`,
             vlm.colors.warning("execute return values not implemented yet"));
         resolve();
@@ -1353,19 +1354,20 @@ async function _tryInteractive (subVargv, subYargs) {
 }
 
 
-function _reloadPackageAndValmaConfigs () {
+function _reloadPackageAndToolsetsConfigs () {
   if (shell.test("-f", packageConfigStatus.path)) {
     vlm.packageConfig = JSON.parse(shell.head({ "-n": 1000000 }, packageConfigStatus.path));
     _deepFreeze(vlm.packageConfig);
   }
-  if (shell.test("-f", valmaConfigStatus.path)) {
-    vlm.valmaConfig = JSON.parse(shell.head({ "-n": 1000000 }, valmaConfigStatus.path));
-    _deepFreeze(vlm.valmaConfig);
+  if (shell.test("-f", toolsetsConfigStatus.path)) {
+    vlm.toolsetsConfig = JSON.parse(shell.head({ "-n": 1000000 }, toolsetsConfigStatus.path));
+    _deepFreeze(vlm.toolsetsConfig);
   }
 }
 
 function getPackageConfig (...keys) { return _getConfigAtPath(this.packageConfig, keys); }
-function getValmaConfig (...keys) { return _getConfigAtPath(this.valmaConfig, keys); }
+function getToolsetsConfig (...keys) { return _getConfigAtPath(this.toolsetsConfig, keys); }
+function getValmaConfig (...keys) { return _getConfigAtPath(this.toolsetsConfig, keys); }
 
 function _getConfigAtPath (root, keys) {
   return [].concat(...keys)
@@ -1375,6 +1377,10 @@ function _getConfigAtPath (root, keys) {
 }
 
 function updatePackageConfig (updates) {
+  if (typeof updates !== "object" || !updates) {
+    throw new Error(`Invalid arguments for updatePackageConfig, expexted object, got ${
+        typeof update}`);
+  }
   if (!vlm.packageConfig) {
     throw new Error("vlm.updatePackageConfig: cannot update package.json as it doesn't exist");
   }
@@ -1387,43 +1393,65 @@ function updatePackageConfig (updates) {
   }
 }
 
-function updateValmaConfig (updates) {
-  if (!vlm.valmaConfig) {
-    vlm.valmaConfig = {};
-    valmaConfigStatus.updated = true;
+function updateToolsetsConfig (updates) {
+  if (typeof updates !== "object" || !updates) {
+    throw new Error(`Invalid arguments for updateToolsetsConfig, expexted object, got ${
+        typeof update}`);
   }
-  const updatedConfig = _deepAssign(vlm.valmaConfig, updates);
-  if (updatedConfig !== vlm.valmaConfig) {
-    valmaConfigStatus.updated = true;
-    vlm.valmaConfig = updatedConfig;
+  if (!vlm.toolsetsConfig) {
+    vlm.toolsetsConfig = {};
+    toolsetsConfigStatus.updated = true;
+  }
+  const updatedConfig = _deepAssign(vlm.toolsetsConfig, updates);
+  if (updatedConfig !== vlm.toolsetsConfig) {
+    toolsetsConfigStatus.updated = true;
+    vlm.toolsetsConfig = updatedConfig;
     vlm.ifVerbose(1)
-        .info("valma.json updated:", updates);
+        .info("toolsets.json updated:", updates);
   }
 }
 
 // Toolset vlm functions
 
 function getToolsetConfig (toolsetName, ...rest) {
-  return this.getValmaConfig("toolset", toolsetName, ...rest);
+  if (typeof toolsetName !== "string" || !toolsetName) {
+    throw new Error(`Invalid arguments for getToolsetConfig, expexted string|..., got ${
+        typeof toolsetName}`);
+  }
+  return this.getToolsetsConfig(toolsetName, ...rest);
 }
 
 function getToolConfig (toolsetName, toolName, ...rest) {
-  return this.getValmaConfig("toolset", toolsetName, "tool", toolName, ...rest);
+  if (typeof toolsetName !== "string" || typeof toolName !== "string"
+      || !toolsetName || !toolName) {
+    throw new Error(`Invalid arguments for getToolConfig, expexted string|string|..., got ${
+        typeof toolsetName}|${typeof toolName}`);
+  }
+  return this.getToolsetsConfig(toolsetName, "tool", toolName, ...rest);
 }
 
 function confirmToolsetExists (toolsetName) {
   if (this.getToolsetConfig(toolsetName)) return true;
   this.warn(`Cannot find toolset '${toolsetName}' from configured toolsets:`,
-      Object.keys(this.getValmaConfig("toolset") || {}).join(", "));
+      Object.keys(this.getToolsetsConfig() || {}).join(", "));
   return false;
 }
 
-function updateToolsetConfig (toolsetName, update) {
-  return this.updateValmaConfig({ toolset: { [toolsetName]: update } });
+function updateToolsetConfig (toolsetName, updates) {
+  if (typeof toolsetName !== "string" || typeof updates !== "object" || !toolsetName || !updates) {
+    throw new Error(`Invalid arguments for updateToolsetConfig, expexted string|object, got ${
+        typeof toolsetName}|${typeof updates}`);
+  }
+  return this.updateToolsetsConfig({ [toolsetName]: updates });
 }
 
-function updateToolConfig (toolsetName, toolName, update) {
-  return this.updateValmaConfig({ toolset: { [toolsetName]: { tool: { [toolName]: update } } } });
+function updateToolConfig (toolsetName, toolName, updates) {
+  if (typeof toolsetName !== "string" || typeof toolName !== "string" || typeof updates !== "object"
+      || !toolsetName || !toolName || !updates) {
+    throw new Error(`Invalid arguments for updateToolConfig, expexted string|string|object, got ${
+        typeof toolsetName}|${typeof toolName}|${typeof updates}`);
+  }
+  return this.updateToolsetsConfig({ [toolsetName]: { tool: { [toolName]: updates } } });
 }
 
 function createStandardToolsetOption (description) {
@@ -1461,7 +1489,7 @@ function _deepAssign (target, source) {
 }
 
 function _flushPendingConfigWrites () {
-  _commitUpdates("valma.json", valmaConfigStatus, () => vlm.valmaConfig);
+  _commitUpdates("toolsets.json", toolsetsConfigStatus, () => vlm.toolsetsConfig);
   _commitUpdates("package.json", packageConfigStatus, () => {
     const reorderedConfig = {};
     reorderedConfig.name = vlm.packageConfig.name;

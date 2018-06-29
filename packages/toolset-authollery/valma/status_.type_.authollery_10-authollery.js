@@ -5,7 +5,7 @@ exports.introduction = `${exports.describe}.`;
 exports.builder = (yargs) => yargs;
 
 exports.handler = (yargv) => {
-  const authollery = yargv.vlm.valmaConfig && yargv.vlm.valmaConfig.authollery;
+  const authollery = yargv.vlm.getValmaConfig("authollery");
   if (authollery) {
     console.log(`authollery stack: ${authollery.stack}`);
   } else {
