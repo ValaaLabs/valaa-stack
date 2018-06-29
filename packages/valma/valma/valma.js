@@ -37,7 +37,7 @@ const npmCheck = ">=5.0.0";
 
 const defaultPaths = {
   poolBase: path.posix.resolve("."),
-  poolDirectories: ["node_modules/.bin/", "valma.bin/"],
+  poolDirectories: ["valma.bin/", "node_modules/.bin/"],
   globalPool: process.env.VLM_GLOBAL_POOL || (shell.which("vlm") || "").slice(0, -3),
 };
 
@@ -247,14 +247,25 @@ const vlm = vargs.vlm = {
 };
 
 colors._setTheme = function _setTheme (obj) {
-  Object.keys(obj).forEach(name => {
-    this[name] = (Array.isArray(obj[name]) ? obj[name] : [obj[name]])
-        .map(name_ => this[name_].bind(this))
-        .reduceRight((next, subOp) => (...rest) => subOp(next(...rest)));
-  });
+  const createDecorator = (rule) => {
+    if (rule === undefined) return (...rest) => rest.map(a => String(a)).join("");
+    if (typeof rule === "string") return createDecorator(this[rule]);
+    if (typeof rule === "function") return (...rest) => rule.apply(this, rest);
+    if (Array.isArray(rule)) {
+      return rule.map(createDecorator).reduceRight(
+          (next, cur) => (...rest) => next(...[].concat(cur(...rest))));
+    }
+    const decorateFirst = createDecorator(rule.first);
+    const decorateRest = createDecorator(rule.rest);
+    return (first, ...rest) => (!rest.length
+        ? decorateFirst(first)
+        : `${decorateFirst(first)} ${decorateRest(...rest)}`);
+  };
+  Object.keys(obj).forEach(name => { this[name] = createDecorator(obj[name]); });
 };
 
 colors._setTheme({
+  flatsplit: (...rest) => [].concat(...[].concat(...rest).map(entry => entry.split(" "))),
   echo: "dim",
   warning: ["bold", "yellow"],
   error: ["bold", "red"],
@@ -263,10 +274,10 @@ colors._setTheme({
   instruct: ["bold", "cyan"],
   babble: "cyan",
   expound: "cyan",
-  command: ["bold", "magenta"],
-  overridden: ["strikethrough", "bold", "magenta"],
-  arguments: ["magenta"],
-  executable: ["magenta"],
+  argument: ["blue", "bold"],
+  executable: ["flatsplit", { first: ["magenta"], rest: "argument" }],
+  command: ["flatsplit", { first: ["magenta", "bold"], rest: "argument" }],
+  overridden: ["strikethrough", "command"],
 });
 
 module.exports = {
@@ -482,7 +493,7 @@ const globalVargv = _parseUntilCommand(globalVargs, processArgv, "command");
 
 vlm.verbosity = vlm.isCompleting ? 0 : globalVargv.verbose;
 vlm.interactive = vlm.isCompleting ? 0 : globalVargv.interactive;
-if (!globalVargv.echo || vlm.isCompleting) vlm.echo = function noEcho () { return this; };
+if (globalVargv.silenceEcho || vlm.isCompleting) vlm.echo = function noEcho () { return this; };
 if (!globalVargv.warnings || vlm.isCompleting) vlm.warn = function noWarnings () { return this; };
 if (!globalVargv.babbles || vlm.isCompleting) vlm.babble = function noBabble () { return this; };
 if (!globalVargv.expounds || vlm.isCompleting) vlm.expound = function noExpound () { return this; };
@@ -661,9 +672,10 @@ async function handler (vargv) {
   ####   #    #  ######  ######    #     #    #  ######  #    #  #    #
 */
 
-async function callValmaWithEcho (command, args) {
+async function callValmaWithEcho (command_, args) {
+  const command = command_.split(" ")[0];
   const argv = _processArgs(args);
-  vlm.echo("    ->> vlm", vlm.colors.command(command), vlm.colors.arguments(...argv));
+  vlm.echo("    ->> vlm", vlm.colors.command(command, ...argv));
   try {
     const ret = await invoke.call(this, command, argv);
     vlm.echo("    <<- vlm", `${vlm.colors.command(command)}:`,
@@ -695,7 +707,7 @@ async function invoke (command, argv) {
   // Phase 3: filter available command pools against the command glob
 
   this.ifVerbose(1)
-      .babble("phase 3, invoke", this.colors.command(commandGlob), this.colors.arguments(...argv),
+      .babble("phase 3, invoke", this.colors.command(commandGlob, ...argv),
           "\n\tisWildcard:", isWildcardCommand, ", introspect options:", !!introspect);
   this.ifVerbose(2)
       .expound("introspect:", introspect)
@@ -728,7 +740,7 @@ async function invoke (command, argv) {
   }
 
   if (!isWildcardCommand && !Object.keys(activeCommands).length) {
-    vlm.error(`cannot find command '${command}' from active pools:`,
+    vlm.error(`cannot find command '${vlm.colors.command(command)}' from active pools:`,
         ..._activePools.map(activePool => `\n\t"${vlm.path.join(activePool.path, commandGlob)}"`));
     return -1;
   }
@@ -740,7 +752,7 @@ async function invoke (command, argv) {
 
   this.ifVerbose(1)
       .babble("phase 4, dispatch:", ...(dryRunCommands ? ["--dry-run"] : []),
-          this.colors.command(commandGlob), this.colors.arguments(argv),
+          this.colors.command(commandGlob, ...argv),
           "\n\tactive commands:", ...Object.keys(activeCommands).map(c => vlm.colors.command(c)));
   vargs.help();
 
@@ -780,7 +792,7 @@ async function invoke (command, argv) {
 
       const subIntrospect = _determineIntrospection(module, subVargv, matchingCommand);
       this.ifVerbose(3)
-          .babble("parsed:", this.colors.command(matchingCommand), this.colors.arguments(...argv),
+          .babble("parsed:", this.colors.command(matchingCommand, ...argv),
               disabled ? `: disabled, ${disabled}` : ""
       ).ifVerbose(4)
           .expound("\tsubArgv:", subVargv)
@@ -801,8 +813,7 @@ async function invoke (command, argv) {
         }
         subVargv.vlm.contextVargv = subVargv;
         if (isWildcardCommand) {
-          this.echo("    >>> vlm", this.colors.command(matchingCommand),
-              this.colors.arguments(...argv));
+          this.echo("    >>> vlm", this.colors.command(matchingCommand, ...argv));
         }
         await _tryInteractive(subVargv, subVargs);
         ret.push(await module.handler(subVargv));

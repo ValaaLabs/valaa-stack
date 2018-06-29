@@ -142,7 +142,8 @@ exports.handler = async (yargv) => {
       ...selections.map(({ name }) => name));
 
   if (!yargv.assemble) {
-    vlm.info(`--no-assemble requested`, "skipping the assembly of", selections.length, "packages");
+    vlm.info(`${vlm.colors.argument("--no-assemble")} requested`,
+        "skipping the assembly of", selections.length, "packages");
   } else {
     let defaultNPMIgnore = vlm.path.resolve(".npmignore");
     if (!vlm.shell.test("-f", defaultNPMIgnore)) defaultNPMIgnore = null;
@@ -183,7 +184,7 @@ exports.handler = async (yargv) => {
   }
 
   if (!yargv.versioning) {
-    vlm.info(`${vlm.colors.command("--no-versioning")} requested:`,
+    vlm.info(`${vlm.colors.argument("--no-versioning")} requested:`,
         "no version update, no git commit, no git tag, no package.json finalizer copying");
   } else {
     vlm.info("Updating version, making git commit, creating a lerna git tag and",
@@ -196,7 +197,7 @@ exports.handler = async (yargv) => {
     ]);
     if (!yargv.assemble && (!yargv.overwrite || !yargv.onlyPending)) {
       vlm.info("Skipping package.json version updates", "as",
-          vlm.colors.command(yargv.assemble ? "--no-assemble"
+          vlm.colors.argument(yargv.assemble ? "--no-assemble"
               : !yargv.overwrite ? "--no-overwrite" : "--no-only-pending"),
           "was specified");
     } else {
@@ -209,7 +210,7 @@ exports.handler = async (yargv) => {
         }
         if (!yargv.overwrite || !yargv.onlyPending || yargv.assemble) {
           vlm.warn(`Skipped copying updated '${name}' package.json to non-assembled package as`,
-              vlm.colors.command(...(yargv.assemble ? ["--assemble"] : []),
+              vlm.colors.argument(...(yargv.assemble ? ["--assemble"] : []),
                   ...(!yargv.overwrite ? ["--no-overwrite"] : []),
                   ...(!yargv.onlyPending ? ["--no-only-pending"] : [])),
               "was specified");
@@ -221,11 +222,11 @@ exports.handler = async (yargv) => {
   if (yargv.postExecute) {
     selections.forEach(({ name, targetDirectory, assembled }) => {
       if (!assembled && yargv.assemble) {
-        vlm.info(`Skipping post-execute '${vlm.colors.command(yargv.postExecute)}' for '${name}'`,
-            `assembly was requested but not successful for this package`);
+        vlm.info(`Skipping post-execute '${vlm.colors.executable(yargv.postExecute)}' for '${
+            name}'`, `assembly was requested but not successful for this package`);
       } else {
-        vlm.info(`${vlm.colors.command("--post-execute")} requested:`, `${targetDirectory}$`,
-            vlm.colors.command(yargv.postExecute));
+        vlm.info(`${vlm.colors.argument("--post-execute")} requested:`, `${targetDirectory}$`,
+            vlm.colors.executable(yargv.postExecute));
         vlm.shell.exec(`cd ${targetDirectory} && ${yargv.postExecute}`);
       }
     });

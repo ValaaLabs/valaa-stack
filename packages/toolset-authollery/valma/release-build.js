@@ -19,12 +19,11 @@ exports.builder = (yargs) => yargs.options({
   },
 });
 
-exports.handler = (yargv) => {
+exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
   const packageConfig = vlm.packageConfig;
-  const packageName = packageConfig.name.replace(/\//g, "_");
+  const releasePath = yargv.target;
 
-  const releasePath = vlm.path.join(yargv.target, `${packageName}-${packageConfig.version}`);
   if (vlm.shell.test("-d", releasePath)) {
     if (packageConfig.version.indexOf("-prerelease") !== -1) {
       vlm.warn("removing an existing '-prerelease' build target:", releasePath);
@@ -45,7 +44,7 @@ exports.handler = (yargv) => {
     prepareToolsetBuild,
     prepareToolBuild,
   });
-  return vlm.invoke(".release-build/**/*", [releasePath]);
+  return await vlm.invoke(".release-build/**/*", [releasePath]);
 };
 
 /**
@@ -67,12 +66,12 @@ function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-rel
   const toolsetConfig = this.getToolsetConfig(toolsetName);
   if (!toolsetConfig) return {};
   if ((toolsetConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {
-    logger.ifVerbose(1)
-        .info(`Skipping the build of already deployed release version ${desiredVersionHash
-              } by toolset ${toolsetDescription}`);
+    logger.info(`Skipping the build of already deployed release version ${
+        desiredVersionHash} by toolset ${toolsetDescription}`);
     return {};
   }
-  const toolsetReleasePath = this.path.join(releasePath, toolsetName);
+  const simpleToolsetName = toolsetName.replace(/\//g, "_");
+  const toolsetReleasePath = this.path.join(releasePath, simpleToolsetName);
   logger.info(`building ${toolsetDescription} release in`, toolsetReleasePath);
   this.shell.rm("-rf", toolsetReleasePath);
   this.shell.mkdir("-p", toolsetReleasePath);
@@ -86,12 +85,13 @@ function prepareToolBuild (toolsetName, toolName,
   const toolConfig = this.getToolConfig(toolsetName, toolName);
   if (!toolConfig) return {};
   if ((toolConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {
-    logger.ifVerbose(1)
-        .info(`skipping the build of already deployed release version ${desiredVersionHash
-            } of tool ${toolDescription}`);
+    logger.info(`skipping the build of already deployed release version ${
+        desiredVersionHash} of tool ${toolDescription}`);
     return {};
   }
-  const toolReleasePath = this.path.join(this.releasePath, toolsetName, toolName);
+  const simpleToolsetName = toolsetName.replace(/\//g, "_");
+  const simpleToolName = toolName.replace(/\//g, "_");
+  const toolReleasePath = this.path.join(this.releasePath, simpleToolsetName, simpleToolName);
   logger.info(`building ${toolDescription} release in '${toolReleasePath}'`);
   this.shell.rm("-rf", toolReleasePath);
   this.shell.mkdir("-p", toolReleasePath);

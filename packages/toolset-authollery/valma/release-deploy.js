@@ -19,9 +19,7 @@ exports.builder = (yargs) => yargs.options({
 exports.handler = (yargv) => {
   const vlm = yargv.vlm;
   const packageConfig = vlm.packageConfig;
-  const packageName = packageConfig.name.replace(/\//g, "_");
-
-  const releasePath = vlm.path.join(yargv.source, `${packageName}-${packageConfig.version}`);
+  const releasePath = yargv.source;
 
   if (!yargv.prerelease && (packageConfig.version.indexOf("-prerelease") !== -1)) {
     throw new Error(`valma-release-deploy: cannot deploy a release with a '-prerelease' version${
