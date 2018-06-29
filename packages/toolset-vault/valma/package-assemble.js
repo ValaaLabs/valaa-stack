@@ -1,8 +1,8 @@
 #!/usr/bin/env vlm
 
 exports.command = "package-assemble";
-exports.summary = "Assemble all current modified vault packages (preparing for publish)";
-exports.describe = `${exports.summary}.
+exports.describe = "Assemble all current modified vault packages (preparing for publish)";
+exports.introduction = `${exports.describe}.
 
 Uses lerna to handle the monorepo sub-packages update detection,
 versioning, and git interactions. Configuration for lerna is in

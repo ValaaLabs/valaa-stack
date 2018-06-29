@@ -1,8 +1,8 @@
 #!/usr/bin/env vlm
 
 exports.command = "release-build";
-exports.summary = "Build all toolset sub-releases which have source modifications";
-exports.describe = `${exports.summary}.
+exports.describe = "Build all toolset sub-releases which have source modifications";
+exports.introduction = `${exports.describe}.
 
 These sub-releases are placed under the provided dist target. This
 command is first part of the two-part deployment with release-deploy
@@ -58,7 +58,7 @@ exports.handler = (yargv) => {
  */
 function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-release",
     desiredVersionHash) {
-  const logger = this.tailor({ commandName: `release-build/${toolsetName}` });
+  const logger = this.tailor({ contextCommand: `release-build/${toolsetName}` });
   const releasePath = this.releasePath;
   if (!this.shell.test("-d", releasePath)) {
     throw new Error(`valma-release-build/${toolsetName}: releasePath directory '${
@@ -82,7 +82,7 @@ function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-rel
 
 function prepareToolBuild (toolsetName, toolName,
     toolDescription = "tool sub-release", desiredVersionHash) {
-  const logger = this.tailor({ commandName: `release-build/${toolName}` });
+  const logger = this.tailor({ contextCommand: `release-build/${toolName}` });
   const toolConfig = this.getToolConfig(toolsetName, toolName);
   if (!toolConfig) return {};
   if ((toolConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {

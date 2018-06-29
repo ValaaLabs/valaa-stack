@@ -1,8 +1,8 @@
 #!/usr/bin/env vlm
 
 exports.command = "init";
-exports.summary = "Initialize the current directory as a Valaa repository from scratch";
-exports.describe = `${exports.summary}.
+exports.describe = "Initialize the current directory as a Valaa repository from scratch";
+exports.introduction = `${exports.describe}.
 
 This process will walk you through creating and configuring a new
 valma repository in the current working directory from scratch.
@@ -24,7 +24,7 @@ exports.builder = (yargs) => yargs.options({
 
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
-  vlm.speak(exports.describe.match(/[^\n]*\n(.*)/)[1]);
+  vlm.speak(exports.introduction.match(/[^\n]*\n(.*)/)[1]);
   const tellIfNoReconfigure = !yargv.reconfigure ? ["(no --reconfigure given)"] : [];
 
   return await _configurePackageJSON()

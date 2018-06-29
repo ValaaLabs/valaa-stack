@@ -1,6 +1,6 @@
 exports.command = ".configure/.type/.vault/@valos/toolset-vault";
-exports.summary = "Configure this vault monorepository with toolset-vault";
-exports.describe = `${exports.summary}.
+exports.describe = "Configure this vault monorepository with toolset-vault";
+exports.introduction = `${exports.describe}.
 
 Adds valma commands 'package-assemble' and 'package-publish'.
 
@@ -21,10 +21,10 @@ exports.handler = (yargv) => {
   const vlm = yargv.vlm;
   const templates = vlm.path.join(__dirname, "../templates/{.,}*");
   vlm.info("Copying vault template files from ", templates, "(will not clobber existing files)");
+  vlm.shell.cp("-n", templates, ".");
 
   // TODO(iridian): Convert into dynamic listing maybe?
   const hardcodedDotFiles = ["gitignore", "npmignore", "npmrc"];
-
   for (const dotFile of hardcodedDotFiles) {
     vlm.shell.cp("-n", vlm.path.join(__dirname, "../template.dots", dotFile), `.${dotFile}`);
   }

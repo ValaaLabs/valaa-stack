@@ -1,6 +1,6 @@
 exports.command = ".configure/.domain/gateway";
-exports.summary = "Configure a valaa repository to be part of the gateway domain";
-exports.describe = `${exports.summary}.`;
+exports.describe = "Configure a valaa repository to be part of the gateway domain";
+exports.introduction = `${exports.describe}.`;
 
 exports.builder = (yargs) => yargs.options({
   reconfigure: {

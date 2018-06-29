@@ -1,8 +1,8 @@
 #!/usr/bin/env vlm
 
 exports.command = "configure [toolsetGlob]";
-exports.summary = "Configure the current valaa repository and its toolsets";
-exports.describe = `${exports.summary}.
+exports.describe = "Configure the current valaa repository and its toolsets";
+exports.introduction = `${exports.describe}.
 
 Invokes all the in-use toolset configure commands.`;
 

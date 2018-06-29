@@ -1,6 +1,6 @@
 exports.command = ".configure/.select-toolsets";
-exports.summary = "Grab and stow toolsets from the set available toolsets";
-exports.describe = `${exports.summary}.
+exports.describe = "Grab and stow toolsets from the set available toolsets";
+exports.introduction = `${exports.describe}.
 
 The set of available toolsets is defined by the set of all valma
 'toolset configure' commands listed by the invokation (note the empty

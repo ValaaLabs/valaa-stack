@@ -1,8 +1,8 @@
 #!/usr/bin/env vlm
 
 exports.command = "revealer-build";
-exports.summary = "Build revealer bundles based on the revealer toolset config";
-exports.describe = `${exports.summary}.
+exports.describe = "Build revealer bundles based on the revealer toolset config";
+exports.introduction = `${exports.describe}.
 `;
 
 // Example template which displays the command name itself and package name where it is ran

@@ -1,6 +1,6 @@
 exports.command = ".configure/.type/library";
-exports.summary = "Configure a Valaa library repository";
-exports.describe = `${exports.summary}.
+exports.describe = "Configure a Valaa library repository";
+exports.introduction = `${exports.describe}.
 
 Libraries are repositories which contain arbitrary ES5 source code and
 expose an API via package.json .main stanza.

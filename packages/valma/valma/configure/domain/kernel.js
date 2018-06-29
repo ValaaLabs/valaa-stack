@@ -1,6 +1,6 @@
 exports.command = ".configure/.domain/kernel";
-exports.summary = "Configure a Valaa repository to be part of the kernel domain";
-exports.describe = `${exports.summary}.`;
+exports.describe = "Configure a Valaa repository to be part of the kernel domain";
+exports.introduction = `${exports.describe}.`;
 
 exports.builder = (yargs) => yargs.options({
   reconfigure: {

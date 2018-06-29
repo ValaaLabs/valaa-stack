@@ -1,8 +1,8 @@
 #!/usr/bin/env vlm
 
 exports.command = ".status/10-header";
-exports.summary = "Display the generic information header for the current repository";
-exports.describe = `${exports.summary}.`;
+exports.describe = "Display the generic information header for the current repository";
+exports.introduction = `${exports.describe}.`;
 
 exports.builder = (yargs) => yargs;
 

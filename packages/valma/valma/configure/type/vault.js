@@ -1,6 +1,6 @@
 exports.command = ".configure/.type/vault";
-exports.summary = "Configure a Valaa Vault repository";
-exports.describe = `${exports.summary}.
+exports.describe = "Configure a Valaa Vault repository";
+exports.introduction = `${exports.describe}.
 
 A Valaa Vault is a monorepository containing many sub-packages. Its
 main responsibility is to handle the development, assembly and

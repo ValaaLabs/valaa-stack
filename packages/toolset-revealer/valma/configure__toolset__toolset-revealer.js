@@ -1,8 +1,8 @@
 const toolsetName = "@valos/toolset-revealer";
 
 exports.command = ".configure/.toolset/@valos/toolset-revealer";
-exports.summary = "Configure this repository for webpack revelation bundling with toolset-revealer";
-exports.describe = `${exports.summary}.
+exports.describe = "Configure this repository for webpack revelation bundling with toolset-revealer";
+exports.introduction = `${exports.describe}.
 
 Adds valma command 'revealer-dev-server'.
 

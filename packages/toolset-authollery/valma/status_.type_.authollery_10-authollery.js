@@ -1,6 +1,6 @@
 exports.command = ".status/10-authollery";
-exports.summary = "Display the authollery status";
-exports.describe = `${exports.summary}.`;
+exports.describe = "Display the authollery status";
+exports.introduction = `${exports.describe}.`;
 
 exports.builder = (yargs) => yargs;
 

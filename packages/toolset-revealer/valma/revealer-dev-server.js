@@ -4,8 +4,9 @@ const defaultDistContentBase = "dist/revealer";
 const defaultSource = "./revelations/";
 
 exports.command = "revealer-dev-server [distContentBase]";
-exports.summary = "Launch a webpack-dev-server at localhost serving a local revelation";
-exports.describe = `${exports.summary}.
+exports.describe = "Launch a webpack-dev-server at localhost serving a local revelation";
+exports.introduction = `${exports.describe}.
+
 The revelation consists of two parts: webpack output and static files.
 Webpack output is configured by the project root webpack.config.js and
 the static files are served from the optionally given distContentBase

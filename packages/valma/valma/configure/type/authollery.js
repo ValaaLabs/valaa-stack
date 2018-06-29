@@ -1,6 +1,6 @@
 exports.command = ".configure/.type/authollery";
-exports.summary = "Configure a Valaa authollery repository";
-exports.describe = `${exports.summary}.
+exports.describe = "Configure a Valaa authollery repository";
+exports.introduction = `${exports.describe}.
 
 Authollery is a portmanteau of AUTHority contrOLLEr repositoRY.
 Autholleries are responsible for configuring, deploying, updating,

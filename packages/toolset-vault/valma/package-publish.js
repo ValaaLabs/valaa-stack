@@ -1,8 +1,8 @@
 #!/usr/bin/env vlm
 
 exports.command = "package-publish";
-exports.summary = "Publish package assemblies to their registries";
-exports.describe = `${exports.summary}.`;
+exports.describe = "Publish package assemblies to their registries";
+exports.introduction = `${exports.describe}.`;
 
 exports.builder = (yargs) => yargs.options({
   source: {

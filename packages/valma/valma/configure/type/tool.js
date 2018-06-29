@@ -1,6 +1,6 @@
 exports.command = ".configure/.type/tool";
-exports.summary = "Configure a Valma tool repository";
-exports.describe = `${exports.summary}.
+exports.describe = "Configure a Valma tool repository";
+exports.introduction = `${exports.describe}.
 
 Tools are a toolset implementation detail. A tool is similar to
 a toolset in that it can have its own repository specific
@@ -51,9 +51,9 @@ exports.handler = async (yargv) => {
     filename: `configure_tool__${simpleName}.js`,
     brief: `${yargv.brief || "simple"} configure`,
     header: `const toolName = "${vlm.packageConfig.name}";\n\n`,
-    summary: `Configure this tool package within the given toolset configuration`,
+    describe: `Configure this tool package within the given toolset configuration`,
 
-    describe:
+    introduction:
 `As a tool this script is not automatically called. The toolset or tool
 which directly depends on this tool must explicit call this command.`,
 

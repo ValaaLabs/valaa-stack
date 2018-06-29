@@ -1,6 +1,6 @@
 exports.command = ".configure/.type/.authollery/@valos/toolset-authollery";
-exports.summary = "Configure this authollery controller repository with toolset-authollery";
-exports.describe = `${exports.summary}.
+exports.describe = "Configure this authollery controller repository with toolset-authollery";
+exports.introduction = `${exports.describe}.
 
 Adds valma commands 'release-build' and 'release-deploy'.
 

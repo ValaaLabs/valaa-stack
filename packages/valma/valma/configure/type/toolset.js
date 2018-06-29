@@ -1,6 +1,6 @@
 exports.command = ".configure/.type/toolset";
-exports.summary = "Configure a Valma toolset repository";
-exports.describe = `${exports.summary}.
+exports.describe = "Configure a Valma toolset repository";
+exports.introduction = `${exports.describe}.
 
 A valma toolset is a package which provides various resources for
 a depending repository with the ability to have repository specific
@@ -49,10 +49,10 @@ exports.handler = async (yargv) => {
     export: true, skeleton: true,
     brief: "toolset configure",
     header: `const toolsetName = "${vlm.packageConfig.name}";\n`,
-    summary: `Configure the toolset '${simpleName}' for the current ${
+    describe: `Configure the toolset '${simpleName}' for the current ${
         yargv.restrict || "repository"}`,
 
-    describe: yargv.restrict
+    introduction: yargv.restrict
         ?
 `This script makes the toolset '${simpleName}' available for
 grabbing by repositories with valaa type '${yargv.restrict}'.`

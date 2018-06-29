@@ -1,6 +1,6 @@
 exports.command = ".configure/.domain/authollery";
-exports.summary = "Configure a valaa repository to be part of the authollery domain";
-exports.describe = `${exports.summary}.
+exports.describe = "Configure a valaa repository to be part of the authollery domain";
+exports.introduction = `${exports.describe}.
 
 Authollery domain includes all toolsets which are meant to be
 dev-depended by autholleries. The purpose of autholleries is to have
@@ -67,7 +67,7 @@ exports.handler = async (yargv) => {
       brief: `${subCommandName === "build" ? "Build" : "Deploy"} a sub-release`,
       export: true,
       header: `const ${type}Name = "${name}";\n\n`,
-      summary: `${subCommandName === "build" ? "Build" : "Deploy"} a sub-release of ${name}`,
+      describe: `${subCommandName === "build" ? "Build" : "Deploy"} a sub-release of ${name}`,
 
       disabled: isTool ? undefined :
 `(yargs) => !(yargs.vlm.getToolsetConfig("toolsetName") || {})["in-use"]`,
@@ -76,7 +76,7 @@ exports.handler = async (yargv) => {
   toolset: yargs.vlm.createStandardToolsetOption(
       "The containing toolset of this tool release ${subCommandName}."),
 })`,
-      describe: isTool
+      introduction: isTool
           ?
 `This tool sub-release ${subCommandName} command must be explicitly invoked by
 toolsets which use this tool.`

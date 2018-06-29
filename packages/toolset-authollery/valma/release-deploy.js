@@ -1,8 +1,8 @@
 #!/usr/bin/env vlm
 
 exports.command = "release-deploy [toolsetglob]";
-exports.summary = "Deploy previously built releases to their deployment targets";
-exports.describe = `${exports.summary}.`;
+exports.describe = "Deploy previously built releases to their deployment targets";
+exports.introduction = `${exports.describe}.`;
 
 exports.builder = (yargs) => yargs.options({
   source: {
@@ -44,14 +44,14 @@ exports.handler = (yargv) => {
 };
 
 function locateToolsetRelease (toolsetName, toolsetDescription = "toolset") {
-  const logger = this.tailor({ commandName: `release-deploy/${toolsetName}` });
+  const logger = this.tailor({ contextCommand: `release-deploy/${toolsetName}` });
   const releasePath = this.releasePath;
   const toolsetConfig = this.getToolsetConfig(toolsetName);
   if (!toolsetConfig) {
-    throw new Error(`${this.commandName}: valma.json:toolset['${toolsetName}] missing`);
+    throw new Error(`${this.contextCommand}: valma.json:toolset['${toolsetName}] missing`);
   }
   if (!this.shell.test("-d", releasePath)) {
-    throw new Error(`${this.commandName}: releasePath directory '${releasePath}' missing`);
+    throw new Error(`${this.contextCommand}: releasePath directory '${releasePath}' missing`);
   }
   const toolsetReleasePath = this.path.join(releasePath, toolsetName);
   if (!this.shell.test("-d", toolsetReleasePath)) {
@@ -65,7 +65,7 @@ function locateToolsetRelease (toolsetName, toolsetDescription = "toolset") {
 }
 
 function locateToolRelease (toolsetName, toolName, toolDescription = "tool") {
-  const logger = this.tailor({ commandName: `release-deploy/${toolName}` });
+  const logger = this.tailor({ contextCommand: `release-deploy/${toolName}` });
   const releasePath = this.releasePath;
   const toolConfig = this.getToolConfig(toolsetName, toolName);
   const toolReleasePath = this.path.join(releasePath, toolsetName, toolName);

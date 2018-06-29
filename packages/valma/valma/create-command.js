@@ -1,8 +1,9 @@
 #!/usr/bin/env vlm
 
 exports.command = "create-command";
-exports.summary = "Create a valma command script skeleton";
-exports.describe = `${exports.summary}.
+exports.describe = "Create a valma command script skeleton";
+exports.introduction = `${exports.describe}.
+
 The script file is placed under valma/ with a symlink to it in
 valma.bin/ , making the command immediately visible to valma.`;
 
@@ -13,7 +14,8 @@ exports.builder = (yargs) => yargs.options({
     interactive: { type: "input", when: "if-undefined" }
   },
   filename: {
-    type: "string", description: "The new command skeleton filename in valma/ (leave empty for default)",
+    type: "string",
+    description: "The new command skeleton filename in valma/ (leave empty for default)",
     interactive: { type: "input", when: "if-undefined" }
   },
   brief: {
@@ -27,15 +29,16 @@ exports.builder = (yargs) => yargs.options({
     type: "boolean", default: false,
     description: "If true will only create a minimal script skeleton",
   },
-  summary: {
-    type: "string", description: "One line summary of the new command (set as exports.summary)",
+  describe: {
+    type: "string",
+    description: "Max 71 char description of the new command (set as exports.describe)",
     interactive: { type: "input", when: "if-undefined" },
   },
   header: {
     type: "string", description: "Lines to place at the beginning of the script skeleton",
   },
-  describe: {
-    type: "string", description: "Full description of the new command, set as exports.describe",
+  introduction: {
+    type: "string", description: "Full description of the new command, set as exports.introduction",
   },
   disabled: {
     type: "string", description: "Full exports.disabled source (as function callback)",
@@ -60,7 +63,7 @@ exports.handler = async (yargv) => {
     const choices = [local ? "Create" : "Export", "skip",
       local ? "export instead" : "local instead"
     ];
-    if (yargv.describe) choices.push("help");
+    if (yargv.introduction) choices.push("help");
     const linkMessage = local
         ? `'valma.bin/${commandExportName}'`
         : `'package.json':bin["${commandExportName}"]`;
@@ -76,7 +79,7 @@ exports.handler = async (yargv) => {
       break;
     }
     if (answer.choice === "help") {
-      vlm.speak(yargv.describe);
+      vlm.speak(yargv.introduction);
       vlm.info(`This step creates a ${yargv.brief || (local ? "local" : "exported")
           } valma command script template\n`);
       continue;
@@ -108,7 +111,8 @@ exports.handler = async (yargv) => {
       vlm.colors.command(command)}'.`;
   if (verb === "already exports") {
     vlm.warn(message);
-    vlm.instruct(`You can edit the existing command script at ${vlm.packageConfig.bin[commandExportName]}`);
+    vlm.instruct(`You can edit the existing command script at ${
+        vlm.packageConfig.bin[commandExportName]}`);
   } else {
     vlm.info(message);
     vlm.instruct(`You can edit the command ${yargv.skeleton ? "skeleton" : "template"} at ${
@@ -123,8 +127,9 @@ function _createSource (command, yargv) {
   return `${(command[0] === ".") || command.includes("/.") ? "" : "#!/usr/bin/env vlm\n\n"
 }${yargv.header || ""
 }exports.command = "${command}";
-exports.summary = "${yargv.summary || yargv.brief || ""}";
-exports.describe = \`\${exports.summary}.${yargv.describe ? `\n\n${yargv.describe}` : ""}\`;
+exports.describe = "${yargv.describe || yargv.brief || ""}";
+exports.introduction = \`\${exports.describe}.${
+    yargv.introduction ? `\n\n${yargv.introduction}` : ""}\`;
 
 exports.disabled = ${yargv.disabled || components.disabled};
 exports.builder = ${yargv.builder || components.builder};

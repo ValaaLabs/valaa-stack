@@ -1,8 +1,8 @@
 #!/usr/bin/env vlm
 
 exports.command = "status [toolsetglob]";
-exports.summary = "Display the status of the current package repository";
-exports.describe = `${exports.summary}.
+exports.describe = "Display the status of the current package repository";
+exports.introduction = `${exports.describe}.
 
 If toolsetglob is specified the status is limited to status scripts
 matching '.status/{toolsetglob}*', otherwise all status scripts by

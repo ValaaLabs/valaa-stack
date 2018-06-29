@@ -1,7 +1,6 @@
 exports.command = ".configure/.type/library";
-exports.summary = "Configure a Valaa library repository";
-exports.describe = `${exports.summary}.
-`;
+exports.describe = "Configure a Valaa library repository";
+exports.introduction = `${exports.describe}.`;
 
 // Example template which displays the command name itself and package name where it is ran
 // Only enabled inside package

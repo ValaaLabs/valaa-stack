@@ -1,6 +1,6 @@
 exports.command = ".configure/.valaa-stanza";
-exports.summary = "Configure valaa stanza type and domain from the available options";
-exports.describe = `${exports.summary}.
+exports.describe = "Configure valaa stanza type and domain from the available options";
+exports.introduction = `${exports.describe}.
 
 Type determines the localized role and structure of this repository.
 Domain defines the context and the overall purpose of this repository.

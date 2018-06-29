@@ -1,7 +1,8 @@
 const toolsetName = "@valos/toolset-vault-operations";
 exports.command = ".configure/.type/.vault/.toolset/@valos/toolset-vault-operations";
-exports.summary = "Configure the toolset 'toolset-vault-operations' for the current vault";
-exports.describe = `${exports.summary}.
+exports.describe = "Configure the toolset 'toolset-vault-operations' for the current vault";
+exports.introduction = `${exports.describe}.
+
 This script makes the toolset 'toolset-vault-operations' available for
 grabbing by repositories with valaa type 'vault'.`;
 
