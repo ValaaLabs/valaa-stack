@@ -4,7 +4,7 @@ exports.command = ".configure/.toolset/@valos/toolset-revealer";
 exports.describe = "Configure this repository for webpack revelation bundling with toolset-revealer";
 exports.introduction = `${exports.describe}.
 
-Adds valma command 'revealer-dev-server'.
+Adds valma command 'rouse-revealer'.
 
 Sets up the webpack entry and output config as webpack.config.js in
 the repository root, which combines shared revealer config from

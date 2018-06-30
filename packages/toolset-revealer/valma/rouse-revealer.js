@@ -3,7 +3,7 @@
 const defaultDistContentBase = "dist/revealer";
 const defaultSource = "./revelations/";
 
-exports.command = "revealer-dev-server [distContentBase]";
+exports.command = "rouse-revealer [distContentBase]";
 exports.describe = "Launch a webpack-dev-server at localhost serving a local revelation";
 exports.introduction = `${exports.describe}.
 

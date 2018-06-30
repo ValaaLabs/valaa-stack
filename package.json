@@ -14,9 +14,9 @@
   ],
   "scripts": {
     "vlm": "vlm ",
-    "start": "vlm revealer-dev-server ",
-    "dev": "TARGET_ENV=local vlm revealer-dev-server ",
-    "prod": "TARGET_ENV=production vlm revealer-dev-server ",
+    "start": "vlm rouse-revealer ",
+    "dev": "TARGET_ENV=local vlm rouse-revealer ",
+    "prod": "TARGET_ENV=production vlm rouse-revealer ",
     "clean": "lerna clean --yes",
     "eslint": "eslint .",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",

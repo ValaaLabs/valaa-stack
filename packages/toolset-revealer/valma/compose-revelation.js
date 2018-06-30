@@ -1,7 +1,7 @@
 #!/usr/bin/env vlm
 
-exports.command = "revealer-build";
-exports.describe = "Build revealer bundles based on the revealer toolset config";
+exports.command = "compose-revelation";
+exports.describe = "Compose revealer bundles based on the revealer toolset config";
 exports.introduction = `${exports.describe}.
 `;
 

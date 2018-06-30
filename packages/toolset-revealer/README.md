@@ -1,1 +1,1 @@
-# @valos/revealer-dev-server delivers `revelations/` via a local web dev server valaa stack
+# @valos/toolset-revealer delivers `revelations/` via a local web dev server valaa stack
