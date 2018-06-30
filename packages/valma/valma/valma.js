@@ -41,6 +41,8 @@ const defaultPaths = {
   globalPool: process.env.VLM_GLOBAL_POOL || (shell.which("vlm") || "").slice(0, -3),
 };
 
+const defaultCommandPrefix = "valma-";
+
 // vlm - the Valma global API singleton - these are available to all command scripts via both
 // vargs.vlm (in scripts exports.builder) as well as vargv.vlm (in scripts exports.handler).
 const vlm = vargs.vlm = {
@@ -265,7 +267,7 @@ colors._setTheme = function _setTheme (obj) {
 };
 
 colors._setTheme({
-  flatsplit: (...rest) => [].concat(...[].concat(...rest).map(entry => entry.split(" "))),
+  flatsplit: (...rest) => [].concat(...[].concat(...rest).map(entry => String(entry).split(" "))),
   echo: "dim",
   warning: ["bold", "yellow"],
   error: ["bold", "red"],
@@ -371,6 +373,11 @@ characters to be equal although '/' is recommended anywhere possible.
           group: "Valma root options:",
           type: "boolean", default: true, global: false,
           description: "Allow vlm forwarding due to promote, node-env or need to load vlm path",
+        },
+        "command-prefix": {
+          group: "Valma root options:",
+          type: "string", default: defaultCommandPrefix, global: false,
+          description: "The command prefix valma uses to recognize command script files.",
         },
         "pool-base": {
           group: "Valma root options:",
@@ -491,6 +498,8 @@ _addUniversalOptions(vargs, { strict: !vlm.isCompleting, hidden: false });
 const globalVargs = module.exports.builder(vargs);
 const globalVargv = _parseUntilCommand(globalVargs, processArgv, "command");
 
+const _commandPrefix = globalVargv.commandPrefix;
+
 vlm.verbosity = vlm.isCompleting ? 0 : globalVargv.verbose;
 vlm.interactive = vlm.isCompleting ? 0 : globalVargv.interactive;
 if (globalVargv.silenceEcho || vlm.isCompleting) vlm.echo = function noEcho () { return this; };
@@ -510,13 +519,14 @@ vlm.ifVerbose(1).babble("phase 1, init:", "determine global options and availabl
 ).ifVerbose(3).expound("global options:", globalVargv);
 
 const _availablePools = [];
-// When a command begins with ./ or contains valma- it is considered a direct file valma command.
-// It's parent directory is made the initial "file" pool.
+// When a command begins with ./ or contains the command prefix (if it is non-empty) it is
+// considered a direct file valma command. It's parent directory is made the initial "file" pool.
 let poolBase = globalVargv.poolBase;
-if ((globalVargv.command || "").includes("valma-")
+if ((_commandPrefix && (globalVargv.command || "").includes(_commandPrefix))
     || (globalVargv.command || "").slice(0, 2) === "./") {
   if (globalVargv.isCompleting) process.exit(0); // Let bash filename completion do its thing.
-  const match = globalVargv.command.match(/(.*\/)?(\.?)valma-(.*?)(.js)?$/);
+  const commandMatcher = new RegExp(`(.*/)?(\\.?)${_commandPrefix}(.*?)(.js)?$`);
+  const match = globalVargv.command.match(commandMatcher);
   globalVargv.command = match ? `${match[2]}${match[3]}` : "";
   const filePoolPath = vlm.path.resolve((match && match[1]) || "");
   _availablePools.push({ name: "file", path: filePoolPath });
@@ -698,7 +708,7 @@ async function invoke (command, argv) {
 
   const contextVargv = this.contextVargv;
   const commandGlob = _underToSlash((contextVargv.matchAll || this.isCompleting)
-      ? _valmaGlobFromCommandPrefix(command, contextVargv.matchAll)
+      ? _valmaGlobFromPartialCommand(command, contextVargv.matchAll)
       : _valmaGlobFromCommand(command || "*"));
   const isWildcardCommand = !command || (command.indexOf("*") !== -1);
   const introspect = _determineIntrospection(
@@ -717,7 +727,7 @@ async function invoke (command, argv) {
 
   if (this.isCompleting || contextVargv.bashCompletion) {
     vargs.completion("bash-completion", (current, argvSoFar) => {
-      const rule = _underToSlash(_valmaGlobFromCommandPrefix(argvSoFar._[1], argvSoFar.matchAll));
+      const rule = _underToSlash(_valmaGlobFromPartialCommand(argvSoFar._[1], argvSoFar.matchAll));
       const ret = [].concat(..._activePools.map(pool => pool.listing
           .filter(node => !_isDirectory(node) && minimatch(_underToSlash(node.name || ""), rule,
               { dot: argvSoFar.matchAll }))
@@ -869,23 +879,23 @@ function _parseUntilCommand (vargs_, argv_, commandKey = "command") {
 // eslint-disable-next-line no-bitwise
 function _isDirectory (candidate) { return candidate.mode & 0x4000; }
 
-// If the command begins with a dot, insert the 'valma-' prefix _after_ the dot; this is useful
+// If the command begins with a dot, insert the command prefix _after_ the dot; this is useful
 // as directories beginning with . don't match /**/ and * glob matchers and can be considered
 // implementation detail.
 function _valmaGlobFromCommand (commandBody) {
-  return !commandBody ? "valma-"
-      : (commandBody[0] === ".") ? `.valma-${commandBody.slice(1)}`
-      : `valma-${commandBody}`;
+  return !commandBody ? _commandPrefix
+      : (commandBody[0] === ".") ? `.${_commandPrefix}${commandBody.slice(1)}`
+      : `${_commandPrefix}${commandBody}`;
 }
 
-function _valmaGlobFromCommandPrefix (commandPrefix = "", matchAll) {
-  return matchAll && !((commandPrefix || "")[0] === ".")
-      ? `{.,}valma-${commandPrefix || ""}{,*/**/}*`
-      : `${_valmaGlobFromCommand(commandPrefix)}{,*/**/}*`;
+function _valmaGlobFromPartialCommand (partialCommand = "", matchAll) {
+  return matchAll && !((partialCommand || "")[0] === ".")
+      ? `{.,}${_commandPrefix}${partialCommand || ""}{,*/**/}*`
+      : `${_valmaGlobFromCommand(partialCommand)}{,*/**/}*`;
 }
 
 function _valmaCommandFromPath (pathname) {
-  const match = pathname.match(/(\.?)valma-(.*)/);
+  const match = pathname.match(new RegExp(`(\\.?)${_commandPrefix}(.*)`));
   return _underToSlash(`${match[1]}${match[2]}`);
 }
 
@@ -1110,13 +1120,13 @@ function execute (executable, args, spawnOptions = {}) {
     }
     function _onDone (code, signal) {
       if (code || signal) {
-        vlm.echo("    <--", `${vlm.colors.green(executable)}:`,
+        vlm.echo("    <--", `${vlm.colors.executable(executable)}:`,
             vlm.colors.error("<error>:", code || signal));
         failure(code || signal);
       } else {
         _refreshActivePools();
         _reloadPackageAndToolsetsConfigs();
-        vlm.echo("    <--", `${vlm.colors.green(executable)}:`,
+        vlm.echo("    <--", `${vlm.colors.executable(executable)}:`,
             vlm.colors.warning("execute return values not implemented yet"));
         resolve();
       }

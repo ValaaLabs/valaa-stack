@@ -62,7 +62,6 @@ exports.handler = async (yargv) => {
 
   function _createReleaseSubCommand (subName) {
     return vlm.invoke("create-command", [`.release-${subName}/${isTool ? ".tool/" : ""}${name}`, {
-      command: ,
       filename: `release-${subName}_${isTool ? "tool_" : ""}_${simpleName}.js`,
       brief: `${subName === "build" ? "Build" : "Deploy"} a sub-release`,
       export: true,

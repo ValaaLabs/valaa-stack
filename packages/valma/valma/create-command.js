@@ -1,6 +1,6 @@
 #!/usr/bin/env vlm
 
-exports.command = "create-command name";
+exports.command = "create-command [name]";
 exports.describe = "Create a valma command script with given name";
 exports.introduction = `${exports.describe}.
 
@@ -59,7 +59,7 @@ exports.handler = async (yargv) => {
   const commandExportName = `${commandParts[1] || ""}valma-${commandParts[2]}`;
   const scriptPath = `valma/${yargv.filename || `${commandParts[2]}.js`}`;
   let verb = "already exports";
-  let import_ = yargv.import;
+  const import_ = yargv.import;
   let local = !yargv.export;
   while (!(vlm.packageConfig.bin || {})[commandExportName]) {
     const choices = [import_ ? "Import" : local ? "Create" : "Export", "skip",

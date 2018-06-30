@@ -57,24 +57,23 @@ exports.handler = async (yargv) => {
  * @param {*} releasePath
  * @returns
  */
-function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-release",
+function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset",
     desiredVersionHash) {
   const logger = this.tailor({ contextCommand: `build-release/${toolsetName}` });
   const releasePath = this.releasePath;
   if (!this.shell.test("-d", releasePath)) {
-    throw new Error(`valma-release-build/${toolsetName}: releasePath directory '${
-        releasePath}' missing`);
+    throw new Error(`${this.contextCommand}: releasePath directory '${releasePath}' missing`);
   }
   const toolsetConfig = this.getToolsetConfig(toolsetName);
   if (!toolsetConfig) return {};
-  if ((toolsetConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {
-    logger.info(`Skipping the build of already deployed release version ${
-        desiredVersionHash} by toolset ${toolsetDescription}`);
+  if (desiredVersionHash && (toolsetConfig.deployedVersionHash === desiredVersionHash)) {
+    logger.info(`${this.colors.bold(`Skipping the ${toolsetDescription} release build`)
+        } of already deployed version:`, desiredVersionHash);
     return {};
   }
   const simpleToolsetName = toolsetName.replace(/\//g, "_");
   const toolsetReleasePath = this.path.join(releasePath, simpleToolsetName);
-  logger.info(`building ${toolsetDescription} release in`, toolsetReleasePath);
+  logger.info(`Building ${toolsetDescription} release in`, toolsetReleasePath);
   this.shell.rm("-rf", toolsetReleasePath);
   this.shell.mkdir("-p", toolsetReleasePath);
   this.toolset = toolsetName;
@@ -86,9 +85,9 @@ function prepareToolBuild (toolsetName, toolName,
   const logger = this.tailor({ contextCommand: `build-release/${toolName}` });
   const toolConfig = this.getToolConfig(toolsetName, toolName);
   if (!toolConfig) return {};
-  if ((toolConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {
-    logger.info(`skipping the build of already deployed release version ${
-        desiredVersionHash} of tool ${toolDescription}`);
+  if (desiredVersionHash && (toolConfig.deployedVersionHash === desiredVersionHash)) {
+    logger.info(`${this.colors.bold(`Skipping the ${toolDescription} release build`)
+        } of already deployed version within toolset ${toolsetName}:`, desiredVersionHash);
     return {};
   }
   const simpleToolsetName = toolsetName.replace(/\//g, "_");
