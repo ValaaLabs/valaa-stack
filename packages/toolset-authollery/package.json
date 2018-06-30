@@ -15,8 +15,8 @@
   "bin": {
     ".valma-configure_.type_.authollery_@valos_toolset-authollery": "valma/configure__authollery__toolset-authollery.js",
     ".valma-status_.type_.authollery_10-authollery": "valma/status_.type_.authollery_10-authollery.js",
-    "valma-release-build": "valma/release-build.js",
-    "valma-release-deploy": "valma/release-deploy.js"
+    "valma-build-release": "valma/build-release.js",
+    "valma-deploy-release": "valma/deploy-release.js"
   },
   "dependencies": {
     "@valos/toolset-revealer": "^0.30.0-prerelease.17",

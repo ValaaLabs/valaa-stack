@@ -2,7 +2,7 @@ exports.command = ".configure/.type/.authollery/@valos/toolset-authollery";
 exports.describe = "Configure this authollery controller repository with toolset-authollery";
 exports.introduction = `${exports.describe}.
 
-Adds valma commands 'release-build' and 'release-deploy'.
+Adds valma commands 'build-release' and 'deploy-release'.
 
 Copies vault monorepo config file templates to this vault repository
 root from package @valos/toolset-authollery directory templates/.*.`;

@@ -1,6 +1,8 @@
 #!/usr/bin/env vlm
 
-exports.command = "package-assemble";
+// 'assemble' first so tab-completion is instant. Everything else 'package' first so assemble and
+// publish commands get listed next to each other.
+exports.command = "assemble-packages";
 exports.describe = "Assemble all current modified vault packages (preparing for publish)";
 exports.introduction = `${exports.describe}.
 
@@ -20,18 +22,18 @@ all packages and their cross-dependencies and make a git commit and git
 tag for the new version.
 This behaviour can be omitted with --no-versioning.
 
-  Iterative development with yalc and packabe-publish:
+  Iterative development with yalc and publish-packages:
 
 Once a set of packages has been been built to the target, run:
 
-'vlm package-publish --publisher=yalc'
+'vlm publish-packages --publisher=yalc'
 
 This will make the package assemblies available in a local yalc
 'registry'; see https://github.com/whitecolor/yalc for more details on
 how to use such packages by other depending packages. Reassembling
 and pushing those changes through yalc to dependents can be done with:
 
-'vlm package-assemble --reassemble --post-execute="yalc push"'
+'vlm assemble-packages --reassemble --post-execute="yalc push"'
 
 This allows packages to be developed iteratively locally while having
 other packages depend and be tested against them.

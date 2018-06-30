@@ -1,6 +1,8 @@
 #!/usr/bin/env vlm
 
-exports.command = "release-deploy [toolsetglob]";
+// 'deploy' first so tab-completion is instant. Everything else 'release' first so build and
+// deploy commands get listed next to each other.
+exports.command = "deploy-release [toolsetglob]";
 exports.describe = "Deploy previously built releases to their deployment targets";
 exports.introduction = `${exports.describe}.`;
 
@@ -22,12 +24,12 @@ exports.handler = (yargv) => {
   const releasePath = yargv.source;
 
   if (!yargv.prerelease && (packageConfig.version.indexOf("-prerelease") !== -1)) {
-    throw new Error(`valma-release-deploy: cannot deploy a release with a '-prerelease' version${
+    throw new Error(`deploy-release: cannot deploy a release with a '-prerelease' version${
         ""} (provide '--prerelease' option to override).`);
   }
 
   if (!vlm.shell.test("-d", releasePath)) {
-    throw new Error(`valma-release-deploy: cannot find a release build for version '${
+    throw new Error(`deploy-release: cannot find a release build for version '${
         packageConfig.version}' version in "${releasePath}".`);
   }
 
@@ -42,7 +44,7 @@ exports.handler = (yargv) => {
 };
 
 function locateToolsetRelease (toolsetName, toolsetDescription = "toolset") {
-  const logger = this.tailor({ contextCommand: `release-deploy/${toolsetName}` });
+  const logger = this.tailor({ contextCommand: `deploy-release/${toolsetName}` });
   const releasePath = this.releasePath;
   const toolsetConfig = this.getToolsetConfig(toolsetName);
   if (!toolsetConfig) {
@@ -63,7 +65,7 @@ function locateToolsetRelease (toolsetName, toolsetDescription = "toolset") {
 }
 
 function locateToolRelease (toolsetName, toolName, toolDescription = "tool") {
-  const logger = this.tailor({ contextCommand: `release-deploy/${toolName}` });
+  const logger = this.tailor({ contextCommand: `deploy-release/${toolName}` });
   const releasePath = this.releasePath;
   const toolConfig = this.getToolConfig(toolsetName, toolName);
   const toolReleasePath = this.path.join(releasePath, toolsetName, toolName);

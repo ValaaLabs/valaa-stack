@@ -1,11 +1,13 @@
 #!/usr/bin/env vlm
 
-exports.command = "release-build";
+// 'build' first so tab-completion is instant. Everything else 'release' first so build and
+// deploy commands get listed next to each other.
+exports.command = "build-release";
 exports.describe = "Build all toolset sub-releases which have source modifications";
 exports.introduction = `${exports.describe}.
 
 These sub-releases are placed under the provided dist target. This
-command is first part of the two-part deployment with release-deploy
+command is first part of the two-part deployment with deploy-release
 making the actual deployment.`;
 
 exports.builder = (yargs) => yargs.options({
@@ -29,7 +31,7 @@ exports.handler = async (yargv) => {
       vlm.warn("removing an existing '-prerelease' build target:", releasePath);
       vlm.shell.rm("-rf", releasePath);
     } else {
-      throw new Error(`valma-release-build: existing build for non-prerelease version ${
+      throw new Error(`build-release: existing build for non-prerelease version ${
         packageConfig.version} found at ${releasePath}. Bump the version number?`);
     }
   }
@@ -57,7 +59,7 @@ exports.handler = async (yargv) => {
  */
 function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-release",
     desiredVersionHash) {
-  const logger = this.tailor({ contextCommand: `release-build/${toolsetName}` });
+  const logger = this.tailor({ contextCommand: `build-release/${toolsetName}` });
   const releasePath = this.releasePath;
   if (!this.shell.test("-d", releasePath)) {
     throw new Error(`valma-release-build/${toolsetName}: releasePath directory '${
@@ -80,8 +82,8 @@ function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset sub-rel
 }
 
 function prepareToolBuild (toolsetName, toolName,
-    toolDescription = "tool sub-release", desiredVersionHash) {
-  const logger = this.tailor({ contextCommand: `release-build/${toolName}` });
+    toolDescription = "tool", desiredVersionHash) {
+  const logger = this.tailor({ contextCommand: `build-release/${toolName}` });
   const toolConfig = this.getToolConfig(toolsetName, toolName);
   if (!toolConfig) return {};
   if ((toolConfig.deployedVersionHash === desiredVersionHash) && desiredVersionHash) {

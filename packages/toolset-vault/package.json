@@ -14,8 +14,8 @@
   },
   "bin": {
     ".valma-configure_.type_.vault_@valos_toolset-vault": "valma/configure__vault__toolset-vault.js",
-    "valma-package-assemble": "valma/package-assemble.js",
-    "valma-package-publish": "valma/package-publish.js"
+    "valma-assemble-packages": "valma/assemble-packages.js",
+    "valma-publish-packages": "valma/publish-packages.js"
   },
   "dependencies": {
     "@babel/cli": "^7.0.0-beta.51",

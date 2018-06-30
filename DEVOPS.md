@@ -177,8 +177,8 @@ Below is a rough correlation of similar concepts across utilities.
 Utility    |Tool          |Payload                    |Providers   |Consumed via      |Upstream|Configuration |Modified via        |Produced via       |Authority  |Distributed via
 -----------|--------------|---------------------------|------------|------------------|--------|--------------|--------------------|-------------------|-----------|------------------
 files      |`git`         |files in `./*`             |github.com  |`git clone`       |N/A     |`.git/*`      |`branch` `commit`   |`git push` & PR    |human      |merge PR to & `git push master`
-packages   |`vlm`, `yarn` |files in `/node_modules/..`|npmjs.com   |`depend` `require`|`files` |`package.json`|ups. `src/*` `bin/*`|upstream           |hybrid     |`package-assemble` `package-publish`
-authorities|`vlm`         |APIs, site & gateway files |IaaS, custom|browsers, various |`files` |upstream *    |upstream *          |upstream           |hybrid     |`release-build` `release-deploy`
+packages   |`vlm`, `yarn` |files in `/node_modules/..`|npmjs.com   |`depend` `require`|`files` |`package.json`|ups. `src/*` `bin/*`|upstream           |hybrid     |`assemble-packages` `publish-packages`
+authorities|`vlm`         |APIs, site & gateway files |IaaS, custom|browsers, various |`files` |upstream *    |upstream *          |upstream           |hybrid     |`build-release` `deploy-release`
 partitions |`vlm`, gateway|event logs, blobs          |authorities |event & blob APIs |N/A     |N/A           |gateway prophet     |command & blob APIs|authorities|automatic, custom
 
 - `Utility` - the utility layer which is being described
@@ -202,7 +202,7 @@ repositories. Making updates to such utility content thus requires:
 
 1. modifying the corresponding upstream git repository
 2. distributing the git changes (a PR followed with `git push master`)
-3. distributing the utility update (`package-publish` or `release-deploy`).
+3. distributing the utility update (`publish-packages` or `deploy-release`).
 
 Step 3 can be automated by tooling in particular domains as a response
 to particularily formed git repository updates.
@@ -240,7 +240,7 @@ a need to diversity the languages arises
 a [private npm registry](https://docs.npmjs.com/misc/registry#can-i-run-my-own-private-registry)
 can be set up for that purpose.
 
-valma package commands: `vlm package-assemble` `vlm package-publish`
+valma package commands: `vlm assemble-packages` `vlm publish-packages`
 
 
 ## 4.4. Authorities utility layer has the authority deployments on infrastructure services
@@ -317,7 +317,7 @@ authollery to update authorities (although it is still recommended to
 keep such ValaaSpace applications deployments separate from the
 authorities they are used to control).
 
-valma authollery commands: `vlm release-build` `vlm release-deploy`
+valma authollery commands: `vlm build-release` `vlm deploy-release`
 
 
 ### 4.4.1. Valaa authorities vs. ValOS authorities

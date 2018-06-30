@@ -2,7 +2,7 @@ exports.command = ".configure/.type/.vault/@valos/toolset-vault";
 exports.describe = "Configure this vault monorepository with toolset-vault";
 exports.introduction = `${exports.describe}.
 
-Adds valma commands 'package-assemble' and 'package-publish'.
+Adds valma commands 'assemble-packages' and 'publish-packages'.
 
 Copies vault monorepo config file templates to this vault repository
 root from package @valos/toolset-vault directory templates/.*.`;

@@ -1,6 +1,8 @@
 #!/usr/bin/env vlm
 
-exports.command = "package-publish";
+// 'publish' first so tab-completion is instant. Everything else 'package' first so assemble and
+// publish commands get listed next to each other.
+exports.command = "publish-packages";
 exports.describe = "Publish package assemblies to their registries";
 exports.introduction = `${exports.describe}.`;
 

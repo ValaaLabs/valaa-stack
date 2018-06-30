@@ -23,8 +23,8 @@
     "lint": "npm run eslint",
     "test": "jest",
     "build": "webpack ",
-    "package-assemble": "vlm package-assemble ",
-    "package-publish": "vlm package-publish "
+    "assemble-packages": "vlm assemble-packages ",
+    "publish-packages": "vlm publish-packages "
   },
   "devDependencies": {
     "@valos/toolset-revealer": ">0.30.0-prerelease",
