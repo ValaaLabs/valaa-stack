@@ -48,7 +48,7 @@ exports.handler = async (yargv) => {
         yargv.grabbable ? "_toolset_" : "_"}_${simpleName}.js`,
     export: true, skeleton: true,
     brief: "toolset configure",
-    header: `const toolsetName = "${vlm.packageConfig.name}";\n`,
+    vlm: `{ toolset: "${vlm.packageConfig.name}" }\n`,
     describe: `Configure the toolset '${simpleName}' for the current ${
         yargv.restrict || "repository"}`,
 
@@ -60,7 +60,7 @@ grabbing by repositories with valaa type '${yargv.restrict}'.`
 `This script makes the toolset ${simpleName} available for
 grabbing by all repositories.`,
 
-    disabled: `(yargs) => !yargs.vlm.getToolsetConfig(toolsetName, "in-use")`,
+    disabled: `(yargs) => !yargs.vlm.getToolsetConfig(yargs.vlm.toolset, "in-use")`,
     builder: `(yargs) => yargs.options({
   reconfigure: {
     alias: "r", type: "boolean",

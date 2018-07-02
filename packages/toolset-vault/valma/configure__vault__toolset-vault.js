@@ -1,3 +1,4 @@
+exports.vlm = { toolset: "@valos/toolset-vault" };
 exports.command = ".configure/.type/.vault/@valos/toolset-vault";
 exports.describe = "Configure this vault monorepository with toolset-vault";
 exports.introduction = `${exports.describe}.

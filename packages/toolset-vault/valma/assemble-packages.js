@@ -2,6 +2,7 @@
 
 // 'assemble' first so tab-completion is instant. Everything else 'package' first so assemble and
 // publish commands get listed next to each other.
+exports.vlm = { toolset: "@valos/toolset-vault" };
 exports.command = "assemble-packages";
 exports.describe = "Assemble all current modified vault packages (preparing for publish)";
 exports.introduction = `${exports.describe}.

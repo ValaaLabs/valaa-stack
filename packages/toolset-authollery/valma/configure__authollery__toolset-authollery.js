@@ -1,3 +1,4 @@
+exports.vlm = { toolset: "@valos/toolset-authollery" };
 exports.command = ".configure/.type/.authollery/@valos/toolset-authollery";
 exports.describe = "Configure this authollery controller repository with toolset-authollery";
 exports.introduction = `${exports.describe}.

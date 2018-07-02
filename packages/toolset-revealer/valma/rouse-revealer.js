@@ -1,5 +1,6 @@
 #!/usr/bin/env vlm
 
+exports.vlm = { toolset: "@valos/toolset-revealer" };
 const defaultDistContentBase = "dist/revealer";
 const defaultSource = "./revelations/";
 

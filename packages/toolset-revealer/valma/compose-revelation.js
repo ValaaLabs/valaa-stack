@@ -1,5 +1,6 @@
 #!/usr/bin/env vlm
 
+exports.vlm = { toolset: "@valos/toolset-revealer" };
 exports.command = "compose-revelation";
 exports.describe = "Compose revealer bundles based on the revealer toolset config";
 exports.introduction = `${exports.describe}.

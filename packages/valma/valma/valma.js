@@ -768,70 +768,57 @@ async function invoke (command, argv) {
 
   // Reverse to have matching global command names execute first (while obeying overrides)
   for (const activePool of _activePools.slice().reverse()) {
-    for (const matchingCommand of Object.keys(activePool.commands).sort()) {
-      const activeCommand = activeCommands[matchingCommand];
+    for (const commandName of Object.keys(activePool.commands).sort()) {
+      const activeCommand = activeCommands[commandName];
       if (!activeCommand) continue;
       const module = activeCommand.module;
-      delete activeCommands[matchingCommand];
-      if (!module) {
-        if (dryRunCommands) dryRunCommands[matchingCommand] = activeCommand;
-        else {
-          vlm.error(`missing symlink target for`, vlm.colors.command(matchingCommand),
-              "ignoring command script at", activeCommand.filePath);
-        }
-        continue;
-      }
-      const subVLM = Object.create(this);
-      const subVargs = _createVargs([matchingCommand, ...argv]);
-      _addUniversalOptions(subVargs, { global: true, hidden: !globalVargv.help });
-      subVargs.vlm = subVLM;
-      subVargs.vlm.contextCommand = matchingCommand;
-      subVargs.command(module.command, module.describe);
-      let disabled = (module.disabled
-          && ((typeof module.disabled !== "function")
-                  ? `exports.disabled == ${String(module.disabled)}`
-              : (module.disabled(subVargs)
-                  && `exports.disabled => ${String(module.disabled(subVargs))}`)));
+      delete activeCommands[commandName];
       if (dryRunCommands) {
-        dryRunCommands[matchingCommand] = { ...activeCommand, disabled };
+        dryRunCommands[commandName] = activeCommand;
         continue;
       }
-      if (!module.builder(subVargs) && !disabled) disabled = "exports.builder => falsy";
+      if (!module) {
+        vlm.error(`missing symlink target for`, vlm.colors.command(commandName),
+            "ignoring command script at", activeCommand.filePath);
+        continue;
+      }
 
-      const subVargv = _parse(subVargs, [matchingCommand, ...argv], { vlm: subVLM });
+      const subVargv = _parse(activeCommand.subVargs, [commandName, ...argv],
+          { vlm: activeCommand.vlm });
 
-      const subIntrospect = _determineIntrospection(module, subVargv, matchingCommand);
+      const subIntrospect = _determineIntrospection(module, subVargv, commandName);
       this.ifVerbose(3)
-          .babble("parsed:", this.colors.command(matchingCommand, ...argv),
-              disabled ? `: disabled, ${disabled}` : ""
+          .babble("parsed:", this.colors.command(commandName, ...argv),
+              activeCommand.disabled ? `: disabled, ${activeCommand.disabled}` : ""
       ).ifVerbose(4)
           .expound("\tsubArgv:", subVargv)
           .expound("\tsubIntrospect:", subIntrospect);
 
       if (subIntrospect) {
-        ret = ret.concat(_outputIntrospection(subVargs,
-            subIntrospect, { [matchingCommand]: activeCommand }, command,
+        ret = ret.concat(_outputIntrospection(activeCommand.subVargs,
+            subIntrospect, { [commandName]: activeCommand }, commandSelector,
             isWildcardCommand, subVargv.matchAll));
-      } else if (isWildcardCommand && disabled) {
+      } else if (isWildcardCommand && activeCommand.disabled) {
         this.ifVerbose(1)
-            .info(`Skipping disabled command '${this.colors.command(matchingCommand)}'`,
-                `during wildcard invokation (${disabled})`);
+            .info(`Skipping disabled command '${this.colors.command(commandName)}'`,
+                `during wildcard invokation (${activeCommand.disabled})`);
         continue;
       } else {
-        if (disabled) {
-          this.warn(`invoking a disabled command '${matchingCommand}' explicitly`, `(${disabled})`);
+        if (activeCommand.disabled) {
+          this.warn(`invoking a disabled command '${commandName}' explicitly`,
+              `(${activeCommand.disabled})`);
         }
         subVargv.vlm.contextVargv = subVargv;
         if (isWildcardCommand) {
-          this.echo("    >>> vlm", this.colors.command(matchingCommand, ...argv));
+          this.echo("    >>> vlm", this.colors.command(commandName, ...argv));
         }
-        await _tryInteractive(subVargv, subVargs);
+        await _tryInteractive(subVargv, activeCommand.subVargs);
         ret.push(await module.handler(subVargv));
-        if (this.echo && (matchingCommand !== command)) {
+        if (this.echo && (commandName !== commandSelector)) {
           let retValue = JSON.stringify(ret[ret.length - 1]);
           if (retValue === undefined) retValue = "undefined";
           if (isWildcardCommand) {
-            this.echo("    <<< vlm", `${this.colors.command(matchingCommand)}:`,
+            this.echo("    <<< vlm", `${this.colors.command(commandName)}:`,
                 this.colors.blue(retValue.slice(0, 20), retValue.length > 20 ? "..." : ""));
           }
         }
@@ -960,11 +947,11 @@ function _refreshActivePools (tryShortCircuit) {
   return undefined;
 }
 
-function _selectActiveCommands (contextVLM, activePools, commandGlob, introspect) {
+function _selectActiveCommands (contextVLM, activePools, commandGlob, argv, introspect) {
   if (introspect && introspect.identityPool) return introspect.identityPool.commands;
   const ret = {};
   for (const pool of activePools) {
-    pool.commands = {};
+    if (!pool.commands) pool.commands = {};
     pool.stats = {};
     pool.listing.forEach(file => {
       const slashedName = _underToSlash(file.name);
@@ -979,36 +966,57 @@ function _selectActiveCommands (contextVLM, activePools, commandGlob, introspect
       }
       if (_isDirectory(file)) return;
       const commandName = _valmaCommandFromPath(file.name);
-      pool.commands[commandName] = {
-        name: commandName, pool, file,
-        filePath: vlm.path.join(pool.path, file.name),
-      };
+      const poolCommand = pool.commands[commandName] || (pool.commands[commandName] = {
+        name: commandName, pool, file, filePath: vlm.path.join(pool.path, file.name),
+      });
       if (ret[commandName]) {
         pool.stats.overridden = (pool.stats.overridden || 0) + 1;
         return;
       }
-      const activeCommand = pool.commands[commandName];
-      if (!contextVLM.isCompleting && shell.test("-e", activeCommand.filePath)) {
-        const module = activeCommand.module = require(activeCommand.filePath);
+      if (!poolCommand.module && shell.test("-e", poolCommand.filePath)) {
+        poolCommand.module = require(poolCommand.filePath);
         contextVLM.ifVerbose(3)
-            .babble("    module found at path", activeCommand.filePath);
-        if (module && (module.command !== undefined) && (module.describe !== undefined)
-            && (module.handler !== undefined)) {
-          activeCommand.disabled = !module.builder
-              || (module.disabled
-                  && ((typeof module.disabled !== "function") || module.disabled(vargs)));
-          if (!activeCommand.disabled || contextVLM.contextVargv.matchAll) {
-            vargs.command(module.command, module.describe,
-              ...(!activeCommand.disable && module.builder ? [module.builder] : []), () => {});
-          } else {
-            pool.stats.disabled = (pool.stats.disabled || 0) + 1;
-          }
-        } else if (!introspect && !contextVLM.contextVargv.dryRun) {
-          throw new Error(`invalid script module '${activeCommand.filePath
-              }', export 'command', 'describe' or 'handler' missing`);
-        }
+          .babble(`    command ${commandName} module found at path`, poolCommand.filePath);
       }
-      ret[commandName] = activeCommand;
+      const module = poolCommand.module;
+      if (!module || !module.command || !module.describe || !module.handler) {
+        if (vlm.isCompleting || introspect || contextVLM.contextVargv.dryRun) {
+          ret[commandName] = { ...poolCommand };
+          return;
+        }
+        throw new Error(`invalid command '${commandName}' script file '${poolCommand.filePath
+            }': can't open for reading or exports.command, ...describe or ...handler missing`);
+      }
+
+      const subVargs = _createVargs([commandName, ...argv]);
+      _addUniversalOptions(subVargs, { global: true, hidden: !globalVargv.help });
+
+      subVargs.vlm = Object.assign(Object.create(contextVLM),
+          module.vlm,
+          { contextCommand: commandName });
+
+      const activeCommand = ret[commandName] = {
+        ...poolCommand,
+        subVargs,
+        vlm: subVargs.vlm,
+        disabled: (module.disabled
+            && ((typeof module.disabled !== "function")
+                    ? `exports.disabled == ${String(module.disabled)}`
+                : (module.disabled(subVargs)
+                    && `exports.disabled => ${String(module.disabled(subVargs))}`))),
+      };
+
+      if (!module.builder || !module.builder(subVargs)) {
+        if (!activeCommand.disabled) activeCommand.disabled = "exports.builder => falsy";
+      }
+
+      subVargs.command(module.command, module.describe);
+      if (!activeCommand.disabled || contextVLM.contextVargv.matchAll) {
+        globalVargs.command(module.command, module.describe,
+            ...(!activeCommand.disabled && module.builder ? [module.builder] : []), () => {});
+      } else {
+        pool.stats.disabled = (pool.stats.disabled || 0) + 1;
+      }
     });
   }
   return ret;

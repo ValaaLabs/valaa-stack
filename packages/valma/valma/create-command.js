@@ -1,6 +1,6 @@
 #!/usr/bin/env vlm
 
-exports.command = "create-command [name]";
+exports.command = "create-command [commandName]";
 exports.describe = "Create a valma command script with given name";
 exports.introduction = `${exports.describe}.
 
@@ -32,6 +32,9 @@ exports.builder = (yargs) => yargs.options({
     type: "boolean",
     description: "If true will only create a minimal script skeleton",
   },
+  vlm: {
+    type: "string", description: "Full exports.vlm source (as Object.assign-able object)",
+  },
   describe: {
     type: "string", description: "Short description of the new command set as exports.describe",
   },
@@ -54,7 +57,7 @@ exports.builder = (yargs) => yargs.options({
 
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
-  const command = yargv.name;
+  const command = yargv.commandName;
   const commandParts = command.replace(/\//g, "_").match(/^(\.)?(.*)$/);
   const commandExportName = `${commandParts[1] || ""}valma-${commandParts[2]}`;
   const scriptPath = `valma/${yargv.filename || `${commandParts[2]}.js`}`;
@@ -138,6 +141,7 @@ function _createSource (command, yargv) {
   const components = yargv.skeleton ? _createSkeleton() : _createExample();
   return `${(command[0] === ".") || command.includes("/.") ? "" : "#!/usr/bin/env vlm\n\n"
 }${yargv.header || ""
+}${!yargv.vlm ? "" : `exports.vlm = ${yargv.vlm};\n`}
 }exports.command = "${command}";
 exports.describe = "${yargv.describe || yargv.brief || ""}";
 exports.introduction = \`\${exports.describe}.${

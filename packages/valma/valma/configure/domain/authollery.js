@@ -65,11 +65,11 @@ exports.handler = async (yargv) => {
       filename: `release-${subName}_${isTool ? "tool_" : ""}_${simpleName}.js`,
       brief: `${subName === "build" ? "Build" : "Deploy"} a sub-release`,
       export: true,
-      header: `const ${type}Name = "${name}";\n\n`,
+      vlm: `{ ${type}: "${name}" }`,
       describe: `${subName === "build" ? "Build" : "Deploy"} a sub-release of ${name}`,
 
       disabled: isTool ? undefined :
-`(yargs) => !yargs.vlm.getToolsetConfig(toolsetName, "in-use")`,
+`(yargs) => !yargs.vlm.getToolsetConfig(yargs.vlm.toolset, "in-use")`,
       builder: isTool &&
 `(yargs) => yargs.options({
   toolset: yargs.vlm.createStandardToolsetOption(
@@ -87,10 +87,10 @@ invoke the ${subName} commands of all of its ${subName}able tools.`,
           ?
 `async (yargv) => {
   const vlm = yargv.vlm;${isTool && `
-  const toolsetName = yargv.toolset;`}
+  const toolset = yargv.toolset;`}
   const ${type}Version = await vlm.invoke(exports.command, ["--version"]);
   const { ${type}Config, ${type}ReleasePath } = vlm.prepareTool${isTool ? "" : "set"}Build(
-      ${isTool && "toolsetName, "}${type}Name, "${simpleName}", ${type}Version);
+      ${isTool && "toolset, "}vlm.${type}, "${simpleName}", ${type}Version);
   if (!${type}Config) return;
 
   vlm.shell.ShellString(${type}Version).to(vlm.path.join(${type}ReleasePath, "version-hash"));
@@ -100,16 +100,16 @@ invoke the ${subName} commands of all of its ${subName}able tools.`,
         :
 `async (yargv) => {
   const vlm = yargv.vlm;${isTool && `
-  const toolsetName = yargv.toolset;`}
+  const toolset = yargv.toolset;`}
   const { ${type}Config, ${type}ReleasePath } = vlm.locateTool${isTool ? "" : "set"}Release(
-      ${isTool && "toolsetName, "}${type}Name, "${simpleName}");
+      ${isTool && "toolset, "}vlm.${type}, "${simpleName}");
   if (!${type}ReleasePath) return;
 
   const deployedVersionHash = await vlm.readFile(vlm.path.join(${type}ReleasePath, "version-hash"));
 
   ${isTool
-    ? "vlm.updateToolConfig(toolsetName, toolName, { deployedVersionHash });"
-    : "vlm.updateToolsetConfig(toolsetName, { deployedVersionHash });"
+    ? "vlm.updateToolConfig(toolset, vlm.tool, { deployedVersionHash });"
+    : "vlm.updateToolsetConfig(vlm.toolset, { deployedVersionHash });"
   }
   return;
 };

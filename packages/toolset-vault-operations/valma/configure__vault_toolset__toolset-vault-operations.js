@@ -1,4 +1,4 @@
-const toolsetName = "@valos/toolset-vault-operations";
+exports.vlm = { toolset: "@valos/toolset-vault-operations" };
 exports.command = ".configure/.type/.vault/.toolset/@valos/toolset-vault-operations";
 exports.describe = "Configure the toolset 'toolset-vault-operations' for the current vault";
 exports.introduction = `${exports.describe}.
@@ -6,7 +6,7 @@ exports.introduction = `${exports.describe}.
 This script makes the toolset 'toolset-vault-operations' available for
 grabbing by repositories with valaa type 'vault'.`;
 
-exports.disabled = (yargs) => !yargs.vlm.getToolsetConfig(toolsetName, "in-use");
+exports.disabled = (yargs) => !yargs.vlm.getToolsetConfig(yargs.vlm.toolset, "in-use");
 exports.builder = (yargs) => yargs.options({
   reconfigure: {
     alias: "r", type: "boolean",
