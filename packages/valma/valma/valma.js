@@ -1554,23 +1554,33 @@ function _createVargs (args, cwd = process.cwd()) {
   //   interactive
   //   causes
   const baseOptions = ret.options;
-  ret.option = ret.options = function valmaOptions (opt, attributes) {
-    if (typeof opt !== "object") {
-      const optionState = this.getOptions();
-      if (attributes.interactive) {
-        if (!optionState.interactive) optionState.interactive = {};
-        optionState.interactive[opt] = attributes;
-      }
-      if (attributes.causes) {
-        if (!optionState.causes) optionState.causes = {};
-        optionState.causes[opt] = attributes.causes;
-      }
-      if (attributes.default && attributes.choices) {
-        attributes.choices =
-            (Array.isArray(attributes.default) ? attributes.default : [attributes.default])
-              .filter(defaultValue => !attributes.choices.includes(defaultValue))
-              .concat(attributes.choices);
-      }
+  ret.option = ret.options = function valmaOptions (opt, attributes_) {
+    if (typeof opt === "object") { // Let yargs expand the options object
+      baseOptions.call(this, opt, attributes_);
+      return this;
+    }
+    const attributes = { ...attributes_ };
+    const optionState = this.getOptions();
+    if (attributes.interactive) {
+      if (!optionState.interactive) optionState.interactive = {};
+      optionState.interactive[opt] = attributes;
+    }
+    if (attributes.causes) {
+      if (!optionState.causes) optionState.causes = {};
+      optionState.causes[opt] = attributes.causes;
+    }
+    const subVLM = this.vlm;
+    if (subVLM && subVLM.toolset) {
+      const subPath = ["commands", subVLM.contextCommand, "option-defaults", opt];
+      let default_ = subVLM.tool && subVLM.getToolConfig(subVLM.toolset, subVLM.tool, ...subPath);
+      if (default_ === undefined) default_ = subVLM.getToolsetConfig(subVLM.toolset, ...subPath);
+      if (default_ !== undefined) attributes.default = default_;
+    }
+    if (attributes.default && attributes.choices) {
+      attributes.choices =
+          (Array.isArray(attributes.default) ? attributes.default : [attributes.default])
+            .filter(defaultValue => !attributes.choices.includes(defaultValue))
+            .concat(attributes.choices);
     }
     baseOptions.call(this, opt, attributes);
     return this;
