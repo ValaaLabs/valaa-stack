@@ -20,7 +20,7 @@ cardinal.tomorrowNight = require("cardinal/themes/tomorrow-night");
                   import/no-dynamic-require
 */
 
-const vargs = _createVargs(process.argv.slice(2));
+const globalVargs = _createVargs(process.argv.slice(2));
 
 /*
    #    ######    ###
@@ -43,9 +43,9 @@ const defaultPaths = {
 
 const defaultCommandPrefix = "valma-";
 
-// vlm - the Valma global API singleton - these are available to all command scripts via both
-// vargs.vlm (in scripts exports.builder) as well as vargv.vlm (in scripts exports.handler).
-const vlm = vargs.vlm = {
+// vlm - the Valma global API singleton - these are available to all command scripts via their
+// yargs.vlm (in scripts exports.builder) as well as yargv.vlm (in scripts exports.handler).
+const vlm = globalVargs.vlm = {
   // Calls valma command with argv.
   // Any plain objects are expanded to boolean or parameterized flags depending on the value type.
   invoke,
@@ -494,8 +494,8 @@ function _addUniversalOptions (vargs_, { strict = true, global = false, hidden =
 vlm.isCompleting = (process.argv[2] === "--get-yargs-completions");
 const processArgv = vlm.isCompleting ? process.argv.slice(3) : process.argv.slice(2);
 
-_addUniversalOptions(vargs, { strict: !vlm.isCompleting, hidden: false });
-const globalVargs = module.exports.builder(vargs);
+_addUniversalOptions(globalVargs, { strict: !vlm.isCompleting, hidden: false });
+module.exports.builder(globalVargs);
 const globalVargv = _parseUntilCommand(globalVargs, processArgv, "command");
 
 const _commandPrefix = globalVargv.commandPrefix;
@@ -682,23 +682,25 @@ async function handler (vargv) {
   ####   #    #  ######  ######    #     #    #  ######  #    #  #    #
 */
 
-async function callValmaWithEcho (command_, args) {
-  const command = command_.split(" ")[0];
+async function callValmaWithEcho (commandSelector, args) {
+  // Remove everything after space so that exports.command can be given as commandSelector as-is
+  // (they occasionally have yargs usage arguments after the command selector).
+  const selector = commandSelector.split(" ")[0];
   const argv = _processArgs(args);
-  vlm.echo("    ->> vlm", vlm.colors.command(command, ...argv));
+  vlm.echo("    ->> vlm", vlm.colors.command(selector, ...argv));
   try {
-    const ret = await invoke.call(this, command, argv);
-    vlm.echo("    <<- vlm", `${vlm.colors.command(command)}:`,
+    const ret = await invoke.call(this, selector, argv);
+    vlm.echo("    <<- vlm", `${vlm.colors.command(selector)}:`,
         vlm.colors.blue((JSON.stringify(ret) || "undefined").slice(0, 71)));
     return ret;
   } catch (error) {
-    vlm.echo("    <<- vlm", `${vlm.colors.command(command)}:`,
+    vlm.echo("    <<- vlm", `${vlm.colors.command(selector)}:`,
         vlm.colors.exception("exception:", error));
     throw error;
   }
 }
 
-async function invoke (command, argv) {
+async function invoke (commandSelector, argv) {
   if (!Array.isArray(argv)) {
     throw new Error(`vlm.invoke: argv must be an array, got ${typeof argv}`);
   }
@@ -708,11 +710,11 @@ async function invoke (command, argv) {
 
   const contextVargv = this.contextVargv;
   const commandGlob = _underToSlash((contextVargv.matchAll || this.isCompleting)
-      ? _valmaGlobFromPartialCommand(command, contextVargv.matchAll)
-      : _valmaGlobFromCommand(command || "*"));
-  const isWildcardCommand = !command || (command.indexOf("*") !== -1);
+      ? _globFromPrefixSelector(commandSelector, contextVargv.matchAll)
+      : _globFromExactSelector(commandSelector || "*"));
+  const isWildcardCommand = !commandSelector || (commandSelector.indexOf("*") !== -1);
   const introspect = _determineIntrospection(
-      module.exports, contextVargv, command, isWildcardCommand, true);
+      module.exports, contextVargv, commandSelector, isWildcardCommand, true);
 
   // Phase 3: filter available command pools against the command glob
 
@@ -723,18 +725,18 @@ async function invoke (command, argv) {
       .expound("introspect:", introspect)
       .expound("contextVargv:", { ...contextVargv, vlm: "<hidden>" });
 
-  const activeCommands = _selectActiveCommands(this, _activePools, commandGlob, introspect);
+  const activeCommands = _selectActiveCommands(this, _activePools, commandGlob, argv, introspect);
 
   if (this.isCompleting || contextVargv.bashCompletion) {
-    vargs.completion("bash-completion", (current, argvSoFar) => {
-      const rule = _underToSlash(_valmaGlobFromPartialCommand(argvSoFar._[1], argvSoFar.matchAll));
+    globalVargs.completion("bash-completion", (current, argvSoFar) => {
+      const rule = _underToSlash(_globFromPrefixSelector(argvSoFar._[1], argvSoFar.matchAll));
       const ret = [].concat(..._activePools.map(pool => pool.listing
           .filter(node => !_isDirectory(node) && minimatch(_underToSlash(node.name || ""), rule,
               { dot: argvSoFar.matchAll }))
           .map(node => _valmaCommandFromPath(node.name))));
       return ret;
     });
-    _parse(vargs, contextVargv.bashCompletion ? ["bash-completion"] : process.argv.slice(2));
+    _parse(globalVargs, contextVargv.bashCompletion ? ["bash-completion"] : process.argv.slice(2));
     return 0;
   }
 
@@ -744,13 +746,13 @@ async function invoke (command, argv) {
           "\n\t}");
 
   if (introspect) {
-    const ret = _outputIntrospection(vargs, introspect, activeCommands, commandGlob,
+    const ret = _outputIntrospection(globalVargs, introspect, activeCommands, commandGlob,
         isWildcardCommand, contextVargv.matchAll);
     return isWildcardCommand ? ret : ret[0];
   }
 
   if (!isWildcardCommand && !Object.keys(activeCommands).length) {
-    vlm.error(`cannot find command '${vlm.colors.command(command)}' from active pools:`,
+    vlm.error(`cannot find command '${vlm.colors.command(commandSelector)}' from active pools:`,
         ..._activePools.map(activePool => `\n\t"${vlm.path.join(activePool.path, commandGlob)}"`));
     return -1;
   }
@@ -764,9 +766,9 @@ async function invoke (command, argv) {
       .babble("phase 4, dispatch:", ...(dryRunCommands ? ["--dry-run"] : []),
           this.colors.command(commandGlob, ...argv),
           "\n\tactive commands:", ...Object.keys(activeCommands).map(c => vlm.colors.command(c)));
-  vargs.help();
+  globalVargs.help();
 
-  // Reverse to have matching global command names execute first (while obeying overrides)
+  // Reverse order to have matching global command names execute first (still obeying overrides)
   for (const activePool of _activePools.slice().reverse()) {
     for (const commandName of Object.keys(activePool.commands).sort()) {
       const activeCommand = activeCommands[commandName];
@@ -826,8 +828,8 @@ async function invoke (command, argv) {
     }
   }
   if (dryRunCommands) {
-    _outputIntrospection(vargs, _determineIntrospection(module, contextVargv),
-        dryRunCommands, command, isWildcardCommand, contextVargv.matchAll);
+    _outputIntrospection(globalVargs, _determineIntrospection(module, contextVargv),
+        dryRunCommands, commandSelector, isWildcardCommand, contextVargv.matchAll);
   }
   return isWildcardCommand ? ret : ret[0];
 }
@@ -869,16 +871,16 @@ function _isDirectory (candidate) { return candidate.mode & 0x4000; }
 // If the command begins with a dot, insert the command prefix _after_ the dot; this is useful
 // as directories beginning with . don't match /**/ and * glob matchers and can be considered
 // implementation detail.
-function _valmaGlobFromCommand (commandBody) {
+function _globFromExactSelector (commandBody) {
   return !commandBody ? _commandPrefix
       : (commandBody[0] === ".") ? `.${_commandPrefix}${commandBody.slice(1)}`
       : `${_commandPrefix}${commandBody}`;
 }
 
-function _valmaGlobFromPartialCommand (partialCommand = "", matchAll) {
+function _globFromPrefixSelector (partialCommand = "", matchAll) {
   return matchAll && !((partialCommand || "")[0] === ".")
       ? `{.,}${_commandPrefix}${partialCommand || ""}{,*/**/}*`
-      : `${_valmaGlobFromCommand(partialCommand)}{,*/**/}*`;
+      : `${_globFromExactSelector(partialCommand)}{,*/**/}*`;
 }
 
 function _valmaCommandFromPath (pathname) {
@@ -954,12 +956,12 @@ function _selectActiveCommands (contextVLM, activePools, commandGlob, argv, intr
     if (!pool.commands) pool.commands = {};
     pool.stats = {};
     pool.listing.forEach(file => {
-      const slashedName = _underToSlash(file.name);
-      const matches = minimatch(slashedName, commandGlob,
+      const normalizedName = _underToSlash(file.name);
+      const matches = minimatch(normalizedName, commandGlob,
           { dot: contextVLM.contextVargv.matchAll });
       contextVLM.ifVerbose(3)
           .babble(`evaluating file ${file.name}`, "matches:", matches, "vs glob:", commandGlob,
-          ", dir:", _isDirectory(file), ", slashedName:", slashedName);
+          ", dir:", _isDirectory(file), ", normalizedName:", normalizedName);
       if (!matches) {
         pool.stats.nonmatching = (pool.stats.nonmatching || 0) + 1;
         return;
@@ -1060,8 +1062,8 @@ async function _loadNPMConfigVariables () {
   }
 }
 
-function listMatchingCommands (command, matchAll = false) {
-  const minimatcher = _underToSlash(_valmaGlobFromCommand(command || "*"));
+function listMatchingCommands (commandSelector, matchAll = false) {
+  const minimatcher = _underToSlash(_globFromExactSelector(commandSelector || "*"));
   const ret = [].concat(..._activePools.map(pool => pool.listing
       .map(file => _underToSlash(file.name))
       .filter(name => {
@@ -1072,14 +1074,14 @@ function listMatchingCommands (command, matchAll = false) {
   )).filter((v, i, a) => (a.indexOf(v) === i));
   vlm.ifVerbose(1)
       .expound(matchAll ? "listMatchingCommands:" : "listAllMatchingCommands:",
-          vlm.colors.command(command),
+          vlm.colors.command(commandSelector),
           ...(vlm.verbosity > 1 ? [", minimatcher:", minimatcher] : []),
           "\n\tresults:", ret);
   return ret;
 }
 
-function listAllMatchingCommands (command) {
-  return listMatchingCommands.call(this, command, true);
+function listAllMatchingCommands (commandSelector) {
+  return listMatchingCommands.call(this, commandSelector, true);
 }
 
 /**
@@ -1163,7 +1165,7 @@ function _processArgs (args) {
   }
 }
 
-function _determineIntrospection (module, vargv, command, isWildcard, invokeEntry) {
+function _determineIntrospection (module, vargv, selector, isWildcard, invokeEntry) {
   const ret = {
     module, show: {},
     outputSource: vargv.outputSource, outputIntroduction: vargv.outputIntroduction,
@@ -1171,20 +1173,20 @@ function _determineIntrospection (module, vargv, command, isWildcard, invokeEntr
   Object.keys(vargv).forEach(key => {
     if (vargv[key] && (key.slice(0, 5) === "show-")) ret.show[key.slice(5)] = vargv[key];
   });
-  if ((globalVargv.help || vargv.help) && (!command || !invokeEntry)) return { builtinHelp: true };
+  if ((globalVargv.help || vargv.help) && (!selector || !invokeEntry)) return { builtinHelp: true };
   ret.entryIntro = Object.keys(ret.show).length || vargv.outputIntroduction || vargv.outputSource;
 
-  if (command && !ret.entryIntro) return undefined;
-  if (!command && ret.entryIntro && !vargv.dryRun && !vargv.matchAll) {
+  if (selector && !ret.entryIntro) return undefined;
+  if (!selector && ret.entryIntro && !vargv.dryRun && !vargv.matchAll) {
     // Introspect context
     ret.identityPool = { path: path.dirname(process.argv[1]), commands: {} };
     ret.identityPool.commands.vlm = {
       name: "vlm", module, filePath: __filename, pool: ret.identityPool,
     };
   }
-  if (!command && !ret.entryIntro && !vargv.dryRun) { // show default listing
+  if (!selector && !ret.entryIntro && !vargv.dryRun) { // show default listing
     ret.defaultUsage = true;
-    ret.show.name = true;
+    ret.show.usage = true;
     ret.show.description = true;
   }
   ret.displayHeaders = isWildcard && !ret.identityPool;
@@ -1247,12 +1249,12 @@ function _outputIntrospection (vargs_, introspect, commands_, commandGlob, isWil
           && !(pool.commands[name].disabled && isWildcard && !matchAll)
           && !(_isOverridden(pool.commands[name]) && !showOverridden))
     .map(name => {
-      const command = pool.commands[name];
-      const info = _commandInfo(command.filePath, pool.path);
-      const module = command.module
-          || (command.module = info.resolvedPath && require(info.resolvedPath));
-      const rowData = { disabled: !!command.disabled };
-      _addToRowData(rowData, "name", command.disabled ? `(${name})` : name);
+      const poolCommand = pool.commands[name];
+      const info = _commandInfo(poolCommand.filePath, pool.path);
+      const module = poolCommand.module
+          || (poolCommand.module = info.resolvedPath && require(info.resolvedPath));
+      const rowData = { disabled: !!poolCommand.disabled };
+      _addToRowData(rowData, "name", poolCommand.disabled ? `(${name})` : name);
       _addToRowData(rowData, "usage", (module && module.command) || `${name} ${missingPackage}`);
       _addToRowData(rowData, "description", (module && module.describe) || missingPackage);
       _addToRowData(rowData, "package", info.package);
@@ -1260,7 +1262,7 @@ function _outputIntrospection (vargs_, introspect, commands_, commandGlob, isWil
       _addToRowData(rowData, "pool", info.poolPath);
       _addToRowData(rowData, "file", info.filePath);
       _addToRowData(rowData, "resolved", info.resolvedPath || missingFile);
-      return { command, name, module, info, rowData };
+      return { command: poolCommand, name, module, info, rowData };
     });
 
     const isEmpty = !Object.keys(infos).length;
@@ -1456,7 +1458,7 @@ function getToolConfig (toolsetName, toolName, ...rest) {
     throw new Error(`Invalid arguments for getToolConfig, expexted string|string|..., got ${
         typeof toolsetName}|${typeof toolName}`);
   }
-  return this.getToolsetsConfig(toolsetName, "tool", toolName, ...rest);
+  return this.getToolsetsConfig(toolsetName, "tools", toolName, ...rest);
 }
 
 function confirmToolsetExists (toolsetName) {
@@ -1480,7 +1482,7 @@ function updateToolConfig (toolsetName, toolName, updates) {
     throw new Error(`Invalid arguments for updateToolConfig, expexted string|string|object, got ${
         typeof toolsetName}|${typeof toolName}|${typeof updates}`);
   }
-  return this.updateToolsetsConfig({ [toolsetName]: { tool: { [toolName]: updates } } });
+  return this.updateToolsetsConfig({ [toolsetName]: { tools: { [toolName]: updates } } });
 }
 
 function createStandardToolsetOption (description) {

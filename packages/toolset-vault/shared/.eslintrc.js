@@ -20,6 +20,38 @@ documentation pieces:
 
 The tool itself is recommended to be consistent with the choice over
 all pieces.
+
+
+### Pluralize homogenous collection names
+
+When naming directories and object variables only collection names with
+homogeneous entries should be pluralized (ie. with an 's' suffix).
+Entries are considered homogeneous if they used through an uniform API
+and/or if they have low coupling to each other.
+For directories the entries are the sub-directories and files. For
+objects the entries are the values.
+Examples:
+const configuration = { name: "jack", age: 20 };
+const configurations = {
+  jack: { age: 20 },
+  jake: { age: 20 },
+};
+'configuration' is singular because name and age are not syntactically
+interchangeable: the API semantics for 'name' differs from 'age'.
+'configurations' is plural because the content of jack and jake are
+syntactically (if not semantically) interchangeable: both have a
+similar property 'age'.
+
+Sometimes it's not obvious what should be considered as an uniform API.
+Case in point: @valos/tools could be considered to have a uniform API
+to all of its single-module entries in that they are 'require'-able,
+but on the other hand their individual signatures differ and they are
+not interchangeable. The secondary hint is used to resolve this in
+favor of plurality: individual tools are not coupled and can freely
+change without affecting each other.
+
+A case for non-pluralized directories is 'detail' folders:
+implementation detail files don't share an API and are coupled.
 */
 
 module.exports = {
