@@ -2,6 +2,7 @@ module.exports = {
   collectCoverage: false,
   coveragePathIgnorePatterns: [
     ".*/node_modules",
+    ".*/dist",
     ".*/valma",
     ".*/valma.bin",
     ".*/test"
@@ -10,7 +11,7 @@ module.exports = {
   testRegex: "packages.*\\.test\\.js$",
   testPathIgnorePatterns: [
     "/node_modules/",
-    "/dist/",
+    "<rootDir>/dist/",
   ],
   moduleNameMapper: {
     "\\.(css|less)$": "<rootDir>/node_modules/@valos/toolset-vault/jest/styleMock.js"

@@ -60,7 +60,7 @@ grabbing by repositories with valaa type '${yargv.restrict}'.`
 `This script makes the toolset ${simpleName} available for
 grabbing by all repositories.`,
 
-    disabled: `(yargs) => !yargs.vlm.getToolsetConfig(yargs.vlm.toolset, "in-use")`,
+    disabled: `(yargs) => !yargs.vlm.getToolsetConfig(yargs.vlm.toolset, "inUse")`,
     builder: `(yargs) => yargs.options({
   reconfigure: {
     alias: "r", type: "boolean",

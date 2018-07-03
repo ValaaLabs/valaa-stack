@@ -6,7 +6,7 @@ exports.introduction = `${exports.describe}.
 This script makes the toolset 'toolset-vault-operations' available for
 grabbing by repositories with valaa type 'vault'.`;
 
-exports.disabled = (yargs) => !yargs.vlm.getToolsetConfig(yargs.vlm.toolset, "in-use");
+exports.disabled = (yargs) => !yargs.vlm.getToolsetConfig(yargs.vlm.toolset, "inUse");
 exports.builder = (yargs) => yargs.options({
   reconfigure: {
     alias: "r", type: "boolean",

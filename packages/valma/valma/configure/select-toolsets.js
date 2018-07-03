@@ -30,7 +30,7 @@ exports.builder = (yargs) => {
       .map(name => name.match(/\/.toolset\/(.*)$/)[1]);
   const configuredToolsets = Object.keys(toolsetsConfig || {});
   const usedToolsets = configuredToolsets
-      .filter(name => (toolsetsConfig[name] || {})["in-use"]);
+      .filter(name => (toolsetsConfig[name] || {}).inUse);
   const allToolsets = knownToolsets.concat(
       configuredToolsets.filter(toolset => !knownToolsets.includes(toolset)));
   return yargs.options({
@@ -57,15 +57,15 @@ exports.handler = async (yargv) => {
   const ret = {};
 
   const stowToolsets = Object.keys(toolsetsConfig)
-      .filter(name => (!newToolsets.includes(name) && !toolsetsConfig[name]["in-use"]));
+      .filter(name => (!newToolsets.includes(name) && !toolsetsConfig[name].inUse));
   // TODO: add confirmation for configurations that are about to be eliminated with null
   if (stowToolsets.length) {
     vlm.info(`Stowing toolsets:`, ...stowToolsets);
-    stowToolsets.forEach(name => { toolsets[name] = { "in-use": false }; });
+    stowToolsets.forEach(name => { toolsets[name] = { inUse: false }; });
     ret.stowed = stowToolsets;
   }
   const grabToolsets = newToolsets
-      .filter(name => (toolsetsConfig[name] || { "in-use": true })["in-use"]);
+      .filter(name => (toolsetsConfig[name] || { inUse: true }).inUse);
   if (grabToolsets.length) {
     vlm.info(`Grabbing toolsets:`, ...grabToolsets);
     const installAsDevDeps = grabToolsets
@@ -75,7 +75,7 @@ exports.handler = async (yargv) => {
       vlm.info(`Installing toolsets as direct dev-dependencies:`, installAsDevDeps);
       await vlm.execute("yarn", ["add", "-W", "--dev", ...installAsDevDeps]);
     }
-    grabToolsets.forEach(name => { toolsets[name] = { "in-use": true }; });
+    grabToolsets.forEach(name => { toolsets[name] = { inUse: true }; });
     ret.grabbed = grabToolsets;
   }
   await vlm.updateToolsetsConfig(toolsets);

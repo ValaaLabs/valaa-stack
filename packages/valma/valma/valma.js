@@ -1571,7 +1571,7 @@ function _createVargs (args, cwd = process.cwd()) {
     }
     const subVLM = this.vlm;
     if (subVLM && subVLM.toolset) {
-      const subPath = ["commands", subVLM.contextCommand, "option-defaults", opt];
+      const subPath = ["commands", subVLM.contextCommand, "options", opt];
       let default_ = subVLM.tool && subVLM.getToolConfig(subVLM.toolset, subVLM.tool, ...subPath);
       if (default_ === undefined) default_ = subVLM.getToolsetConfig(subVLM.toolset, ...subPath);
       if (default_ !== undefined) attributes.default = default_;
