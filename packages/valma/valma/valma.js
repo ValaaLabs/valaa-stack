@@ -815,6 +815,23 @@ async function invoke (commandSelector, argv) {
           this.echo("    >>> vlm", this.colors.command(commandName, ...argv));
         }
         await _tryInteractive(subVargv, activeCommand.subVargs);
+        if (subVargv.vlm.toolset) {
+          const pathDepPath = ["commands", commandName, "pathDependencies"];
+          const pathDependencies = subVargv.vlm.tool
+              ? subVargv.vlm.getToolConfig(subVargv.vlm.toolset, subVargv.vlm.tool, ...pathDepPath)
+              : subVargv.vlm.getToolsetConfig(subVargv.vlm.toolset, ...pathDepPath);
+          await Promise.all(Object.keys(pathDependencies || {}).map(async dependedPath => {
+            if (shell.test("-e", dependedPath)) return undefined;
+            this.echo("    >>>> dependent", this.colors.yellow(dependedPath));
+            const command = pathDependencies[dependedPath].split(" ");
+            const dependedRet = await ((command[0] === "vlm")
+                ? subVargv.vlm.invoke(command[1], command.slice(2))
+                : subVargv.vlm.execute(command[0], command.slice(1)));
+            this.echo("    <<<< dependent", this.colors.yellow(dependedPath), ":",
+                this.colors.blue(dependedRet));
+            return dependedRet;
+          }));
+        }
         ret.push(await module.handler(subVargv));
         if (this.echo && (commandName !== commandSelector)) {
           let retValue = JSON.stringify(ret[ret.length - 1]);
