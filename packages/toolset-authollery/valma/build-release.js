@@ -3,7 +3,7 @@
 // 'build' first so tab-completion is instant. Everything else 'release' first so build and
 // deploy commands get listed next to each other.
 exports.vlm = { toolset: "@valos/toolset-authollery" };
-exports.command = "build-release";
+exports.command = "build-release [toolsetGlob]";
 exports.describe = "Build all toolset sub-releases which have source modifications";
 exports.introduction = `${exports.describe}.
 
@@ -47,7 +47,8 @@ exports.handler = async (yargv) => {
     prepareToolsetBuild,
     prepareToolBuild,
   });
-  return await vlm.invoke(".release-build/**/*", [releasePath]);
+  return await vlm.invoke(`.release-build/${yargv.toolsetGlob || "**/*"}`,
+      [releasePath, ...yargv._.slice(1)]);
 };
 
 /**
