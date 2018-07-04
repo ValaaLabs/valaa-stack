@@ -52,7 +52,7 @@ exports.handler = async (yargv) => {
     prepareToolBuild,
   });
   return await vlm.invoke(`.release-build/${yargv.toolsetGlob || "**/*"}`,
-      [releasePath, ...yargv._.slice(1)]);
+      [...yargv._, releasePath]);
 };
 
 /**

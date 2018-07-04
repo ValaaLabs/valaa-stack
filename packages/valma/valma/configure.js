@@ -26,7 +26,7 @@ exports.handler = async (yargv) => {
     vlm.updateToolsetsConfig({});
   }
 
-  const rest = [{ reconfigure: yargv.reconfigure }, ...yargv._.slice(1)];
+  const rest = [{ reconfigure: yargv.reconfigure }, ...yargv._];
 
   if (!yargv.toolsetGlob) {
     await vlm.invoke(`.configure/.domain/${valaa.domain}`, rest);

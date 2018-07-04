@@ -18,15 +18,15 @@ exports.handler = async (yargv) => {
         "package.json doesn't exist or is not valid.");
     return false;
   }
-  const vargs = yargv._.slice(1);
-  await vlm.invoke(`.status/${yargv.toolsetglob || "**/"}*`, vargs);
+  await vlm.invoke(`.status/${yargv.toolsetGlob || "**/"}*`, yargv._);
   const valaa = vlm.packageConfig.valaa;
   const ret = [];
   if (valaa && valaa.type) {
-    ret.push(vlm.invoke(`.status/.type/.${valaa.type}/${yargv.toolsetglob || "**/"}*`, vargs));
+    ret.push(vlm.invoke(`.status/.type/.${valaa.type}/${yargv.toolsetGlob || "**/"}*`, yargv._));
   }
   if (valaa && valaa.domain) {
-    ret.push(vlm.invoke(`.status/.domain/.${valaa.domain}/${yargv.toolsetglob || "**/"}*`, vargs));
+    ret.push(vlm.invoke(`.status/.domain/.${valaa.domain}/${yargv.toolsetGlob || "**/"}*`,
+        yargv._));
   }
   return Promise.all(ret);
 };

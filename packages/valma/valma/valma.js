@@ -507,7 +507,7 @@ const processArgv = vlm.isCompleting ? process.argv.slice(3) : process.argv.slic
 
 _addUniversalOptions(globalVargs, { strict: !vlm.isCompleting, hidden: false });
 module.exports.builder(globalVargs);
-const globalVargv = _parseUntilCommand(globalVargs, processArgv, "command");
+const globalVargv = _parseUntilLastPositional(globalVargs, processArgv, module.exports.command);
 
 const _commandPrefix = globalVargv.commandPrefix;
 
@@ -801,10 +801,10 @@ async function invoke (commandSelector, argv) {
         continue;
       }
 
-      const subVargv = _parse(activeCommand.subVargs, [commandName, ...argv],
+      const subVargv = _parseUntilLastPositional(activeCommand.subVargs, argv, module.command,
           { vlm: activeCommand.vlm });
-
       const subIntrospect = _determineIntrospection(module, subVargv, commandName);
+
       this.ifVerbose(3)
           .babble("parsed:", this.colors.command(commandName, ...argv),
               activeCommand.disabled ? `: disabled, ${activeCommand.disabled}` : ""
@@ -882,19 +882,22 @@ function _parse (vargs_, ...rest) {
   return ret;
 }
 
-function _parseUntilCommand (vargs_, argv_, commandKey = "command") {
-  const commandIndex = argv_.findIndex(arg => (arg[0] !== "-"));
-  const ret = _parse(vargs_, argv_.slice(0, (commandIndex + 1) || undefined));
-  if ((commandIndex !== -1) && (ret[commandKey] === undefined)) {
-    if (ret._[0]) ret[commandKey] = ret._[0];
-    else {
-      throw new Error(`vlm error: malformed arguments: '${commandKey
-          }' missing but command-like argument '${argv_[commandIndex]
-          }' found (maybe provide flag values with '=' syntax?)`);
+function _parseUntilLastPositional (vargs_, argv_, commandUsage, context) {
+  const endIndex = argv_.findIndex(arg => (arg === "--") || (arg[0] !== "-"));
+  const args = argv_.slice(0, (endIndex === -1) ? undefined : endIndex);
+  const ret = _parse(vargs_, args, context);
+  const usageParts = commandUsage.split(" ");
+  const positionals = usageParts.slice(1).filter(param => (param[1] !== "-"));
+  ret._ = (endIndex === -1) ? [] : argv_.slice(endIndex);
+  for (const positional of positionals) {
+    const variadic = positional.match(/^.(.*)\.\..$/);
+    if (variadic) {
+      ret[variadic[1]] = ret._.splice(0, ret._.indexOf("--") + 1 || 100000);
+      break;
     }
+    ret[positional.slice(1, -1)] = ret._.shift();
   }
   ret.vlm = vargs_.vlm;
-  ret._ = argv_.slice(commandIndex + 1);
   return ret;
 }
 
@@ -1026,8 +1029,7 @@ function _selectActiveCommands (contextVLM, activePools, commandGlob, argv, intr
       const subVargs = _createVargs(argv);
       _addUniversalOptions(subVargs, { global: true, hidden: !globalVargv.help });
 
-      subVargs.vlm = Object.assign(Object.create(contextVLM),
-          module.vlm,
+      subVargs.vlm = Object.assign(Object.create(contextVLM), module.vlm,
           { contextCommand: commandName });
 
       const activeCommand = ret[commandName] = {
@@ -1051,7 +1053,7 @@ function _selectActiveCommands (contextVLM, activePools, commandGlob, argv, intr
             contextVLM.colors.command(commandName)}' inferred from file:`, file.name);
       }
 
-      subVargs.command(module.command, module.describe);
+      subVargs.usage(module.command.replace(exportedCommandName, "$0"), module.describe);
       if (!activeCommand.disabled || contextVLM.contextVargv.matchAll) {
         globalVargs.command(module.command, module.describe,
             ...(!activeCommand.disabled && module.builder ? [module.builder] : []), () => {});

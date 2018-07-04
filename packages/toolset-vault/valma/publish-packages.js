@@ -24,7 +24,7 @@ exports.builder = (yargs) => yargs.options({
 
 exports.handler = (yargv) => {
   const vlm = yargv.vlm;
-  const assemblyGlobs = yargv._.length > 1 ? yargv._.slice(1) : [""];
+  const assemblyGlobs = yargv._.length ? yargv._ : [""];
   const assemblyPaths = assemblyGlobs.reduce((paths, glob) => {
     const pathListing = vlm.shell.find(vlm.path.join(
         yargv.source, !glob ? "**" : vlm.path.join("**", glob, "**"), "package.json"));

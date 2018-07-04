@@ -3,7 +3,7 @@
 // 'assemble' first so tab-completion is instant. Everything else 'package' first so assemble and
 // publish commands get listed next to each other.
 exports.vlm = { toolset: "@valos/toolset-vault" };
-exports.command = "assemble-packages";
+exports.command = "assemble-packages [packageNameGlobs..]";
 exports.describe = "Assemble all current modified vault packages (preparing for publish)";
 exports.introduction = `${exports.describe}.
 
@@ -98,7 +98,7 @@ exports.handler = async (yargv) => {
         targetListing.filter(f => f).map(f => f.name));
   }
 
-  const requestGlobs = yargv._.length >= 1 ? ["**/*"] : yargv._.slice(1);
+  const requestGlobs = (yargv.packageNameGlobs || []).length ? yargv.packageNameGlobs : ["**/*"];
   let updatedPackageNames;
   vlm.info("Selecting packages matching:", ...requestGlobs);
   if (!yargv.allowUnchanged) {
