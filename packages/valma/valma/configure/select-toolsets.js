@@ -73,7 +73,7 @@ exports.handler = async (yargv) => {
             && !vlm.getPackageConfig("dependencies", toolsetName));
     if (installAsDevDeps.length) {
       vlm.info(`Installing toolsets as direct dev-dependencies:`, installAsDevDeps);
-      await vlm.execute("yarn", ["add", "-W", "--dev", ...installAsDevDeps]);
+      await vlm.execute(["yarn add -W --dev", ...installAsDevDeps]);
     }
     grabToolsets.forEach(name => { toolsets[name] = { inUse: true }; });
     ret.grabbed = grabToolsets;

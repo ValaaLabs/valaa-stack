@@ -1023,7 +1023,7 @@ function _selectActiveCommands (contextVLM, activePools, commandGlob, argv, intr
             }': can't open for reading or exports.command, ...describe or ...handler missing`);
       }
 
-      const subVargs = _createVargs([commandName, ...argv]);
+      const subVargs = _createVargs(argv);
       _addUniversalOptions(subVargs, { global: true, hidden: !globalVargv.help });
 
       subVargs.vlm = Object.assign(Object.create(contextVLM),
@@ -1136,10 +1136,25 @@ function listAllMatchingCommands (commandSelector) {
  * @param {*} [spawnOptions={}]
  * @returns
  */
-function execute (executable, args, spawnOptions = {}) {
+async function execute (args, spawnOptions = {}) {
+  const argv = _processArgs(args);
+  if ((argv[0] === "vlm") && !Object.keys(spawnOptions).length) {
+    argv.shift();
+    this.echo(">>- vlm", this.colors.command(...argv));
+    try {
+      const ret = await module.exports.handler(
+        _parseUntilLastPositional(globalVargs, argv, module.exports.command));
+      this.echo("<<- vlm", `${vlm.colors.command(argv[0])}:`,
+          vlm.colors.blue((JSON.stringify(ret) || "undefined").slice(0, 71)));
+      return ret;
+    } catch (error) {
+      vlm.echo("<<- vlm", `${vlm.colors.command(argv[0])}:`,
+          vlm.colors.error("exception:", String(error)));
+      throw error;
+    }
+  }
   return new Promise((resolve, failure) => {
     _flushPendingConfigWrites(vlm);
-    const argv = _processArgs(args);
     vlm.echo(">--", vlm.colors.executable(...argv));
     if (vlm.contextVargv && vlm.contextVargv.dryRun && !spawnOptions.noDryRun) {
       vlm.echo("      dry-run: skipping execution and returning:",
@@ -1147,8 +1162,8 @@ function execute (executable, args, spawnOptions = {}) {
       _onDone(spawnOptions.dryRunReturn || 0);
     } else {
       const subProcess = childProcess.spawn(
-          executable,
-          argv, {
+          argv[0],
+          argv.slice(1), {
             stdio: ["inherit", "inherit", "inherit"],
             ...spawnOptions,
             detached: true,
@@ -1183,17 +1198,27 @@ function execute (executable, args, spawnOptions = {}) {
   });
 }
 
-// All nulls and undefines are filtered, arrays are flattened/expanded. Booleans are filtered if
-// not inside object values. Objects are expanded with keys as "--key" and rest depending on value
+// All nulls and undefines are filtered out.
+// Strings within zeroth and first nested levels are split by whitespace as separate arguments.
+// Second nested level of arrays is stringification + direct catenation of entries with .join("").
+// The contents of second and more levels of arrays are concatenated together as a single string.
+// Booleans are filtered if not associated with a key, in which case they become a valueless --<key>
+// or --no-<key> depending on the truthiness.
+// Objects are expanded with as a sequence of "--<key>=<value>", where 'value' is passed through
+// _processArgs recursively. Nest values containing whitespace twice or they will be split.
+// Array values are expanded as sequence of "--<key>=<value1> --<key>=<value2> ...".
 // type like so: ["y", { foo: "bar", val: true, nothing: null, neg: false, bar: ["xy", false, 0] }]
-//            -> ["y", "--foo", "bar", "--val", "--no-neg", "--bar", "xy", "--no-bar", "--bar", 0]
+//            -> ["y", "--foo", "bar", "--val", "--no-neg", "--bar=xy", "--no-bar", "--bar=0"]
 function _processArgs (args) {
   return [].concat(...[].concat(args).map(entry =>
-    (Array.isArray(entry)
-        ? _processArgs(entry)
-    : (!entry || typeof entry !== "object")
+    ((typeof entry === "string")
+        ? entry.split(" ")
+    : Array.isArray(entry)
+        ? entry.map(e => ((typeof e === "string") ? e : JSON.stringify(e))).join("")
+    : (!entry || (typeof entry !== "object"))
         ? _toArgString(entry)
-        : [].concat(...Object.keys(entry).map(key => _toArgString(entry[key], key))))));
+        : [].concat(...Object.keys(entry).map(
+            key => _toArgString(entry[key], key))))));
 
   function _toArgString (value, key) {
     if ((value === undefined) || (value === null)) return [];

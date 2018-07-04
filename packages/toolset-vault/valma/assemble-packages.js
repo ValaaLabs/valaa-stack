@@ -192,11 +192,13 @@ exports.handler = async (yargv) => {
   } else {
     vlm.info("Updating version, making git commit, creating a lerna git tag and",
         "updating target package.json's");
-    await vlm.execute("lerna", [
-      "publish", "--skip-npm", "--yes", "--loglevel=silent",
-      // FIXME(iridian): This is broken: actually updates all package versions, not only those of
-      // the selected packages. Or if this is a feature, it should be documented.
-      yargv.allowUnchanged && "--force-publish=*"
+    await vlm.execute([
+      "lerna publish", {
+        "skip-npm": true, yes: true, loglevel: "silent",
+        // FIXME(iridian): This is broken: actually updates all package versions, not only those of
+        // the selected packages. Or if this is a feature, it should be documented.
+        "force-publish": yargv.allowUnchanged ? "*" : undefined,
+      },
     ]);
     if (!yargv.assemble && (!yargv.overwrite || !yargv.onlyPending)) {
       vlm.info("Skipping package.json version updates", "as",

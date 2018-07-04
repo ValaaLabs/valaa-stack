@@ -49,9 +49,11 @@ exports.handler = async function handler (yargv) {
     (yargv.contentSource || []).forEach(source =>
         vlm.shell.cp("-R", vlm.path.join(source, "*"), contentBase));
   }
+
   vlm.info(`${vlm.colors.bold("Rousing revealer")} using ${
       vlm.colors.executable("webpack-dev-server")} with revelation content base:`, contentBase);
-  return vlm.execute("webpack-dev-server", [
+  return vlm.execute([
+    "webpack-dev-server",
     yargv.inline && "--inline",
     yargv.progress && "--progress",
     yargv.open && "--open",
