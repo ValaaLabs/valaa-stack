@@ -14,12 +14,16 @@ making the actual deployment.`;
 exports.builder = (yargs) => yargs.options({
   target: {
     type: "string", default: "dist/release",
-    description: "target directory root for building the release"
+    description: "Target directory root for building the release"
   },
   source: {
     type: "string", default: "packages",
-    description: "relative lerna packages source directory for sourcing the packages"
+    description: "Relative lerna packages source directory for sourcing the packages"
   },
+  overwrite: {
+    type: "boolean", default: "false",
+    description: "Allow overwriting existing release target build"
+  }
 });
 
 exports.handler = async (yargv) => {
@@ -27,7 +31,7 @@ exports.handler = async (yargv) => {
   const packageConfig = vlm.packageConfig;
   const releasePath = yargv.target;
 
-  if (vlm.shell.test("-d", releasePath)) {
+  if (!yargv.overwrite && vlm.shell.test("-d", releasePath)) {
     if (packageConfig.version.indexOf("-prerelease") !== -1) {
       vlm.warn("removing an existing '-prerelease' build target:", releasePath);
       vlm.shell.rm("-rf", releasePath);

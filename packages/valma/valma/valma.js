@@ -165,10 +165,13 @@ const vlm = globalVargs.vlm = {
   // As a diagnostic message outputs to stderr where available.
   echo (...rest) {
     if (this.colors.echo) {
-      console.warn(this.colors.echo(...rest));
+      if ((rest[0] || "")[0] === "<") this.indent -= 2;
+      console.warn(" ".repeat(this.indent - 1), this.colors.echo(...rest));
+      if ((rest[0] || "")[0] === ">") this.indent += 2;
     }
     return this;
   },
+  indent: 4,
 
   // Diagnostics ops
   // These operations prefix the output with the command name and a verb describing the type of
@@ -198,7 +201,7 @@ const vlm = globalVargs.vlm = {
   // As a diagnostic message outputs to stderr where available.
   exception (error, ...rest) {
     if (this.colors.exception) {
-      console.error(this.colors.exception(`${this.contextCommand} panics:`, String(error)), ...rest);
+      console.error(this.colors.exception(`${this.contextCommand} panics: ${error}`), ...rest);
     }
     return this;
   },
@@ -267,11 +270,13 @@ colors._setTheme = function _setTheme (obj) {
 };
 
 colors._setTheme({
+  newlinesplit: (...rest) => [].concat(...[].concat(...rest).map(
+      entry => [].concat(...String(entry).split("\n").map(line => [line, "\n"])))),
   flatsplit: (...rest) => [].concat(...[].concat(...rest).map(entry => String(entry).split(" "))),
   echo: "dim",
   warning: ["bold", "yellow"],
   error: ["bold", "red"],
-  exception: ["bold", "red"],
+  exception: ["newlinesplit", { first: ["bold", "red"], rest: "warning" }],
   info: "cyan",
   instruct: ["bold", "cyan"],
   babble: "cyan",
@@ -283,7 +288,7 @@ colors._setTheme({
 });
 
 module.exports = {
-  command: "vlm [--help] [-<flags>] [--<option>=<value> ...] <command> [parameters]",
+  command: "vlm [--help] [-<flagchars>] [--<flag>...] [--<option>=<value>..] [command]",
   describe: "Dispatch a valma command to its command script",
   introduction: `Valma (or 'vlm') is a command script dispatcher.
 
@@ -314,11 +319,6 @@ characters to be equal although '/' is recommended anywhere possible.
   builder: (vargs_) => vargs_
   //    .usage(module.exports.command, module.exports.describe, iy => iy)
       .options({
-        a: {
-          group: "Valma root options:",
-          alias: "match-all", type: "boolean", global: false,
-          description: "Include hidden and disabled commands in /all/ matchings",
-        },
         p: {
           group: "Valma root options:",
           alias: "pools", type: "boolean", global: false,
@@ -348,6 +348,11 @@ characters to be equal although '/' is recommended anywhere possible.
           group: "Valma root options:",
           type: "boolean", global: false, default: true,
           description: "Show expound messages",
+        },
+        "result-out": {
+          group: "Valma root options:",
+          type: "string", global: false,
+          description: "Target vlm[resultOut] to output final result",
         },
         interactive: {
           group: "Valma root options:",
@@ -416,17 +421,23 @@ function _addUniversalOptions (vargs_, { strict = true, global = false, hidden =
       .version(false)
       .wrap(vargs_.terminalWidth() < 140 ? vargs_.terminalWidth() : 140)
       .option(_postProcess({
-        h: {
+        a: {
           group: `Universal options${!hidden ? "" : " ('vlm -h <cmd>' for full list)"}:`,
-          alias: "help",
+          alias: "match-all",
           type: "boolean", global,
-          description: "Show the main help of the command",
+          description: "Include hidden and disabled commands in /all/ matchings",
         },
         d: {
           group: `Universal options${!hidden ? "" : " ('vlm -h <cmd>' for full list)"}:`,
           alias: "dry-run",
           type: "boolean", global,
           description: "Do not execute but display all the matching command(s)",
+        },
+        h: {
+          group: `Universal options${!hidden ? "" : " ('vlm -h <cmd>' for full list)"}:`,
+          alias: "help",
+          type: "boolean", global,
+          description: "Show the main help of the command",
         },
         N: {
           group: "Universal options:", alias: "show-name",
@@ -550,7 +561,18 @@ const toolsetsConfigStatus = {
 vlm.contextVargv = globalVargv;
 module.exports
     .handler(globalVargv)
-    .then(result => (result !== undefined) && process.exit(result));
+    .then(result => {
+      if (result !== undefined) {
+        if (globalVargv.resultOut && (result !== null)) vlm[globalVargv.resultOut](result);
+        process.exit(0);
+      }
+    })
+    .catch(error => {
+      if (error !== undefined) {
+        vlm.exception(error.stack);
+      }
+      process.exit(typeof error === "number" ? error : ((error && error.code) || -1));
+    });
 
 // Only function definitions from hereon.
 
@@ -610,7 +632,7 @@ async function handler (vargv) {
   if (vlm.isCompleting) {
     vlm.contextVargv = globalVargv;
     vlm.invoke(vargv.command, vargv._);
-    return 0;
+    return null;
   }
 
   process.on("SIGINT", () => {
@@ -657,19 +679,13 @@ async function handler (vargv) {
     }
   }
 
-  try {
-    const subVLM = Object.create(vlm);
-    subVLM.contextVargv = vargv;
-    const maybeRet = subVLM.invoke(vargv.command, vargv._);
-    subVLM.invoke = callValmaWithEcho;
-    await maybeRet;
-
-    _flushPendingConfigWrites(vlm);
-  } catch (error) {
-    vlm.exception(error);
-    throw error;
-  }
-  return 0;
+  const subVLM = Object.create(vlm);
+  subVLM.contextVargv = vargv;
+  const maybeRet = subVLM.invoke(vargv.command, vargv._);
+  subVLM.invoke = callValmaWithEcho;
+  const ret = await maybeRet;
+  _flushPendingConfigWrites(vlm);
+  return ret;
 }
 
 /*
@@ -687,15 +703,15 @@ async function callValmaWithEcho (commandSelector, args) {
   // (they occasionally have yargs usage arguments after the command selector).
   const selector = commandSelector.split(" ")[0];
   const argv = _processArgs(args);
-  vlm.echo("    ->> vlm", vlm.colors.command(selector, ...argv));
+  vlm.echo(">>- vlm", vlm.colors.command(selector, ...argv));
   try {
     const ret = await invoke.call(this, selector, argv);
-    vlm.echo("    <<- vlm", `${vlm.colors.command(selector)}:`,
+    vlm.echo("<<- vlm", `${vlm.colors.command(selector)}:`,
         vlm.colors.blue((JSON.stringify(ret) || "undefined").slice(0, 71)));
     return ret;
   } catch (error) {
-    vlm.echo("    <<- vlm", `${vlm.colors.command(selector)}:`,
-        vlm.colors.exception("exception:", error));
+    vlm.echo("<<- vlm", `${vlm.colors.command(selector)}:`,
+        vlm.colors.error("exception:", String(error)));
     throw error;
   }
 }
@@ -1028,6 +1044,12 @@ function _selectActiveCommands (contextVLM, activePools, commandGlob, argv, intr
       if (!module.builder || !module.builder(subVargs)) {
         if (!activeCommand.disabled) activeCommand.disabled = "exports.builder => falsy";
       }
+      const exportedCommandName = module.command.match(/^([^ ]*)/)[1];
+      if (exportedCommandName !== commandName) {
+        contextVLM.warn(`Command name mismatch between exported command name '${
+            contextVLM.colors.command(exportedCommandName)}' and command name '${
+            contextVLM.colors.command(commandName)}' inferred from file:`, file.name);
+      }
 
       subVargs.command(module.command, module.describe);
       if (!activeCommand.disabled || contextVLM.contextVargv.matchAll) {
@@ -1118,7 +1140,7 @@ function execute (executable, args, spawnOptions = {}) {
   return new Promise((resolve, failure) => {
     _flushPendingConfigWrites(vlm);
     const argv = _processArgs(args);
-    vlm.echo("    -->", vlm.colors.executable(executable, ...argv));
+    vlm.echo(">--", vlm.colors.executable(...argv));
     if (vlm.contextVargv && vlm.contextVargv.dryRun && !spawnOptions.noDryRun) {
       vlm.echo("      dry-run: skipping execution and returning:",
           vlm.colors.blue(spawnOptions.dryRunReturn || 0));
@@ -1135,25 +1157,25 @@ function execute (executable, args, spawnOptions = {}) {
       subProcess.on("exit", _onDone);
       subProcess.on("error", _onDone);
       process.on("SIGINT", () => {
-        vlm.warn("vlm killing:", vlm.colors.green(executable, ...argv));
+        vlm.warn("vlm killing:", vlm.colors.green(...argv));
         process.kill(-subProcess.pid, "SIGTERM");
         process.kill(-subProcess.pid, "SIGKILL");
       });
       process.on("SIGTERM", () => {
-        vlm.warn("vlm killing:", vlm.colors.green(executable, ...argv));
+        vlm.warn("vlm killing:", vlm.colors.green(...argv));
         process.kill(-subProcess.pid, "SIGTERM");
         process.kill(-subProcess.pid, "SIGKILL");
       });
     }
     function _onDone (code, signal) {
       if (code || signal) {
-        vlm.echo("    <--", `${vlm.colors.executable(executable)}:`,
+        vlm.echo("<--", `${vlm.colors.executable(argv[0])}:`,
             vlm.colors.error("<error>:", code || signal));
         failure(code || signal);
       } else {
         _refreshActivePools();
         _reloadPackageAndToolsetsConfigs();
-        vlm.echo("    <--", `${vlm.colors.executable(executable)}:`,
+        vlm.echo("<--", `${vlm.colors.executable(argv[0])}:`,
             vlm.colors.warning("execute return values not implemented yet"));
         resolve();
       }
@@ -1175,7 +1197,7 @@ function _processArgs (args) {
 
   function _toArgString (value, key) {
     if ((value === undefined) || (value === null)) return [];
-    if (typeof value === "string") return !key ? value : [`--${key}`, value];
+    if (typeof value === "string") return !key ? value : [`--${key}=${value}`];
     if (typeof value === "boolean") return !key ? [] : value ? `--${key}` : `--no-${key}`;
     if (Array.isArray(value)) return [].concat(...value.map(entry => _toArgString(entry, key)));
     return JSON.stringify(value);
@@ -1190,7 +1212,9 @@ function _determineIntrospection (module, vargv, selector, isWildcard, invokeEnt
   Object.keys(vargv).forEach(key => {
     if (vargv[key] && (key.slice(0, 5) === "show-")) ret.show[key.slice(5)] = vargv[key];
   });
-  if ((globalVargv.help || vargv.help) && (!selector || !invokeEntry)) return { builtinHelp: true };
+  if ((globalVargv.help || vargv.help) && (!selector || !invokeEntry)) {
+    return { module, builtinHelp: true };
+  }
   ret.entryIntro = Object.keys(ret.show).length || vargv.outputIntroduction || vargv.outputSource;
 
   if (selector && !ret.entryIntro) return undefined;
@@ -1217,6 +1241,7 @@ function _determineIntrospection (module, vargv, selector, isWildcard, invokeEnt
 function _outputIntrospection (vargs_, introspect, commands_, commandGlob, isWildcard_, matchAll) {
   if (introspect.builtinHelp) {
     vargs_.vlm = vlm;
+    vargs_.$0 = introspect.module.command.match(/^[^ ]*/)[0];
     vargs_.showHelp("log");
     return [];
   }
@@ -1404,12 +1429,22 @@ async function _tryInteractive (subVargv, subYargs) {
 
 function _reloadPackageAndToolsetsConfigs () {
   if (shell.test("-f", packageConfigStatus.path)) {
-    vlm.packageConfig = JSON.parse(shell.head({ "-n": 1000000 }, packageConfigStatus.path));
-    _deepFreeze(vlm.packageConfig);
+    try {
+      vlm.packageConfig = JSON.parse(shell.head({ "-n": 1000000 }, packageConfigStatus.path));
+      _deepFreeze(vlm.packageConfig);
+    } catch (error) {
+      vlm.exception(String(error), `while reading ${packageConfigStatus.path}`);
+      throw error;
+    }
   }
   if (shell.test("-f", toolsetsConfigStatus.path)) {
-    vlm.toolsetsConfig = JSON.parse(shell.head({ "-n": 1000000 }, toolsetsConfigStatus.path));
-    _deepFreeze(vlm.toolsetsConfig);
+    try {
+      vlm.toolsetsConfig = JSON.parse(shell.head({ "-n": 1000000 }, toolsetsConfigStatus.path));
+      _deepFreeze(vlm.toolsetsConfig);
+    } catch (error) {
+      vlm.exception(String(error), `while reading ${packageConfigStatus.path}`);
+      throw error;
+    }
   }
 }
 

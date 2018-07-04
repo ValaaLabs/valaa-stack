@@ -1,4 +1,4 @@
-exports.command = ".status/10-authollery";
+exports.command = ".status/.type/.authollery/10-authollery";
 exports.describe = "Display the authollery status";
 exports.introduction = `${exports.describe}.`;
 

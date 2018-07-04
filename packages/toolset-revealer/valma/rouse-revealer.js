@@ -39,7 +39,7 @@ exports.builder = function builder (yargs) {
     },
   });
 };
-exports.handler = function handler (yargv) {
+exports.handler = async function handler (yargv) {
   const vlm = yargv.vlm;
   const contentBase = yargv.contentBase;
   if (!vlm.shell.test("-d", contentBase)) {

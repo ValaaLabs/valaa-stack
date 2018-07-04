@@ -34,7 +34,8 @@
     ".valma-configure_.type_tool": "valma/configure/type/tool.js",
     ".valma-configure_.type_toolset": "valma/configure/type/toolset.js",
     ".valma-configure_.type_vault": "valma/configure/type/vault.js",
-    ".valma-status_10-header": "valma/status_10-header.js"
+    ".valma-status_10-header": "valma/status_10-header.js",
+    ".valma-": "valma/this.js"
   },
   "dependencies": {
     "cardinal": "^2.1.1",

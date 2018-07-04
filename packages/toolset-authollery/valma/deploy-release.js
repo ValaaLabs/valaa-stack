@@ -3,7 +3,7 @@
 // 'deploy' first so tab-completion is instant. Everything else 'release' first so build and
 // deploy commands get listed next to each other.
 exports.vlm = { toolset: "@valos/toolset-authollery" };
-exports.command = "deploy-release [toolsetglob]";
+exports.command = "deploy-release [toolsetGlob]";
 exports.describe = "Deploy previously built releases to their deployment targets";
 exports.introduction = `${exports.describe}.`;
 
@@ -19,7 +19,7 @@ exports.builder = (yargs) => yargs.options({
   }
 });
 
-exports.handler = (yargv) => {
+exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
   const packageConfig = vlm.packageConfig;
   const releasePath = yargv.source;
@@ -41,7 +41,8 @@ exports.handler = (yargv) => {
     locateToolsetRelease,
     locateToolRelease,
   });
-  return vlm.invoke(".release-deploy/**/*", [releasePath]);
+  return await vlm.invoke(`.release-deploy/${yargv.toolsetGlob || "**/*"}`,
+      [...yargv._, releasePath]);
 };
 
 function locateToolsetRelease (toolsetName, toolsetDescription = "toolset") {

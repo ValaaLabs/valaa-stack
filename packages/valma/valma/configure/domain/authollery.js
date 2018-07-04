@@ -70,10 +70,14 @@ exports.handler = async (yargv) => {
 
       disabled: isTool ? undefined :
 `(yargs) => !yargs.vlm.getToolsetConfig(yargs.vlm.toolset, "inUse")`,
-      builder: isTool &&
+      builder:
 `(yargs) => yargs.options({
+  force: {
+    alias: "f", type: "boolean",
+    description: "Force a build over existing deployed version",
+  },${!isTool ? "" : `
   toolset: yargs.vlm.createStandardToolsetOption(
-      "The containing toolset of this tool release ${subName}."),
+      "The containing toolset of this tool release ${subName}."),`}
 })`,
       introduction: isTool
           ?
@@ -88,7 +92,7 @@ invoke the ${subName} commands of all of its ${subName}able tools.`,
 `async (yargv) => {
   const vlm = yargv.vlm;${isTool && `
   const toolset = yargv.toolset;`}
-  const ${type}Version = await vlm.invoke(exports.command, ["--version"]);
+  const ${type}Version = yargv.force ? undefined : await vlm.invoke(exports.command, ["--version"]);
   const { ${type}Config, ${type}ReleasePath } = vlm.prepareTool${isTool ? "" : "set"}Build(
       ${isTool && "toolset, "}vlm.${type}, "${simpleName}", ${type}Version);
   if (!${type}Config) return;

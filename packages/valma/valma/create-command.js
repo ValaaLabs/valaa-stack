@@ -32,7 +32,7 @@ exports.builder = (yargs) => yargs.options({
     type: "boolean",
     description: "If true will only create a minimal script skeleton",
   },
-  vlm: {
+  "exports-vlm": {
     type: "string", description: "Full exports.vlm source (as Object.assign-able object)",
   },
   describe: {
@@ -141,7 +141,7 @@ function _createSource (command, yargv) {
   const components = yargv.skeleton ? _createSkeleton() : _createExample();
   return `${(command[0] === ".") || command.includes("/.") ? "" : "#!/usr/bin/env vlm\n\n"
 }${yargv.header || ""
-}${!yargv.vlm ? "" : `exports.vlm = ${yargv.vlm};\n`}
+}${!yargv.exportsVlm ? "" : `exports.vlm = ${yargv.exportsVlm};\n`
 }exports.command = "${command}";
 exports.describe = "${yargv.describe || yargv.brief || ""}";
 exports.introduction = \`\${exports.describe}.${
