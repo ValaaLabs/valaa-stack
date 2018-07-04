@@ -35,18 +35,20 @@ exports.handler = (yargv) => {
   if (yargv.publisher) {
     const nameRegex = new RegExp(`^${yargv.source}/(.*)$`);
     vlm.info(`Publishing ${assemblyPaths.length} package assemblies (via globs '${
-            assemblyGlobs.join("', '")}') using '${yargv.publisher}':\n\t`,
-        ...assemblyPaths.map(p => p.match(nameRegex)[1]));
+            vlm.colors.argument(assemblyGlobs.join("', '"))}') using '${
+            vlm.colors.executable(yargv.publisher)}':\n\t`,
+        vlm.colors.package(...assemblyPaths.map(p => p.match(nameRegex)[1])));
     for (const packagePath of assemblyPaths) {
-      const publishResult = vlm.shell.exec(`${yargv.publisher} publish ${packagePath}`);
+      const executable = `${yargv.publisher} publish ${packagePath}`;
+      const publishResult = vlm.shell.exec(executable);
       if (!publishResult.code && packagePath) {
-        vlm.info(`Successfully published with '${yargv.publisher} publish ${packagePath}'`);
+        vlm.info(`Successfully published with '${vlm.colors.executable(executable)}'`);
         if (yargv.deletePublished) {
           vlm.info("\tremoving the package assembly");
           vlm.shell.rm("-rf", packagePath);
         }
       } else {
-        vlm.error(`Error during '${yargv.publisher} publish ${packagePath}':`,
+        vlm.error(`Error during '${vlm.colors.executable(executable)}':`,
             publishResult.code, publishResult);
       }
     }

@@ -6,9 +6,7 @@ This command serves as a bridge to the 'vlm' context singleton and all
 of its API's, most notably the 'shell' API.
 `;
 
-exports.builder = (yargs) => {
-  const vlm = yargs.vlm;
-  return yargs.options({});
+exports.builder = (yargs) => yargs;
 };
 
 exports.handler = async (yargv) => {
@@ -21,7 +19,8 @@ exports.handler = async (yargv) => {
   return (await _walk(vlm, topArgs)).value;
 
   async function _walk (head, argv, index = 0, isArgument) {
-    // console.log("walk", isArgument, argv.slice(index));
+    vlm.ifVerbose(1)
+        .log("walk", isArgument, argv.slice(index));
     let ret;
     try {
       if (index >= argv.length) return (ret = { value: head });
@@ -62,7 +61,8 @@ exports.handler = async (yargv) => {
         }
       }
     } finally {
-      // if (ret) console.log("  ret:", argv.slice(index), ret.index, ":", ret.value);
+      vlm.ifVerbose(1)
+          .log("  ret:", argv.slice(index), ret.index, ":", ret.value);
     }
   }
 

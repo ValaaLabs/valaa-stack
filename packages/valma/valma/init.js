@@ -49,7 +49,7 @@ exports.handler = async (yargv) => {
 `This phase uses '${vlm.colors.executable("yarn init")}' to initialize package.json via a series of
 interactive questions.
 Valaa repositories use yarn extensively for version, dependency and
-script management; package.json is the central package configuration
+script management; ${vlm.colors.path("package.json")} is the central package configuration
 file for yarn (and for npm, for which yarn is an analogue).
 `);
         continue;

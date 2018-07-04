@@ -14,8 +14,8 @@ exports.builder = (yargs) => yargs;
 exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
   if (!vlm.packageConfig) {
-    vlm.error("current directory is not a package repository;",
-        "package.json doesn't exist or is not valid.");
+    vlm.error("Current directory is not a package repository;", vlm.colors.path("package.json"),
+        "doesn't exist or is not valid.");
     return false;
   }
   await vlm.invoke(`.status/${yargv.toolsetGlob || "**/"}*`, yargv._);

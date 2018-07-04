@@ -31,10 +31,12 @@ exports.handler = async (yargv) => {
 
   if (!vlm.shell.test("-d", releasePath)) {
     throw new Error(`deploy-release: cannot find a release build for version '${
-        packageConfig.version}' version in "${releasePath}".`);
+        vlm.colors.version(packageConfig.version)}' version in "${
+          vlm.colors.path(releasePath)}".`);
   }
 
-  vlm.info(`deploying '${packageConfig.name}' ${packageConfig.version}`, "from", releasePath);
+  vlm.info(`Deploying ${vlm.colors.package(packageConfig.name)}@${
+      vlm.colors.version(packageConfig.version)}`, "from", vlm.colors.path(releasePath));
 
   Object.assign(vlm, {
     releasePath,
@@ -50,18 +52,22 @@ function locateToolsetRelease (toolsetName, toolsetDescription = "toolset") {
   const releasePath = this.releasePath;
   const toolsetConfig = this.getToolsetConfig(toolsetName);
   if (!toolsetConfig) {
-    throw new Error(`${this.contextCommand}: toolsets.json:['${toolsetName}] missing`);
+    throw new Error(`${this.contextCommand}: toolsets.json:['${
+        this.colors.package(toolsetName)}'] missing`);
   }
   if (!this.shell.test("-d", releasePath)) {
-    throw new Error(`${this.contextCommand}: releasePath directory '${releasePath}' missing`);
+    throw new Error(`${this.contextCommand}: releasePath '${
+        this.colors.path(releasePath)}' missing`);
   }
   const toolsetReleasePath = this.path.join(releasePath, toolsetName);
   if (!this.shell.test("-d", toolsetReleasePath)) {
     logger.ifVerbose(1)
-        .info(`skipping ${toolsetDescription} deploy: no release at '${toolsetReleasePath}'`);
+        .info(`skipping ${toolsetDescription} deploy: no release at '${
+            this.colors.path(toolsetReleasePath)}'`);
     return {};
   }
-  logger.info(`deploying ${toolsetDescription} release from '${toolsetReleasePath}'`);
+  logger.info(`deploying ${toolsetDescription} release from '${
+      this.colors.path(toolsetReleasePath)}'`);
   this.toolset = toolsetName;
   return { toolsetConfig, toolsetReleasePath };
 }
@@ -73,9 +79,10 @@ function locateToolRelease (toolsetName, toolName, toolDescription = "tool") {
   const toolReleasePath = this.path.join(releasePath, toolsetName, toolName);
   if (!this.shell.test("-d", toolReleasePath)) {
     logger.ifVerbose(1)
-        .info(`skipping ${toolDescription} deploy: no release at '${toolReleasePath}'`);
+        .info(`skipping ${toolDescription} deploy: no release at '${
+            this.colors.path(toolReleasePath)}'`);
     return {};
   }
-  logger.info(`deploying ${toolDescription} release from '${toolReleasePath}'`);
+  logger.info(`deploying ${toolDescription} release from '${this.colors.path(toolReleasePath)}'`);
   return { toolConfig, toolReleasePath };
 }

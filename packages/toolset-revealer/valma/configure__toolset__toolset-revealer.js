@@ -24,9 +24,11 @@ exports.handler = (yargv) => {
   const vlm = yargv.vlm;
   const toolsetWebpackConfig = vlm.getToolsetConfig(vlm.toolset, "webpack");
   const templates = vlm.path.join(__dirname, "../templates/{.,}*");
-  vlm.info("Copying revealer template files from ", templates, "(will not clobber existing files)");
+  vlm.info("Copying revealer template files from ", vlm.colors.path(templates),
+      "(will not clobber existing files)");
   vlm.shell.cp("-n", templates, ".");
-  vlm.instruct("! Edit webpack.config.js to configure webpack entry and output locations.");
+  vlm.instruct(`! Edit ${vlm.colors.path("webpack.config.js")
+      } to configure webpack entry and output locations.`);
   if (!toolsetWebpackConfig) {
     vlm.updateToolsetConfig(vlm.toolset, {
       webpack: {
@@ -38,8 +40,8 @@ exports.handler = (yargv) => {
         }
       }
     });
-    vlm.instruct(`! Edit toolsets.json:["${vlm.toolset
-        }"].webpack to further configure webpack entry and output locations.`);
+    vlm.instruct(`! Edit toolsets.json:['${vlm.colors.package(vlm.toolset
+        )}'].webpack to further configure webpack entry and output locations.`);
   }
   return true;
 };

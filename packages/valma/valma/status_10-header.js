@@ -13,9 +13,9 @@ exports.handler = (yargv) => {
     console.log(`${valaa.domain} ${valaa.type} ${config.name}@${config.version}`);
   } else {
     console.log(
-`package '${config && config.name}' is not a valaa repository. Either
+`package '${yargv.vlm.colors.package(config && config.name)}' is not a valaa repository. Either
 package.json doesn't have the .valaa stanza or its .domain or .type is
-not set. Call 'vlm init' to initialize.
+not set. Call '${yargv.vlm.colors.command("vlm init")}' to initialize.
 `);
   }
 };

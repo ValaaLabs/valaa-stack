@@ -33,18 +33,18 @@ exports.handler = async (yargv) => {
 
   if (!yargv.overwrite && vlm.shell.test("-d", releasePath)) {
     if (packageConfig.version.indexOf("-prerelease") !== -1) {
-      vlm.warn("removing an existing '-prerelease' build target:", releasePath);
+      vlm.warn("removing an existing '-prerelease' build target:", vlm.colors.path(releasePath));
       vlm.shell.rm("-rf", releasePath);
     } else {
       throw new Error(`build-release: existing build for non-prerelease version ${
-        packageConfig.version} found at ${releasePath}. Bump the version number?`);
+        packageConfig.version} found at ${vlm.colors.path(releasePath)}. Bump the version number?`);
     }
   }
 
   vlm.shell.mkdir("-p", releasePath);
 
-  vlm.info("building version", packageConfig.version, "of",
-      packageConfig.name, "into", releasePath);
+  vlm.info("building version", vlm.colors.version(packageConfig.version), "of",
+      vlm.colors.package(packageConfig.name), "into", vlm.colors.path(releasePath));
 
   Object.assign(vlm, {
     releasePath,
@@ -68,18 +68,19 @@ function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset",
   const logger = this.tailor({ contextCommand: `build-release/${toolsetName}` });
   const releasePath = this.releasePath;
   if (!this.shell.test("-d", releasePath)) {
-    throw new Error(`${this.contextCommand}: releasePath directory '${releasePath}' missing`);
+    throw new Error(`${this.contextCommand}: releasePath directory '${
+        this.colors.path(releasePath)}' missing`);
   }
   const toolsetConfig = this.getToolsetConfig(toolsetName);
   if (!toolsetConfig) return {};
   if (desiredVersionHash && (toolsetConfig.deployedVersionHash === desiredVersionHash)) {
     logger.info(`${this.colors.bold(`Skipping the ${toolsetDescription} release build`)
-        } of already deployed version:`, desiredVersionHash);
+        } of already deployed version:`, this.colors.version(desiredVersionHash));
     return {};
   }
   const simpleToolsetName = toolsetName.replace(/\//g, "_");
   const toolsetReleasePath = this.path.join(releasePath, simpleToolsetName);
-  logger.info(`Building ${toolsetDescription} release in`, toolsetReleasePath);
+  logger.info(`Building ${toolsetDescription} release in`, this.colors.path(toolsetReleasePath));
   this.shell.rm("-rf", toolsetReleasePath);
   this.shell.mkdir("-p", toolsetReleasePath);
   this.toolset = toolsetName;
@@ -93,13 +94,14 @@ function prepareToolBuild (toolsetName, toolName,
   if (!toolConfig) return {};
   if (desiredVersionHash && (toolConfig.deployedVersionHash === desiredVersionHash)) {
     logger.info(`${this.colors.bold(`Skipping the ${toolDescription} release build`)
-        } of already deployed version within toolset ${toolsetName}:`, desiredVersionHash);
+        } of already deployed version within toolset ${this.colors.package(toolsetName)}:`,
+        this.colors.version(desiredVersionHash));
     return {};
   }
   const simpleToolsetName = toolsetName.replace(/\//g, "_");
   const simpleToolName = toolName.replace(/\//g, "_");
   const toolReleasePath = this.path.join(this.releasePath, simpleToolsetName, simpleToolName);
-  logger.info(`building ${toolDescription} release in '${toolReleasePath}'`);
+  logger.info(`Building ${toolDescription} release in '${this.colors.path(toolReleasePath)}'`);
   this.shell.rm("-rf", toolReleasePath);
   this.shell.mkdir("-p", toolReleasePath);
   return { toolConfig, toolReleasePath };

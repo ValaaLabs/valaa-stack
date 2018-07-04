@@ -269,23 +269,36 @@ colors._setTheme = function _setTheme (obj) {
   Object.keys(obj).forEach(name => { this[name] = createDecorator(obj[name]); });
 };
 
-colors._setTheme({
-  newlinesplit: (...rest) => [].concat(...[].concat(...rest).map(
-      entry => [].concat(...String(entry).split("\n").map(line => [line, "\n"])))),
-  flatsplit: (...rest) => [].concat(...[].concat(...rest).map(entry => String(entry).split(" "))),
-  echo: "dim",
-  warning: ["bold", "yellow"],
-  error: ["bold", "red"],
-  exception: ["newlinesplit", { first: ["bold", "red"], rest: "warning" }],
-  info: "cyan",
-  instruct: ["bold", "cyan"],
-  babble: "cyan",
-  expound: "cyan",
-  argument: ["blue", "bold"],
-  executable: ["flatsplit", { first: ["magenta"], rest: "argument" }],
-  command: ["flatsplit", { first: ["magenta", "bold"], rest: "argument" }],
-  overridden: ["strikethrough", "command"],
-});
+const themes = {
+  default: {
+    newlinesplit: (...rest) => [].concat(...[].concat(...rest).map(
+        entry => [].concat(...String(entry).split("\n").map(line => [line, "\n"])))),
+    flatsplit: (...rest) => [].concat(...[].concat(...rest).map(entry => String(entry).split(" "))),
+    echo: "dim",
+    warning: ["bold", "yellow"],
+    error: ["bold", "red"],
+    exception: ["newlinesplit", { first: "error", rest: "warning" }],
+    info: "cyan",
+    instruct: ["bold", "cyan"],
+    babble: "cyan",
+    expound: "cyan",
+    argument: ["blue", "bold"],
+    executable: ["flatsplit", { first: ["magenta"], rest: "argument" }],
+    command: ["flatsplit", { first: ["magenta", "bold"], rest: "argument" }],
+    overridden: ["strikethrough", "command"],
+    package: ["dim", "bold", "yellow"],
+    path: ["underline"],
+    version: ["italic"],
+  },
+};
+
+colors._setTheme(themes.default);
+themes.default = colors;
+themes.colorless = Object.keys(themes.default).reduce((theme, key) => {
+  theme[key] = function colorless (...rest) { return rest.map(k => String(k)).join(" "); };
+  return theme;
+}, {});
+
 
 module.exports = {
   command: "vlm [--help] [-<flagchars>] [--<flag>...] [--<option>=<value>..] [command]",
@@ -408,13 +421,16 @@ characters to be equal although '/' is recommended anywhere possible.
   handler, // Defined below.
 };
 
-function _addUniversalOptions (vargs_, { strict = true, global = false, hidden = false }) {
+function _addUniversalOptions (vargs_,
+      { strict = true, global = false, hidden = false, theme = themes.colorless }) {
   function _postProcess (options) {
     Object.keys(options).forEach(name => {
       if (options[name].hidden) delete options[name].group;
     });
     return options;
   }
+  const hiddenGroup = `Universal options${!hidden ? "" : ` ('${theme.command("vlm -h <cmd>")
+      }' for full list)`}:`;
   return vargs_
       .strict(strict)
       .help(false)
@@ -422,71 +438,68 @@ function _addUniversalOptions (vargs_, { strict = true, global = false, hidden =
       .wrap(vargs_.terminalWidth() < 140 ? vargs_.terminalWidth() : 140)
       .option(_postProcess({
         a: {
-          group: `Universal options${!hidden ? "" : " ('vlm -h <cmd>' for full list)"}:`,
-          alias: "match-all",
-          type: "boolean", global,
+          alias: theme.argument("match-all"),
+          group: hiddenGroup, type: "boolean", global,
           description: "Include hidden and disabled commands in /all/ matchings",
         },
         d: {
-          group: `Universal options${!hidden ? "" : " ('vlm -h <cmd>' for full list)"}:`,
-          alias: "dry-run",
-          type: "boolean", global,
+          alias: theme.argument("dry-run"),
+          group: hiddenGroup, type: "boolean", global,
           description: "Do not execute but display all the matching command(s)",
         },
         h: {
-          group: `Universal options${!hidden ? "" : " ('vlm -h <cmd>' for full list)"}:`,
           alias: "help",
-          type: "boolean", global,
+          group: hiddenGroup, type: "boolean", global,
           description: "Show the main help of the command",
         },
         N: {
-          group: "Universal options:", alias: "show-name",
-          type: "boolean", global, hidden,
+          alias: theme.argument("show-name"),
+          group: "Universal options:", type: "boolean", global, hidden,
           description: "Show the command (N)ame column",
         },
         U: {
-          group: "Universal options:", alias: "show-usage",
-          type: "boolean", global, hidden,
+          alias: theme.argument("show-usage"),
+          group: "Universal options:", type: "boolean", global, hidden,
           description: "Show the command (U)sage column",
         },
         D: {
-          group: "Universal options:", alias: "show-description",
-          type: "boolean", global, hidden,
+          alias: theme.argument("show-description"),
+          group: "Universal options:", type: "boolean", global, hidden,
           description: "Show the command one-liner (D)escription column",
         },
         P: {
-          group: "Universal options:", alias: "show-package",
-          type: "boolean", global, hidden,
+          alias: theme.argument("show-package"),
+          group: "Universal options:", type: "boolean", global, hidden,
           description: "Show the command (P)ackage name column",
         },
         V: {
-          group: "Universal options:", alias: ["show-version", "version"],
-          type: "boolean", global, hidden,
+          alias: [theme.argument("show-version"), theme.argument("version")],
+          group: "Universal options:", type: "boolean", global, hidden,
           description: "Show the command (V)ersion column",
         },
         O: {
-          group: "Universal options:", alias: "show-pool",
-          type: "boolean", global, hidden,
+          alias: theme.argument("show-pool"),
+          group: "Universal options:", type: "boolean", global, hidden,
           description: "Show the command source p(O)ol column",
         },
         F: {
-          group: "Universal options:", alias: "show-file",
-          type: "boolean", global, hidden,
+          alias: theme.argument("show-file"),
+          group: "Universal options:", type: "boolean", global, hidden,
           description: "Show the command (F)ile path column",
         },
         R: {
-          group: "Universal options:", alias: "show-resolved",
-          type: "boolean", global, hidden,
+          alias: theme.argument("show-resolved"),
+          group: "Universal options:", type: "boolean", global, hidden,
           description: "Show the command symlink-(R)esolved path column",
         },
         I: {
-          group: "Universal options:", alias: "output-introduction",
-          type: "boolean", global, hidden,
+          alias: theme.argument("output-introduction"),
+          group: "Universal options:", type: "boolean", global, hidden,
           description: "Output the full (I)ntroduction of the command",
         },
         S: {
-          group: "Universal options:", alias: "output-source",
-          type: "boolean", global, hidden,
+          alias: theme.argument("output-source"),
+          group: "Universal options:", type: "boolean", global, hidden,
           description: "Output the script (S)ource code of the command",
         },
       }));
@@ -576,7 +589,7 @@ module.exports
 
 // Only function definitions from hereon.
 
-async function handler (vargv) {
+async function handler (vargv, customVLM) {
   // Phase21: Pre-load args with so-far empty pools to detect fully builtin commands (which don't
   // need forwarding).
   const fullyBuiltin = vlm.isCompleting || !vargv.command;
@@ -679,7 +692,7 @@ async function handler (vargv) {
     }
   }
 
-  const subVLM = Object.create(vlm);
+  const subVLM = Object.create(customVLM || vlm);
   subVLM.contextVargv = vargv;
   const maybeRet = subVLM.invoke(vargv.command, vargv._);
   subVLM.invoke = callValmaWithEcho;
@@ -960,13 +973,13 @@ function _underToSlash (text = "") {
 function _outputCommandInfo (elements) {
   console.log(...elements.map(entry => (!Array.isArray(entry)
       ? entry
-      : (entry[2] || (i => i))(_rightPad(entry[0], entry[1])))));
+      : _rightPad(...entry))));
 }
 
-function _rightPad (text, width = 0) {
+function _rightPad (text, width = 0, style = (i => i)) {
   const text_ = (typeof text === "string") ? text : `<${typeof text}>`;
   const pad = width - text_.length;
-  return `${text_}${" ".repeat(pad < 0 ? 0 : pad)}`;
+  return `${style(text_)}${" ".repeat(pad < 0 ? 0 : pad)}`;
 }
 
 function _locateDependedPools (initialPoolBase, poolDirectories) {
@@ -1173,7 +1186,7 @@ async function execute (args, spawnOptions = {}) {
     this.echo(">>- vlm", this.colors.command(...argv));
     try {
       const ret = await module.exports.handler(
-        _parseUntilLastPositional(globalVargs, argv, module.exports.command));
+          _parseUntilLastPositional(globalVargs, argv, module.exports.command), this);
       this.echo("<<- vlm", `${vlm.colors.command(argv[0])}:`,
           vlm.colors.blue((JSON.stringify(ret) || "undefined").slice(0, 71)));
       return ret;
@@ -1294,9 +1307,10 @@ function _determineIntrospection (module, vargv, selector, isWildcard, invokeEnt
 }
 
 function _outputIntrospection (vargs_, introspect, commands_, commandGlob, isWildcard_, matchAll) {
+  const theme = themes.default;
   if (introspect.builtinHelp) {
     vargs_.vlm = vlm;
-    vargs_.$0 = introspect.module.command.match(/^[^ ]*/)[0];
+    vargs_.$0 = theme.command(introspect.module.command.match(/^[^ ]*/)[0]);
     vargs_.showHelp("log");
     return [];
   }
@@ -1307,10 +1321,10 @@ function _outputIntrospection (vargs_, introspect, commands_, commandGlob, isWil
   }
   if (introspect.defaultUsage) {
     if (!matchAll) {
-      vlm.log(colors.bold("# Usage:", introspect.module.command));
+      vlm.log(theme.bold("# Usage:", introspect.module.command));
       vlm.log();
     }
-    vlm.log(colors.bold(`# ${matchAll ? "All known" : "Available"} commands:`));
+    vlm.log(theme.bold(`# ${matchAll ? "All known" : "Available"} commands:`));
   }
   return [].concat(...[..._activePools].reverse().map(pool =>
       _outputInfos(pool, isWildcard_, globalVargv.pools)));
@@ -1320,16 +1334,17 @@ function _outputIntrospection (vargs_, introspect, commands_, commandGlob, isWil
     const missingPackage = "<package_missing>";
     const _isOverridden = (command) => (introedCommands[command.name] || { pool }).pool !== pool;
     const _overridableCommandStyle = (command) =>
-        (_isOverridden(command) ? colors.overridden : colors.command);
+        (_isOverridden(command) ? theme.overridden : theme.command);
+    const _themeStyle = (styleName) => () => theme[styleName];
     const column = {
       name: { header: "command", style: _overridableCommandStyle },
       usage: { header: "usage", style: _overridableCommandStyle },
       description: { header: "description" },
-      package: { header: "package" },
-      version: { header: "version" },
+      package: { header: "package", style: _themeStyle("package") },
+      version: { header: "version", style: _themeStyle("version") },
       pool: { header: "source pool" },
-      file: { header: "script path" },
-      resolved: { header: "real file path" },
+      file: { header: "script path", style: _themeStyle("path") },
+      resolved: { header: "real file path", style: _themeStyle("path") },
     };
     Object.keys(introspect.show).forEach(key => { column[key].width = 1; });
     function _addToRowData (rowData, name, entry) {
@@ -1364,9 +1379,9 @@ function _outputIntrospection (vargs_, introspect, commands_, commandGlob, isWil
 
     const isEmpty = !Object.keys(infos).length;
     if (isWildcard && (!isEmpty || globalVargv.pools || matchAll)) {
-      vlm.log(colors.bold(`## ${vlm.path.join(pool.name, commandGlob)} ${
+      vlm.log(theme.bold(`## ${vlm.path.join(pool.name, commandGlob)} ${
         isEmpty ? "has no shown commands" : "commands:"}`),
-        `(${vlm.colors.info(Object.keys(pool.stats || {})
+        `(${theme.info(Object.keys(pool.stats || {})
             .map(s => `${s}: ${pool.stats[s]}`).join(", "))
         })`);
     }
@@ -1375,7 +1390,7 @@ function _outputIntrospection (vargs_, introspect, commands_, commandGlob, isWil
     if (introspect.displayHeaders) {
       const headerOutput = [].concat(...Object.keys(introspect.show)
           .map(key => ([_rightPad(column[key].header, column[key].width), "|"])));
-      vlm.log(...headerOutput.slice(0, -1).map(h => (h === "|" ? "|" : colors.bold(h))));
+      vlm.log(...headerOutput.slice(0, -1).map(h => (h === "|" ? "|" : theme.bold(h))));
       vlm.log(...headerOutput.slice(0, -1).map(h => (h === "|" ? "|" : h.replace(/./g, "-"))));
     }
     return infos.map(({ command, name, module, info, rowData }) => {

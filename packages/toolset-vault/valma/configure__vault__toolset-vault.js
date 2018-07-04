@@ -21,7 +21,8 @@ exports.builder = (yargs) => yargs.options({
 exports.handler = (yargv) => {
   const vlm = yargv.vlm;
   const templates = vlm.path.join(__dirname, "../templates/{.,}*");
-  vlm.info("Copying vault template files from ", templates, "(will not clobber existing files)");
+  vlm.info("Copying vault template files from ", vlm.colors.path(templates),
+      "(will not clobber existing files)");
   vlm.shell.cp("-n", templates, ".");
 
   // TODO(iridian): Convert into dynamic listing maybe?
