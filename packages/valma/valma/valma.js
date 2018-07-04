@@ -628,8 +628,10 @@ async function handler (vargv, customVLM) {
     const forwardRealVLM = fs.realpathSync(pool.vlmPath);
     if (myRealVLM === forwardRealVLM) return undefined;
     vlm.ifVerbose(1)
-        .info(`forwarding to vlm at require("${pool.vlmPath}")`, "via pool", pool.path,
-            "\n\treal path:", forwardRealVLM, `(current vlm "${myRealVLM})"`);
+        .info(`forwarding to vlm at require('${vlm.colors.path(pool.vlmPath)}')`,
+            "via pool", vlm.colors.path(pool.path),
+            "\n\treal path:", vlm.colors.path(forwardRealVLM), `(current vlm "${
+                  vlm.colors.path(myRealVLM)})"`);
     return pool;
   });
   if (forwardPool) {
@@ -716,16 +718,18 @@ async function callValmaWithEcho (commandSelector, args) {
   // (they occasionally have yargs usage arguments after the command selector).
   const selector = commandSelector.split(" ")[0];
   const argv = _processArgs(args);
-  vlm.echo(">>- vlm", vlm.colors.command(selector, ...argv));
+  this.echo(">> vlm", vlm.colors.command(selector, ...argv));
+  let ret;
+  let echoResult;
   try {
-    const ret = await invoke.call(this, selector, argv);
-    vlm.echo("<<- vlm", `${vlm.colors.command(selector)}:`,
-        vlm.colors.blue((JSON.stringify(ret) || "undefined").slice(0, 71)));
+    ret = await invoke.call(this, selector, argv);
+    echoResult = this.colors.blue((JSON.stringify(ret) || "undefined").slice(0, 71));
     return ret;
   } catch (error) {
-    vlm.echo("<<- vlm", `${vlm.colors.command(selector)}:`,
-        vlm.colors.error("exception:", String(error)));
+    echoResult = this.colors.error("exception:", String(error));
     throw error;
+  } finally {
+    this.echo("<< vlm", `${vlm.colors.command(selector)}:`, echoResult);
   }
 }
 
@@ -814,8 +818,9 @@ async function invoke (commandSelector, argv) {
         continue;
       }
 
+      const subVLM = activeCommand.vlm;
       const subVargv = _parseUntilLastPositional(activeCommand.subVargs, argv, module.command,
-          { vlm: activeCommand.vlm });
+          { vlm: subVLM });
       const subIntrospect = _determineIntrospection(module, subVargv, commandName);
 
       this.ifVerbose(3)
@@ -836,34 +841,35 @@ async function invoke (commandSelector, argv) {
         continue;
       } else {
         if (activeCommand.disabled) {
-          this.warn(`invoking a disabled command '${commandName}' explicitly`,
+          this.warn(`Invoking a disabled command '${commandName}' explicitly`,
               `(${activeCommand.disabled})`);
         }
-        subVargv.vlm.contextVargv = subVargv;
+        subVLM.contextVargv = subVargv;
         try {
           if (isWildcardCommand) {
             this.echo(">>* vlm", this.colors.command(commandName, ...argv));
           }
           await _tryInteractive(subVargv, activeCommand.subVargs);
-          if (subVargv.vlm.toolset) {
+          if (subVLM.toolset) {
             const requiresPath = ["commands", commandName, "requires"];
-            const tool = subVargv.vlm.tool;
+            const tool = subVLM.tool;
             const requires = tool
-                ? subVargv.vlm.getToolConfig(subVargv.vlm.toolset, tool, ...requiresPath)
-                : subVargv.vlm.getToolsetConfig(subVargv.vlm.toolset, ...requiresPath);
+                ? subVLM.getToolConfig(subVLM.toolset, tool, ...requiresPath)
+                : subVLM.getToolsetConfig(subVLM.toolset, ...requiresPath);
             let requireResult = true;
             for (let i = 0; requireResult && (i !== (requires || []).length); ++i) {
+              const header = `tool${tool ? "Config" : "setConfig"}.requires[${i}] of ${
+                this.colors.command(commandName)}`;
               try {
-                this.echo(`>>-? requires[${i}] of ${this.colors.command(commandName)}`,
-                    "via", ...(tool ? ["tool", tool, "of"] : []),
-                    "toolset", subVargv.vlm.toolset);
-                requireResult = await subVargv.vlm.execute(requires[i]);
+                this.echo(`>>>? ${header}`, "via",
+                    ...(tool ? ["tool", subVLM.colors.package(tool), "of"] : []),
+                    "toolset", subVLM.colors.package(subVLM.toolset));
+                requireResult = await subVLM.execute(requires[i]);
               } catch (error) {
-                requireResult = subVargv.vlm.error(`<exception>: ${String(error)}`);
+                requireResult = subVLM.error(`<exception>: ${String(error)}`);
                 throw error;
               } finally {
-                this.echo(`<<-! requires[${i}] of ${this.colors.command(commandName)}:`,
-                    this.colors.blue(requireResult));
+                this.echo(`<<<? ${header}:`, this.colors.blue(requireResult));
               }
               if (!requireResult) {
                 const message = `'${this.colors.command(commandName)
@@ -880,13 +886,13 @@ async function invoke (commandSelector, argv) {
           const simpleCommand = commandName.match(/\.?([^/]*)$/)[1];
           const detailCommandPrefix = commandName.replace(/.?[^/]*$/, `.${simpleCommand}`);
           const preCommands = `${detailCommandPrefix}/.pre/**/*`;
-          if (subVargv.vlm.listMatchingCommands(preCommands).length) {
-            await subVargv.vlm.invoke(preCommands);
+          if (subVLM.listMatchingCommands(preCommands).length) {
+            await subVLM.invoke(preCommands);
           }
           ret.push(await module.handler(subVargv));
           const postCommands = `${detailCommandPrefix}/.post/**/*`;
-          if (subVargv.vlm.listMatchingCommands(preCommands).length) {
-            await subVargv.vlm.invoke(postCommands);
+          if (subVLM.listMatchingCommands(preCommands).length) {
+            await subVLM.invoke(postCommands);
           }
         } finally {
           if (this.echo && (commandName !== commandSelector)) {
@@ -1183,18 +1189,8 @@ async function execute (args, spawnOptions = {}) {
   const argv = _processArgs(args);
   if ((argv[0] === "vlm") && !Object.keys(spawnOptions).length) {
     argv.shift();
-    this.echo(">>- vlm", this.colors.command(...argv));
-    try {
-      const ret = await module.exports.handler(
-          _parseUntilLastPositional(globalVargs, argv, module.exports.command), this);
-      this.echo("<<- vlm", `${vlm.colors.command(argv[0])}:`,
-          vlm.colors.blue((JSON.stringify(ret) || "undefined").slice(0, 71)));
-      return ret;
-    } catch (error) {
-      vlm.echo("<<- vlm", `${vlm.colors.command(argv[0])}:`,
-          vlm.colors.error("exception:", String(error)));
-      throw error;
-    }
+    return await module.exports.handler(
+        _parseUntilLastPositional(globalVargs, argv, module.exports.command), this);
   }
   return new Promise((resolve, failure) => {
     _flushPendingConfigWrites(vlm);

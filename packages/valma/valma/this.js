@@ -7,7 +7,6 @@ of its API's, most notably the 'shell' API.
 `;
 
 exports.builder = (yargs) => yargs;
-};
 
 exports.handler = async (yargv) => {
   // Example template which displays the command name itself and package name where it is ran
@@ -62,7 +61,7 @@ exports.handler = async (yargv) => {
       }
     } finally {
       vlm.ifVerbose(1)
-          .log("  ret:", argv.slice(index), ret.index, ":", ret.value);
+          .log("  ret:", argv.slice(index), ret && ret.index, ":", ret && ret.value);
     }
   }
 
