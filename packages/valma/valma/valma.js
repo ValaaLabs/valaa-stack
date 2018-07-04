@@ -827,34 +827,62 @@ async function invoke (commandSelector, argv) {
               `(${activeCommand.disabled})`);
         }
         subVargv.vlm.contextVargv = subVargv;
-        if (isWildcardCommand) {
-          this.echo("    >>> vlm", this.colors.command(commandName, ...argv));
-        }
-        await _tryInteractive(subVargv, activeCommand.subVargs);
-        if (subVargv.vlm.toolset) {
-          const pathDepPath = ["commands", commandName, "pathDependencies"];
-          const pathDependencies = subVargv.vlm.tool
-              ? subVargv.vlm.getToolConfig(subVargv.vlm.toolset, subVargv.vlm.tool, ...pathDepPath)
-              : subVargv.vlm.getToolsetConfig(subVargv.vlm.toolset, ...pathDepPath);
-          await Promise.all(Object.keys(pathDependencies || {}).map(async dependedPath => {
-            if (shell.test("-e", dependedPath)) return undefined;
-            this.echo("    >>>> dependent", this.colors.yellow(dependedPath));
-            const command = pathDependencies[dependedPath].split(" ");
-            const dependedRet = await ((command[0] === "vlm")
-                ? subVargv.vlm.invoke(command[1], command.slice(2))
-                : subVargv.vlm.execute(command[0], command.slice(1)));
-            this.echo("    <<<< dependent", this.colors.yellow(dependedPath), ":",
-                this.colors.blue(dependedRet));
-            return dependedRet;
-          }));
-        }
-        ret.push(await module.handler(subVargv));
-        if (this.echo && (commandName !== commandSelector)) {
-          let retValue = JSON.stringify(ret[ret.length - 1]);
-          if (retValue === undefined) retValue = "undefined";
+        try {
           if (isWildcardCommand) {
-            this.echo("    <<< vlm", `${this.colors.command(commandName)}:`,
-                this.colors.blue(retValue.slice(0, 20), retValue.length > 20 ? "..." : ""));
+            this.echo(">>* vlm", this.colors.command(commandName, ...argv));
+          }
+          await _tryInteractive(subVargv, activeCommand.subVargs);
+          if (subVargv.vlm.toolset) {
+            const requiresPath = ["commands", commandName, "requires"];
+            const tool = subVargv.vlm.tool;
+            const requires = tool
+                ? subVargv.vlm.getToolConfig(subVargv.vlm.toolset, tool, ...requiresPath)
+                : subVargv.vlm.getToolsetConfig(subVargv.vlm.toolset, ...requiresPath);
+            let requireResult = true;
+            for (let i = 0; requireResult && (i !== (requires || []).length); ++i) {
+              try {
+                this.echo(`>>-? requires[${i}] of ${this.colors.command(commandName)}`,
+                    "via", ...(tool ? ["tool", tool, "of"] : []),
+                    "toolset", subVargv.vlm.toolset);
+                requireResult = await subVargv.vlm.execute(requires[i]);
+              } catch (error) {
+                requireResult = subVargv.vlm.error(`<exception>: ${String(error)}`);
+                throw error;
+              } finally {
+                this.echo(`<<-! requires[${i}] of ${this.colors.command(commandName)}:`,
+                    this.colors.blue(requireResult));
+              }
+              if (!requireResult) {
+                const message = `'${this.colors.command(commandName)
+                    }' as it can't satisfy requires[${i}]: ${this.colors.executable(requires[i])}`;
+                if (!isWildcardCommand) {
+                  throw new Error(`Failed command ${message}`);
+                }
+                this.error(`Skipping command ${message}`);
+                ret.push(`Skipped command ${message}`);
+              }
+            }
+            if (!requireResult) continue;
+          }
+          const simpleCommand = commandName.match(/\.?([^/]*)$/)[1];
+          const detailCommandPrefix = commandName.replace(/.?[^/]*$/, `.${simpleCommand}`);
+          const preCommands = `${detailCommandPrefix}/.pre/**/*`;
+          if (subVargv.vlm.listMatchingCommands(preCommands).length) {
+            await subVargv.vlm.invoke(preCommands);
+          }
+          ret.push(await module.handler(subVargv));
+          const postCommands = `${detailCommandPrefix}/.post/**/*`;
+          if (subVargv.vlm.listMatchingCommands(preCommands).length) {
+            await subVargv.vlm.invoke(postCommands);
+          }
+        } finally {
+          if (this.echo && (commandName !== commandSelector)) {
+            let retValue = JSON.stringify(ret[ret.length - 1]);
+            if (retValue === undefined) retValue = "undefined";
+            if (isWildcardCommand) {
+              this.echo("<<* vlm", `${this.colors.command(commandName)}:`,
+                  this.colors.blue(retValue.slice(0, 20), retValue.length > 20 ? "..." : ""));
+            }
           }
         }
       }
