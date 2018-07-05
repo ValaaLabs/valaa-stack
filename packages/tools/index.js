@@ -23,6 +23,8 @@ export { arrayFromAny, iterableFromAny } from "./sequenceFromAny";
 
 export const beaumpify = require("./beaumpify").default;
 
+export const deepSpread = require("./deepSpread").default;
+
 export const dumpify = require("./dumpify").default;
 
 export { default as getGlobal } from "./getGlobal";

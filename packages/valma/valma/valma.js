@@ -201,7 +201,13 @@ const vlm = globalVargs.vlm = {
   // As a diagnostic message outputs to stderr where available.
   exception (error, ...rest) {
     if (this.colors.exception) {
-      console.error(this.colors.exception(`${this.contextCommand} panics: ${error}`), ...rest);
+      if (!error) {
+        const dummy = {};
+        Error.captureStackTrace(dummy);
+        console.error(this.colors.exception(`vlm.exception: no error provided! ${dummy.stack}`));
+      } else {
+        console.error(this.colors.exception(`${this.contextCommand} panics: ${error}`), ...rest);
+      }
     }
     return this;
   },
@@ -582,7 +588,7 @@ module.exports
     })
     .catch(error => {
       if (error !== undefined) {
-        vlm.exception(error.stack);
+        vlm.exception(error.stack || error);
       }
       process.exit(typeof error === "number" ? error : ((error && error.code) || -1));
     });
