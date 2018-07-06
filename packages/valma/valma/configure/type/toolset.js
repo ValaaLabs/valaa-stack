@@ -48,7 +48,7 @@ exports.handler = async (yargv) => {
         yargv.grabbable ? "_toolset_" : "_"}_${simpleName}.js`,
     export: true, skeleton: true,
     brief: "toolset configure",
-    vlm: `{ toolset: "${vlm.packageConfig.name}" }\n`,
+    "exports-vlm": `{ toolset: "${vlm.packageConfig.name}" }\n`,
     describe: `Configure the toolset '${simpleName}' for the current ${
         yargv.restrict || "repository"}`,
 

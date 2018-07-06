@@ -10,7 +10,7 @@ exports.introduction = `${exports.describe}.`;
 exports.builder = (yargs) => yargs.options({
   source: {
     type: "string", default: "dist/release",
-    description: `source directory for the releases that are to be deployed. ${
+    description: `Source release path from where to deploy the releases. ${
         ""}Each release in this directory will be removed after a successful deployment.`,
   },
   prerelease: {
@@ -38,6 +38,8 @@ exports.handler = async (yargv) => {
   vlm.info(`Deploying ${vlm.colors.package(packageConfig.name)}@${
       vlm.colors.version(packageConfig.version)}`, "from", vlm.colors.path(releasePath));
 
+  vlm.releasePath = yargv.source;
+
   return await vlm.invoke(`.release-deploy/${yargv.toolsetGlob || "**/*"}`,
-      [...yargv._, releasePath]);
+      [{ source: releasePath }, ...yargv._]);
 };

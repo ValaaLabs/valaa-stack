@@ -1199,11 +1199,24 @@ async function execute (args, spawnOptions = {}) {
         _parseUntilLastPositional(globalVargs, argv, module.exports.command), this);
   }
   return new Promise((resolve, failure) => {
-    _flushPendingConfigWrites(vlm);
-    vlm.echo(">--", vlm.colors.executable(...argv));
-    if (vlm.contextVargv && vlm.contextVargv.dryRun && !spawnOptions.noDryRun) {
-      vlm.echo("      dry-run: skipping execution and returning:",
-          vlm.colors.blue(spawnOptions.dryRunReturn || 0));
+    _flushPendingConfigWrites(this);
+    const _onDone = (code, signal) => {
+      if (code || signal) {
+        this.echo("<--", `${this.colors.executable(argv[0])}:`,
+        this.colors.error("<error>:", code || signal));
+        failure(code || signal);
+      } else {
+        _refreshActivePools();
+        _reloadPackageAndToolsetsConfigs();
+        this.echo("<--", `${this.colors.executable(argv[0])}:`,
+            this.colors.warning("execute return values not implemented yet"));
+        resolve();
+      }
+    };
+    this.echo(">--", this.colors.executable(...argv));
+    if (this.contextVargv && this.contextVargv.dryRun && !spawnOptions.noDryRun) {
+      this.echo("      dry-run: skipping execution and returning:",
+      this.colors.blue(spawnOptions.dryRunReturn || 0));
       _onDone(spawnOptions.dryRunReturn || 0);
     } else {
       const subProcess = childProcess.spawn(
@@ -1217,28 +1230,15 @@ async function execute (args, spawnOptions = {}) {
       subProcess.on("exit", _onDone);
       subProcess.on("error", _onDone);
       process.on("SIGINT", () => {
-        vlm.warn("vlm killing:", vlm.colors.green(...argv));
+        this.warn("vlm killing:", this.colors.green(...argv));
         process.kill(-subProcess.pid, "SIGTERM");
         process.kill(-subProcess.pid, "SIGKILL");
       });
       process.on("SIGTERM", () => {
-        vlm.warn("vlm killing:", vlm.colors.green(...argv));
+        this.warn("vlm killing:", this.colors.green(...argv));
         process.kill(-subProcess.pid, "SIGTERM");
         process.kill(-subProcess.pid, "SIGKILL");
       });
-    }
-    function _onDone (code, signal) {
-      if (code || signal) {
-        vlm.echo("<--", `${vlm.colors.executable(argv[0])}:`,
-            vlm.colors.error("<error>:", code || signal));
-        failure(code || signal);
-      } else {
-        _refreshActivePools();
-        _reloadPackageAndToolsetsConfigs();
-        vlm.echo("<--", `${vlm.colors.executable(argv[0])}:`,
-            vlm.colors.warning("execute return values not implemented yet"));
-        resolve();
-      }
     }
   });
 }

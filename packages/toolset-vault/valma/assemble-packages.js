@@ -252,12 +252,14 @@ exports.handler = async (yargv) => {
         : vlm.colors.green(
             newConfig.version === packageConfig.version
                 ? `success: ${vlm.colors.warning(`version kept at ${
-                    vlm.colors.version(packageConfig.version)}`)}`
+                    vlm.colors.version(vlm.colors.bold(packageConfig.version))}`)}`
             : yargv.versioning
-                ? `success: version updated to ${vlm.colors.version(newConfig.version)} from ${
-                  vlm.colors.version(packageConfig.version)}`
-            : `success: ${vlm.colors.warning(`unexpected version update to ${vlm.colors.version(
-                newConfig.version)} from ${vlm.colors.version(packageConfig.version)}`)}`);
+                ? `success: version updated to ${
+                    vlm.colors.version(vlm.colors.bold(newConfig.version))} from ${
+                    vlm.colors.version(packageConfig.version)}`
+                : `success: ${vlm.colors.warning(`unexpected version update to ${
+                    vlm.colors.version(vlm.colors.bold(newConfig.version))} from ${
+                    vlm.colors.version(packageConfig.version)}`)}`);
     if (failure) vlm.error(header, conclusion);
     else vlm.info(header, conclusion);
   });

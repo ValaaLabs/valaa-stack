@@ -39,7 +39,6 @@ module.exports = {
     filename: "main.js",
   },
   devServer: {
-    publicPath: `/`,
     disableHostCheck: true,
     compress: true,
   },

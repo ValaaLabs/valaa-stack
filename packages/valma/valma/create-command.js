@@ -32,14 +32,14 @@ exports.builder = (yargs) => yargs.options({
     type: "boolean",
     description: "If true will only create a minimal script skeleton",
   },
+  header: {
+    type: "string", description: "Lines to place at the beginning of the script skeleton",
+  },
   "exports-vlm": {
     type: "string", description: "Full exports.vlm source (as Object.assign-able object)",
   },
   describe: {
     type: "string", description: "Short description of the new command set as exports.describe",
-  },
-  header: {
-    type: "string", description: "Lines to place at the beginning of the script skeleton",
   },
   introduction: {
     type: "string", description: "Full description of the new command set as exports.introduction",

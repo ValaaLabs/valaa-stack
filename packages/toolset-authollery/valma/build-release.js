@@ -14,16 +14,18 @@ making the actual deployment.`;
 exports.builder = (yargs) => yargs.options({
   target: {
     type: "string", default: "dist/release",
-    description: "Target directory root for building the release"
+    description: "Target release path for building the release"
   },
   source: {
     type: "string", default: "packages",
     description: "Relative lerna packages source directory for sourcing the packages"
   },
+  force: {
+    type: "boolean", description: "Allow the build of already deployed versions",
+  },
   overwrite: {
-    type: "boolean", default: "false",
-    description: "Allow overwriting existing release target build"
-  }
+    type: "boolean", description: "Allow overwrititing existing local build files",
+  },
 });
 
 exports.handler = async (yargv) => {
@@ -33,7 +35,9 @@ exports.handler = async (yargv) => {
 
   if (!yargv.overwrite && vlm.shell.test("-d", releasePath)) {
     if (packageConfig.version.indexOf("-prerelease") !== -1) {
-      vlm.warn("removing an existing '-prerelease' build target:", vlm.colors.path(releasePath));
+      vlm.warn("Removing an existing prerelease build target:", vlm.colors.path(releasePath),
+      // Carefully refers to how overwrite will remove target even for non-prerelease builds
+          `(carefully provide '${vlm.colors.argument("--overwrite")}' to prevent remove)`);
       vlm.shell.rm("-rf", releasePath);
     } else {
       throw new Error(`build-release: existing build for non-prerelease version ${
@@ -43,10 +47,11 @@ exports.handler = async (yargv) => {
 
   vlm.shell.mkdir("-p", releasePath);
 
-  vlm.info("building version", vlm.colors.version(packageConfig.version), "of",
+  vlm.info("Building version", vlm.colors.version(packageConfig.version), "of",
       vlm.colors.package(packageConfig.name), "into", vlm.colors.path(releasePath));
 
-  return await vlm.invoke(`.release-build/${yargv.toolsetGlob || "**/*"}`,
-      [...yargv._, releasePath]);
-};
+  vlm.releasePath = releasePath;
 
+  return await vlm.invoke(`.release-build/${yargv.toolsetGlob || "**/*"}`,
+      [{ target: releasePath, force: yargv.force }, ...yargv._]);
+};
