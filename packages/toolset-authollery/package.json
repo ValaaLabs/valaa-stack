@@ -12,6 +12,7 @@
   "publishConfig": {
     "access": "public"
   },
+  "main": "index.js",
   "bin": {
     ".valma-configure_.type_.authollery_@valos_toolset-authollery": "valma/configure__authollery__toolset-authollery.js",
     ".valma-status_.type_.authollery_10-authollery": "valma/status_.type_.authollery_10-authollery.js",

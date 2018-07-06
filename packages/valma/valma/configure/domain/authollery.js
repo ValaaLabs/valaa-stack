@@ -61,52 +61,61 @@ exports.handler = async (yargv) => {
   return vlm.invoke(`.configure/.domain/.authollery/**/*`, { reconfigure: yargv.reconfigure });
 
   function _createReleaseSubCommand (subName) {
+    const isBuild = (subName === "build");
     return vlm.invoke("create-command", [`.release-${subName}/${isTool ? ".tool/" : ""}${name}`, {
       filename: `release-${subName}_${isTool ? "tool_" : ""}_${simpleName}.js`,
-      brief: `${subName === "build" ? "Build" : "Deploy"} a sub-release`,
+      brief: `${isBuild ? "Build" : "Deploy"} a sub-release`,
       export: true,
-      vlm: `{ ${type}: "${name}" }`,
-      describe: `${subName === "build" ? "Build" : "Deploy"} a sub-release of ${name}`,
 
-      disabled: isTool ? undefined :
-`(yargs) => !yargs.vlm.getToolsetConfig(yargs.vlm.toolset, "inUse")`,
-      builder:
-`(yargs) => yargs.options({
-  force: {
-    alias: "f", type: "boolean",
-    description: "Force a build over existing deployed version",
-  },${!isTool ? "" : `
-  toolset: yargs.vlm.createStandardToolsetOption(
-      "The containing toolset of this tool release ${subName}."),`}
-})`,
+      header: `const authollery = require("@valos/toolset-authollery");\n\n`,
+      "exports-vlm": `{ ${type}: "${name}" }`,
+      describe: `${isBuild ? "Build" : "Deploy"} a sub-release of ${name}`,
+
       introduction: isTool
           ?
 `This tool sub-release ${subName} command must be explicitly invoked by
 toolsets which use this tool.`
           :
-`When a release is being ${subName === "build" ? "built" : "deployed"
+`When a release is being ${isBuild ? "built" : "deployed"
     } each active toolset must explicitly
 invoke the ${subName} commands of all of its ${subName}able tools.`,
-      handler: (subName === "build")
+
+      disabled: isTool ? undefined :
+`(yargs) => !yargs.vlm.getToolsetConfig(yargs.vlm.toolset, "inUse")`,
+
+      builder:
+`(yargs) => yargs.options({${!isTool ? "" : `
+  toolset: yargs.vlm.createStandardToolsetOption(
+      "The containing toolset of this tool release ${subName}"),`}
+})${!isBuild ? `
+  source: authollery.createStandardDeploySourceOption(
+      yargs, "The source root release path of the whole deployment"),`
+      : `
+  target: authollery.createStandardBuildTargetOption(
+      yargs, "The target root release path of the whole build"),
+  force: { alias: "f", type: "boolean", description: "Allow building already deployed versions" },
+  overwrite: { type: "boolean", description: "Allow overwriting existing local build files" },`}
+})`,
+
+      handler: isBuild
           ?
 `async (yargv) => {
   const vlm = yargv.vlm;${isTool && `
   const toolset = yargv.toolset;`}
-  const ${type}Version = yargv.force ? undefined : await vlm.invoke(exports.command, ["--version"]);
-  const { ${type}Config, ${type}ReleasePath } = vlm.prepareTool${isTool ? "" : "set"}Build(
-      ${isTool && "toolset, "}vlm.${type}, "${simpleName}", ${type}Version);
+  const ${type}Version = yargv.overwrite ? undefined : await vlm.invoke(exports.command, ["--version"]);
+  const { ${type}Config, ${type}ReleasePath } = authollery.prepareTool${isTool ? "" : "set"}Build(
+      yargv, ${isTool && "toolset, "}vlm.${type}, "${simpleName}", ${type}Version);
   if (!${type}Config) return;
 
   vlm.shell.ShellString(${type}Version).to(vlm.path.join(${type}ReleasePath, "version-hash"));
   return;
-};
-`
+};\n`
         :
 `async (yargv) => {
   const vlm = yargv.vlm;${isTool && `
   const toolset = yargv.toolset;`}
-  const { ${type}Config, ${type}ReleasePath } = vlm.locateTool${isTool ? "" : "set"}Release(
-      ${isTool && "toolset, "}vlm.${type}, "${simpleName}");
+  const { ${type}Config, ${type}ReleasePath } = authollery.locateTool${isTool ? "" : "set"}Release(
+      yargv, ${isTool && "toolset, "}vlm.${type}, "${simpleName}");
   if (!${type}ReleasePath) return;
 
   const deployedVersionHash = await vlm.readFile(vlm.path.join(${type}ReleasePath, "version-hash"));
@@ -116,8 +125,7 @@ invoke the ${subName} commands of all of its ${subName}able tools.`,
     : "vlm.updateToolsetConfig(vlm.toolset, { deployedVersionHash });"
   }
   return;
-};
-`,
+};\n`,
     }]);
   }
 };

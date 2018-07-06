@@ -46,63 +46,7 @@ exports.handler = async (yargv) => {
   vlm.info("building version", vlm.colors.version(packageConfig.version), "of",
       vlm.colors.package(packageConfig.name), "into", vlm.colors.path(releasePath));
 
-  Object.assign(vlm, {
-    releasePath,
-    prepareToolsetBuild,
-    prepareToolBuild,
-  });
   return await vlm.invoke(`.release-build/${yargv.toolsetGlob || "**/*"}`,
       [...yargv._, releasePath]);
 };
 
-/**
- * Validates toolset build pre-conditions and returns the toolset target dist path where the
- * actual build will be placed.
- *
- * @param {*} toolsetName
- * @param {*} releasePath
- * @returns
- */
-function prepareToolsetBuild (toolsetName, toolsetDescription = "toolset",
-    desiredVersionHash) {
-  const logger = this.tailor({ contextCommand: `build-release/${toolsetName}` });
-  const releasePath = this.releasePath;
-  if (!this.shell.test("-d", releasePath)) {
-    throw new Error(`${this.contextCommand}: releasePath directory '${
-        this.colors.path(releasePath)}' missing`);
-  }
-  const toolsetConfig = this.getToolsetConfig(toolsetName);
-  if (!toolsetConfig) return {};
-  if (desiredVersionHash && (toolsetConfig.deployedVersionHash === desiredVersionHash)) {
-    logger.info(`${this.colors.bold(`Skipping the ${toolsetDescription} release build`)
-        } of already deployed version:`, this.colors.version(desiredVersionHash));
-    return {};
-  }
-  const simpleToolsetName = toolsetName.replace(/\//g, "_");
-  const toolsetReleasePath = this.path.join(releasePath, simpleToolsetName);
-  logger.info(`Building ${toolsetDescription} release in`, this.colors.path(toolsetReleasePath));
-  this.shell.rm("-rf", toolsetReleasePath);
-  this.shell.mkdir("-p", toolsetReleasePath);
-  this.toolset = toolsetName;
-  return { toolsetConfig, toolsetReleasePath };
-}
-
-function prepareToolBuild (toolsetName, toolName,
-    toolDescription = "tool", desiredVersionHash) {
-  const logger = this.tailor({ contextCommand: `build-release/${toolName}` });
-  const toolConfig = this.getToolConfig(toolsetName, toolName);
-  if (!toolConfig) return {};
-  if (desiredVersionHash && (toolConfig.deployedVersionHash === desiredVersionHash)) {
-    logger.info(`${this.colors.bold(`Skipping the ${toolDescription} release build`)
-        } of already deployed version within toolset ${this.colors.package(toolsetName)}:`,
-        this.colors.version(desiredVersionHash));
-    return {};
-  }
-  const simpleToolsetName = toolsetName.replace(/\//g, "_");
-  const simpleToolName = toolName.replace(/\//g, "_");
-  const toolReleasePath = this.path.join(this.releasePath, simpleToolsetName, simpleToolName);
-  logger.info(`Building ${toolDescription} release in '${this.colors.path(toolReleasePath)}'`);
-  this.shell.rm("-rf", toolReleasePath);
-  this.shell.mkdir("-p", toolReleasePath);
-  return { toolConfig, toolReleasePath };
-}

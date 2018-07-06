@@ -38,51 +38,6 @@ exports.handler = async (yargv) => {
   vlm.info(`Deploying ${vlm.colors.package(packageConfig.name)}@${
       vlm.colors.version(packageConfig.version)}`, "from", vlm.colors.path(releasePath));
 
-  Object.assign(vlm, {
-    releasePath,
-    locateToolsetRelease,
-    locateToolRelease,
-  });
   return await vlm.invoke(`.release-deploy/${yargv.toolsetGlob || "**/*"}`,
       [...yargv._, releasePath]);
 };
-
-function locateToolsetRelease (toolsetName, toolsetDescription = "toolset") {
-  const logger = this.tailor({ contextCommand: `deploy-release/${toolsetName}` });
-  const releasePath = this.releasePath;
-  const toolsetConfig = this.getToolsetConfig(toolsetName);
-  if (!toolsetConfig) {
-    throw new Error(`${this.contextCommand}: toolsets.json:['${
-        this.colors.package(toolsetName)}'] missing`);
-  }
-  if (!this.shell.test("-d", releasePath)) {
-    throw new Error(`${this.contextCommand}: releasePath '${
-        this.colors.path(releasePath)}' missing`);
-  }
-  const toolsetReleasePath = this.path.join(releasePath, toolsetName);
-  if (!this.shell.test("-d", toolsetReleasePath)) {
-    logger.ifVerbose(1)
-        .info(`skipping ${toolsetDescription} deploy: no release at '${
-            this.colors.path(toolsetReleasePath)}'`);
-    return {};
-  }
-  logger.info(`deploying ${toolsetDescription} release from '${
-      this.colors.path(toolsetReleasePath)}'`);
-  this.toolset = toolsetName;
-  return { toolsetConfig, toolsetReleasePath };
-}
-
-function locateToolRelease (toolsetName, toolName, toolDescription = "tool") {
-  const logger = this.tailor({ contextCommand: `deploy-release/${toolName}` });
-  const releasePath = this.releasePath;
-  const toolConfig = this.getToolConfig(toolsetName, toolName);
-  const toolReleasePath = this.path.join(releasePath, toolsetName, toolName);
-  if (!this.shell.test("-d", toolReleasePath)) {
-    logger.ifVerbose(1)
-        .info(`skipping ${toolDescription} deploy: no release at '${
-            this.colors.path(toolReleasePath)}'`);
-    return {};
-  }
-  logger.info(`deploying ${toolDescription} release from '${this.colors.path(toolReleasePath)}'`);
-  return { toolConfig, toolReleasePath };
-}
