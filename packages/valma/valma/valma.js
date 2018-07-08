@@ -388,13 +388,37 @@ characters to be equal although '/' is recommended anywhere possible.
         },
         s: {
           group: "Valma root options:",
-          alias: "silence-echo", type: "boolean", global: false,
-          description: "Silence the command invokes and executes echo",
+          alias: "silence", type: "boolean", global: false,
+          description: "Silence all console output except errors and potential results.",
+          causes: [
+            "no-echos", "no-logs", "no-infos", "no-instructs", "no-warnings", "no-babbles",
+            "no-expounds"
+          ],
         },
         v: {
           group: "Valma root options:",
           alias: "verbose", count: true, global: false,
           description: "Be noisy. -vv... -> be more noisy.",
+        },
+        echos: {
+          group: "Valma root options:",
+          type: "boolean", global: false, default: true,
+          description: "Show echo messages",
+        },
+        logs: {
+          group: "Valma root options:",
+          type: "boolean", global: false, default: true,
+          description: "Show log messages",
+        },
+        infos: {
+          group: "Valma root options:",
+          type: "boolean", global: false, default: true,
+          description: "Show info messages",
+        },
+        instructs: {
+          group: "Valma root options:",
+          type: "boolean", global: false, default: true,
+          description: "Show instruct messages",
         },
         warnings: {
           group: "Valma root options:",
@@ -575,8 +599,11 @@ const _commandPrefix = globalVargv.commandPrefix;
 
 vlm.verbosity = vlm.isCompleting ? 0 : globalVargv.verbose;
 vlm.interactive = vlm.isCompleting ? 0 : globalVargv.interactive;
-if (globalVargv.silenceEcho || vlm.isCompleting) vlm.echo = function noEcho () { return this; };
-if (!globalVargv.warnings || vlm.isCompleting) vlm.warn = function noWarnings () { return this; };
+if (!globalVargv.echos || vlm.isCompleting) vlm.echo = function noEcho () { return this; };
+if (!globalVargv.logs || vlm.isCompleting) vlm.log = function noLog () { return this; };
+if (!globalVargv.infos || vlm.isCompleting) vlm.info = function noInfo () { return this; };
+if (!globalVargv.instructs || vlm.isCompleting) vlm.instruct = function noInstr () { return this; };
+if (!globalVargv.warnings || vlm.isCompleting) vlm.warn = function noWarning () { return this; };
 if (!globalVargv.babbles || vlm.isCompleting) vlm.babble = function noBabble () { return this; };
 if (!globalVargv.expounds || vlm.isCompleting) vlm.expound = function noExpound () { return this; };
 
