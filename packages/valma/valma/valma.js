@@ -95,6 +95,9 @@ const vlm = globalVargs.vlm = {
   // See https://github.com/Marak/colors.js
   colors,
 
+  // The currently active theme.
+  theme: colors,
+
   // Opens interactive inquirer prompt and returns a completion promise.
   // See https://github.com/SBoudrias/Inquirer.js/
   inquire: inquirer.createPromptModule(),
@@ -164,9 +167,9 @@ const vlm = globalVargs.vlm = {
   // Echo the valma wildcard matchings, invokations and external executions back to the user.
   // As a diagnostic message outputs to stderr where available.
   echo (...rest) {
-    if (this.colors.echo) {
+    if (this.theme.echo) {
       if ((rest[0] || "")[0] === "<") this.indent -= 2;
-      console.warn(" ".repeat(this.indent - 1), this.colors.echo(...rest));
+      console.warn(" ".repeat(this.indent - 1), this.theme.echo(...rest));
       if ((rest[0] || "")[0] === ">") this.indent += 2;
     }
     return this;
@@ -183,8 +186,8 @@ const vlm = globalVargs.vlm = {
   // 'vlm --help' but would very likely be the cause for a 'cannot find command' error.
   // As a diagnostic message outputs to stderr where available.
   warn (msg, ...rest) {
-    if (this.colors.warning) {
-      console.warn(this.colors.warning(`${this.contextCommand} warns:`, msg), ...rest);
+    if (this.theme.warning) {
+      console.warn(this.theme.warning(`${this.contextCommand} warns:`, msg), ...rest);
     }
     return this;
   },
@@ -192,21 +195,21 @@ const vlm = globalVargs.vlm = {
   // but might still complete.
   // As a diagnostic message outputs to stderr where available.
   error (msg, ...rest) {
-    if (this.colors.error) {
-      console.error(this.colors.error(`${this.contextCommand} laments:`, msg), ...rest);
+    if (this.theme.error) {
+      console.error(this.theme.error(`${this.contextCommand} laments:`, msg), ...rest);
     }
     return this;
   },
   // When something is catastrophically wrong and operation terminates immediately.
   // As a diagnostic message outputs to stderr where available.
   exception (error, ...rest) {
-    if (this.colors.exception) {
+    if (this.theme.exception) {
       if (!error) {
         const dummy = {};
         Error.captureStackTrace(dummy);
-        console.error(this.colors.exception(`vlm.exception: no error provided! ${dummy.stack}`));
+        console.error(this.theme.exception(`vlm.exception: no error provided! ${dummy.stack}`));
       } else {
-        console.error(this.colors.exception(`${this.contextCommand} panics: ${error}`), ...rest);
+        console.error(this.theme.exception(`${this.contextCommand} panics: ${error}`), ...rest);
       }
     }
     return this;
@@ -224,14 +227,14 @@ const vlm = globalVargs.vlm = {
   // messages need to go to stderr so that they can be separated from payload output and work
   // correctly with piping in general.
   info (msg, ...rest) {
-    if (this.colors.info) {
-      console.warn(this.colors.info(`${this.contextCommand} informs:`, msg), ...rest);
+    if (this.theme.info) {
+      console.warn(this.theme.info(`${this.contextCommand} informs:`, msg), ...rest);
     }
     return this;
   },
   instruct (msg, ...rest) {
-    if (this.colors.instruct) {
-      console.warn(this.colors.instruct(`${this.contextCommand} instructs:`, msg), ...rest);
+    if (this.theme.instruct) {
+      console.warn(this.theme.instruct(`${this.contextCommand} instructs:`, msg), ...rest);
     }
     return this;
   },
@@ -241,8 +244,8 @@ const vlm = globalVargs.vlm = {
   // Babble is for messages which take only couple lines.
   // As a diagnostic message outputs to stderr where available.
   babble (msg, ...rest) {
-    if (this.colors.babble) {
-      console.warn(this.colors.babble(`${this.contextCommand} babbles:`, msg), ...rest);
+    if (this.theme.babble) {
+      console.warn(this.theme.babble(`${this.contextCommand} babbles:`, msg), ...rest);
     }
     return this;
   },
@@ -250,8 +253,8 @@ const vlm = globalVargs.vlm = {
   // Expound messages can be arbitrarily immense.
   // As a diagnostic message outputs to stderr where available.
   expound (msg, ...rest) {
-    if (this.colors.expound) {
-      console.warn(this.colors.expound(`${this.contextCommand} expounds:`, msg), ...rest);
+    if (this.theme.expound) {
+      console.warn(this.theme.expound(`${this.contextCommand} expounds:`, msg), ...rest);
     }
     return this;
   },
@@ -538,7 +541,7 @@ if (!globalVargv.babbles || vlm.isCompleting) vlm.babble = function noBabble () 
 if (!globalVargv.expounds || vlm.isCompleting) vlm.expound = function noExpound () { return this; };
 
 vlm.ifVerbose(1).babble("phase 1, init:", "determine global options and available pools.",
-    `\n\tcommand: ${vlm.colors.command(globalVargv.command)
+    `\n\tcommand: ${vlm.theme.command(globalVargv.command)
         }, verbosity: ${vlm.verbosity}, interactive: ${vlm.interactive}, echo: ${globalVargv.echo}`,
     "\n\tprocess.argv:", ...process.argv
 ).ifVerbose(2).babble("paths:", "cwd:", process.cwd(),
@@ -634,10 +637,10 @@ async function handler (vargv, customVLM) {
     const forwardRealVLM = fs.realpathSync(pool.vlmPath);
     if (myRealVLM === forwardRealVLM) return undefined;
     vlm.ifVerbose(1)
-        .info(`forwarding to vlm at require('${vlm.colors.path(pool.vlmPath)}')`,
-            "via pool", vlm.colors.path(pool.path),
-            "\n\treal path:", vlm.colors.path(forwardRealVLM), `(current vlm "${
-                  vlm.colors.path(myRealVLM)})"`);
+        .info(`forwarding to vlm at require('${vlm.theme.path(pool.vlmPath)}')`,
+            "via pool", vlm.theme.path(pool.path),
+            "\n\treal path:", vlm.theme.path(forwardRealVLM), `(current vlm "${
+                  vlm.theme.path(myRealVLM)})"`);
     return pool;
   });
   if (forwardPool) {
@@ -724,18 +727,18 @@ async function callValmaWithEcho (commandSelector, args) {
   // (they occasionally have yargs usage arguments after the command selector).
   const selector = commandSelector.split(" ")[0];
   const argv = _processArgs(args);
-  this.echo(">> vlm", vlm.colors.command(selector, ...argv));
+  this.echo(">> vlm", vlm.theme.command(selector, ...argv));
   let ret;
   let echoResult;
   try {
     ret = await invoke.call(this, selector, argv);
-    echoResult = this.colors.blue((JSON.stringify(ret) || "undefined").slice(0, 71));
+    echoResult = this.theme.blue((JSON.stringify(ret) || "undefined").slice(0, 71));
     return ret;
   } catch (error) {
-    echoResult = this.colors.error("exception:", String(error));
+    echoResult = this.theme.error("exception:", String(error));
     throw error;
   } finally {
-    this.echo("<< vlm", `${vlm.colors.command(selector)}:`, echoResult);
+    this.echo("<< vlm", `${vlm.theme.command(selector)}:`, echoResult);
   }
 }
 
@@ -758,7 +761,7 @@ async function invoke (commandSelector, argv) {
   // Phase 3: filter available command pools against the command glob
 
   this.ifVerbose(1)
-      .babble("phase 3, invoke", this.colors.command(commandGlob, ...argv),
+      .babble("phase 3, invoke", this.theme.command(commandGlob, ...argv),
           "\n\tisWildcard:", isWildcardCommand, ", introspect options:", !!introspect);
   this.ifVerbose(2)
       .expound("introspect:", introspect)
@@ -791,7 +794,7 @@ async function invoke (commandSelector, argv) {
   }
 
   if (!isWildcardCommand && !Object.keys(activeCommands).length) {
-    vlm.error(`cannot find command '${vlm.colors.command(commandSelector)}' from active pools:`,
+    vlm.error(`cannot find command '${vlm.theme.command(commandSelector)}' from active pools:`,
         ..._activePools.map(activePool => `\n\t"${vlm.path.join(activePool.path, commandGlob)}"`));
     return -1;
   }
@@ -803,8 +806,8 @@ async function invoke (commandSelector, argv) {
 
   this.ifVerbose(1)
       .babble("phase 4, dispatch:", ...(dryRunCommands ? ["--dry-run"] : []),
-          this.colors.command(commandGlob, ...argv),
-          "\n\tactive commands:", ...Object.keys(activeCommands).map(c => vlm.colors.command(c)));
+          this.theme.command(commandGlob, ...argv),
+          "\n\tactive commands:", ...Object.keys(activeCommands).map(c => vlm.theme.command(c)));
   globalVargs.help();
 
   // Reverse order to have matching global command names execute first (still obeying overrides)
@@ -819,7 +822,7 @@ async function invoke (commandSelector, argv) {
         continue;
       }
       if (!module) {
-        vlm.error(`missing symlink target for`, vlm.colors.command(commandName),
+        vlm.error(`missing symlink target for`, vlm.theme.command(commandName),
             "ignoring command script at", activeCommand.filePath);
         continue;
       }
@@ -830,7 +833,7 @@ async function invoke (commandSelector, argv) {
       const subIntrospect = _determineIntrospection(module, subVargv, commandName);
 
       this.ifVerbose(3)
-          .babble("parsed:", this.colors.command(commandName, ...argv),
+          .babble("parsed:", this.theme.command(commandName, ...argv),
               activeCommand.disabled ? `: disabled, ${activeCommand.disabled}` : ""
       ).ifVerbose(4)
           .expound("\tsubArgv:", subVargv)
@@ -842,7 +845,7 @@ async function invoke (commandSelector, argv) {
             isWildcardCommand, subVargv.matchAll));
       } else if (isWildcardCommand && activeCommand.disabled) {
         this.ifVerbose(1)
-            .info(`Skipping disabled command '${this.colors.command(commandName)}'`,
+            .info(`Skipping disabled command '${this.theme.command(commandName)}'`,
                 `during wildcard invokation (${activeCommand.disabled})`);
         continue;
       } else {
@@ -853,7 +856,7 @@ async function invoke (commandSelector, argv) {
         subVLM.contextVargv = subVargv;
         try {
           if (isWildcardCommand) {
-            this.echo(">>* vlm", this.colors.command(commandName, ...argv));
+            this.echo(">>* vlm", this.theme.command(commandName, ...argv));
           }
           await _tryInteractive(subVargv, activeCommand.subVargs);
           if (subVLM.toolset) {
@@ -865,7 +868,7 @@ async function invoke (commandSelector, argv) {
             let requireResult = true;
             for (let i = 0; requireResult && (i !== (requires || []).length); ++i) {
               const header = `tool${tool ? "Config" : "setConfig"}.requires[${i}] of ${
-                this.colors.command(commandName)}`;
+                this.theme.command(commandName)}`;
               try {
                 this.echo(`>>>? ${header}`, "via",
                     ...(tool ? ["tool", subVLM.colors.package(tool), "of"] : []),
@@ -875,11 +878,11 @@ async function invoke (commandSelector, argv) {
                 requireResult = subVLM.error(`<exception>: ${String(error)}`);
                 throw error;
               } finally {
-                this.echo(`<<<? ${header}:`, this.colors.blue(requireResult));
+                this.echo(`<<<? ${header}:`, this.theme.blue(requireResult));
               }
               if (!requireResult) {
-                const message = `'${this.colors.command(commandName)
-                    }' as it can't satisfy requires[${i}]: ${this.colors.executable(requires[i])}`;
+                const message = `'${this.theme.command(commandName)
+                    }' as it can't satisfy requires[${i}]: ${this.theme.executable(requires[i])}`;
                 if (!isWildcardCommand) {
                   throw new Error(`Failed command ${message}`);
                 }
@@ -905,8 +908,8 @@ async function invoke (commandSelector, argv) {
             let retValue = JSON.stringify(ret[ret.length - 1]);
             if (retValue === undefined) retValue = "undefined";
             if (isWildcardCommand) {
-              this.echo("<<* vlm", `${this.colors.command(commandName)}:`,
-                  this.colors.blue(retValue.slice(0, 20), retValue.length > 20 ? "..." : ""));
+              this.echo("<<* vlm", `${this.theme.command(commandName)}:`,
+                  this.theme.blue(retValue.slice(0, 20), retValue.length > 20 ? "..." : ""));
             }
           }
         }
@@ -1168,7 +1171,7 @@ function listMatchingCommands (commandSelector, matchAll = false) {
   )).filter((v, i, a) => (a.indexOf(v) === i));
   vlm.ifVerbose(1)
       .expound(matchAll ? "listMatchingCommands:" : "listAllMatchingCommands:",
-          vlm.colors.command(commandSelector),
+          vlm.theme.command(commandSelector),
           ...(vlm.verbosity > 1 ? [", minimatcher:", minimatcher] : []),
           "\n\tresults:", ret);
   return ret;
@@ -1202,21 +1205,21 @@ async function execute (args, spawnOptions = {}) {
     _flushPendingConfigWrites(this);
     const _onDone = (code, signal) => {
       if (code || signal) {
-        this.echo("<--", `${this.colors.executable(argv[0])}:`,
-        this.colors.error("<error>:", code || signal));
+        this.echo("<--", `${this.theme.executable(argv[0])}:`,
+        this.theme.error("<error>:", code || signal));
         failure(code || signal);
       } else {
         _refreshActivePools();
         _reloadPackageAndToolsetsConfigs();
-        this.echo("<--", `${this.colors.executable(argv[0])}:`,
-            this.colors.warning("execute return values not implemented yet"));
+        this.echo("<--", `${this.theme.executable(argv[0])}:`,
+            this.theme.warning("execute return values not implemented yet"));
         resolve();
       }
     };
-    this.echo(">--", this.colors.executable(...argv));
+    this.echo(">--", this.theme.executable(...argv));
     if (this.contextVargv && this.contextVargv.dryRun && !spawnOptions.noDryRun) {
       this.echo("      dry-run: skipping execution and returning:",
-      this.colors.blue(spawnOptions.dryRunReturn || 0));
+      this.theme.blue(spawnOptions.dryRunReturn || 0));
       _onDone(spawnOptions.dryRunReturn || 0);
     } else {
       const subProcess = childProcess.spawn(
@@ -1230,12 +1233,12 @@ async function execute (args, spawnOptions = {}) {
       subProcess.on("exit", _onDone);
       subProcess.on("error", _onDone);
       process.on("SIGINT", () => {
-        this.warn("vlm killing:", this.colors.green(...argv));
+        this.warn("vlm killing:", this.theme.green(...argv));
         process.kill(-subProcess.pid, "SIGTERM");
         process.kill(-subProcess.pid, "SIGKILL");
       });
       process.on("SIGTERM", () => {
-        this.warn("vlm killing:", this.colors.green(...argv));
+        this.warn("vlm killing:", this.theme.green(...argv));
         process.kill(-subProcess.pid, "SIGTERM");
         process.kill(-subProcess.pid, "SIGKILL");
       });

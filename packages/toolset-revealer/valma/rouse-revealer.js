@@ -44,16 +44,16 @@ exports.handler = async function handler (yargv) {
   const contentBase = yargv.contentBase;
   if (!vlm.shell.test("-d", contentBase)) {
     vlm.info("Creating and populating an initially missing content base directory",
-        vlm.colors.path(contentBase), `(for this first time only) from ${
-        vlm.colors.path(String(yargv.contentSource))}`);
+        vlm.theme.path(contentBase), `(for this first time only) from ${
+        vlm.theme.path(String(yargv.contentSource))}`);
     vlm.shell.mkdir("-p", contentBase);
     (yargv.contentSource || []).forEach(source =>
         vlm.shell.cp("-R", vlm.path.join(source, "*"), contentBase));
   }
 
-  vlm.info(`${vlm.colors.bold("Rousing revealer")} using ${
-      vlm.colors.executable("webpack-dev-server")} with revelation content base:`,
-          vlm.colors.path(contentBase));
+  vlm.info(`${vlm.theme.bold("Rousing revealer")} using ${
+      vlm.theme.executable("webpack-dev-server")} with revelation content base:`,
+          vlm.theme.path(contentBase));
   return vlm.execute([
     "webpack-dev-server",
     yargv.inline && "--inline",

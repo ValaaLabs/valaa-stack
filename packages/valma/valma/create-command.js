@@ -101,11 +101,11 @@ exports.handler = async (yargv) => {
         if ((typeof resolvedPath !== "string") || !vlm.shell.test("-f", resolvedPath)) {
           throw new Error(`Could not find command '${command}' source file for importing`);
         }
-        vlm.info("Importing existing script source:", vlm.colors.path(resolvedPath));
+        vlm.info("Importing existing script source:", vlm.theme.path(resolvedPath));
         vlm.shell.cp(resolvedPath, scriptPath);
       }
     } else {
-      vlm.warn(`Not overwriting already existing script:`, vlm.colors.path(scriptPath));
+      vlm.warn(`Not overwriting already existing script:`, vlm.theme.path(scriptPath));
     }
     const symlinkPath = vlm.path.join("valma.bin", commandExportName);
     if (!local) {
@@ -117,22 +117,22 @@ exports.handler = async (yargv) => {
       verb = "now locally valma.bin/ symlinks";
       break;
     } else {
-      vlm.warn(`Cannot create local symlink at '${vlm.colors.path(symlinkPath)
+      vlm.warn(`Cannot create local symlink at '${vlm.theme.path(symlinkPath)
           }' which already exists`);
       verb = "already symlinks";
       break;
     }
   }
-  const message = `This repository ${vlm.colors.bold(verb)} valma command '${
-      vlm.colors.command(command)}'.`;
+  const message = `This repository ${vlm.theme.bold(verb)} valma command '${
+      vlm.theme.command(command)}'.`;
   if (verb === "already exports") {
     vlm.warn(message);
     vlm.instruct("You can edit the existing command script at:",
-        vlm.colors.path(vlm.packageConfig.bin[commandExportName]));
+        vlm.theme.path(vlm.packageConfig.bin[commandExportName]));
   } else {
     vlm.info(message);
     vlm.instruct(`You can edit the command ${yargv.skeleton ? "skeleton" : "template"} at:`,
-        vlm.colors.path(scriptPath));
+        vlm.theme.path(scriptPath));
   }
   return { local, verb, [command]: scriptPath };
 };
@@ -196,8 +196,8 @@ exports.handler = ${yargv.handler || components.handler};
   // Example template which displays the command name itself and package name where it is ran
   // Only enabled inside package
   const vlm = yargv.vlm;
-  vlm.info(vlm.colors[yargv.color](\`This is '\${vlm.colors.command(command)}' running inside '\${
-      vlm.colors.package(yargv.name)}'\`));
+  vlm.info(vlm.theme[yargv.color](\`This is '\${vlm.theme.command(command)}' running inside '\${
+      vlm.theme.package(yargv.name)}'\`));
 }`,
     };
   }

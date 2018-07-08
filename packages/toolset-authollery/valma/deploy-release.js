@@ -31,12 +31,12 @@ exports.handler = async (yargv) => {
 
   if (!vlm.shell.test("-d", releasePath)) {
     throw new Error(`deploy-release: cannot find a release build for version '${
-        vlm.colors.version(packageConfig.version)}' version in "${
-          vlm.colors.path(releasePath)}".`);
+        vlm.theme.version(packageConfig.version)}' version in "${
+          vlm.theme.path(releasePath)}".`);
   }
 
-  vlm.info(`Deploying ${vlm.colors.package(packageConfig.name)}@${
-      vlm.colors.version(packageConfig.version)}`, "from", vlm.colors.path(releasePath));
+  vlm.info(`Deploying ${vlm.theme.package(packageConfig.name)}@${
+      vlm.theme.version(packageConfig.version)}`, "from", vlm.theme.path(releasePath));
 
   vlm.releasePath = yargv.source;
 

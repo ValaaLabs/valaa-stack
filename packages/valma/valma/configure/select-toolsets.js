@@ -60,20 +60,20 @@ exports.handler = async (yargv) => {
       .filter(name => (!newToolsets.includes(name) && !toolsetsConfig[name].inUse));
   // TODO: add confirmation for configurations that are about to be eliminated with null
   if (stowToolsets.length) {
-    vlm.info(`Stowing toolsets:`, vlm.colors.package(...stowToolsets));
+    vlm.info(`Stowing toolsets:`, vlm.theme.package(...stowToolsets));
     stowToolsets.forEach(name => { toolsets[name] = { inUse: false }; });
     ret.stowed = stowToolsets;
   }
   const grabToolsets = newToolsets
       .filter(name => (toolsetsConfig[name] || { inUse: true }).inUse);
   if (grabToolsets.length) {
-    vlm.info(`Grabbing toolsets:`, vlm.colors.package(...grabToolsets));
+    vlm.info(`Grabbing toolsets:`, vlm.theme.package(...grabToolsets));
     const installAsDevDeps = grabToolsets
         .filter(toolsetName => !vlm.getPackageConfig("devDependencies", toolsetName)
             && !vlm.getPackageConfig("dependencies", toolsetName));
     if (installAsDevDeps.length) {
       vlm.info(`Installing toolsets as direct devDependencies:`,
-          vlm.colors.package(...installAsDevDeps));
+          vlm.theme.package(...installAsDevDeps));
       await vlm.execute(["yarn add -W --dev", ...installAsDevDeps]);
     }
     grabToolsets.forEach(name => { toolsets[name] = { inUse: true }; });

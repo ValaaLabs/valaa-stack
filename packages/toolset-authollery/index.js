@@ -32,18 +32,18 @@ module.exports = {
     const releasePath = yargv.target;
     if (!vlm.shell.test("-d", releasePath)) {
       throw new Error(`${vlm.contextCommand}: releasePath directory '${
-          vlm.colors.path(releasePath)}' missing`);
+          vlm.theme.path(releasePath)}' missing`);
     }
     const toolsetConfig = vlm.getToolsetConfig(toolsetName);
     if (!toolsetConfig) return {};
     if (desiredVersionHash && (toolsetConfig.deployedVersionHash === desiredVersionHash)) {
-      logger.info(`${vlm.colors.bold(`Skipping the ${toolsetDescription} release build`)
-          } of already deployed version:`, vlm.colors.version(desiredVersionHash));
+      logger.info(`${vlm.theme.bold(`Skipping the ${toolsetDescription} release build`)
+          } of already deployed version:`, vlm.theme.version(desiredVersionHash));
       return {};
     }
     const simpleToolsetName = toolsetName.replace(/\//g, "_");
     const toolsetReleasePath = vlm.path.join(releasePath, simpleToolsetName);
-    logger.info(`Building ${toolsetDescription} release in`, vlm.colors.path(toolsetReleasePath));
+    logger.info(`Building ${toolsetDescription} release in`, vlm.theme.path(toolsetReleasePath));
     vlm.shell.rm("-rf", toolsetReleasePath);
     vlm.shell.mkdir("-p", toolsetReleasePath);
     vlm.toolset = toolsetName;
@@ -57,15 +57,15 @@ module.exports = {
     const toolConfig = vlm.getToolConfig(toolsetName, toolName);
     if (!toolConfig) return {};
     if (desiredVersionHash && (toolConfig.deployedVersionHash === desiredVersionHash)) {
-      logger.info(`${vlm.colors.bold(`Skipping the ${toolDescription} release build`)
-          } of already deployed version within toolset ${vlm.colors.package(toolsetName)}:`,
-          vlm.colors.version(desiredVersionHash));
+      logger.info(`${vlm.theme.bold(`Skipping the ${toolDescription} release build`)
+          } of already deployed version within toolset ${vlm.theme.package(toolsetName)}:`,
+          vlm.theme.version(desiredVersionHash));
       return {};
     }
     const simpleToolsetName = toolsetName.replace(/\//g, "_");
     const simpleToolName = toolName.replace(/\//g, "_");
     const toolReleasePath = vlm.path.join(yargv.target, simpleToolsetName, simpleToolName);
-    logger.info(`Building ${toolDescription} release in '${vlm.colors.path(toolReleasePath)}'`);
+    logger.info(`Building ${toolDescription} release in '${vlm.theme.path(toolReleasePath)}'`);
     vlm.shell.rm("-rf", toolReleasePath);
     vlm.shell.mkdir("-p", toolReleasePath);
     return { toolConfig, toolReleasePath };
@@ -78,21 +78,21 @@ module.exports = {
     const toolsetConfig = vlm.getToolsetConfig(toolsetName);
     if (!toolsetConfig) {
       throw new Error(`${vlm.contextCommand}: toolsets.json:['${
-          vlm.colors.package(toolsetName)}'] missing`);
+          vlm.theme.package(toolsetName)}'] missing`);
     }
     if (!vlm.shell.test("-d", releasePath)) {
       throw new Error(`${vlm.contextCommand}: releasePath '${
-          vlm.colors.path(releasePath)}' missing`);
+          vlm.theme.path(releasePath)}' missing`);
     }
     const toolsetReleasePath = vlm.path.join(releasePath, toolsetName);
     if (!vlm.shell.test("-d", toolsetReleasePath)) {
       logger.ifVerbose(1)
           .info(`skipping ${toolsetDescription} deploy: no release at '${
-              vlm.colors.path(toolsetReleasePath)}'`);
+              vlm.theme.path(toolsetReleasePath)}'`);
       return {};
     }
     logger.info(`deploying ${toolsetDescription} release from '${
-        vlm.colors.path(toolsetReleasePath)}'`);
+        vlm.theme.path(toolsetReleasePath)}'`);
     vlm.toolset = toolsetName;
     return { toolsetConfig, toolsetReleasePath };
   },
@@ -106,10 +106,10 @@ module.exports = {
     if (!vlm.shell.test("-d", toolReleasePath)) {
       logger.ifVerbose(1)
           .info(`skipping ${toolDescription} deploy: no release at '${
-              vlm.colors.path(toolReleasePath)}'`);
+              vlm.theme.path(toolReleasePath)}'`);
       return {};
     }
-    logger.info(`deploying ${toolDescription} release from '${vlm.colors.path(toolReleasePath)}'`);
+    logger.info(`deploying ${toolDescription} release from '${vlm.theme.path(toolReleasePath)}'`);
     return { toolConfig, toolReleasePath };
   },
 };

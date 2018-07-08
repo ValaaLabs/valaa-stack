@@ -46,10 +46,10 @@ exports.handler = async (yargv) => {
       if (answer.choice === "help") {
         vlm.speak();
         vlm.info("repository initialization",
-`This phase uses '${vlm.colors.executable("yarn init")}' to initialize package.json via a series of
+`This phase uses '${vlm.theme.executable("yarn init")}' to initialize package.json via a series of
 interactive questions.
 Valaa repositories use yarn extensively for version, dependency and
-script management; ${vlm.colors.path("package.json")} is the central package configuration
+script management; ${vlm.theme.path("package.json")} is the central package configuration
 file for yarn (and for npm, for which yarn is an analogue).
 `);
         continue;
@@ -57,7 +57,7 @@ file for yarn (and for npm, for which yarn is an analogue).
       await vlm.execute("yarn init");
       return true;
     }
-    vlm.info(`Skipped '${vlm.colors.executable("yarn init")}'.`, ...tellIfNoReconfigure);
+    vlm.info(`Skipped '${vlm.theme.executable("yarn init")}'.`, ...tellIfNoReconfigure);
     return true;
   }
 
@@ -93,7 +93,7 @@ file for yarn (and for npm, for which yarn is an analogue).
 
   async function _addInitialValmaDevDependencies () {
     const yarnAdd = "yarn add -W --dev";
-    const coloredYarnAdd = vlm.colors.executable(yarnAdd);
+    const coloredYarnAdd = vlm.theme.executable(yarnAdd);
     let wasError;
     const wasInitial = !vlm.packageConfig.devDependencies;
     while (yargv.reconfigure || wasInitial) {
@@ -103,7 +103,7 @@ file for yarn (and for npm, for which yarn is an analogue).
       let answer = await vlm.inquire([{
         message: wasError
             ? "Retry adding workshops (or direct toolsets) as devDependencies?"
-            : `${vlm.colors.executable("yarn add")} ${
+            : `${vlm.theme.executable("yarn add")} ${
                 vlm.packageConfig.devDependencies ? "more" : "initial"
               } workshops (or direct toolsets) as devDependencies?`,
         type: "list", name: "choice", default: choices[0], choices,
@@ -132,7 +132,7 @@ for the listings in following phases.
         } catch (error) {
           vlm.speak();
           vlm.exception(`An exception caught during executable '${
-              vlm.colors.executable(yarnAdd, answer.devDependencies)}':`, error);
+              vlm.theme.executable(yarnAdd, answer.devDependencies)}':`, error);
           wasError = true;
         }
       }
@@ -147,7 +147,7 @@ for the listings in following phases.
           .concat(["help", "quit"]);
       const answer = await vlm.inquire([{
         message: `${vlm.getToolsetsConfig() ? "Reconfigure" : "Configure"} repository with '${
-            vlm.colors.command("vlm configure")}'?`,
+            vlm.theme.command("vlm configure")}'?`,
         type: "list", name: "choice", default: choices[0], choices,
       }]);
       if (answer.choice === "Skip") break;

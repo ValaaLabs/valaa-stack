@@ -94,19 +94,19 @@ exports.handler = async (yargv) => {
   vlm.shell.mkdir("-p", publishDist);
   const targetListing = vlm.shell.ls("-lA", publishDist);
   if (!yargv.overwrite && targetListing.length) {
-    vlm.warn(`Target directory '${vlm.colors.path(publishDist)}' is not empty:`,
+    vlm.warn(`Target directory '${vlm.theme.path(publishDist)}' is not empty:`,
         targetListing.filter(f => f).map(f => f.name));
   }
 
   const requestGlobs = (yargv.packageNameGlobs || []).length ? yargv.packageNameGlobs : ["**/*"];
   let updatedPackageNames;
-  vlm.info("Selecting packages matching:", vlm.colors.argument(...requestGlobs));
+  vlm.info("Selecting packages matching:", vlm.theme.argument(...requestGlobs));
   if (!yargv.allowUnchanged) {
     vlm.info("Limiting the package selection to only the updated packages:");
     const updatedPackages = vlm.shell.exec(`npx -c "lerna updated --json --loglevel=silent"`);
     if (updatedPackages.code) {
       vlm.warn("No updated packages found, exiting",
-          `(or lerna error with code ${vlm.colors.warn(updatedPackages.code)}`);
+          `(or lerna error with code ${vlm.theme.warn(updatedPackages.code)}`);
       return;
     }
     updatedPackageNames = JSON.parse(updatedPackages).map(p => p.name);
@@ -130,7 +130,7 @@ exports.handler = async (yargv) => {
       ret.exists = true;
     } else if (yargv.onlyPending) return undefined;
     if (packageConfig.private) {
-      vlm.warn(`Skipping private package '${vlm.colors.package(name)}'`);
+      vlm.warn(`Skipping private package '${vlm.theme.package(name)}'`);
       ret.failure = "private package";
     }
     return ret;
@@ -141,11 +141,11 @@ exports.handler = async (yargv) => {
         entry => entry && !orderedSelections.includes(entry) && vlm.minimatch(entry.name, glob))));
     selections = orderedSelections;
   }
-  vlm.info(`Selected ${vlm.colors.package(selections.length, "packages")} for assembly:\n\t`,
-      ...selections.map(({ name }) => vlm.colors.package(name)));
+  vlm.info(`Selected ${vlm.theme.package(selections.length, "packages")} for assembly:\n\t`,
+      ...selections.map(({ name }) => vlm.theme.package(name)));
 
   if (!yargv.assemble) {
-    vlm.info(`${vlm.colors.argument("--no-assemble")} requested`,
+    vlm.info(`${vlm.theme.argument("--no-assemble")} requested`,
         "skipping the assembly of", selections.length, "packages");
   } else {
     let defaultNPMIgnore = vlm.path.resolve(".npmignore");
@@ -155,14 +155,14 @@ exports.handler = async (yargv) => {
       const { name, sourceDirectory, targetDirectory, exists, failure } = selection;
       if (failure) return;
       if (exists && !yargv.overwrite) {
-        vlm.error(`Cannot assemble package '${vlm.colors.package(name)}'`,
-            `an existing assembly exists at '${vlm.colors.path(targetDirectory)
+        vlm.error(`Cannot assemble package '${vlm.theme.package(name)}'`,
+            `an existing assembly exists at '${vlm.theme.path(targetDirectory)
             }' and no --overwrite is specified)`);
         selection.failure = "pending assembly found";
         return;
       }
 
-      vlm.info(`Assembling package '${vlm.colors.package(name)}'`, "into", targetDirectory);
+      vlm.info(`Assembling package '${vlm.theme.package(name)}'`, "into", targetDirectory);
       if (yargv.overwrite) vlm.shell.rm("-rf", targetDirectory);
       // TODO(iridian): The whole assembly process should maybe delegated to one of the gazillion
       // existing package dist solutions.
@@ -177,7 +177,7 @@ exports.handler = async (yargv) => {
                 targetDirectory}`);
         if (!String(result).match(/Successfully compiled/)) {
           selection.failure = "babel transpilation not successful";
-          vlm.error(`${selection.failure} for ${vlm.colors.package(name)}`);
+          vlm.error(`${selection.failure} for ${vlm.theme.package(name)}`);
           return;
         }
       }
@@ -188,12 +188,12 @@ exports.handler = async (yargv) => {
   }
 
   if (!yargv.versioning) {
-    vlm.info(`${vlm.colors.argument("--no-versioning")} requested:`,
-        `no version update, no git commit, no git tag, no ${vlm.colors.path("package.json")
+    vlm.info(`${vlm.theme.argument("--no-versioning")} requested:`,
+        `no version update, no git commit, no git tag, no ${vlm.theme.path("package.json")
         } finalizer copying`);
   } else {
     vlm.info("Updating version, making git commit, creating a lerna git tag and",
-        `updating target ${vlm.colors.path("package.json")}'s`);
+        `updating target ${vlm.theme.path("package.json")}'s`);
     await vlm.execute([
       "lerna publish", {
         "skip-npm": true, yes: true, loglevel: "silent",
@@ -203,12 +203,12 @@ exports.handler = async (yargv) => {
       },
     ]);
     if (!yargv.assemble && (!yargv.overwrite || !yargv.onlyPending)) {
-      vlm.info(`Skipping ${vlm.colors.path("package.json")} version updates`, "as",
-          vlm.colors.argument(yargv.assemble ? "--no-assemble"
+      vlm.info(`Skipping ${vlm.theme.path("package.json")} version updates`, "as",
+          vlm.theme.argument(yargv.assemble ? "--no-assemble"
               : !yargv.overwrite ? "--no-overwrite" : "--no-only-pending"),
           "was specified");
     } else {
-      vlm.info(`Updating version-updated ${vlm.colors.path("package.json")} to assembled packages`);
+      vlm.info(`Updating version-updated ${vlm.theme.path("package.json")} to assembled packages`);
       selections.forEach(({ name, sourcePackageJSONPath, targetDirectory, assembled }) => {
         if (!sourcePackageJSONPath) return;
         if (assembled || (!yargv.assemble && yargv.overwrite && yargv.onlyPending)) {
@@ -216,9 +216,9 @@ exports.handler = async (yargv) => {
           return;
         }
         if (!yargv.overwrite || !yargv.onlyPending || yargv.assemble) {
-          vlm.warn(`Skipped copying updated '${vlm.colors.package(name)
-                  }' ${vlm.colors.path("package.json")} to non-assembled package as`,
-              vlm.colors.argument(...(yargv.assemble ? ["--assemble"] : []),
+          vlm.warn(`Skipped copying updated '${vlm.theme.package(name)
+                  }' ${vlm.theme.path("package.json")} to non-assembled package as`,
+              vlm.theme.argument(...(yargv.assemble ? ["--assemble"] : []),
                   ...(!yargv.overwrite ? ["--no-overwrite"] : []),
                   ...(!yargv.onlyPending ? ["--no-only-pending"] : [])),
               "was specified");
@@ -230,12 +230,12 @@ exports.handler = async (yargv) => {
   if (yargv.postExecute) {
     selections.forEach(({ name, targetDirectory, assembled }) => {
       if (!assembled && yargv.assemble) {
-        vlm.info(`Skipping post-execute '${vlm.colors.executable(yargv.postExecute)}' for '${
-          vlm.colors.package(name)}'`,
+        vlm.info(`Skipping post-execute '${vlm.theme.executable(yargv.postExecute)}' for '${
+          vlm.theme.package(name)}'`,
           `assembly was requested but not successful for this package`);
       } else {
-        vlm.info(`${vlm.colors.argument("--post-execute")} requested:`,
-            `${vlm.colors.path(targetDirectory)}$`, vlm.colors.executable(yargv.postExecute));
+        vlm.info(`${vlm.theme.argument("--post-execute")} requested:`,
+            `${vlm.theme.path(targetDirectory)}$`, vlm.theme.executable(yargv.postExecute));
         vlm.shell.exec(`cd ${targetDirectory} && ${yargv.postExecute}`);
       }
     });
@@ -246,25 +246,25 @@ exports.handler = async (yargv) => {
   selections.forEach(({ name, packageConfig, packagePath, failure }) => {
     const newConfig = JSON.parse(vlm.shell.head({ "-n": 1000000 }, packagePath));
     if (!failure) ++successes;
-    const header = `\t${vlm.colors.package(name)}${" ".repeat(align - name.length)}:`;
+    const header = `\t${vlm.theme.package(name)}${" ".repeat(align - name.length)}:`;
     const conclusion = failure
-        ? vlm.colors.red(`failed: ${failure}`)
-        : vlm.colors.green(
+        ? vlm.theme.red(`failed: ${failure}`)
+        : vlm.theme.green(
             newConfig.version === packageConfig.version
-                ? `success: ${vlm.colors.warning(`version kept at ${
-                    vlm.colors.version(vlm.colors.bold(packageConfig.version))}`)}`
+                ? `success: ${vlm.theme.warning(`version kept at ${
+                    vlm.theme.version(vlm.theme.bold(packageConfig.version))}`)}`
             : yargv.versioning
                 ? `success: version updated to ${
-                    vlm.colors.version(vlm.colors.bold(newConfig.version))} from ${
-                    vlm.colors.version(packageConfig.version)}`
-                : `success: ${vlm.colors.warning(`unexpected version update to ${
-                    vlm.colors.version(vlm.colors.bold(newConfig.version))} from ${
-                    vlm.colors.version(packageConfig.version)}`)}`);
+                    vlm.theme.version(vlm.theme.bold(newConfig.version))} from ${
+                    vlm.theme.version(packageConfig.version)}`
+                : `success: ${vlm.theme.warning(`unexpected version update to ${
+                    vlm.theme.version(vlm.theme.bold(newConfig.version))} from ${
+                    vlm.theme.version(packageConfig.version)}`)}`);
     if (failure) vlm.error(header, conclusion);
     else vlm.info(header, conclusion);
   });
   if (successes === selections.length) {
-    vlm.info(vlm.colors.green(`Successfully assembled all packages`), "out of", selections.length,
+    vlm.info(vlm.theme.green(`Successfully assembled all packages`), "out of", selections.length,
         "selected packages");
   } else {
     vlm.warn(`Assembled only ${successes} out of ${selections.length} selected packages`);
