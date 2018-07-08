@@ -121,7 +121,7 @@ const vlm = globalVargs.vlm = {
   // minimatch namespace of the glob matching tools
   // See https://github.com/isaacs/minimatch
   cardinal,
-
+  cardinalDefault: { theme: cardinal.tomorrowNight, linenos: true },
 
   // Syntactic sugar
 
@@ -157,6 +157,11 @@ const vlm = globalVargs.vlm = {
   // Alias for console.log for unprocessed payload output directly to stdout
   log (...rest) {
     console.log(...rest);
+    return this;
+  },
+  result (...rest) {
+    const renderer = _renderers[globalVargv.results || ""];
+    if (renderer) console.log(...rest.map(renderer));
     return this;
   },
   // Alias for console.warn for unprocessed diagnostics output directly to stderr
@@ -261,39 +266,67 @@ const vlm = globalVargs.vlm = {
 };
 
 colors._setTheme = function _setTheme (obj) {
-  const createDecorator = (rule) => {
-    if (rule === undefined) return (...rest) => rest.map(a => String(a)).join("");
-    if (typeof rule === "string") return createDecorator(this[rule]);
+  this.decorate = (rule) => {
+    if ((rule === undefined) || (rule === null)) return (...rest) => rest;
+    if (typeof rule === "string") return this.decorate(this[rule]);
     if (typeof rule === "function") return (...rest) => rule.apply(this, rest);
     if (Array.isArray(rule)) {
-      return rule.map(createDecorator).reduceRight(
+      return rule.map(this.decorate).reduceRight(
           (next, cur) => (...rest) => next(...[].concat(cur(...rest))));
     }
-    const decorateFirst = createDecorator(rule.first);
-    const decorateRest = createDecorator(rule.rest);
-    return (first, ...rest) => (!rest.length
-        ? decorateFirst(first)
-        : `${decorateFirst(first)} ${decorateRest(...rest)}`);
+    return (...rest) => Object.keys(rule).reduce(
+        (subRest, ruleKey) => this.decorate(ruleKey)(...[].concat(subRest), rule[ruleKey]),
+        rest);
   };
-  Object.keys(obj).forEach(name => { this[name] = createDecorator(obj[name]); });
+  Object.keys(obj).forEach(name => {
+    const rule = obj[name];
+    this[name] = (typeof rule === "function")
+        ? rule
+        : (...rest) => this.decorate([rule, "join"])(...rest);
+  });
 };
 
 const themes = {
   default: {
+    join: (...rest) => [].concat(...rest).join(" "),
+    prefix: (...rest) => [].concat(rest[(rest.length || 1) - 1] || [], ...rest.slice(1)),
+    suffix: (...rest) => rest,
+    first (...rest) {
+      return [].concat(...rest.slice(0, -1)
+          .map((e, index) => ((index > 0) ? e : this.decorate(rest[rest.length - 1])(e))));
+    },
+    nonfirst (...rest) {
+      const mappedRest = this.decorate(rest[rest.length - 1])(...rest.slice(1, -1));
+      return ((rest.length <= 1) ? []
+          : [rest[0]].concat(mappedRest || (typeof mappedRest === "number") ? mappedRest : []));
+    },
     newlinesplit: (...rest) => [].concat(...[].concat(...rest).map(
         entry => [].concat(...String(entry).split("\n").map(line => [line, "\n"])))),
     flatsplit: (...rest) => [].concat(...[].concat(...rest).map(entry => String(entry).split(" "))),
+    default: (...rest) => ((rest.length <= 1) ? rest
+        : (e => (e.length <= 1 ? e : e.slice(0, -1)))(
+            rest.filter(e => (e || (typeof e === "number"))))),
+    cardinal (...rest) {
+      if (!rest.length) return [];
+      if (rest.length === 1) return cardinal.highlight(rest[0], vlm.cardinalDefault);
+      return rest.slice(0, -1).map(s =>
+          cardinal.highlight(s, rest[rest.length - 1] || vlm.cardinalDefault));
+    },
+    heading: (...rest) => ((typeof rest[rest.length - 1] !== "number") ? rest
+        : ["#".repeat(Math.max(1, Math.min(6, rest[rest.length - 1]))), ...rest.slice(0, -1)]
+            .join(" ")),
+
     echo: "dim",
     warning: ["bold", "yellow"],
     error: ["bold", "red"],
-    exception: ["newlinesplit", { first: "error", rest: "warning" }],
+    exception: ["newlinesplit", { first: "error", nonfirst: "warning" }],
     info: "cyan",
     instruct: ["bold", "cyan"],
     babble: "cyan",
     expound: "cyan",
     argument: ["blue", "bold"],
-    executable: ["flatsplit", { first: ["magenta"], rest: "argument" }],
-    command: ["flatsplit", { first: ["magenta", "bold"], rest: "argument" }],
+    executable: ["flatsplit", { first: ["magenta"], nonfirst: "argument" }],
+    command: ["flatsplit", { first: ["magenta", "bold"], nonfirst: "argument" }],
     overridden: ["strikethrough", "command"],
     package: ["dim", "bold", "yellow"],
     path: ["underline"],
@@ -307,6 +340,13 @@ themes.colorless = Object.keys(themes.default).reduce((theme, key) => {
   theme[key] = function colorless (...rest) { return rest.map(k => String(k)).join(" "); };
   return theme;
 }, {});
+
+const _renderers = {
+  omit: null,
+  json: (value) => JSON.stringify(value, null, 2),
+  "json-compact": (value) => JSON.stringify(value),
+  markdown: (value) => _toGFMarkdown(value, vlm.theme),
+};
 
 
 module.exports = {
@@ -371,10 +411,10 @@ characters to be equal although '/' is recommended anywhere possible.
           type: "boolean", global: false, default: true,
           description: "Show expound messages",
         },
-        "result-out": {
+        results: {
           group: "Valma root options:",
-          type: "string", global: false,
-          description: "Target vlm[resultOut] to output final result",
+          type: "string", global: false, default: "markdown", choices: Object.keys(_renderers),
+          description: "Show result value in output",
         },
         interactive: {
           group: "Valma root options:",
@@ -502,12 +542,12 @@ function _addUniversalOptions (vargs_,
           description: "Show the command symlink-(R)esolved path column",
         },
         I: {
-          alias: theme.argument("output-introduction"),
+          alias: theme.argument("show-introduction"),
           group: "Universal options:", type: "boolean", global, hidden,
           description: "Output the full (I)ntroduction of the command",
         },
         S: {
-          alias: theme.argument("output-source"),
+          alias: theme.argument("show-source"),
           group: "Universal options:", type: "boolean", global, hidden,
           description: "Output the script (S)ource code of the command",
         },
@@ -585,7 +625,7 @@ module.exports
     .handler(globalVargv)
     .then(result => {
       if (result !== undefined) {
-        if (globalVargv.resultOut && (result !== null)) vlm[globalVargv.resultOut](result);
+        vlm.result(result);
         process.exit(0);
       }
     })
@@ -788,7 +828,7 @@ async function invoke (commandSelector, argv) {
           "\n\t}");
 
   if (introspect) {
-    const ret = _outputIntrospection(globalVargs, introspect, activeCommands, commandGlob,
+    const ret = _introspectCommands(globalVargs, introspect, activeCommands, commandGlob,
         isWildcardCommand, contextVargv.matchAll);
     return isWildcardCommand ? ret : ret[0];
   }
@@ -840,7 +880,7 @@ async function invoke (commandSelector, argv) {
           .expound("\tsubIntrospect:", subIntrospect);
 
       if (subIntrospect) {
-        ret = ret.concat(_outputIntrospection(activeCommand.subVargs,
+        ret = ret.concat(_introspectCommands(activeCommand.subVargs,
             subIntrospect, { [commandName]: activeCommand }, commandSelector,
             isWildcardCommand, subVargv.matchAll));
       } else if (isWildcardCommand && activeCommand.disabled) {
@@ -917,7 +957,7 @@ async function invoke (commandSelector, argv) {
     }
   }
   if (dryRunCommands) {
-    _outputIntrospection(globalVargs, _determineIntrospection(module, contextVargv),
+    _introspectCommands(globalVargs, _determineIntrospection(module, contextVargv),
         dryRunCommands, commandSelector, isWildcardCommand, contextVargv.matchAll);
   }
   return isWildcardCommand ? ret : ret[0];
@@ -983,18 +1023,6 @@ function _valmaCommandFromPath (pathname) {
 function _underToSlash (text = "") {
   if (typeof text !== "string") throw new Error(`expected string, got: ${JSON.stringify(text)}`);
   return text.replace(/_/g, "/");
-}
-
-function _outputCommandInfo (elements) {
-  console.log(...elements.map(entry => (!Array.isArray(entry)
-      ? entry
-      : _rightPad(...entry))));
-}
-
-function _rightPad (text, width = 0, style = (i => i)) {
-  const text_ = (typeof text === "string") ? text : `<${typeof text}>`;
-  const pad = width - text_.length;
-  return `${style(text_)}${" ".repeat(pad < 0 ? 0 : pad)}`;
 }
 
 function _locateDependedPools (initialPoolBase, poolDirectories) {
@@ -1278,17 +1306,14 @@ function _processArgs (args) {
 }
 
 function _determineIntrospection (module, vargv, selector, isWildcard, invokeEntry) {
-  const ret = {
-    module, show: {},
-    outputSource: vargv.outputSource, outputIntroduction: vargv.outputIntroduction,
-  };
+  const ret = { module, show: {} };
   Object.keys(vargv).forEach(key => {
     if (vargv[key] && (key.slice(0, 5) === "show-")) ret.show[key.slice(5)] = vargv[key];
   });
   if ((globalVargv.help || vargv.help) && (!selector || !invokeEntry)) {
     return { module, builtinHelp: true };
   }
-  ret.entryIntro = Object.keys(ret.show).length || vargv.outputIntroduction || vargv.outputSource;
+  ret.entryIntro = Object.keys(ret.show).length;
 
   if (selector && !ret.entryIntro) return undefined;
   if (!selector && ret.entryIntro && !vargv.dryRun && !vargv.matchAll) {
@@ -1298,8 +1323,8 @@ function _determineIntrospection (module, vargv, selector, isWildcard, invokeEnt
       name: "vlm", module, filePath: __filename, pool: ret.identityPool,
     };
   }
-  if (!selector && !ret.entryIntro && !vargv.dryRun) { // show default listing
-    ret.defaultUsage = true;
+  if (!selector && !ret.entryIntro) { // show default listing
+    if (!vargv.dryRun) ret.defaultUsage = true;
     ret.show.usage = true;
     ret.show.description = true;
   }
@@ -1311,7 +1336,7 @@ function _determineIntrospection (module, vargv, selector, isWildcard, invokeEnt
   return ret;
 }
 
-function _outputIntrospection (vargs_, introspect, commands_, commandGlob, isWildcard_, matchAll) {
+function _introspectCommands (vargs_, introspect, commands_, commandGlob, isWildcard_, matchAll) {
   const theme = themes.default;
   if (introspect.builtinHelp) {
     vargs_.vlm = vlm;
@@ -1319,118 +1344,300 @@ function _outputIntrospection (vargs_, introspect, commands_, commandGlob, isWil
     vargs_.showHelp("log");
     return [];
   }
-  let introedCommands = commands_;
   if (introspect.identityPool) {
-    introedCommands = introspect.identityPool.commands;
-    return [_outputInfos(introspect.identityPool)];
+    const ret = _introspectPool(
+        introspect.identityPool, false, false, introspect.identityPool.commands);
+    if ((ret[""] || []).length === 1) ret[""][0].hide = true;
+    return ret;
   }
+  const chapterHeaders = { name: "pools", style: "bold" };
+  const poolHeaders = [];
+  const chapters = { "": [chapterHeaders], pools: { "": poolHeaders }, };
   if (introspect.defaultUsage) {
+    chapters[""][0].text = `${matchAll ? "All known" : "Visible"} commands by pool:`;
     if (!matchAll) {
-      vlm.log(theme.bold("# Usage:", introspect.module.command));
-      vlm.log();
+      chapters[""].unshift({
+        name: "usage", style: "bold", text: `Usage: ${introspect.module.command}`
+      });
+      chapters.usage = "";
     }
-    vlm.log(theme.bold(`# ${matchAll ? "All known" : "Available"} commands:`));
   }
-  return [].concat(...[..._activePools].reverse().map(pool =>
-      _outputInfos(pool, isWildcard_, globalVargv.pools)));
+  for (const pool of [..._activePools].reverse()) {
+    const poolHeader = { section: pool.name, style: "bold" };
+    poolHeaders.push(poolHeader);
+    chapters.pools[pool.name] = _introspectPool(pool, isWildcard_, globalVargv.pools, commands_);
+    const isEmpty = !Object.keys(chapters.pools[pool.name]).filter(k => k).length;
+    if (isWildcard_ && (!isEmpty || globalVargv.pools || matchAll)) {
+      poolHeader.stats = pool.stats;
+      poolHeader.text = `${vlm.path.join(pool.name, commandGlob)} ${
+          isEmpty ? "has no shown commands" : "commands:"} (${
+              theme.info(Object.keys(pool.stats || {}).map(
+                  s => `${s}: ${pool.stats[s]}`).join(", "))
+          })`;
+    } else if (isEmpty) {
+      chapters.pools[pool.name][""][0].hide = true;
+    }
+  }
+  return chapters;
 
-  function _outputInfos (pool, isWildcard, showOverridden) {
+  function _introspectPool (pool, isWildcard, showOverridden, introedCommands) {
     const missingFile = "<file_missing>";
     const missingPackage = "<package_missing>";
-    const _isOverridden = (command) => (introedCommands[command.name] || { pool }).pool !== pool;
-    const _overridableCommandStyle = (command) =>
-        (_isOverridden(command) ? theme.overridden : theme.command);
-    const _themeStyle = (styleName) => () => theme[styleName];
-    const column = {
-      name: { header: "command", style: _overridableCommandStyle },
-      usage: { header: "usage", style: _overridableCommandStyle },
-      description: { header: "description" },
-      package: { header: "package", style: _themeStyle("package") },
-      version: { header: "version", style: _themeStyle("version") },
-      pool: { header: "source pool" },
-      file: { header: "script path", style: _themeStyle("path") },
-      resolved: { header: "real file path", style: _themeStyle("path") },
-    };
-    Object.keys(introspect.show).forEach(key => { column[key].width = 1; });
-    function _addToRowData (rowData, name, entry) {
-      if (column[name].width) {
-        rowData[name] = entry;
-        if ((typeof entry === "string") && (entry.length > column[name].width)) {
-          column[name].width = entry.length;
-        }
-      }
-    }
-    const infos = Object.keys(pool.commands)
+    const poolData = { "": [
+      { property: "name", text: "command", style: "command" },
+      { property: "usage", style: "command" },
+      { property: "description", style: { default: missingPackage } },
+      { property: "package", style: "package" },
+      { property: "version", style: [{ default: missingPackage }, "version"] },
+      { property: "pool", text: "source pool" },
+      { property: "file", text: "script path", style: "path" },
+      { property: "resolved", text: "real file path", style: [{ default: missingFile }, "path"] },
+      {
+        property: "introduction", oob: true,
+        elementStyle: isWildcard && { prefix: "\n", suffix: "\n" }
+      },
+      { property: "source", oob: true, elementStyle: "cardinal" },
+    ].filter(c => introspect.show[c.property]), };
+    const trivialKey = Object.keys(introspect.show).length === 1 && Object.keys(introspect.show)[0];
+    Object.keys(pool.commands)
     .sort()
-    .filter(name => pool.commands[name]
-          && !(pool.commands[name].disabled && isWildcard && !matchAll)
-          && !(_isOverridden(pool.commands[name]) && !showOverridden))
-    .map(name => {
+    .forEach(name => {
       const poolCommand = pool.commands[name];
+      if (!poolCommand || !introedCommands[name]
+          || (poolCommand.disabled && isWildcard && !matchAll)) return;
       const info = _commandInfo(poolCommand.filePath, pool.path);
       const module = poolCommand.module
           || (poolCommand.module = info.resolvedPath && require(info.resolvedPath));
       const rowData = { disabled: !!poolCommand.disabled };
-      _addToRowData(rowData, "name", poolCommand.disabled ? `(${name})` : name);
-      _addToRowData(rowData, "usage", (module && module.command) || `${name} ${missingPackage}`);
-      _addToRowData(rowData, "description", (module && module.describe) || missingPackage);
-      _addToRowData(rowData, "package", info.package);
-      _addToRowData(rowData, "version", info.version || missingPackage);
-      _addToRowData(rowData, "pool", info.poolPath);
-      _addToRowData(rowData, "file", info.filePath);
-      _addToRowData(rowData, "resolved", info.resolvedPath || missingFile);
-      return { command: poolCommand, name, module, info, rowData };
-    });
-
-    const isEmpty = !Object.keys(infos).length;
-    if (isWildcard && (!isEmpty || globalVargv.pools || matchAll)) {
-      vlm.log(theme.bold(`## ${vlm.path.join(pool.name, commandGlob)} ${
-        isEmpty ? "has no shown commands" : "commands:"}`),
-        `(${theme.info(Object.keys(pool.stats || {})
-            .map(s => `${s}: ${pool.stats[s]}`).join(", "))
-        })`);
-    }
-    if (isEmpty) return [];
-
-    if (introspect.displayHeaders) {
-      const headerOutput = [].concat(...Object.keys(introspect.show)
-          .map(key => ([_rightPad(column[key].header, column[key].width), "|"])));
-      vlm.log(...headerOutput.slice(0, -1).map(h => (h === "|" ? "|" : theme.bold(h))));
-      vlm.log(...headerOutput.slice(0, -1).map(h => (h === "|" ? "|" : h.replace(/./g, "-"))));
-    }
-    return infos.map(({ command, name, module, info, rowData }) => {
-      const rowOutput = [].concat(...Object.keys(introspect.show).map(key => [
-        "|",
-        [rowData[key], column[key].width, (column[key].style || (() => {}))(command)],
-      ]));
-      if (rowOutput.length > 1) _outputCommandInfo(rowOutput.slice(1));
-      if (introspect.outputIntroduction) {
-        if (!module || !(module.introduction || module.describe)) {
+      if (!module || !module.command) rowData.missing = true;
+      if (poolCommand.disabled) rowData.disabled = true;
+      if ((introedCommands[name] || { pool }).pool !== pool) {
+        if (!showOverridden) return;
+        rowData.overridden = true;
+        rowData[""] = [
+          { name: "name", style: "overridden" }, { name: "usage", style: "overridden" },
+        ];
+      }
+      const _addData = (property, data) => introspect.show[property] && (rowData[property] = data);
+      _addData("name", poolCommand.disabled ? `(${name})` : name);
+      _addData("usage", (module && module.command) || `${name} ${missingPackage}`);
+      _addData("description", (module && module.describe) || missingPackage);
+      _addData("package", info.package);
+      _addData("version", info.version || missingPackage);
+      _addData("pool", info.poolPath);
+      _addData("file", info.filePath);
+      _addData("resolved", info.resolvedPath || missingFile);
+      if (introspect.show.introduction) {
+        rowData.introduction = !module ? null : (module.introduction || module.describe);
+        if (rowData.introduction === null) {
           vlm.warn(`Cannot read command '${name}' script introduction from:`, info.resolvedPath);
-          rowData.Introduction = null;
-        } else {
-          if (rowOutput.length > 1) vlm.log();
-          vlm.log(module.introduction || module.describe);
-          if (rowOutput.length > 1) vlm.log();
-          rowData.Introduction = module.introduction || module.describe;
         }
       }
-      if (introspect.outputSource) {
-        if (!module) {
+      if (introspect.show.source) {
+        rowData.source = !module ? null : String(shell.head({ "-n": 1000000 }, info.resolvedPath));
+        if (rowData.source === null) {
           vlm.warn(`Cannot read command '${name}' script source from:`, info.resolvedPath);
-          rowData.Source = null;
-        } else {
-          rowData.Source = String(shell.head({ "-n": 1000000 }, info.resolvedPath));
-          vlm.log(cardinal.highlight(rowData.Source,
-              { theme: cardinal.tomorrowNight, linenos: true }));
         }
       }
-      if (Object.keys(introspect.show).length === 1) {
-        return rowData[Object.keys(introspect.show)[0]];
-      }
-      return rowData;
+      poolData[name] = trivialKey ? rowData[trivialKey] : rowData;
     });
+    return poolData;
   }
+}
+
+/**
+ * Converts and returns the given value as a Github Formatted Markdown
+ * string.
+ *
+ * Purpose of this tool two-fold: to make it possible to have all
+ * github markdown documents as JSON objects and also to be able to
+ * insert arbitrary tool output JSON values to be part of these
+ * documents with minimal additional formatting code.
+ *
+ * The conversion is then a compromise of two principles:
+ * 1. all non-surprising value structures produce non-surprising and
+ *    intuitively structured and readable markdown string.
+ * 2. any valid GHM output HTML can be produced using a combination of
+ *    surprising value structures and inline entries.
+ *
+ * Tools which are not aware that their JSON output is gfmarkdownified
+ * should not naturally or accidentally produce the surprising values.
+ * An example of a surprising value structure is an array which
+ * otherwise contains objects with only primitive values but the first
+ * entry is an array - _toGFMarkdown uses the array to specify the
+ * columns of a table.
+ * Another example of surprising values are strings containing GFM
+ * notation or HTML: these are /not/ escaped and translate as-is to the
+ * GFM output string.
+ *
+ * Non-surprising production rules:
+ * 1. Strings map as-is, numbers map JSON.stringify, null as "-" and
+ *    undefined as "".
+ * 2. Empty arrays [] and objects {} affect layout but they are removed
+ *    from containing arrays and objects. Empty keys "" are removed.
+ * 3. Innermost array (contains only primitive values) is " "-joined.
+ *    All isolated singular newlines are removed (and rewritten later).
+ * 4. Second and subsequent nesting arrays become numbered lists.
+ *    Note: with production rule 2. lists can be enforced like so:
+ *      numbered list: [[], "first entry", "second entry"]
+ *      unordered list: [{}, "first entry", "second entry"]
+ * 5. Isolated objects with primitive values are mapped as GFM tables
+ *    with key and value columns properties as its two rows.
+ * 6. Consequtive objects with primitive values are mapped as a single
+ *    GFM table with the collection of all object keys as columns,
+ *    objects as rows and object values as cells in the corresponding
+ *    column.
+ * 7. Objects with complex values are mapped into chapters with the
+ *    object key as header. The deeper the nesting, the lower the
+ *    emitted H tag. { "": [[[[[{}]]]]] }
+ *
+ * @param {*} value
+ * @param {*} theme
+ * @param {*} context
+ * @returns
+ */
+function _toGFMarkdown (value, theme, context) {
+  // https://github.github.com/gfm/#introduction
+  const ret = {
+    value, type: "text", text: (value === undefined) ? ""
+        : (value === null) ? "-"
+        : (typeof value === "string") ? value
+        : (typeof value === "number") ? JSON.stringify(value)
+        : undefined,
+    height: 0, depth: ((context && context.depth) || 0) + 1,
+  };
+  if (typeof value === "function") {
+    ret.renderer = value;
+  } else if (Array.isArray(value)) {
+    ret.type = "array";
+    ret.entries = value.map(e => _toGFMarkdown(e, theme, ret));
+    if (ret.entries.findIndex(e => !e.empty) === -1) ret.empty = true;
+    else if (ret.height > 1) {
+      // Group entries into separate sections each containing entries with the same type and height.
+      ret.sections = [];
+      let info = { start: 0, height: 0, type: "" };
+      ret.entries.forEach((e, index) => {
+        if (e.height !== info.height || e.type !== info.type) {
+          if (index !== info.start) ret.sections.push(ret.entries.slice(info.start, index));
+          info = { start: index, height: e.height, type: e.type };
+        }
+      });
+    }
+  } else if (ret.text === undefined) {
+    ret.type = "object";
+    ret.mappings = Object.keys(value).filter(key => key)
+        .map(key => [key, _toGFMarkdown(value[key], theme, ret)]);
+    if (value[""]) ret.headers = value[""];
+    if (!ret.mappings.findIndex(e => !e[1].empty) === -1) ret.empty = true;
+  }
+  if (context) {
+    if (context.height <= ret.height) context.height = ret.height + 1;
+    return ret;
+  }
+  return _render(ret, context);
+  function _render (value_, context_) {
+    if (value_.text !== undefined) return value_.text;
+    if (value_.type === "object") {
+      return ((value_.height === 1) && !value_.headers)
+          ? _renderTable(["key", "value"],
+              value_.mappings.map(e => ([e[0], { key: e[0], value: e[1] }])), theme, value_)
+          : ((value_.height <= 2) && !(value_.headers && value_.headers[0].section)
+              ? _renderTable
+              : _renderSections)(
+                  value_.headers || value_.mappings.map(m => m[0]),
+                  value_.mappings, theme, value_);
+    }
+    if (value_.type === "array") {
+      if (value_.height === 1) return value_.entries.join(" ");
+      if ((value_.height === 2) && ((value_.sections || []).length <= 2)
+          && value_.sections[value_.sections.length - 1][0].type === "object") {
+        const rows = value_.sections[value_.sections.length - 1];
+        const headers = (value_.sections.length === 2) && value_.sections[0];
+        return _renderTable(headers, rows, undefined, value_);
+      }
+      return "unrendered array";
+    }
+    console.error("Cannot find renderer function for value:",
+        (JSON.stringify(value_, null, 2) || "").replace(/\n/g, "\n    "));
+    console.error("Inside context:",
+        (JSON.stringify(context_, null, 2) || "").replace(/\n/g, "\n   "));
+    throw new Error("can't render");
+  }
+  function _renderTable (columns, rows, tableTheme) {
+    const _cvalue = (r, c) => (typeof r.value !== "object" ? r.value : r.value[c.property]) || "";
+    const _espipe = (v) => (v && v.replace(/\|/g, "\\|")) || "";
+    columns.forEach((column_, index_) => {
+      let c = ((typeof column_) === "string") ? { property: column_ } : column_;
+      if (!c.property) c.property = c.name || c.text;
+      c = Object.assign({}, (tableTheme.headers || {})[c.property], c);
+      columns[index_] = c;
+      if (!c.style) c.style = ((...rest) => rest.join(""));
+      if (!c.headerStyle) c.headerStyle = c.style;
+      if (!c.getHeaderStyle) c.getHeaderStyle = (/* c, tableTheme */) => c.headerStyle;
+      if (!c.elementStyle) c.elementStyle = c.style;
+      if (!c.getElementStyle) c.getElementStyle = (/* row, c, tableTheme */) => c.elementStyle;
+      if (c.oob) return;
+      c.width = Math.max(3, (c.text || c.property).length,
+          ...rows.map(r => _espipe(_cvalue(r[1], c)).length));
+    });
+    const retRows = [];
+    if (!columns[0].hide) {
+      retRows.push(columns.map(c => _renderElement(
+          _espipe(c.text || c.property), c.width, c.getHeaderStyle(c, tableTheme))));
+      retRows.push(columns.map(
+          c => `${(c.align || "right") !== "right" ? ":" : "-"}${
+              "-".repeat(c.width - 2)}${(c.align || "left") !== "left" ? ":" : "-"}`));
+    }
+    retRows.push(...rows.map(r => columns.map(c => {
+      const eStyle = (r[1].headers || []).find(h => h.name === c.property) || {};
+      const elementText = _cvalue(r[1], c);
+      return _renderElement(!c.oob ? _espipe(elementText) : elementText, c.width,
+          eStyle.style || c.getElementStyle(r[1], c, tableTheme));
+    })));
+    return retRows.map(r => r.join("|")).join("\n");
+  }
+  function _renderSections (headers, contents, sectionTheme, context_) {
+    const retRows = [];
+    headers.forEach((section_, index_) => {
+      let s = ((typeof section_) === "string") ? { section: section_ } : section_;
+      if (!s.section) s.section = s.name || s.text;
+      s = headers[index_] = Object.assign({}, (sectionTheme.headers || {})[s.section], s);
+      if (s.text) {
+        retRows.push(theme.decorate(
+            [s.headingStyle || s.style, { heading: context_.depth }])(s.text));
+      }
+      retRows.push(_render(contents.find(c => (c[0] === s.section))[1]));
+    });
+    return retRows.join("\n");
+  }
+  function _renderElement (text_, width = 0, style = (i => i)) {
+    const text = (typeof text_ === "string") ? text_ : `<${typeof text_}>`;
+    const pad = width - text.length;
+    return `${theme.decorate(style)(text)}${" ".repeat(pad < 0 ? 0 : pad)}`;
+  }
+  /*
+  function _layoutSectionText (text, width = 71) {
+    return text.replace(/([^\n])\n([^\n])/g, "$1$2").split(/(\n*)/).map(t => {
+      if (t[0] === "\n") return t;
+      const words = t.split(/( *)/);
+      let charCount = 0;
+      words.forEach((word, index) => {
+        charCount += word.length;
+        if (charCount <= width) return;
+        if (word[0] === " ") {
+          words[index] = "\n";
+          charCount = 0;
+          return;
+        }
+        if (charCount === word.length) return; // long word: let next whitespace clear things up
+        words[index - 1] = "\n";
+        charCount = word.length;
+        return;
+      });
+      return words.join("");
+    }).join("");
+  }
+  */
 }
 
 function _commandInfo (filePath, poolPath) {
