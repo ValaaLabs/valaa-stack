@@ -9,7 +9,7 @@ import Resolver from "~/raem/tools/denormalized/Resolver";
 import Transient from "~/raem/tools/denormalized/Transient";
 import traverseMaterializedOwnlings
     from "~/raem/tools/denormalized/traverseMaterializedOwnlings";
-import { dumpObject, invariantify, invariantifyArray, wrapError } from "~/tools";
+import { dumpObject, invariantify, invariantifyArray, unwrapError, wrapError } from "~/tools";
 
 export class MissingPartitionConnectionsError extends Error {
   constructor (message, missingPartitions: (PartitionURI | Promise<any>)[]) {
@@ -30,7 +30,7 @@ function tryCall (call: any, ...args: any[]) {
   try {
     return call.apply(this, args);
   } catch (error) {
-    if (!(error instanceof MissingPartitionConnectionsError)) throw error;
+    if (!(unwrapError(error) instanceof MissingPartitionConnectionsError)) throw error;
     try {
       return connectToMissingPartitionsAndThen(error, () => tryCall.call(this, call, ...args));
     } catch (innerError) {

@@ -45,14 +45,13 @@ export default function wrapError (errorIn: Error, ...contextDescriptions) {
         "first argument must be an object with .message property!", "Instead got", error);
     invariantifyObject(error, "wrapError.error", { instanceof: Error });
   }
-  const WrappedType = (error instanceof Error) ? error.constructor : Error;
   const clippedFrameList = _clipFrameListToCurrentContext(error, error.frameListClipDepth || 4);
   const originalMessage = error.originalMessage || error.message;
   const myTraceAndContext = `${clippedFrameList.join("\n")}
 ${contextDescriptions.map(debugObjectHard).join(" ")}`;
   const allTraceAndContext = `${error.allTraceAndContext || ""}
 ${myTraceAndContext}`;
-  const ret = new WrappedType(`${originalMessage}\n${allTraceAndContext}`,
+  const ret = new Error(`${originalMessage}\n${allTraceAndContext}`,
     error.fileName, error.lineNumber);
   ret.clippedFrameList = clippedFrameList;
   ret.allTraceAndContext = allTraceAndContext;
@@ -65,6 +64,10 @@ ${myTraceAndContext}`;
   ret.sourceStackFrames = errorIn.sourceStackFrames;
   ret.customErrorHandler = errorIn.customErrorHandler;
   return ret;
+}
+
+export function unwrapError (error: Error) {
+  return (error && error.originalError) || error;
 }
 
 function _clipFrameListToCurrentContext (innerError, dummySliceLineCount) {
