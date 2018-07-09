@@ -8,7 +8,7 @@ module.exports = function configureBabel (api, rootPrefix) {
     presets: [
       "@babel/preset-env",
       "@babel/preset-react",
-      ["@babel/preset-stage-0", { decoratorsLegacy: true }],
+      ["@babel/preset-stage-0", { decoratorsLegacy: true, pipelineProposal: "minimal" }],
     ],
     plugins: [],
   };

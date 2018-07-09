@@ -13,9 +13,9 @@ exports.handler = async (yargv) => {
   // Only enabled inside package
   const vlm = yargv.vlm;
   const topArgs = [".", ...yargv._.slice(0, (yargv._.indexOf("--") + 1) || undefined)];
-  // console.log("args:", topArgs,
-  //    "\n\tret:", (await _walk(vlm, topArgs)).value);
-  return (await _walk(vlm, topArgs)).value;
+  const ret = (await _walk(vlm, topArgs)).value;
+  // console.log("args:", topArgs, "\n\tret:", ret);
+  return ret;
 
   async function _walk (head, argv, index = 0, isArgument) {
     vlm.ifVerbose(1)
@@ -53,7 +53,11 @@ exports.handler = async (yargv) => {
         }
         case ")": throw new Error("mismatching ')'");
         default: {
-          if (isArgument) return { value: argv[index], index: index + 1 };
+          if (isArgument) {
+            const arg = argv[index];
+            const value = !(arg[0] === "{" || arg[0] === "[") ? arg : JSON.parse(arg);
+            return { value, index: index + 1 };
+          }
           const args = await _getArgs(argv, index + 1);
           const result = await vlm.execute([argv[index], ...args.value]);
           return (ret = await _walk(result, argv, args.index));

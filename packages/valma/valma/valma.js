@@ -142,6 +142,11 @@ const vlm = globalVargs.vlm = {
 
   contextCommand: "vlm",
 
+  render (type, ...rest) {
+    const renderer = _renderers[type || ""];
+    return renderer && rest.map(renderer);
+  },
+
   ifVerbose (minimumVerbosity, callback) {
     function ssh () { return this; }
     if (this.verbosity < minimumVerbosity) {
@@ -160,8 +165,8 @@ const vlm = globalVargs.vlm = {
     return this;
   },
   result (...rest) {
-    const renderer = _renderers[globalVargv.results || ""];
-    if (renderer) console.log(...rest.map(renderer));
+    const output = this.render(globalVargv.results, ...rest);
+    if (output) console.log(...output);
     return this;
   },
   // Alias for console.warn for unprocessed diagnostics output directly to stderr
@@ -795,10 +800,9 @@ async function callValmaWithEcho (commandSelector, args) {
   const selector = commandSelector.split(" ")[0];
   const argv = _processArgs(args);
   this.echo(">> vlm", vlm.theme.command(selector, ...argv));
-  let ret;
   let echoResult;
   try {
-    ret = await invoke.call(this, selector, argv);
+    const ret = await invoke.call(this, selector, argv);
     echoResult = this.theme.blue((JSON.stringify(ret) || "undefined").slice(0, 71));
     return ret;
   } catch (error) {
@@ -976,7 +980,7 @@ async function invoke (commandSelector, argv) {
             if (retValue === undefined) retValue = "undefined";
             if (isWildcardCommand) {
               this.echo("<<* vlm", `${this.theme.command(commandName)}:`,
-                  this.theme.blue(retValue.slice(0, 20), retValue.length > 20 ? "..." : ""));
+                  this.theme.blue(retValue.slice(0, 40), retValue.length > 40 ? "..." : ""));
             }
           }
         }
@@ -1372,59 +1376,70 @@ function _introspectCommands (vargs_, introspect, commands_, commandGlob, isWild
     return [];
   }
   if (introspect.identityPool) {
-    const ret = _introspectPool(
+    const poolIntro = _introspectPool(
         introspect.identityPool, false, false, introspect.identityPool.commands);
-    if ((ret[""] || []).length === 1) ret[""][0].hide = true;
-    return ret;
+    if ((poolIntro[""] || {}).columns.length === 1) poolIntro[""].columns[0].hide = true;
+    return poolIntro;
   }
-  const chapterHeaders = { name: "pools", style: "bold" };
-  const poolHeaders = [];
-  const chapters = { "": [chapterHeaders], pools: { "": poolHeaders }, };
+  const chapters = { "": {
+    chapters: true,
+    entries: [{ pools: { heading: { style: "bold" } } }] }, pools: { "": { chapters: true }},
+  };
   if (introspect.defaultUsage) {
-    chapters[""][0].text = `${matchAll ? "All known" : "Visible"} commands by pool:`;
+    chapters[""].entries[0].pools.heading.text =
+        `${matchAll ? "All known" : "Visible"} commands by pool:`;
     if (!matchAll) {
-      chapters[""].unshift({
-        name: "usage", style: "bold", text: `Usage: ${introspect.module.command}`
-      });
+      chapters[""].entries.unshift(
+          { usage: { heading: { style: "bold", text: `Usage: ${introspect.module.command}` } } });
       chapters.usage = "";
     }
   }
   for (const pool of [..._activePools].reverse()) {
-    const poolHeader = { section: pool.name, style: "bold" };
-    poolHeaders.push(poolHeader);
-    chapters.pools[pool.name] = _introspectPool(pool, isWildcard_, globalVargv.pools, commands_);
-    const isEmpty = !Object.keys(chapters.pools[pool.name]).filter(k => k).length;
+    const poolIntro = chapters.pools[pool.name] =
+        _introspectPool(pool, isWildcard_, globalVargv.pools, commands_);
+    const isEmpty = !Object.keys(poolIntro).filter(k => k).length;
     if (isWildcard_ && (!isEmpty || globalVargv.pools || matchAll)) {
-      poolHeader.stats = pool.stats;
-      poolHeader.text = `${vlm.path.join(pool.name, commandGlob)} ${
-          isEmpty ? "has no shown commands" : "commands:"} (${
-              theme.info(Object.keys(pool.stats || {}).map(
-                  s => `${s}: ${pool.stats[s]}`).join(", "))
-          })`;
+      poolIntro[""].heading = {
+        style: "bold",
+        text: `${vlm.path.join(pool.name, commandGlob)} ${
+            isEmpty ? "has no shown commands" : "commands:"} (${
+                theme.info(Object.keys(pool.stats || {}).map(
+                    s => `${s}: ${pool.stats[s]}`).join(", "))
+            })`
+      };
     } else if (isEmpty) {
-      chapters.pools[pool.name][""][0].hide = true;
+      poolIntro[""].hide = true;
     }
   }
-  return chapters;
+  if (isWildcard_) return chapters;
+  const visiblePoolName = Object.keys(chapters.pools)
+      .find(key => key && !(chapters.pools[key][""] || {}).hide);
+  if (!visiblePoolName) return undefined;
+  const command = chapters.pools[visiblePoolName];
+  const keys = Object.keys(command).filter(k => k);
+  return (keys.length !== 1) ? command : command[keys[0]];
 
   function _introspectPool (pool, isWildcard, showOverridden, introedCommands) {
     const missingFile = "<file_missing>";
     const missingPackage = "<package_missing>";
-    const poolData = { "": [
-      { property: "name", text: "command", style: "command" },
-      { property: "usage", style: "command" },
-      { property: "description", style: { default: missingPackage } },
-      { property: "package", style: "package" },
-      { property: "version", style: [{ default: missingPackage }, "version"] },
-      { property: "pool", text: "source pool" },
-      { property: "file", text: "script path", style: "path" },
-      { property: "resolved", text: "real file path", style: [{ default: missingFile }, "path"] },
-      {
-        property: "introduction", oob: true,
-        elementStyle: isWildcard && { prefix: "\n", suffix: "\n" }
-      },
-      { property: "source", oob: true, elementStyle: "cardinal" },
-    ].filter(c => introspect.show[c.property]), };
+    const poolIntro = { "": {
+      stats: pool.stats,
+      columns: [
+        { property: "name", text: "command", style: "command" },
+        { property: "usage", style: "command" },
+        { property: "description", style: { default: missingPackage } },
+        { property: "package", style: "package" },
+        { property: "version", style: [{ default: missingPackage }, "version"] },
+        { property: "pool", text: "source pool" },
+        { property: "file", text: "script path", style: "path" },
+        { property: "resolved", text: "real file path", style: [{ default: missingFile }, "path"] },
+        {
+          property: "introduction", oob: true,
+          elementStyle: isWildcard && { prefix: "\n", suffix: "\n" }
+        },
+        { property: "source", oob: true, elementStyle: "cardinal" },
+      ].filter(c => introspect.show[c.property]),
+    } };
     const trivialKey = Object.keys(introspect.show).length === 1 && Object.keys(introspect.show)[0];
     Object.keys(pool.commands)
     .sort()
@@ -1441,9 +1456,7 @@ function _introspectCommands (vargs_, introspect, commands_, commandGlob, isWild
       if ((introedCommands[name] || { pool }).pool !== pool) {
         if (!showOverridden) return;
         rowData.overridden = true;
-        rowData[""] = [
-          { name: "name", style: "overridden" }, { name: "usage", style: "overridden" },
-        ];
+        rowData.entries = { name: { style: "overridden", }, usage: { style: "overridden " } };
       }
       const _addData = (property, data) => introspect.show[property] && (rowData[property] = data);
       _addData("name", poolCommand.disabled ? `(${name})` : name);
@@ -1466,9 +1479,9 @@ function _introspectCommands (vargs_, introspect, commands_, commandGlob, isWild
           vlm.warn(`Cannot read command '${name}' script source from:`, info.resolvedPath);
         }
       }
-      poolData[name] = trivialKey ? rowData[trivialKey] : rowData;
+      poolIntro[name] = trivialKey ? rowData[trivialKey] : rowData;
     });
-    return poolData;
+    return poolIntro;
   }
 }
 
@@ -1525,147 +1538,189 @@ function _introspectCommands (vargs_, introspect, commands_, commandGlob, isWild
  */
 function _toGFMarkdown (value, theme, context) {
   // https://github.github.com/gfm/#introduction
-  const ret = {
+  return _renderBlock(_createBlockTree(value, context, theme), context, theme);
+}
+
+function _createBlockTree (value, contextBlock, theme) {
+  const block = {
     value, type: "text", text: (value === undefined) ? ""
         : (value === null) ? "-"
         : (typeof value === "string") ? value
-        : (typeof value === "number") ? JSON.stringify(value)
+        : (typeof value === "number" || typeof value === "boolean") ? JSON.stringify(value)
         : undefined,
-    height: 0, depth: ((context && context.depth) || 0) + 1,
+    height: 0, depth: ((contextBlock && contextBlock.depth) || 0) + 1,
   };
   if (typeof value === "function") {
-    ret.renderer = value;
+    block.renderer = value;
   } else if (Array.isArray(value)) {
-    ret.type = "array";
-    ret.entries = value.map(e => _toGFMarkdown(e, theme, ret));
-    if (ret.entries.findIndex(e => !e.empty) === -1) ret.empty = true;
-    else if (ret.height > 1) {
-      // Group entries into separate sections each containing entries with the same type and height.
-      ret.sections = [];
+    block.type = "array";
+    block.entryBlocks = value.map(e => _createBlockTree(e, block, theme));
+    if (block.entryBlocks.findIndex(e => !e.empty) === -1) block.empty = true;
+    else if (block.height > 1) {
+      // Group entryBlocks into separate sections of blocks with the same type and height.
+      block.sections = [];
       let info = { start: 0, height: 0, type: "" };
-      ret.entries.forEach((e, index) => {
+      block.entryBlocks.forEach((e, index) => {
         if (e.height !== info.height || e.type !== info.type) {
-          if (index !== info.start) ret.sections.push(ret.entries.slice(info.start, index));
+          if (index !== info.start) block.sections.push(block.entryBlocks.slice(info.start, index));
           info = { start: index, height: e.height, type: e.type };
         }
       });
+      const section = block.entryBlocks.slice(info.start);
+      if (section.length) block.sections.push(section);
     }
-  } else if (ret.text === undefined) {
-    ret.type = "object";
-    ret.mappings = Object.keys(value).filter(key => key)
-        .map(key => [key, _toGFMarkdown(value[key], theme, ret)]);
-    if (value[""]) ret.headers = value[""];
-    if (!ret.mappings.findIndex(e => !e[1].empty) === -1) ret.empty = true;
+  } else if (block.text === undefined) {
+    block.type = "object";
+    if (value[""]) block.header = value[""];
+    block.entries = {};
+    block.mappings = [];
+    _extractEntries((block.header || {}).entries || [null]); // default list sorted block.value keys
+    if (!block.mappings.findIndex(e => !e[1].empty) === -1) block.empty = true;
   }
-  if (context) {
-    if (context.height <= ret.height) context.height = ret.height + 1;
-    return ret;
-  }
-  return _render(ret, context);
-  function _render (value_, context_) {
-    if (value_.text !== undefined) return value_.text;
-    if (value_.type === "object") {
-      return ((value_.height === 1) && !value_.headers)
-          ? _renderTable(["key", "value"],
-              value_.mappings.map(e => ([e[0], { key: e[0], value: e[1] }])), theme, value_)
-          : ((value_.height <= 2) && !(value_.headers && value_.headers[0].section)
-              ? _renderTable
-              : _renderSections)(
-                  value_.headers || value_.mappings.map(m => m[0]),
-                  value_.mappings, theme, value_);
-    }
-    if (value_.type === "array") {
-      if (value_.height === 1) return value_.entries.join(" ");
-      if ((value_.height === 2) && ((value_.sections || []).length <= 2)
-          && value_.sections[value_.sections.length - 1][0].type === "object") {
-        const rows = value_.sections[value_.sections.length - 1];
-        const headers = (value_.sections.length === 2) && value_.sections[0];
-        return _renderTable(headers, rows, undefined, value_);
+  if (contextBlock && contextBlock.height <= block.height) contextBlock.height = block.height + 1;
+  return block;
+
+  function _extractEntries (entry) {
+    if (entry === undefined || entry === "") return;
+    if (Array.isArray(entry)) {
+      if (entry.length === 2 && typeof entry[0] === "string" && typeof entry[1] === "object") {
+        if ((value[entry[0]] !== undefined) && !block.entries[entry[0]]) {
+          block.mappings.push([entry[0], _createBlockTree(value[entry[0]], block, theme)]);
+        }
+        block.entries[entry[0]] = Object.assign(block.entries[entry[0]] || {}, entry[1]);
+      } else {
+        entry.map(_extractEntries);
       }
-      return "unrendered array";
+    } else if (entry === null) Object.keys(block.value).sort().forEach(_extractEntries);
+    else if (typeof entry === "object") {
+      Object.keys(entry).sort().map(key => [key, entry[key]]).forEach(_extractEntries);
+    } else _extractEntries([String(entry), {}]);
+  }
+}
+
+function _renderBlock (block, contextBlock, theme) {
+  // console.log("rendering block:", { ...block, value: undefined });
+  if ((block.header || {}).hide) return "";
+  if (block.text !== undefined) return block.text;
+  if (block.type === "object") {
+    return ((block.height === 1) && !block.header)
+        ? _renderTable(block.mappings.map(m =>
+                ([m[0], { value: {}, mappings: [["key", { text: m[0] }], ["value", m[1]]] }])),
+            { ...block, header: { columns: ["key", "value"] } }, theme)
+        : (((block.height <= 2) && !(block.header || {}).chapters)
+            ? _renderTable : _renderChapters)(block.mappings, block, theme);
+  }
+  if (block.type === "array") {
+    if (block.height === 1) return block.value.join(" ");
+    if ((block.height === 2) && ((block.sections || []).length <= 2)
+        && block.sections[block.sections.length - 1][0].type === "object") {
+      const header = (block.sections.length === 2) && block.sections[0];
+      const blocks = block.sections[block.sections.length - 1];
+      return _renderTable(blocks.map((b, index) => ([index, b])), { ...block, header }, theme);
     }
-    console.error("Cannot find renderer function for value:",
-        (JSON.stringify(value_, null, 2) || "").replace(/\n/g, "\n    "));
-    console.error("Inside context:",
-        (JSON.stringify(context_, null, 2) || "").replace(/\n/g, "\n   "));
-    throw new Error("can't render");
+    // TODO(iridian): Add lists etc.
+    return block.entryBlocks.map(entryBlock => _renderBlock(entryBlock, block, theme)).join("\n");
   }
-  function _renderTable (columns, rows, tableTheme) {
-    const _cvalue = (r, c) => (typeof r.value !== "object" ? r.value : r.value[c.property]) || "";
-    const _espipe = (v) => (v && v.replace(/\|/g, "\\|")) || "";
-    columns.forEach((column_, index_) => {
-      let c = ((typeof column_) === "string") ? { property: column_ } : column_;
-      if (!c.property) c.property = c.name || c.text;
-      c = Object.assign({}, (tableTheme.headers || {})[c.property], c);
-      columns[index_] = c;
-      if (!c.style) c.style = ((...rest) => rest.join(""));
-      if (!c.headerStyle) c.headerStyle = c.style;
-      if (!c.getHeaderStyle) c.getHeaderStyle = (/* c, tableTheme */) => c.headerStyle;
-      if (!c.elementStyle) c.elementStyle = c.style;
-      if (!c.getElementStyle) c.getElementStyle = (/* row, c, tableTheme */) => c.elementStyle;
-      if (c.oob) return;
-      c.width = Math.max(3, (c.text || c.property).length,
-          ...rows.map(r => _espipe(_cvalue(r[1], c)).length));
-    });
-    const retRows = [];
-    if (!columns[0].hide) {
-      retRows.push(columns.map(c => _renderElement(
-          _espipe(c.text || c.property), c.width, c.getHeaderStyle(c, tableTheme))));
-      retRows.push(columns.map(
-          c => `${(c.align || "right") !== "right" ? ":" : "-"}${
-              "-".repeat(c.width - 2)}${(c.align || "left") !== "left" ? ":" : "-"}`));
-    }
-    retRows.push(...rows.map(r => columns.map(c => {
-      const eStyle = (r[1].headers || []).find(h => h.name === c.property) || {};
-      const elementText = _cvalue(r[1], c);
-      return _renderElement(!c.oob ? _espipe(elementText) : elementText, c.width,
-          eStyle.style || c.getElementStyle(r[1], c, tableTheme));
-    })));
-    return retRows.map(r => r.join("|")).join("\n");
+  vlm.error("Cannot find renderer function for entry:",
+      (JSON.stringify(block, null, 2) || "").replace(/\n/g, "\n    "));
+  vlm.error("Inside context:",
+      (JSON.stringify(contextBlock, null, 2) || "").replace(/\n/g, "\n   "));
+  throw new Error("can't render");
+}
+
+function _renderTable (rowKeyBlocks, tableBlock, tableTheme) {
+  const _cvalue = (block, c) => {
+    return (((typeof block.value !== "object")
+          ? [0, block]
+          : block.mappings.find(([key]) => (key === c.property)) || [0, { text: "" }])[1].text);
   }
-  function _renderSections (headers, contents, sectionTheme, context_) {
-    const retRows = [];
-    headers.forEach((section_, index_) => {
-      let s = ((typeof section_) === "string") ? { section: section_ } : section_;
-      if (!s.section) s.section = s.name || s.text;
-      s = headers[index_] = Object.assign({}, (sectionTheme.headers || {})[s.section], s);
-      if (s.text) {
-        retRows.push(theme.decorate(
-            [s.headingStyle || s.style, { heading: context_.depth }])(s.text));
-      }
-      retRows.push(_render(contents.find(c => (c[0] === s.section))[1]));
-    });
-    return retRows.join("\n");
+  const _espipe = (v) => (v && v.replace(/\|/g, "\\|")) || "";
+  let columns = (tableBlock.header || {}).columns;
+  if (!columns) {
+    columns = [];
+    rowKeyBlocks.forEach(([, block]) => (block.mappings || []).forEach(
+        ([elementKey]) => { if (!columns.includes(elementKey)) columns.push(elementKey); }));
+        /*
+    console.log("created columns for tableBlock:", { ...tableBlock },
+        "\n\n\nrockKeyBlocks:", JSON.stringify(rowKeyBlocks, null, 2),
+        "\n\n\n\ncolumns:", columns);
+        */
   }
+  columns.forEach((column_, index_) => {
+    let c = ((typeof column_) === "string") ? { property: column_ } : column_;
+    if (!c.property) c.property = c.name || c.text;
+    c = Object.assign({}, (tableTheme.headers || {})[c.property], c);
+    columns[index_] = c;
+    if (!c.style) c.style = ((...rest) => rest.join(""));
+    if (!c.headerStyle) c.headerStyle = c.style;
+    if (!c.getHeaderStyle) c.getHeaderStyle = (/* c, tableTheme */) => c.headerStyle;
+    if (!c.elementStyle) c.elementStyle = c.style;
+    if (!c.getElementStyle) c.getElementStyle = (/* row, c, tableTheme */) => c.elementStyle;
+    if (c.oob) return;
+    c.width = Math.max(3, (c.text || c.property).length,
+        ...rowKeyBlocks.map(([, block]) => _espipe(_cvalue(block, c)).length));
+  });
+  const retRows = [];
+  if (columns && !(tableBlock.header || {}).hide) {
+    retRows.push(columns.map(c => _renderElement(
+        _espipe(c.text || c.property), c.width, c.getHeaderStyle(c, tableTheme))));
+    retRows.push(columns.map(
+        c => `${(c.align || "right") !== "right" ? ":" : "-"}${
+            "-".repeat(c.width - 2)}${(c.align || "left") !== "left" ? ":" : "-"}`));
+  }
+  retRows.push(...rowKeyBlocks.map(([, block]) => columns.map(c => {
+    const elementBlock = ((block.header || []).columns || {})[c.property] || {};
+    const elementText = _cvalue(block, c);
+    return _renderElement(!c.oob ? _espipe(elementText) : elementText, c.width,
+        elementBlock.style || c.getElementStyle(block, c, tableTheme));
+  })));
+  return retRows.map(r => r.join("|")).join("\n");
+
   function _renderElement (text_, width = 0, style = (i => i)) {
     const text = (typeof text_ === "string") ? text_ : `<${typeof text_}>`;
     const pad = width - text.length;
-    return `${theme.decorate(style)(text)}${" ".repeat(pad < 0 ? 0 : pad)}`;
+    return `${tableTheme.decorate(style)(text)}${" ".repeat(pad < 0 ? 0 : pad)}`;
   }
-  /*
-  function _layoutSectionText (text, width = 71) {
-    return text.replace(/([^\n])\n([^\n])/g, "$1$2").split(/(\n*)/).map(t => {
-      if (t[0] === "\n") return t;
-      const words = t.split(/( *)/);
-      let charCount = 0;
-      words.forEach((word, index) => {
-        charCount += word.length;
-        if (charCount <= width) return;
-        if (word[0] === " ") {
-          words[index] = "\n";
-          charCount = 0;
-          return;
-        }
-        if (charCount === word.length) return; // long word: let next whitespace clear things up
-        words[index - 1] = "\n";
-        charCount = word.length;
-        return;
-      });
-      return words.join("");
-    }).join("");
-  }
-  */
 }
+
+function _renderChapters (chapterKeyBlocks, block, sectionTheme) {
+  const retRows = [];
+  chapterKeyBlocks.forEach(([key, chapterBlock]) => {
+    if ((chapterBlock.header || {}).hide) return;
+    const heading = (chapterBlock.header || {}).heading
+        || ((block.entries || {})[key] || {}).heading
+        || { text: key, style: "bold" };
+    if (heading.text) {
+      retRows.push(sectionTheme.decorate([heading.style, { heading: block.depth }])(heading.text));
+    }
+    retRows.push(_renderBlock(chapterBlock, block, sectionTheme));
+  });
+  return retRows.join("\n");
+}
+
+/*
+function _layoutSectionText (text, width = 71) {
+  return text.replace(/([^\n])\n([^\n])/g, "$1$2").split(/(\n*)/).map(t => {
+    if (t[0] === "\n") return t;
+    const words = t.split(/( *)/);
+    let charCount = 0;
+    words.forEach((word, index) => {
+      charCount += word.length;
+      if (charCount <= width) return;
+      if (word[0] === " ") {
+        words[index] = "\n";
+        charCount = 0;
+        return;
+      }
+      if (charCount === word.length) return; // long word: let next whitespace clear things up
+      words[index - 1] = "\n";
+      charCount = word.length;
+      return;
+    });
+    return words.join("");
+  }).join("");
+}
+*/
 
 function _commandInfo (filePath, poolPath) {
   const ret = { filePath, poolPath };
