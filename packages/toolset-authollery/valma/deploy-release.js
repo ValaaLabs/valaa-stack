@@ -40,6 +40,6 @@ exports.handler = async (yargv) => {
 
   vlm.releasePath = yargv.source;
 
-  return await vlm.invoke(`.release-deploy/${yargv.toolsetGlob || "**/*"}`,
-      [{ source: releasePath }, ...yargv._]);
+  return [].concat(...[].concat(await vlm.invoke(`.release-deploy/${yargv.toolsetGlob || "**/*"}`,
+      [{ source: releasePath }, ...yargv._]))).filter(e => (e !== undefined));
 };

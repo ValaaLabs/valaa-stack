@@ -26,7 +26,7 @@ module.exports = {
    * @returns
    */
   prepareToolsetBuild (yargv, toolsetName, toolsetDescription = "toolset",
-      desiredVersionHash) {
+      desiredReleaseHash) {
     const vlm = yargv.vlm;
     const logger = vlm.tailor({ contextCommand: `build-release/${toolsetName}` });
     const releasePath = yargv.target;
@@ -36,9 +36,9 @@ module.exports = {
     }
     const toolsetConfig = vlm.getToolsetConfig(toolsetName);
     if (!toolsetConfig) return {};
-    if (desiredVersionHash && (toolsetConfig.deployedVersionHash === desiredVersionHash)) {
-      logger.info(`${vlm.theme.bold(`Skipping the ${toolsetDescription} release build`)
-          } of already deployed version:`, vlm.theme.version(desiredVersionHash));
+    if (desiredReleaseHash && (toolsetConfig.deployedReleaseHash === desiredReleaseHash)) {
+      logger.info(`${vlm.theme.bold(`Skipping the ${toolsetDescription} build`)
+          } of already deployed release:`, vlm.theme.version(desiredReleaseHash));
       return {};
     }
     const simpleToolsetName = toolsetName.replace(/\//g, "_");
@@ -51,15 +51,15 @@ module.exports = {
   },
 
   prepareToolBuild (yargv, toolsetName, toolName,
-      toolDescription = "tool", desiredVersionHash) {
+      toolDescription = "tool", desiredReleaseHash) {
     const vlm = yargv.vlm;
-    const logger = vlm.tailor({ contextCommand: `build-release/${toolName}` });
+    const logger = vlm.tailor({ contextCommand: `.release-build/${toolName}` });
     const toolConfig = vlm.getToolConfig(toolsetName, toolName);
     if (!toolConfig) return {};
-    if (desiredVersionHash && (toolConfig.deployedVersionHash === desiredVersionHash)) {
-      logger.info(`${vlm.theme.bold(`Skipping the ${toolDescription} release build`)
-          } of already deployed version within toolset ${vlm.theme.package(toolsetName)}:`,
-          vlm.theme.version(desiredVersionHash));
+    if (desiredReleaseHash && (toolConfig.deployedReleaseHash === desiredReleaseHash)) {
+      logger.info(`${vlm.theme.bold(`Skipping the ${toolDescription} build`)
+          } of already deployed release within toolset ${vlm.theme.package(toolsetName)}:`,
+          vlm.theme.version(desiredReleaseHash));
       return {};
     }
     const simpleToolsetName = toolsetName.replace(/\//g, "_");
@@ -73,7 +73,7 @@ module.exports = {
 
   locateToolsetRelease (yargv, toolsetName, toolsetDescription = "toolset") {
     const vlm = yargv.vlm;
-    const logger = vlm.tailor({ contextCommand: `deploy-release/${toolsetName}` });
+    const logger = vlm.tailor({ contextCommand: `.release-deploy/${toolsetName}` });
     const releasePath = yargv.source;
     const toolsetConfig = vlm.getToolsetConfig(toolsetName);
     if (!toolsetConfig) {
@@ -84,14 +84,15 @@ module.exports = {
       throw new Error(`${vlm.contextCommand}: releasePath '${
           vlm.theme.path(releasePath)}' missing`);
     }
-    const toolsetReleasePath = vlm.path.join(releasePath, toolsetName);
+    const simpleToolsetName = toolsetName.replace(/\//g, "_");
+    const toolsetReleasePath = vlm.path.join(releasePath, simpleToolsetName);
     if (!vlm.shell.test("-d", toolsetReleasePath)) {
       logger.ifVerbose(1)
-          .info(`skipping ${toolsetDescription} deploy: no release at '${
+          .info(`Skipping ${toolsetDescription} deploy: no release at '${
               vlm.theme.path(toolsetReleasePath)}'`);
       return {};
     }
-    logger.info(`deploying ${toolsetDescription} release from '${
+    logger.info(`Deploying ${toolsetDescription} release from '${
         vlm.theme.path(toolsetReleasePath)}'`);
     vlm.toolset = toolsetName;
     return { toolsetConfig, toolsetReleasePath };
@@ -102,14 +103,16 @@ module.exports = {
     const logger = vlm.tailor({ contextCommand: `deploy-release/${toolName}` });
     const releasePath = yargv.source;
     const toolConfig = vlm.getToolConfig(toolsetName, toolName);
-    const toolReleasePath = vlm.path.join(releasePath, toolsetName, toolName);
+    const simpleToolsetName = toolsetName.replace(/\//g, "_");
+    const simpleToolName = toolName.replace(/\//g, "_");
+    const toolReleasePath = vlm.path.join(releasePath, simpleToolsetName, simpleToolName);
     if (!vlm.shell.test("-d", toolReleasePath)) {
       logger.ifVerbose(1)
-          .info(`skipping ${toolDescription} deploy: no release at '${
+          .info(`Skipping ${toolDescription} deploy: no release at '${
               vlm.theme.path(toolReleasePath)}'`);
       return {};
     }
-    logger.info(`deploying ${toolDescription} release from '${vlm.theme.path(toolReleasePath)}'`);
+    logger.info(`Deploying ${toolDescription} release from '${vlm.theme.path(toolReleasePath)}'`);
     return { toolConfig, toolReleasePath };
   },
 };

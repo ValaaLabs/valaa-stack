@@ -13,9 +13,9 @@ exports.handler = async (yargv) => {
   // Only enabled inside package
   const vlm = yargv.vlm;
   const topArgs = [".", ...yargv._.slice(0, (yargv._.indexOf("--") + 1) || undefined)];
-  const ret = (await _walk(vlm, topArgs)).value;
+  const ret_ = (await _walk(vlm, topArgs)).value;
   // console.log("args:", topArgs, "\n\tret:", ret);
-  return ret;
+  return ret_;
 
   async function _walk (head, argv, index = 0, isArgument) {
     vlm.ifVerbose(1)

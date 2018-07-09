@@ -130,6 +130,11 @@ const vlm = globalVargs.vlm = {
   },
 
   readFile: util.promisify(fs.readFile),
+  async tryReadFile (...rest) {
+    try { return await this.readFile(...rest); } catch (error) {
+      return undefined;
+    }
+  },
 
   inquireText: async (message, default_ = "") =>
       (await vlm.inquire({
@@ -1383,7 +1388,7 @@ function _introspectCommands (vargs_, introspect, commands_, commandGlob, isWild
   }
   const chapters = { "": {
     chapters: true,
-    entries: [{ pools: { heading: { style: "bold" } } }] }, pools: { "": { chapters: true }},
+    entries: [{ pools: { heading: { style: "bold" } } }] }, pools: { "": { chapters: true } },
   };
   if (introspect.defaultUsage) {
     chapters[""].entries[0].pools.heading.text =
@@ -1629,11 +1634,8 @@ function _renderBlock (block, contextBlock, theme) {
 }
 
 function _renderTable (rowKeyBlocks, tableBlock, tableTheme) {
-  const _cvalue = (block, c) => {
-    return (((typeof block.value !== "object")
-          ? [0, block]
-          : block.mappings.find(([key]) => (key === c.property)) || [0, { text: "" }])[1].text);
-  }
+  const _cvalue = (block, c) => (((typeof block.value !== "object") ? [0, block]
+      : block.mappings.find(([key]) => (key === c.property)) || [0, { text: "" }])[1].text);
   const _espipe = (v) => (v && v.replace(/\|/g, "\\|")) || "";
   let columns = (tableBlock.header || {}).columns;
   if (!columns) {

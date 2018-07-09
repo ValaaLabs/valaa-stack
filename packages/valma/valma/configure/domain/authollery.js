@@ -93,7 +93,7 @@ invoke the ${subName} commands of all of its ${subName}able tools.`,
       : `
   target: authollery.createStandardBuildTargetOption(
       yargs, "The target root release path of the whole build"),
-  force: { alias: "f", type: "boolean", description: "Allow building already deployed versions" },
+  force: { alias: "f", type: "boolean", description: "Allow building already deployed releases" },
   overwrite: { type: "boolean", description: "Allow overwriting existing local build files" },`}
 })`,
 
@@ -118,11 +118,11 @@ invoke the ${subName} commands of all of its ${subName}able tools.`,
       yargv, ${isTool && "toolset, "}vlm.${type}, "${simpleName}");
   if (!${type}ReleasePath) return;
 
-  const deployedVersionHash = await vlm.readFile(vlm.path.join(${type}ReleasePath, "version-hash"));
+  const deployedReleaseHash = await vlm.readFile(vlm.path.join(${type}ReleasePath, "version-hash"));
 
   ${isTool
-    ? "vlm.updateToolConfig(toolset, vlm.tool, { deployedVersionHash });"
-    : "vlm.updateToolsetConfig(vlm.toolset, { deployedVersionHash });"
+    ? "vlm.updateToolConfig(toolset, vlm.tool, { deployedReleaseHash });"
+    : "vlm.updateToolsetConfig(vlm.toolset, { deployedReleaseHash });"
   }
   return;
 };\n`,
