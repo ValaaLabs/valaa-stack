@@ -450,6 +450,12 @@ characters to be equal although '/' is recommended anywhere possible.
           type: "string", global: false, default: "markdown", choices: Object.keys(_renderers),
           description: "Show result value in output",
         },
+        json: {
+          group: "Valma root options:",
+          type: "boolean", global: false,
+          description: "Alias for --results=json for rendering result as JSON into standard output",
+          causes: "results=json",
+        },
         interactive: {
           group: "Valma root options:",
           type: "boolean", default: true, global: false,
@@ -1233,10 +1239,10 @@ function listMatchingCommands (commandSelector, matchAll = false) {
       })
       .map(name => _valmaCommandFromPath(name))
   )).filter((v, i, a) => (a.indexOf(v) === i));
-  vlm.ifVerbose(1)
+  this.ifVerbose(1)
       .expound(matchAll ? "listMatchingCommands:" : "listAllMatchingCommands:",
-          vlm.theme.command(commandSelector),
-          ...(vlm.verbosity > 1 ? [", minimatcher:", minimatcher] : []),
+          this.theme.command(commandSelector),
+          ...(this.verbosity > 1 ? [", minimatcher:", minimatcher] : []),
           "\n\tresults:", ret);
   return ret;
 }
@@ -1386,22 +1392,22 @@ function _introspectCommands (vargs_, introspect, commands_, commandGlob, isWild
     if ((poolIntro[""] || {}).columns.length === 1) poolIntro[""].columns[0].hide = true;
     return poolIntro;
   }
-  const chapters = { "": {
-    chapters: true,
-    entries: [{ pools: { heading: { style: "bold" } } }] }, pools: { "": { chapters: true } },
-  };
+  const chapters = { "": { chapters: true } };
+  const pools = { "": { chapters: true, heading: { style: "bold" } } };
+  _addLayoutOrderedProperty(chapters, "pools", pools);
+
   if (introspect.defaultUsage) {
-    chapters[""].entries[0].pools.heading.text =
-        `${matchAll ? "All known" : "Visible"} commands by pool:`;
+    chapters.pools[""].heading.text = `${matchAll ? "All known" : "Visible"} commands by pool:`;
     if (!matchAll) {
-      chapters[""].entries.unshift(
-          { usage: { heading: { style: "bold", text: `Usage: ${introspect.module.command}` } } });
+      chapters[""].entries.unshift({
+        usage: { heading: { style: "bold", text: `Usage: ${introspect.module.command}` } }
+      });
       chapters.usage = "";
     }
   }
   for (const pool of [..._activePools].reverse()) {
-    const poolIntro = chapters.pools[pool.name] =
-        _introspectPool(pool, isWildcard_, globalVargv.pools, commands_);
+    const poolIntro = _introspectPool(pool, isWildcard_, globalVargv.pools, commands_);
+    _addLayoutOrderedProperty(pools, pool.name, poolIntro);
     const isEmpty = !Object.keys(poolIntro).filter(k => k).length;
     if (isWildcard_ && (!isEmpty || globalVargv.pools || matchAll)) {
       poolIntro[""].heading = {
@@ -1417,10 +1423,9 @@ function _introspectCommands (vargs_, introspect, commands_, commandGlob, isWild
     }
   }
   if (isWildcard_) return chapters;
-  const visiblePoolName = Object.keys(chapters.pools)
-      .find(key => key && !(chapters.pools[key][""] || {}).hide);
+  const visiblePoolName = Object.keys(pools).find(key => key && !(pools[key][""] || {}).hide);
   if (!visiblePoolName) return undefined;
-  const command = chapters.pools[visiblePoolName];
+  const command = pools[visiblePoolName];
   const keys = Object.keys(command).filter(k => k);
   return (keys.length !== 1) ? command : command[keys[0]];
 
@@ -1544,6 +1549,13 @@ function _introspectCommands (vargs_, introspect, commands_, commandGlob, isWild
 function _toGFMarkdown (value, theme, context) {
   // https://github.github.com/gfm/#introduction
   return _renderBlock(_createBlockTree(value, context, theme), context, theme);
+}
+
+function _addLayoutOrderedProperty (target, name, entry, customLayout) {
+  const targetLayout = target[""] || (target[""] = {});
+  const entries = targetLayout.entries || (targetLayout.entries = []);
+  entries.push(customLayout === undefined ? name : [name, customLayout]);
+  target[name] = entry;
 }
 
 function _createBlockTree (value, contextBlock, theme) {
