@@ -146,6 +146,13 @@ const vlm = globalVargs.vlm = {
       })).confirm,
 
   contextCommand: "vlm",
+  contextIndex: undefined,
+  getContextName: function getContextName () {
+    return `${this.getContextIndexText()}${this.contextCommand}`;
+  },
+  getContextIndexText: function getContextIndexText () {
+    return (this.contextIndex === undefined) ? "" : `[${this.contextIndex}] `;
+  },
 
   render (type, ...rest) {
     const renderer = _renderers[type || ""];
@@ -183,9 +190,9 @@ const vlm = globalVargs.vlm = {
   // As a diagnostic message outputs to stderr where available.
   echo (...rest) {
     if (this.theme.echo) {
-      if ((rest[0] || "")[0] === "<") this.indent -= 2;
+      if ((rest[0] || "").includes("<<")) this.indent -= 2;
       console.warn(" ".repeat(this.indent - 1), this.theme.echo(...rest));
-      if ((rest[0] || "")[0] === ">") this.indent += 2;
+      if ((rest[0] || "").includes(">>")) this.indent += 2;
     }
     return this;
   },
@@ -211,7 +218,7 @@ const vlm = globalVargs.vlm = {
   // As a diagnostic message outputs to stderr where available.
   error (msg, ...rest) {
     if (this.theme.error) {
-      console.error(this.theme.error(`${this.contextCommand} laments:`, msg), ...rest);
+      console.error(this.theme.error(`${this.getContextName()} laments:`, msg), ...rest);
     }
     return this;
   },
@@ -224,7 +231,7 @@ const vlm = globalVargs.vlm = {
         Error.captureStackTrace(dummy);
         console.error(this.theme.exception(`vlm.exception: no error provided! ${dummy.stack}`));
       } else {
-        console.error(this.theme.exception(`${this.contextCommand} panics: ${error}`), ...rest);
+        console.error(this.theme.exception(`${this.getContextName()} panics: ${error}`), ...rest);
       }
     }
     return this;
@@ -243,13 +250,13 @@ const vlm = globalVargs.vlm = {
   // correctly with piping in general.
   info (msg, ...rest) {
     if (this.theme.info) {
-      console.warn(this.theme.info(`${this.contextCommand} informs:`, msg), ...rest);
+      console.warn(this.theme.info(`${this.getContextName()} informs:`, msg), ...rest);
     }
     return this;
   },
   instruct (msg, ...rest) {
     if (this.theme.instruct) {
-      console.warn(this.theme.instruct(`${this.contextCommand} instructs:`, msg), ...rest);
+      console.warn(this.theme.instruct(`${this.getContextName()} instructs:`, msg), ...rest);
     }
     return this;
   },
@@ -260,7 +267,7 @@ const vlm = globalVargs.vlm = {
   // As a diagnostic message outputs to stderr where available.
   babble (msg, ...rest) {
     if (this.theme.babble) {
-      console.warn(this.theme.babble(`${this.contextCommand} babbles:`, msg), ...rest);
+      console.warn(this.theme.babble(`${this.getContextName()} babbles:`, msg), ...rest);
     }
     return this;
   },
@@ -269,7 +276,7 @@ const vlm = globalVargs.vlm = {
   // As a diagnostic message outputs to stderr where available.
   expound (msg, ...rest) {
     if (this.theme.expound) {
-      console.warn(this.theme.expound(`${this.contextCommand} expounds:`, msg), ...rest);
+      console.warn(this.theme.expound(`${this.getContextName()} expounds:`, msg), ...rest);
     }
     return this;
   },
@@ -607,6 +614,8 @@ function _addUniversalOptions (vargs_,
 vlm.isCompleting = (process.argv[2] === "--get-yargs-completions");
 const processArgv = vlm.isCompleting ? process.argv.slice(3) : process.argv.slice(2);
 
+let nextContextIndex;
+
 _addUniversalOptions(globalVargs, { strict: !vlm.isCompleting, hidden: false });
 module.exports.builder(globalVargs);
 const globalVargv = _parseUntilLastPositional(globalVargs, processArgv, module.exports.command);
@@ -616,6 +625,9 @@ const _commandPrefix = globalVargv.commandPrefix;
 vlm.verbosity = vlm.isCompleting ? 0 : globalVargv.verbose;
 vlm.interactive = vlm.isCompleting ? 0 : globalVargv.interactive;
 if (!globalVargv.echos || vlm.isCompleting) vlm.echo = function noEcho () { return this; };
+else {
+  nextContextIndex = 0;
+}
 if (!globalVargv.logs || vlm.isCompleting) vlm.log = function noLog () { return this; };
 if (!globalVargv.infos || vlm.isCompleting) vlm.info = function noInfo () { return this; };
 if (!globalVargv.instructs || vlm.isCompleting) vlm.instruct = function noInstr () { return this; };
@@ -789,7 +801,7 @@ async function handler (vargv, customVLM) {
   const subVLM = Object.create(customVLM || vlm);
   subVLM.contextVargv = vargv;
   const maybeRet = subVLM.invoke(vargv.command, vargv._);
-  subVLM.invoke = callValmaWithEcho;
+  subVLM.invoke = invokeWithEcho;
   const ret = await maybeRet;
   _flushPendingConfigWrites(vlm);
   return ret;
@@ -805,22 +817,26 @@ async function handler (vargv, customVLM) {
   ####   #    #  ######  ######    #     #    #  ######  #    #  #    #
 */
 
-async function callValmaWithEcho (commandSelector, args) {
+async function invokeWithEcho (commandSelector, args) {
   // Remove everything after space so that exports.command can be given as commandSelector as-is
   // (they occasionally have yargs usage arguments after the command selector).
+  const invokeVLM = Object.create(this);
+  if (nextContextIndex !== undefined) invokeVLM.contextIndex = nextContextIndex++;
   const selector = commandSelector.split(" ")[0];
   const argv = _processArgs(args);
-  this.echo(">> vlm", vlm.theme.command(selector, ...argv));
+  invokeVLM.echo(`${this.getContextIndexText()}>> ${invokeVLM.getContextIndexText()}vlm`,
+      this.theme.command(selector, ...argv));
   let echoResult;
   try {
-    const ret = await invoke.call(this, selector, argv);
-    echoResult = this.theme.blue((JSON.stringify(ret) || "undefined").slice(0, 71));
+    const ret = await invoke.call(invokeVLM, selector, argv);
+    echoResult = invokeVLM.theme.blue((JSON.stringify(ret) || "undefined").slice(0, 71));
     return ret;
   } catch (error) {
-    echoResult = this.theme.error("exception:", String(error));
+    echoResult = invokeVLM.theme.error("exception:", String(error));
     throw error;
   } finally {
-    this.echo("<< vlm", `${vlm.theme.command(selector)}:`, echoResult);
+    invokeVLM.echo(`${this.getContextIndexText()}<< ${invokeVLM.getContextIndexText()}vlm`,
+        `${vlm.theme.command(selector)}:`, echoResult);
   }
 }
 
@@ -833,6 +849,7 @@ async function invoke (commandSelector, argv) {
   }
 
   const contextVargv = this.contextVargv;
+  const contextVLM = contextVargv.vlm;
   const commandGlob = _underToSlash((contextVargv.matchAll || this.isCompleting)
       ? _globFromPrefixSelector(commandSelector, contextVargv.matchAll)
       : _globFromExactSelector(commandSelector || "*"));
@@ -870,9 +887,8 @@ async function invoke (commandSelector, argv) {
           "\n\t}");
 
   if (introspect) {
-    const ret = _introspectCommands(globalVargs, introspect, activeCommands, commandGlob,
+    return _introspectCommands(globalVargs, introspect, activeCommands, commandGlob,
         isWildcardCommand, contextVargv.matchAll);
-    return isWildcardCommand ? ret : ret[0];
   }
 
   if (!isWildcardCommand && !Object.keys(activeCommands).length) {
@@ -938,7 +954,8 @@ async function invoke (commandSelector, argv) {
         subVLM.contextVargv = subVargv;
         try {
           if (isWildcardCommand) {
-            this.echo(">>* vlm", this.theme.command(commandName, ...argv));
+            this.echo(`${contextVLM.getContextIndexText()}>>* ${subVLM.getContextIndexText()}vlm`,
+                this.theme.command(commandName, ...argv));
           }
           await _tryInteractive(subVargv, activeCommand.subVargs);
           if (subVLM.toolset) {
@@ -952,7 +969,7 @@ async function invoke (commandSelector, argv) {
               const header = `tool${tool ? "Config" : "setConfig"}.requires[${i}] of ${
                 this.theme.command(commandName)}`;
               try {
-                this.echo(`>>>? ${header}`, "via",
+                this.echo(`${subVLM.getContextIndexText()}>>>? ${header}`, "via",
                     ...(tool ? ["tool", subVLM.colors.package(tool), "of"] : []),
                     "toolset", subVLM.colors.package(subVLM.toolset));
                 requireResult = await subVLM.execute(requires[i]);
@@ -960,7 +977,8 @@ async function invoke (commandSelector, argv) {
                 requireResult = subVLM.error(`<exception>: ${String(error)}`);
                 throw error;
               } finally {
-                this.echo(`<<<? ${header}:`, this.theme.blue(requireResult));
+                this.echo(`${subVLM.getContextIndexText()}<<<? ${header}:`,
+                    this.theme.blue(requireResult));
               }
               if (!requireResult) {
                 const message = `'${this.theme.command(commandName)
@@ -990,7 +1008,8 @@ async function invoke (commandSelector, argv) {
             let retValue = JSON.stringify(ret[ret.length - 1]);
             if (retValue === undefined) retValue = "undefined";
             if (isWildcardCommand) {
-              this.echo("<<* vlm", `${this.theme.command(commandName)}:`,
+              this.echo(`${contextVLM.getContextIndexText()}<<* ${subVLM.getContextIndexText()}vlm`,
+                  `${this.theme.command(commandName)}:`,
                   this.theme.blue(retValue.slice(0, 40), retValue.length > 40 ? "..." : ""));
             }
           }
@@ -1157,6 +1176,7 @@ function _selectActiveCommands (contextVLM, activePools, commandGlob, argv, intr
 
       subVargs.vlm = Object.assign(Object.create(contextVLM), module.vlm,
           { contextCommand: commandName });
+      if (nextContextIndex !== undefined) subVargs.vlm.contextIndex = nextContextIndex++;
 
       const activeCommand = ret[commandName] = {
         ...poolCommand,
@@ -1273,20 +1293,20 @@ async function execute (args, spawnOptions = {}) {
   }
   return new Promise((resolve, failure) => {
     _flushPendingConfigWrites(this);
+    this.echo(`${this.getContextIndexText()}>>$`, `${this.theme.executable(...argv)}`);
     const _onDone = (code, signal) => {
       if (code || signal) {
-        this.echo("<--", `${this.theme.executable(argv[0])}:`,
+        this.echo(`${this.getContextIndexText()}<<$`, `${this.theme.executable(argv[0])}:`,
         this.theme.error("<error>:", code || signal));
         failure(code || signal);
       } else {
         _refreshActivePools();
         _reloadPackageAndToolsetsConfigs();
-        this.echo("<--", `${this.theme.executable(argv[0])}:`,
+        this.echo(`${this.getContextIndexText()}<<$`, `${this.theme.executable(argv[0])}:`,
             this.theme.warning("execute return values not implemented yet"));
         resolve();
       }
     };
-    this.echo(">--", this.theme.executable(...argv));
     if (this.contextVargv && this.contextVargv.dryRun && !spawnOptions.noDryRun) {
       this.echo("      dry-run: skipping execution and returning:",
       this.theme.blue(spawnOptions.dryRunReturn || 0));
@@ -1427,7 +1447,11 @@ function _introspectCommands (vargs_, introspect, commands_, commandGlob, isWild
   if (!visiblePoolName) return undefined;
   const command = pools[visiblePoolName];
   const keys = Object.keys(command).filter(k => k);
-  return (keys.length !== 1) ? command : command[keys[0]];
+  if (keys.length !== 1) return command;
+  const ret = command[keys[0]];
+  if (typeof ret !== "object" || !ret || Array.isArray(ret)) return ret;
+  ret[""] = Object.assign(ret[""] || {}, { entries: (command[""] || {}).columns });
+  return ret;
 
   function _introspectPool (pool, isWildcard, showOverridden, introedCommands) {
     const missingFile = "<file_missing>";
@@ -1435,20 +1459,19 @@ function _introspectCommands (vargs_, introspect, commands_, commandGlob, isWild
     const poolIntro = { "": {
       stats: pool.stats,
       columns: [
-        { property: "name", text: "command", style: "command" },
-        { property: "usage", style: "command" },
-        { property: "description", style: { default: missingPackage } },
-        { property: "package", style: "package" },
-        { property: "version", style: [{ default: missingPackage }, "version"] },
-        { property: "pool", text: "source pool" },
-        { property: "file", text: "script path", style: "path" },
-        { property: "resolved", text: "real file path", style: [{ default: missingFile }, "path"] },
-        {
-          property: "introduction", oob: true,
-          elementStyle: isWildcard && { prefix: "\n", suffix: "\n" }
-        },
-        { property: "source", oob: true, elementStyle: "cardinal" },
-      ].filter(c => introspect.show[c.property]),
+        { name: { text: "command", style: "command" } },
+        { usage: { style: "command" } },
+        { description: { style: { default: missingPackage } } },
+        { package: { style: "package" } },
+        { version: { style: [{ default: missingPackage }, "version"] } },
+        { pool: { text: "source pool" } },
+        { file: { text: "script path", style: "path" } },
+        { resolved: { text: "real file path", style: [{ default: missingFile }, "path"] } },
+        { introduction: {
+          oob: true, elementStyle: isWildcard && { prefix: "\n", suffix: "\n" }
+        } },
+        { source: { oob: true, elementStyle: "cardinal" } },
+      ].filter(c => introspect.show[Object.keys(c)[0]]),
     } };
     const trivialKey = Object.keys(introspect.show).length === 1 && Object.keys(introspect.show)[0];
     Object.keys(pool.commands)
@@ -1589,43 +1612,51 @@ function _createBlockTree (value, contextBlock, theme) {
   } else if (block.text === undefined) {
     block.type = "object";
     if (value[""]) block.header = value[""];
-    block.entries = {};
-    block.mappings = [];
-    _extractEntries((block.header || {}).entries || [null]); // default list sorted block.value keys
-    if (!block.mappings.findIndex(e => !e[1].empty) === -1) block.empty = true;
+    _extractEntries((block.header || {}).entries || [null],
+        value, block.mappingKeyBlocks = [], block.mappingLayouts = {});
+    if (!block.mappingKeyBlocks.findIndex(e => !e[1].empty) === -1) block.empty = true;
+    if ((block.header || {}).columns) {
+      _extractEntries((block.header || {}).columns,
+          undefined, block.columnKeyBlocks = [], block.columnLayouts = {});
+    }
   }
   if (contextBlock && contextBlock.height <= block.height) contextBlock.height = block.height + 1;
   return block;
 
-  function _extractEntries (entry) {
+  function _extractEntries (entry, presenceCheck, targetSequence, targetLayouts) {
     if (entry === undefined || entry === "") return;
-    if (Array.isArray(entry)) {
+    const selfRecurser = e => _extractEntries(e, presenceCheck, targetSequence, targetLayouts);
+    if (entry === null) Object.keys(block.value).sort().forEach(selfRecurser);
+    else if (Array.isArray(entry)) {
       if (entry.length === 2 && typeof entry[0] === "string" && typeof entry[1] === "object") {
-        if ((value[entry[0]] !== undefined) && !block.entries[entry[0]]) {
-          block.mappings.push([entry[0], _createBlockTree(value[entry[0]], block, theme)]);
+        if ((!presenceCheck ||( value[entry[0]] !== undefined)) && !targetLayouts[entry[0]]) {
+          targetSequence.push([entry[0], _createBlockTree(value[entry[0]], block, theme)]);
         }
-        block.entries[entry[0]] = Object.assign(block.entries[entry[0]] || {}, entry[1]);
+        targetLayouts[entry[0]] = Object.assign(targetLayouts[entry[0]] || {}, entry[1]);
       } else {
-        entry.map(_extractEntries);
+        entry.forEach(selfRecurser);
       }
-    } else if (entry === null) Object.keys(block.value).sort().forEach(_extractEntries);
-    else if (typeof entry === "object") {
-      Object.keys(entry).sort().map(key => [key, entry[key]]).forEach(_extractEntries);
-    } else _extractEntries([String(entry), {}]);
+    } else if (typeof entry === "object") {
+      Object.keys(entry).sort().map(key => [key, entry[key]]).forEach(selfRecurser);
+    } else selfRecurser([String(entry), {}]);
   }
 }
 
 function _renderBlock (block, contextBlock, theme) {
-  // console.log("rendering block:", { ...block, value: undefined });
   if ((block.header || {}).hide) return "";
   if (block.text !== undefined) return block.text;
   if (block.type === "object") {
     return ((block.height === 1) && !block.header)
-        ? _renderTable(block.mappings.map(m =>
-                ([m[0], { value: {}, mappings: [["key", { text: m[0] }], ["value", m[1]]] }])),
-            { ...block, header: { columns: ["key", "value"] } }, theme)
-        : (((block.height <= 2) && !(block.header || {}).chapters)
-            ? _renderTable : _renderChapters)(block.mappings, block, theme);
+        ? _renderTable(
+            block.mappingKeyBlocks.map(m => ([
+              m[0], { value: {}, mappingKeyBlocks: [["key", { text: m[0] }], ["value", m[1]]] }
+            ])), {
+              ...block,
+              columnLayouts: { key: {}, value: {} },
+              columnKeyBlocks: [["key", {}], ["value", {}]]
+            }, theme)
+        : (((block.height !== 2) || (block.header || {}).chapters)
+            ? _renderChapters : _renderTable)(block.mappingKeyBlocks, block, theme);
   }
   if (block.type === "array") {
     if (block.height === 1) return block.value.join(" ");
@@ -1633,7 +1664,7 @@ function _renderBlock (block, contextBlock, theme) {
         && block.sections[block.sections.length - 1][0].type === "object") {
       const header = (block.sections.length === 2) && block.sections[0];
       const blocks = block.sections[block.sections.length - 1];
-      return _renderTable(blocks.map((b, index) => ([index, b])), { ...block, header }, theme);
+      return _renderTable(blocks.map((b, index) => ([index, b])), { ...block, ...header }, theme);
     }
     // TODO(iridian): Add lists etc.
     return block.entryBlocks.map(entryBlock => _renderBlock(entryBlock, block, theme)).join("\n");
@@ -1645,46 +1676,62 @@ function _renderBlock (block, contextBlock, theme) {
   throw new Error("can't render");
 }
 
+function _renderChapters (chapterKeyBlocks, block, sectionTheme) {
+  const retRows = [];
+  chapterKeyBlocks.forEach(([key, chapterBlock]) => {
+    const layout = Object.assign({ heading: { text: key, style: "bold" } },
+        chapterBlock.header, (block.mappingLayouts || {})[key]);
+    if (layout.hide) return;
+    if ((layout.heading || {}).text) {
+      retRows.push(sectionTheme.decorate([layout.heading.style, { heading: block.depth }])(
+          layout.heading.text));
+    }
+    const chapterText = _renderBlock(chapterBlock, block, sectionTheme);
+    const style = layout.elementStyle || layout.style;
+    retRows.push(!style ? chapterText : sectionTheme.decorate(style)(chapterText));
+  });
+  return retRows.join("\n");
+}
+
+
 function _renderTable (rowKeyBlocks, tableBlock, tableTheme) {
-  const _cvalue = (block, c) => (((typeof block.value !== "object") ? [0, block]
-      : block.mappings.find(([key]) => (key === c.property)) || [0, { text: "" }])[1].text);
+  const _cvalue = (block, column) => (((typeof block.value !== "object") ? [0, block]
+      : block.mappingKeyBlocks.find(([key]) => (key === column)) || [0, { text: "" }])[1].text);
   const _espipe = (v) => (v && v.replace(/\|/g, "\\|")) || "";
-  let columns = (tableBlock.header || {}).columns;
-  if (!columns) {
-    columns = [];
-    rowKeyBlocks.forEach(([, block]) => (block.mappings || []).forEach(
-        ([elementKey]) => { if (!columns.includes(elementKey)) columns.push(elementKey); }));
-        /*
-    console.log("created columns for tableBlock:", { ...tableBlock },
-        "\n\n\nrockKeyBlocks:", JSON.stringify(rowKeyBlocks, null, 2),
-        "\n\n\n\ncolumns:", columns);
-        */
+  let { columnKeyBlocks, columnLayouts } = tableBlock;
+  if (!columnKeyBlocks) {
+    columnKeyBlocks = [];
+    columnLayouts = {};
+    rowKeyBlocks.forEach(([, block]) => block.mappingKeyBlocks.forEach(([elementKey]) => {
+      if (!columnLayouts[elementKey]) {
+        columnLayouts[elementKey] = {};
+        columnKeyBlocks.push([elementKey, columnLayouts[elementKey]]);
+      }
+    }));
   }
-  columns.forEach((column_, index_) => {
-    let c = ((typeof column_) === "string") ? { property: column_ } : column_;
-    if (!c.property) c.property = c.name || c.text;
-    c = Object.assign({}, (tableTheme.headers || {})[c.property], c);
-    columns[index_] = c;
+  columnKeyBlocks.forEach(([name, layout], index_) => {
+    const c = Object.assign({}, (tableTheme.headers || {})[name], columnLayouts[name]);
+    columnKeyBlocks[index_] = [name, c];
     if (!c.style) c.style = ((...rest) => rest.join(""));
     if (!c.headerStyle) c.headerStyle = c.style;
     if (!c.getHeaderStyle) c.getHeaderStyle = (/* c, tableTheme */) => c.headerStyle;
     if (!c.elementStyle) c.elementStyle = c.style;
     if (!c.getElementStyle) c.getElementStyle = (/* row, c, tableTheme */) => c.elementStyle;
     if (c.oob) return;
-    c.width = Math.max(3, (c.text || c.property).length,
-        ...rowKeyBlocks.map(([, block]) => _espipe(_cvalue(block, c)).length));
+    c.width = Math.max(3, (c.text || name).length,
+        ...rowKeyBlocks.map(([, block]) => _espipe(_cvalue(block, name)).length));
   });
   const retRows = [];
-  if (columns && !(tableBlock.header || {}).hide) {
-    retRows.push(columns.map(c => _renderElement(
-        _espipe(c.text || c.property), c.width, c.getHeaderStyle(c, tableTheme))));
-    retRows.push(columns.map(
-        c => `${(c.align || "right") !== "right" ? ":" : "-"}${
+  if (columnKeyBlocks && !(tableBlock.header || {}).hide) {
+    retRows.push(columnKeyBlocks.map(([name, c]) => _renderElement(
+        _espipe(c.text || name), c.width, c.getHeaderStyle(c, tableTheme))));
+    retRows.push(columnKeyBlocks.map(
+      ([, c]) => `${(c.align || "right") !== "right" ? ":" : "-"}${
             "-".repeat(c.width - 2)}${(c.align || "left") !== "left" ? ":" : "-"}`));
   }
-  retRows.push(...rowKeyBlocks.map(([, block]) => columns.map(c => {
-    const elementBlock = ((block.header || []).columns || {})[c.property] || {};
-    const elementText = _cvalue(block, c);
+  retRows.push(...rowKeyBlocks.map(([, block]) => columnKeyBlocks.map(([name, c]) => {
+    const elementBlock = (block.columnLayouts || {})[name] || {};
+    const elementText = _cvalue(block, name);
     return _renderElement(!c.oob ? _espipe(elementText) : elementText, c.width,
         elementBlock.style || c.getElementStyle(block, c, tableTheme));
   })));
@@ -1695,21 +1742,6 @@ function _renderTable (rowKeyBlocks, tableBlock, tableTheme) {
     const pad = width - text.length;
     return `${tableTheme.decorate(style)(text)}${" ".repeat(pad < 0 ? 0 : pad)}`;
   }
-}
-
-function _renderChapters (chapterKeyBlocks, block, sectionTheme) {
-  const retRows = [];
-  chapterKeyBlocks.forEach(([key, chapterBlock]) => {
-    if ((chapterBlock.header || {}).hide) return;
-    const heading = (chapterBlock.header || {}).heading
-        || ((block.entries || {})[key] || {}).heading
-        || { text: key, style: "bold" };
-    if (heading.text) {
-      retRows.push(sectionTheme.decorate([heading.style, { heading: block.depth }])(heading.text));
-    }
-    retRows.push(_renderBlock(chapterBlock, block, sectionTheme));
-  });
-  return retRows.join("\n");
 }
 
 /*
