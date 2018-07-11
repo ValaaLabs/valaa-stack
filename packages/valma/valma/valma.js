@@ -54,6 +54,8 @@ const vlm = globalVargs.vlm = {
   // Any plain objects are expanded to boolean or parameterized flags depending on the value type.
   execute,
 
+  cwd: process.cwd(),
+
   // Immutable contents of package.json (contains pending updates as well)
   packageConfig: undefined,
 
@@ -117,6 +119,15 @@ const vlm = globalVargs.vlm = {
   // node.js path.posix tools - all shell commands expect posix-style paths.
   // See https://nodejs.org/api/path.html
   path: path.posix,
+
+  // forward to node require. Non-absolute paths are resolved from the cwd.
+  require: function require_ (path_) {
+    const resolvedPath = require.resolve(path_, { paths: [this.cwd] });
+    if (!resolvedPath) {
+      throw new Error(`Could not require.resolve path "${path_}" from cwd "${this.cwd}"`);
+    }
+    return require(resolvedPath);
+  },
 
   // minimatch namespace of the glob matching tools
   // See https://github.com/isaacs/minimatch
