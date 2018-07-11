@@ -1593,55 +1593,80 @@ function _addLayoutOrderedProperty (target, name, entry, customLayout) {
 }
 
 function _createBlockTree (value, contextBlock, theme) {
-  const block = {
+  const ret = {
     value, type: "text", text: (value === undefined) ? ""
         : (value === null) ? "-"
         : (typeof value === "string") ? value
         : (typeof value === "number" || typeof value === "boolean") ? JSON.stringify(value)
         : undefined,
-    height: 0, depth: ((contextBlock && contextBlock.depth) || 0) + 1,
+    height: 0, minHeight: 1000000, depth: ((contextBlock && contextBlock.depth) || 0) + 1,
   };
   if (typeof value === "function") {
-    block.renderer = value;
+    ret.renderer = value;
   } else if (Array.isArray(value)) {
-    block.type = "array";
-    block.entryBlocks = value.map(e => _createBlockTree(e, block, theme));
-    if (block.entryBlocks.findIndex(e => !e.empty) === -1) block.empty = true;
-    else if (block.height > 1) {
+    ret.type = "array";
+    ret.entryBlocks = value.map(e => _createBlockTree(e, ret, theme));
+    if (ret.entryBlocks.findIndex(e => !e.empty) === -1) ret.empty = true;
+    else if (ret.height > 1) {
       // Group entryBlocks into separate sections of blocks with the same type and height.
-      block.sections = [];
-      let info = { start: 0, height: 0, type: "" };
-      block.entryBlocks.forEach((e, index) => {
-        if (e.height !== info.height || e.type !== info.type) {
-          if (index !== info.start) block.sections.push(block.entryBlocks.slice(info.start, index));
-          info = { start: index, height: e.height, type: e.type };
+      ret.sections = [];
+      let info = { start: 0, height: 0, minHeight: 1000000, type: "" };
+      ret.entryBlocks.forEach((e, index) => {
+        if (e.type !== info.type || e.height !== info.height || e.minHeight !== info.minHeight) {
+          if (index !== info.start) ret.sections.push(ret.entryBlocks.slice(info.start, index));
+          info = { start: index, height: e.height, minHeight: 1000000, type: e.type };
         }
       });
-      const section = block.entryBlocks.slice(info.start);
-      if (section.length) block.sections.push(section);
+      const section = ret.entryBlocks.slice(info.start);
+      if (section.length) ret.sections.push(section);
     }
-  } else if (block.text === undefined) {
-    block.type = "object";
-    if (value[""]) block.header = value[""];
-    _extractEntries((block.header || {}).entries || [null],
-        value, block.mappingKeyBlocks = [], block.mappingLayouts = {});
-    if (!block.mappingKeyBlocks.findIndex(e => !e[1].empty) === -1) block.empty = true;
-    if ((block.header || {}).columns) {
-      _extractEntries((block.header || {}).columns,
-          undefined, block.columnKeyBlocks = [], block.columnLayouts = {});
+  } else if (ret.text === undefined) {
+    ret.type = "object";
+    if (value[""]) ret.layout = value[""];
+    _extractEntries((ret.layout || {}).entries || [null],
+        ret.value, ret.mappingKeyBlocks = [], ret.mappingLayouts = {});
+    if (!ret.mappingKeyBlocks.findIndex(e => !e[1].empty) === -1) ret.empty = true;
+
+    if ((ret.layout || {}).columns) {
+      _extractEntries((ret.layout || {}).columns,
+          undefined, ret.columnKeyBlocks = [], ret.columnLayouts = {});
+    } else if (!ret.empty) {
+      ret.mappingKeyBlocks.forEach(([, mappingBlock]) => {
+        if (mappingBlock.mappingKeyBlocks) {
+          if (!ret.columnLayouts) Object.assign(ret, { columnKeyBlocks: [], columnLayouts: {} });
+          mappingBlock.mappingKeyBlocks.forEach(([elementKey]) => {
+            let columnLayout = ret.columnLayouts[elementKey];
+            if (!columnLayout) {
+              columnLayout = ret.columnLayouts[elementKey] = {};
+              ret.columnKeyBlocks.push([elementKey, columnLayout]);
+            }
+            columnLayout.entryCount = (columnLayout.entryCount || 0) + 1;
+          });
+        }
+      });
     }
   }
-  if (contextBlock && contextBlock.height <= block.height) contextBlock.height = block.height + 1;
-  return block;
+  if (ret.minHeight > ret.height) ret.minHeight = ret.height;
+  if (contextBlock && (contextBlock.height <= ret.height)) contextBlock.height = ret.height + 1;
+  if (contextBlock && (contextBlock.minHeight > ret.minHeight)) {
+    contextBlock.minHeight = ret.minHeight + 1;
+  }
+  return ret;
 
-  function _extractEntries (entry, presenceCheck, targetSequence, targetLayouts) {
-    if (entry === undefined || entry === "") return;
-    const selfRecurser = e => _extractEntries(e, presenceCheck, targetSequence, targetLayouts);
-    if (entry === null) Object.keys(block.value).sort().forEach(selfRecurser);
-    else if (Array.isArray(entry)) {
+  function _extractEntries (entry, sourceObject, targetSequence, targetLayouts) {
+    // If entryBlock is omitted the entries are inside a layout structure. Limit some operations,
+    // notably provide an undefined contextBlock for recursive processing.
+    if ((entry === undefined) || (entry === "")) return;
+    const selfRecurser = e => _extractEntries(e, sourceObject, targetSequence, targetLayouts);
+    if (entry === null) {
+      if (sourceObject) Object.keys(sourceObject).sort().forEach(selfRecurser);
+    } else if (Array.isArray(entry)) {
       if (entry.length === 2 && typeof entry[0] === "string" && typeof entry[1] === "object") {
-        if ((!presenceCheck ||( value[entry[0]] !== undefined)) && !targetLayouts[entry[0]]) {
-          targetSequence.push([entry[0], _createBlockTree(value[entry[0]], block, theme)]);
+        if ((!sourceObject || (sourceObject[entry[0]] !== undefined)) && !targetLayouts[entry[0]]) {
+          const entryBlock = !sourceObject ? {}
+              : _createBlockTree(sourceObject[entry[0]], ret, theme);
+          targetSequence.push([entry[0], entryBlock]);
+          (entryBlock.heading || (entryBlock.heading = {})).name = entry[0];
         }
         targetLayouts[entry[0]] = Object.assign(targetLayouts[entry[0]] || {}, entry[1]);
       } else {
@@ -1654,28 +1679,42 @@ function _createBlockTree (value, contextBlock, theme) {
 }
 
 function _renderBlock (block, contextBlock, theme) {
-  if ((block.header || {}).hide) return "";
+  if ((block.layout || {}).hide) return "";
   if (block.text !== undefined) return block.text;
   if (block.type === "object") {
-    return ((block.height === 1) && !block.header)
-        ? _renderTable(
-            block.mappingKeyBlocks.map(m => ([
-              m[0], { value: {}, mappingKeyBlocks: [["key", { text: m[0] }], ["value", m[1]]] }
-            ])), {
-              ...block,
-              columnLayouts: { key: {}, value: {} },
-              columnKeyBlocks: [["key", {}], ["value", {}]]
-            }, theme)
-        : (((block.height !== 2) || (block.header || {}).chapters)
-            ? _renderChapters : _renderTable)(block.mappingKeyBlocks, block, theme);
+    if ((block.height === 1) && !block.layout) {
+      // Heuristics for deciding between horizontal or vertical trivial tablification is here
+      if (!((block.heading || {}).name || "s").match(/s$/) && (block.mappingKeyBlocks.length < 4)) {
+        const horizontal = {}; // keys as columns, one row
+        return _renderTable([["", block]], {
+          ...block, columnLayouts: horizontal,
+          columnKeyBlocks: block.mappingKeyBlocks.map(([key]) => ([key, (horizontal[key] = {})]))
+        }, theme);
+      }
+      // Vertical layout: two columns: "key" and "value", key/value pairs as rows
+      return _renderTable(
+        block.mappingKeyBlocks.map(m => ([
+          m[0], { value: {}, mappingKeyBlocks: [["key", { text: m[0] }], ["value", m[1]]] }
+        ])), {
+          ...block,
+          columnLayouts: { key: {}, value: {} },
+          columnKeyBlocks: [["key", {}], ["value", {}]]
+        }, theme);
+    } else if (
+        (block.layout || {}).chapters
+        || (block.height > 2)
+        || !((block.layout || {}).columns || (block.minHeight === 2))) {
+      return _renderChapters(block.mappingKeyBlocks, block, theme);
+    }
+    return _renderTable(block.mappingKeyBlocks, block, theme);
   }
   if (block.type === "array") {
     if (block.height === 1) return block.value.join(" ");
     if ((block.height === 2) && ((block.sections || []).length <= 2)
         && block.sections[block.sections.length - 1][0].type === "object") {
-      const header = (block.sections.length === 2) && block.sections[0];
+      const layout = (block.sections.length === 2) && block.sections[0];
       const blocks = block.sections[block.sections.length - 1];
-      return _renderTable(blocks.map((b, index) => ([index, b])), { ...block, ...header }, theme);
+      return _renderTable(blocks.map((b, index) => ([index, b])), { ...block, ...layout }, theme);
     }
     // TODO(iridian): Add lists etc.
     return block.entryBlocks.map(entryBlock => _renderBlock(entryBlock, block, theme)).join("\n");
@@ -1687,17 +1726,18 @@ function _renderBlock (block, contextBlock, theme) {
   throw new Error("can't render");
 }
 
-function _renderChapters (chapterKeyBlocks, block, sectionTheme) {
+function _renderChapters (chapterKeyBlocks, chaptersBlock, sectionTheme) {
   const retRows = [];
+  // console.log("renderChapters:", JSON.stringify(chaptersBlock, null, 2));
   chapterKeyBlocks.forEach(([key, chapterBlock]) => {
     const layout = Object.assign({ heading: { text: key, style: "bold" } },
-        chapterBlock.header, (block.mappingLayouts || {})[key]);
+        chapterBlock.layout, (chaptersBlock.mappingLayouts || {})[key]);
     if (layout.hide) return;
     if ((layout.heading || {}).text) {
-      retRows.push(sectionTheme.decorate([layout.heading.style, { heading: block.depth }])(
+      retRows.push(sectionTheme.decorate([layout.heading.style, { heading: chaptersBlock.depth }])(
           layout.heading.text));
     }
-    const chapterText = _renderBlock(chapterBlock, block, sectionTheme);
+    const chapterText = _renderBlock(chapterBlock, chaptersBlock, sectionTheme);
     const style = layout.elementStyle || layout.style;
     retRows.push(!style ? chapterText : sectionTheme.decorate(style)(chapterText));
   });
@@ -1709,17 +1749,8 @@ function _renderTable (rowKeyBlocks, tableBlock, tableTheme) {
   const _cvalue = (block, column) => (((typeof block.value !== "object") ? [0, block]
       : block.mappingKeyBlocks.find(([key]) => (key === column)) || [0, { text: "" }])[1].text);
   const _espipe = (v) => (v && v.replace(/\|/g, "\\|")) || "";
-  let { columnKeyBlocks, columnLayouts } = tableBlock;
-  if (!columnKeyBlocks) {
-    columnKeyBlocks = [];
-    columnLayouts = {};
-    rowKeyBlocks.forEach(([, block]) => block.mappingKeyBlocks.forEach(([elementKey]) => {
-      if (!columnLayouts[elementKey]) {
-        columnLayouts[elementKey] = {};
-        columnKeyBlocks.push([elementKey, columnLayouts[elementKey]]);
-      }
-    }));
-  }
+  // console.log("renderTable:", JSON.stringify(tableBlock, null, 2));
+  const { columnKeyBlocks, columnLayouts } = tableBlock;
   columnKeyBlocks.forEach(([name, layout], index_) => {
     const c = Object.assign({}, (tableTheme.headers || {})[name], columnLayouts[name]);
     columnKeyBlocks[index_] = [name, c];
@@ -1733,7 +1764,7 @@ function _renderTable (rowKeyBlocks, tableBlock, tableTheme) {
         ...rowKeyBlocks.map(([, block]) => _espipe(_cvalue(block, name)).length));
   });
   const retRows = [];
-  if (columnKeyBlocks && !(tableBlock.header || {}).hide) {
+  if (columnKeyBlocks && !(tableBlock.layout || {}).hide) {
     retRows.push(columnKeyBlocks.map(([name, c]) => _renderElement(
         _espipe(c.text || name), c.width, c.getHeaderStyle(c, tableTheme))));
     retRows.push(columnKeyBlocks.map(
