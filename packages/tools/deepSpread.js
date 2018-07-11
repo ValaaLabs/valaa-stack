@@ -60,9 +60,10 @@
  * @param {*} spreadee
  * @param {*} stack
  */
-export default function deepSpread (target: Object, spreadee: Array<any>, options: {
+exports.default = function deepSpread (target /* : Object */, spreadee /* : Array<any> */,
+    options /* : {
   spreadProperty?: string, spread?: Function, customize?: Function, keyPath?: Array<any>,
-}) {
+}*/) {
   return {
     spreadProperty: "...",
     ...options,
@@ -130,4 +131,4 @@ export default function deepSpread (target: Object, spreadee: Array<any>, option
       return ret;
     },
   }.entrySpread(target, spreadee);
-}
+};
