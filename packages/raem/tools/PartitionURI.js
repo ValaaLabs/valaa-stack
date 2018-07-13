@@ -82,7 +82,8 @@ export function createValaaURI (uriString: string): URL {
 }
 
 export function getURIQueryField (uri: URL | string, fieldName: string): ?any {
-  const valaaURI = (typeof uri === "string") ? createValaaURI(uri) : uri;
+  if (uri instanceof URL) return uri;
+  const valaaURI = createValaaURI(String(uri));
   return valaaURI.query && valaaURI.query[fieldName];
   /*
   const searchParams = valaaURI.searchParams
