@@ -33,5 +33,5 @@ exports.handler = async (yargv) => {
   ];
   const resolveds = [].concat(...await Promise.all(statusCommandInvokations))
       .filter(e => e && (typeof e === "object"));
-  return resolveds.reduce(require("@valos/tools/deepSpread").default);
+  return resolveds.reduce(require("@valos/tools/deepExtend").default);
 };
