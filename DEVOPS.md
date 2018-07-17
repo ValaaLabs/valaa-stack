@@ -1,5 +1,21 @@
 # Valaa Open System DevOps, or how to grasp the ValOS and handle the authorities
 
+## *IMPORTANT*
+
+This document, like most of the more principled and less pragmatic
+documents must be understood as strong speculation and as an
+architectural exercise (although a very serious one) on what-could-be.
+
+This rings especially true for the primary focus of this document, ie.
+for `Valaa Open System` as the fully functional open source core around
+which the often proprietary Valaa ecosystem would expand. This is an
+ambitious, even presumptuous attempt to facilitate the fruitful
+side-by-side living of open source communities as well as private
+enterprises as a combination of technical and social architecture.
+
+(The technical part is the ambitious part and the social part is
+the presumptuous part. :D)
+
 ## 1. Introduction and ValOS specification
 
 This document has two purposes. Firstly it provides the initial

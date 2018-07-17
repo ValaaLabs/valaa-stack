@@ -18,12 +18,20 @@ exports.builder = (yargs) => yargs.options({
   },
 });
 
-exports.handler = (yargv) => {
+exports.handler = async (yargv) => {
   const vlm = yargv.vlm;
   const templates = vlm.path.join(__dirname, "../templates/{.,}*");
   vlm.info("Copying vault template files from ", vlm.theme.path(templates),
       "(will not clobber existing files)");
   vlm.shell.cp("-n", templates, ".");
+  const hardcodedVDONFiles = ["README", "STYLE"];
+  vlm.info("Copying vault template files from ", vlm.theme.path(templates),
+      "(will not clobber existing files)");
+  for (const vdonFile of hardcodedVDONFiles) {
+    await vlm.shell
+        .exec(`vlm --markdown . require @valos/toolset-vault/template.vdon/${vdonFile}.vdon`)
+        .to(`${vdonFile}.md`);
+  }
 
   // TODO(iridian): Convert into dynamic listing maybe?
   const hardcodedDotFiles = ["gitignore", "npmignore", "npmrc"];
