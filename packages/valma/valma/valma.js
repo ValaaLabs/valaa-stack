@@ -13,6 +13,7 @@ const semver = require("semver");
 const shell = require("shelljs");
 const yargs = require("yargs/yargs");
 const yargsParser = require("yargs-parser").detailed;
+const markdownify = require("../markdownify");
 
 cardinal.tomorrowNight = require("cardinal/themes/tomorrow-night");
 
@@ -188,7 +189,10 @@ const vlm = globalVargs.vlm = {
     return this;
   },
   result (...rest) {
-    const output = this.render(globalVargv.results, ...rest);
+    const output = this.render(globalVargv.results, ...rest.map(result =>
+    // If the result has a heading, wrap it inside an object so that the heading will be shown.
+        ((typeof result === "object") && ((result || {})["..."] || {}).heading
+            ? { result } : result)));
     if (output) console.log(...output);
     return this;
   },
@@ -293,56 +297,64 @@ const vlm = globalVargs.vlm = {
   },
 };
 
-colors._setTheme = function _setTheme (obj) {
-  this.decorate = (rule) => {
+colors._setTheme = function _setTheme (theme) {
+  this.decorate = function decorate (rule) {
+    return (...rest) => [].concat(this.subDecorate(rule)(...rest)).join("");
+  };
+  this.subDecorate = function subDecorate (rule) {
     if ((rule === undefined) || (rule === null)) return (...rest) => rest;
-    if (typeof rule === "string") return this.decorate(this[rule]);
+    if (typeof rule === "string") return this.subDecorate(this[rule]);
     if (typeof rule === "function") return (...rest) => rule.apply(this, rest);
     if (Array.isArray(rule)) {
-      return rule.map(this.decorate).reduceRight(
+      return rule.map(entry => this.subDecorate(entry)).reduceRight(
           (next, cur) => (...rest) => next(...[].concat(cur(...rest))));
     }
     return (...rest) => Object.keys(rule).reduce(
-        (subRest, ruleKey) => this.decorate(ruleKey)(...[].concat(subRest), rule[ruleKey]),
+        (subRest, ruleKey) => this.subDecorate(ruleKey)(...[].concat(subRest), rule[ruleKey]),
         rest);
   };
-  Object.keys(obj).forEach(name => {
-    const rule = obj[name];
+  Object.keys(theme).forEach(name => {
+    const rule = theme[name];
     this[name] = (typeof rule === "function")
         ? rule
         : (...rest) => this.decorate([rule, "join"])(...rest);
   });
+  return this;
 };
 
 const themes = {
   default: {
-    join: (...rest) => [].concat(...rest).join(" "),
-    prefix: (...rest) => [].concat(rest[(rest.length || 1) - 1] || [], ...rest.slice(1)),
-    suffix: (...rest) => rest,
+    none (...rest) { return rest; },
+    join (...rest) { return [].concat(...rest).join(" "); },
+    prefix (...rest) { return [].concat(rest[(rest.length || 1) - 1] || [], ...rest.slice(1)); },
+    suffix (...rest) { return rest; },
     first (...rest) {
       return [].concat(...rest.slice(0, -1)
-          .map((e, index) => ((index > 0) ? e : this.decorate(rest[rest.length - 1])(e))));
+          .map((e, index) => ((index > 0) ? e : this.subDecorate(rest[rest.length - 1])(e))));
     },
     nonfirst (...rest) {
-      const mappedRest = this.decorate(rest[rest.length - 1])(...rest.slice(1, -1));
+      const mappedRest = this.subDecorate(rest[rest.length - 1])(...rest.slice(1, -1));
       return ((rest.length <= 1) ? []
           : [rest[0]].concat(mappedRest || (typeof mappedRest === "number") ? mappedRest : []));
     },
-    newlinesplit: (...rest) => [].concat(...[].concat(...rest).map(
-        entry => [].concat(...String(entry).split("\n").map(line => [line, "\n"])))),
-    flatsplit: (...rest) => [].concat(...[].concat(...rest).map(entry => String(entry).split(" "))),
-    default: (...rest) => ((rest.length <= 1) ? rest
+    newlinesplit (...rest) {
+      return  [].concat(...[].concat(...rest).map(
+        entry => [].concat(...String(entry).split("\n").map(line => [line, "\n"]))));
+    },
+    flatsplit (...rest) {
+      return [].concat(...[].concat(...rest).map(entry => String(entry).split(" ")));
+    },
+    default (...rest) {
+      return ((rest.length <= 1) ? rest
         : (e => (e.length <= 1 ? e : e.slice(0, -1)))(
-            rest.filter(e => (e || (typeof e === "number"))))),
+            rest.filter(e => (e || (typeof e === "number")))));
+    },
     cardinal (...rest) {
       if (!rest.length) return [];
       if (rest.length === 1) return cardinal.highlight(rest[0], vlm.cardinalDefault);
       return rest.slice(0, -1).map(s =>
           cardinal.highlight(s, rest[rest.length - 1] || vlm.cardinalDefault));
     },
-    heading: (...rest) => ((typeof rest[rest.length - 1] !== "number") ? rest
-        : ["#".repeat(Math.max(1, Math.min(6, rest[rest.length - 1]))), ...rest.slice(0, -1)]
-            .join(" ")),
 
     echo: "dim",
     warning: ["bold", "yellow"],
@@ -362,20 +374,28 @@ const themes = {
   },
 };
 
-colors._setTheme(themes.default);
-themes.default = colors;
-themes.colorless = Object.keys(themes.default).reduce((theme, key) => {
-  theme[key] = function colorless (...rest) { return rest.map(k => String(k)).join(" "); };
+const activeColors = Object.create(colors);
+vlm.theme = activeColors._setTheme(themes.default);
+
+themes.styleless = [
+  ...Object.keys(themes.default),
+  "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white", "gray", "grey",
+  "bgBlack", "bgRed", "bgGreen", "bgYellow", "bgBlue", "bgMagenta", "bgCyan", "bgWhite",
+  "reset", "bold", "dim", "italic", "underline", "inverse", "hidden", "strikethrough",
+].reduce((theme, key) => {
+  Object.defineProperty(theme, key,
+      { value (...rest) { return rest.map(k => String(k)).join(" "); }, enumerable: true });
   return theme;
-}, {});
+}, Object.create(activeColors));
+
 
 const _renderers = {
   omit: null,
   json: (value) => JSON.stringify(value, null, 2),
   "json-compact": (value) => JSON.stringify(value),
-  markdown: (value) => _toGFMarkdown(value, vlm.theme),
+  "markdown-cli": (value) => markdownify.default(value, vlm.theme),
+  markdown: (value) => markdownify.default(value, themes.styleless),
 };
-
 
 module.exports = {
   command: "vlm [--help] [-<flagchars>] [--<flag>...] [--<option>=<value>..] [command]",
@@ -465,7 +485,7 @@ characters to be equal although '/' is recommended anywhere possible.
         },
         results: {
           group: "Valma root options:",
-          type: "string", global: false, default: "markdown", choices: Object.keys(_renderers),
+          type: "string", global: false, default: "markdown-cli", choices: Object.keys(_renderers),
           description: "Show result value in output",
         },
         json: {
@@ -473,6 +493,12 @@ characters to be equal although '/' is recommended anywhere possible.
           type: "boolean", global: false,
           description: "Alias for --results=json for rendering result as JSON into standard output",
           causes: "results=json",
+        },
+        markdown: {
+          group: "Valma root options:",
+          type: "boolean", global: false,
+          description: "Alias for --results=markdown for rendering result as raw unstyled markdown",
+          causes: "results=markdown",
         },
         interactive: {
           group: "Valma root options:",
@@ -529,7 +555,7 @@ characters to be equal although '/' is recommended anywhere possible.
 };
 
 function _addUniversalOptions (vargs_,
-      { strict = true, global = false, hidden = false, theme = themes.colorless }) {
+      { strict = true, global = false, hidden = false, theme = themes.styleless }) {
   function _postProcess (options) {
     Object.keys(options).forEach(name => {
       if (options[name].hidden) delete options[name].group;
@@ -898,7 +924,7 @@ async function invoke (commandSelector, argv) {
           "\n\t}");
 
   if (introspect) {
-    return _introspectCommands(globalVargs, introspect, activeCommands, commandGlob,
+    return _introspectCommands(this.theme, globalVargs, introspect, activeCommands, commandGlob,
         isWildcardCommand, contextVargv.matchAll);
   }
 
@@ -949,7 +975,7 @@ async function invoke (commandSelector, argv) {
           .expound("\tsubIntrospect:", subIntrospect);
 
       if (subIntrospect) {
-        ret = ret.concat(_introspectCommands(activeCommand.subVargs,
+        ret = ret.concat(_introspectCommands(this.theme, activeCommand.subVargs,
             subIntrospect, { [commandName]: activeCommand }, commandSelector,
             isWildcardCommand, subVargv.matchAll));
       } else if (isWildcardCommand && activeCommand.disabled) {
@@ -981,8 +1007,8 @@ async function invoke (commandSelector, argv) {
                 this.theme.command(commandName)}`;
               try {
                 this.echo(`${subVLM.getContextIndexText()}>>>? ${header}`, "via",
-                    ...(tool ? ["tool", subVLM.colors.package(tool), "of"] : []),
-                    "toolset", subVLM.colors.package(subVLM.toolset));
+                    ...(tool ? ["tool", subVLM.theme.package(tool), "of"] : []),
+                    "toolset", subVLM.theme.package(subVLM.toolset));
                 requireResult = await subVLM.execute(requires[i]);
               } catch (error) {
                 requireResult = subVLM.error(`<exception>: ${String(error)}`);
@@ -1029,7 +1055,7 @@ async function invoke (commandSelector, argv) {
     }
   }
   if (dryRunCommands) {
-    _introspectCommands(globalVargs, _determineIntrospection(module, contextVargv),
+    _introspectCommands(this.theme, globalVargs, _determineIntrospection(module, contextVargv),
         dryRunCommands, commandSelector, isWildcardCommand, contextVargv.matchAll);
   }
   return isWildcardCommand ? ret : ret[0];
@@ -1206,8 +1232,8 @@ function _selectActiveCommands (contextVLM, activePools, commandGlob, argv, intr
       const exportedCommandName = module.command.match(/^([^ ]*)/)[1];
       if (exportedCommandName !== commandName) {
         contextVLM.warn(`Command name mismatch between exported command name '${
-            contextVLM.colors.command(exportedCommandName)}' and command name '${
-            contextVLM.colors.command(commandName)}' inferred from file:`, file.name);
+            contextVLM.theme.command(exportedCommandName)}' and command name '${
+            contextVLM.theme.command(commandName)}' inferred from file:`, file.name);
       }
 
       subVargs.usage(module.command.replace(exportedCommandName, "$0"), module.describe);
@@ -1409,8 +1435,8 @@ function _determineIntrospection (module, vargv, selector, isWildcard, invokeEnt
   return ret;
 }
 
-function _introspectCommands (vargs_, introspect, commands_, commandGlob, isWildcard_, matchAll) {
-  const theme = themes.default;
+function _introspectCommands (theme, vargs_, introspect, commands_, commandGlob, isWildcard_,
+    matchAll) {
   if (introspect.builtinHelp) {
     vargs_.vlm = vlm;
     vargs_.$0 = theme.command(introspect.module.command.match(/^[^ ]*/)[0]);
@@ -1420,28 +1446,28 @@ function _introspectCommands (vargs_, introspect, commands_, commandGlob, isWild
   if (introspect.identityPool) {
     const poolIntro = _introspectPool(
         introspect.identityPool, false, false, introspect.identityPool.commands);
-    if ((poolIntro[""] || {}).columns.length === 1) poolIntro[""].columns[0].hide = true;
+    if ((poolIntro["..."] || {}).columns.length === 1) poolIntro["..."].hideHeaders = true;
     return poolIntro;
   }
-  const chapters = { "": { chapters: true } };
-  const pools = { "": { chapters: true, heading: { style: "bold" } } };
-  _addLayoutOrderedProperty(chapters, "pools", pools);
+  const chapters = { "...": { chapters: true } };
+  const pools = { "...": { chapters: true, heading: { style: "bold" } } };
+  markdownify.addLayoutOrderedProperty(chapters, "pools", pools);
 
   if (introspect.defaultUsage) {
-    chapters.pools[""].heading.text = `${matchAll ? "All known" : "Visible"} commands by pool:`;
+    chapters.pools["..."].heading.text = `${matchAll ? "All known" : "Visible"} commands by pool:`;
     if (!matchAll) {
-      chapters[""].entries.unshift({
-        usage: { heading: { style: "bold", text: `Usage: ${introspect.module.command}` } }
+      chapters["..."].entries.unshift({
+        usage: { heading: { text: `Usage: ${introspect.module.command}`, style: "bold" } }
       });
       chapters.usage = "";
     }
   }
   for (const pool of [..._activePools].reverse()) {
     const poolIntro = _introspectPool(pool, isWildcard_, globalVargv.pools, commands_);
-    _addLayoutOrderedProperty(pools, pool.name, poolIntro);
-    const isEmpty = !Object.keys(poolIntro).filter(k => k).length;
+    markdownify.addLayoutOrderedProperty(pools, pool.name, poolIntro);
+    const isEmpty = !Object.keys(poolIntro).filter(k => (k !== "...")).length;
     if (isWildcard_ && (!isEmpty || globalVargv.pools || matchAll)) {
-      poolIntro[""].heading = {
+      poolIntro["..."].heading = {
         style: "bold",
         text: `${vlm.path.join(pool.name, commandGlob)} ${
             isEmpty ? "has no shown commands" : "commands:"} (${
@@ -1450,24 +1476,24 @@ function _introspectCommands (vargs_, introspect, commands_, commandGlob, isWild
             })`
       };
     } else if (isEmpty) {
-      poolIntro[""].hide = true;
+      poolIntro["..."].hide = true;
     }
   }
   if (isWildcard_) return chapters;
-  const visiblePoolName = Object.keys(pools).find(key => key && !(pools[key][""] || {}).hide);
+  const visiblePoolName = Object.keys(pools).find(key => key && !(pools[key]["..."] || {}).hide);
   if (!visiblePoolName) return undefined;
   const command = pools[visiblePoolName];
   const keys = Object.keys(command).filter(k => k);
   if (keys.length !== 1) return command;
   const ret = command[keys[0]];
   if (typeof ret !== "object" || !ret || Array.isArray(ret)) return ret;
-  ret[""] = Object.assign(ret[""] || {}, { entries: (command[""] || {}).columns });
+  ret["..."] = Object.assign(ret["..."] || {}, { entries: (command["..."] || {}).columns });
   return ret;
 
   function _introspectPool (pool, isWildcard, showOverridden, introedCommands) {
     const missingFile = "<file_missing>";
     const missingPackage = "<package_missing>";
-    const poolIntro = { "": {
+    const poolIntro = { "...": {
       stats: pool.stats,
       columns: [
         { name: { text: "command", style: "command" } },
@@ -1528,287 +1554,6 @@ function _introspectCommands (vargs_, introspect, commands_, commandGlob, isWild
     return poolIntro;
   }
 }
-
-/**
- * Converts and returns the given value as a Github Formatted Markdown
- * string.
- *
- * Purpose of this tool two-fold: to make it possible to have all
- * github markdown documents as JSON objects and also to be able to
- * insert arbitrary tool output JSON values to be part of these
- * documents with minimal additional formatting code.
- *
- * The conversion is then a compromise of two principles:
- * 1. all non-surprising value structures produce non-surprising and
- *    intuitively structured and readable markdown string.
- * 2. any valid GHM output HTML can be produced using a combination of
- *    surprising value structures and inline entries.
- *
- * Tools which are not aware that their JSON output is gfmarkdownified
- * should not naturally or accidentally produce the surprising values.
- * An example of a surprising value structure is an array which
- * otherwise contains objects with only primitive values but the first
- * entry is an array - _toGFMarkdown uses the array to specify the
- * columns of a table.
- * Another example of surprising values are strings containing GFM
- * notation or HTML: these are /not/ escaped and translate as-is to the
- * GFM output string.
- *
- * Non-surprising production rules:
- * 1. Strings map as-is, numbers map JSON.stringify, null as "-" and
- *    undefined as "".
- * 2. Empty arrays [] and objects {} affect layout but they are removed
- *    from containing arrays and objects. Empty keys "" are removed.
- * 3. Innermost array (contains only primitive values) is " "-joined.
- *    All isolated singular newlines are removed (and rewritten later).
- * 4. Second and subsequent nesting arrays become numbered lists.
- *    Note: with production rule 2. lists can be enforced like so:
- *      numbered list: [[], "first entry", "second entry"]
- *      unordered list: [{}, "first entry", "second entry"]
- * 5. Isolated objects with primitive values are mapped as GFM tables
- *    with key and value columns properties as its two rows.
- * 6. Consequtive objects with primitive values are mapped as a single
- *    GFM table with the collection of all object keys as columns,
- *    objects as rows and object values as cells in the corresponding
- *    column.
- * 7. Objects with complex values are mapped into chapters with the
- *    object key as header. The deeper the nesting, the lower the
- *    emitted H tag. { "": [[[[[{}]]]]] }
- *
- * @param {*} value
- * @param {*} theme
- * @param {*} context
- * @returns
- */
-function _toGFMarkdown (value, theme, context) {
-  // https://github.github.com/gfm/#introduction
-  return _renderBlock(_createBlockTree(value, context, theme), context, theme);
-}
-
-function _addLayoutOrderedProperty (target, name, entry, customLayout) {
-  const targetLayout = target[""] || (target[""] = {});
-  const entries = targetLayout.entries || (targetLayout.entries = []);
-  entries.push(customLayout === undefined ? name : [name, customLayout]);
-  target[name] = entry;
-}
-
-function _createBlockTree (value, contextBlock, theme) {
-  const ret = {
-    value, type: "text", text: (value === undefined) ? ""
-        : (value === null) ? "-"
-        : (typeof value === "string") ? value
-        : (typeof value === "number" || typeof value === "boolean") ? JSON.stringify(value)
-        : undefined,
-    height: 0, minHeight: 1000000, depth: ((contextBlock && contextBlock.depth) || 0) + 1,
-  };
-  if (typeof value === "function") {
-    ret.renderer = value;
-  } else if (Array.isArray(value)) {
-    ret.type = "array";
-    ret.entryBlocks = value.map(e => _createBlockTree(e, ret, theme));
-    if (ret.entryBlocks.findIndex(e => !e.empty) === -1) ret.empty = true;
-    else if (ret.height > 1) {
-      // Group entryBlocks into separate sections of blocks with the same type and height.
-      ret.sections = [];
-      let info = { start: 0, height: 0, minHeight: 1000000, type: "" };
-      ret.entryBlocks.forEach((e, index) => {
-        if (e.type !== info.type || e.height !== info.height || e.minHeight !== info.minHeight) {
-          if (index !== info.start) ret.sections.push(ret.entryBlocks.slice(info.start, index));
-          info = { start: index, height: e.height, minHeight: 1000000, type: e.type };
-        }
-      });
-      const section = ret.entryBlocks.slice(info.start);
-      if (section.length) ret.sections.push(section);
-    }
-  } else if (ret.text === undefined) {
-    ret.type = "object";
-    if (value[""]) ret.layout = value[""];
-    _extractEntries((ret.layout || {}).entries || [null],
-        ret.value, ret.mappingKeyBlocks = [], ret.mappingLayouts = {});
-    if (!ret.mappingKeyBlocks.findIndex(e => !e[1].empty) === -1) ret.empty = true;
-
-    if ((ret.layout || {}).columns) {
-      _extractEntries((ret.layout || {}).columns,
-          undefined, ret.columnKeyBlocks = [], ret.columnLayouts = {});
-    } else if (!ret.empty) {
-      ret.mappingKeyBlocks.forEach(([, mappingBlock]) => {
-        if (mappingBlock.mappingKeyBlocks) {
-          if (!ret.columnLayouts) Object.assign(ret, { columnKeyBlocks: [], columnLayouts: {} });
-          mappingBlock.mappingKeyBlocks.forEach(([elementKey]) => {
-            let columnLayout = ret.columnLayouts[elementKey];
-            if (!columnLayout) {
-              columnLayout = ret.columnLayouts[elementKey] = {};
-              ret.columnKeyBlocks.push([elementKey, columnLayout]);
-            }
-            columnLayout.entryCount = (columnLayout.entryCount || 0) + 1;
-          });
-        }
-      });
-    }
-  }
-  if (ret.minHeight > ret.height) ret.minHeight = ret.height;
-  if (contextBlock && (contextBlock.height <= ret.height)) contextBlock.height = ret.height + 1;
-  if (contextBlock && (contextBlock.minHeight > ret.minHeight)) {
-    contextBlock.minHeight = ret.minHeight + 1;
-  }
-  return ret;
-
-  function _extractEntries (entry, sourceObject, targetSequence, targetLayouts) {
-    // If entryBlock is omitted the entries are inside a layout structure. Limit some operations,
-    // notably provide an undefined contextBlock for recursive processing.
-    if ((entry === undefined) || (entry === "")) return;
-    const selfRecurser = e => _extractEntries(e, sourceObject, targetSequence, targetLayouts);
-    if (entry === null) {
-      if (sourceObject) Object.keys(sourceObject).sort().forEach(selfRecurser);
-    } else if (Array.isArray(entry)) {
-      if (entry.length === 2 && typeof entry[0] === "string" && typeof entry[1] === "object") {
-        if ((!sourceObject || (sourceObject[entry[0]] !== undefined)) && !targetLayouts[entry[0]]) {
-          const entryBlock = !sourceObject ? {}
-              : _createBlockTree(sourceObject[entry[0]], ret, theme);
-          targetSequence.push([entry[0], entryBlock]);
-          (entryBlock.heading || (entryBlock.heading = {})).name = entry[0];
-        }
-        targetLayouts[entry[0]] = Object.assign(targetLayouts[entry[0]] || {}, entry[1]);
-      } else {
-        entry.forEach(selfRecurser);
-      }
-    } else if (typeof entry === "object") {
-      Object.keys(entry).sort().map(key => [key, entry[key]]).forEach(selfRecurser);
-    } else selfRecurser([String(entry), {}]);
-  }
-}
-
-function _renderBlock (block, contextBlock, theme) {
-  if ((block.layout || {}).hide) return "";
-  if (block.text !== undefined) return block.text;
-  if (block.type === "object") {
-    if ((block.height === 1) && !block.layout) {
-      // Heuristics for deciding between horizontal or vertical trivial tablification is here
-      if (!((block.heading || {}).name || "s").match(/s$/) && (block.mappingKeyBlocks.length < 4)) {
-        const horizontal = {}; // keys as columns, one row
-        return _renderTable([["", block]], {
-          ...block, columnLayouts: horizontal,
-          columnKeyBlocks: block.mappingKeyBlocks.map(([key]) => ([key, (horizontal[key] = {})]))
-        }, theme);
-      }
-      // Vertical layout: two columns: "key" and "value", key/value pairs as rows
-      return _renderTable(
-        block.mappingKeyBlocks.map(m => ([
-          m[0], { value: {}, mappingKeyBlocks: [["key", { text: m[0] }], ["value", m[1]]] }
-        ])), {
-          ...block,
-          columnLayouts: { key: {}, value: {} },
-          columnKeyBlocks: [["key", {}], ["value", {}]]
-        }, theme);
-    } else if (
-        (block.layout || {}).chapters
-        || (block.height > 2)
-        || !((block.layout || {}).columns || (block.minHeight === 2))) {
-      return _renderChapters(block.mappingKeyBlocks, block, theme);
-    }
-    return _renderTable(block.mappingKeyBlocks, block, theme);
-  }
-  if (block.type === "array") {
-    if (block.height === 1) return block.value.join(" ");
-    if ((block.height === 2) && ((block.sections || []).length <= 2)
-        && block.sections[block.sections.length - 1][0].type === "object") {
-      const layout = (block.sections.length === 2) && block.sections[0];
-      const blocks = block.sections[block.sections.length - 1];
-      return _renderTable(blocks.map((b, index) => ([index, b])), { ...block, ...layout }, theme);
-    }
-    // TODO(iridian): Add lists etc.
-    return block.entryBlocks.map(entryBlock => _renderBlock(entryBlock, block, theme)).join("\n");
-  }
-  vlm.error("Cannot find renderer function for entry:",
-      (JSON.stringify(block, null, 2) || "").replace(/\n/g, "\n    "));
-  vlm.error("Inside context:",
-      (JSON.stringify(contextBlock, null, 2) || "").replace(/\n/g, "\n   "));
-  throw new Error("can't render");
-}
-
-function _renderChapters (chapterKeyBlocks, chaptersBlock, sectionTheme) {
-  const retRows = [];
-  // console.log("renderChapters:", JSON.stringify(chaptersBlock, null, 2));
-  chapterKeyBlocks.forEach(([key, chapterBlock]) => {
-    const layout = Object.assign({ heading: { text: key, style: "bold" } },
-        chapterBlock.layout, (chaptersBlock.mappingLayouts || {})[key]);
-    if (layout.hide) return;
-    if ((layout.heading || {}).text) {
-      retRows.push(sectionTheme.decorate([layout.heading.style, { heading: chaptersBlock.depth }])(
-          layout.heading.text));
-    }
-    const chapterText = _renderBlock(chapterBlock, chaptersBlock, sectionTheme);
-    const style = layout.elementStyle || layout.style;
-    retRows.push(!style ? chapterText : sectionTheme.decorate(style)(chapterText));
-  });
-  return retRows.join("\n");
-}
-
-
-function _renderTable (rowKeyBlocks, tableBlock, tableTheme) {
-  const _cvalue = (block, column) => (((typeof block.value !== "object") ? [0, block]
-      : block.mappingKeyBlocks.find(([key]) => (key === column)) || [0, { text: "" }])[1].text);
-  const _espipe = (v) => (v && v.replace(/\|/g, "\\|")) || "";
-  // console.log("renderTable:", JSON.stringify(tableBlock, null, 2));
-  const { columnKeyBlocks, columnLayouts } = tableBlock;
-  columnKeyBlocks.forEach(([name, layout], index_) => {
-    const c = Object.assign({}, (tableTheme.headers || {})[name], columnLayouts[name]);
-    columnKeyBlocks[index_] = [name, c];
-    if (!c.style) c.style = ((...rest) => rest.join(""));
-    if (!c.headerStyle) c.headerStyle = c.style;
-    if (!c.getHeaderStyle) c.getHeaderStyle = (/* c, tableTheme */) => c.headerStyle;
-    if (!c.elementStyle) c.elementStyle = c.style;
-    if (!c.getElementStyle) c.getElementStyle = (/* row, c, tableTheme */) => c.elementStyle;
-    if (c.oob) return;
-    c.width = Math.max(3, (c.text || name).length,
-        ...rowKeyBlocks.map(([, block]) => _espipe(_cvalue(block, name)).length));
-  });
-  const retRows = [];
-  if (columnKeyBlocks && !(tableBlock.layout || {}).hide) {
-    retRows.push(columnKeyBlocks.map(([name, c]) => _renderElement(
-        _espipe(c.text || name), c.width, c.getHeaderStyle(c, tableTheme))));
-    retRows.push(columnKeyBlocks.map(
-      ([, c]) => `${(c.align || "right") !== "right" ? ":" : "-"}${
-            "-".repeat(c.width - 2)}${(c.align || "left") !== "left" ? ":" : "-"}`));
-  }
-  retRows.push(...rowKeyBlocks.map(([, block]) => columnKeyBlocks.map(([name, c]) => {
-    const elementBlock = (block.columnLayouts || {})[name] || {};
-    const elementText = _cvalue(block, name);
-    return _renderElement(!c.oob ? _espipe(elementText) : elementText, c.width,
-        elementBlock.style || c.getElementStyle(block, c, tableTheme));
-  })));
-  return retRows.map(r => r.join("|")).join("\n");
-
-  function _renderElement (text_, width = 0, style = (i => i)) {
-    const text = (typeof text_ === "string") ? text_ : `<${typeof text_}>`;
-    const pad = width - text.length;
-    return `${tableTheme.decorate(style)(text)}${" ".repeat(pad < 0 ? 0 : pad)}`;
-  }
-}
-
-/*
-function _layoutSectionText (text, width = 71) {
-  return text.replace(/([^\n])\n([^\n])/g, "$1$2").split(/(\n*)/).map(t => {
-    if (t[0] === "\n") return t;
-    const words = t.split(/( *)/);
-    let charCount = 0;
-    words.forEach((word, index) => {
-      charCount += word.length;
-      if (charCount <= width) return;
-      if (word[0] === " ") {
-        words[index] = "\n";
-        charCount = 0;
-        return;
-      }
-      if (charCount === word.length) return; // long word: let next whitespace clear things up
-      words[index - 1] = "\n";
-      charCount = word.length;
-      return;
-    });
-    return words.join("");
-  }).join("");
-}
-*/
 
 function _commandInfo (filePath, poolPath) {
   const ret = { filePath, poolPath };
