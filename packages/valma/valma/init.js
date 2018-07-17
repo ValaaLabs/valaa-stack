@@ -78,7 +78,7 @@ file for yarn (and for npm, for which yarn is an analogue).
       if (answer.choice === "quit") return false;
       if (answer.choice === "help") {
         vlm.speak();
-        await vlm.invoke(".configure/.valaa-stanza", ["--show-describe"]);
+        vlm.speak(await vlm.invoke(".configure/.valaa-stanza", ["--show-introduction"]));
         vlm.speak();
         continue;
       }
@@ -154,7 +154,7 @@ for the listings in following phases.
       if (answer.choice === "quit") return false;
       if (answer.choice === "help") {
         vlm.speak();
-        await vlm.invoke("configure", ["--show-describe"]);
+        vlm.speak(await vlm.invoke("configure", ["--show-introduction"]));
         vlm.speak();
         continue;
       }

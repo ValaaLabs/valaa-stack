@@ -82,7 +82,7 @@ module.exports = {
 
     // ## Warning directives
 
-    "complexity": ["warn", 20],
+    "complexity": ["warn", 30],
     "no-warning-comments": ["warn", { "terms": ["fixme"], "location": "anywhere" }],
   },
 };

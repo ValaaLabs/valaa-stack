@@ -51,7 +51,7 @@ const vlm = globalVargs.vlm = {
   // Any plain objects are expanded to boolean or parameterized flags depending on the value type.
   invoke,
 
-  // Executes an external command and returns a promise of the command stdandard output as string.
+  // Executes a command and returns a promise of the command standard output as string.
   // Any plain objects are expanded to boolean or parameterized flags depending on the value type.
   execute,
 
@@ -205,13 +205,13 @@ const vlm = globalVargs.vlm = {
   // As a diagnostic message outputs to stderr where available.
   echo (...rest) {
     if (this.theme.echo) {
-      if ((rest[0] || "").includes("<<")) this.indent -= 2;
-      console.warn(" ".repeat(this.indent - 1), this.theme.echo(...rest));
-      if ((rest[0] || "").includes(">>")) this.indent += 2;
+      if ((rest[0] || "").includes("<<")) this.echoIndent -= 2;
+      console.warn(" ".repeat(this.echoIndent - 1), this.theme.echo(...rest));
+      if ((rest[0] || "").includes(">>")) this.echoIndent += 2;
     }
     return this;
   },
-  indent: 4,
+  echoIndent: 4,
 
   // Diagnostics ops
   // These operations prefix the output with the command name and a verb describing the type of
@@ -297,63 +297,66 @@ const vlm = globalVargs.vlm = {
   },
 };
 
-colors._setTheme = function _setTheme (theme) {
-  this.decorate = function decorate (rule) {
-    return (...rest) => [].concat(this.subDecorate(rule)(...rest)).join("");
+colors._setTheme = _setTheme;
+function _setTheme (theme) {
+  this.decoratorOf = function decoratorOf (rule) {
+    return (...texts) => this.decorateWith([rule, "join"], texts);
   };
-  this.subDecorate = function subDecorate (rule) {
-    if ((rule === undefined) || (rule === null)) return (...rest) => rest;
-    if (typeof rule === "string") return this.subDecorate(this[rule]);
-    if (typeof rule === "function") return (...rest) => rule.apply(this, rest);
+  this.decorateWith = function decorateWith (rule, texts) {
+    if ((rule === undefined) || (rule === null)) return texts;
+    if (typeof rule === "string") return this.decorateWith(this[rule], texts);
+    if (typeof rule === "function") return rule.apply(this, texts);
     if (Array.isArray(rule)) {
-      return rule.map(entry => this.subDecorate(entry)).reduceRight(
-          (next, cur) => (...rest) => next(...[].concat(cur(...rest))));
+      return rule.reduce(
+          (subTexts, ruleKey) => this.decorateWith(ruleKey, [].concat(subTexts)), texts);
     }
-    return (...rest) => Object.keys(rule).reduce(
-        (subRest, ruleKey) => this.subDecorate(ruleKey)(...[].concat(subRest), rule[ruleKey]),
-        rest);
+    return Object.keys(rule).reduce(
+        (subTexts, ruleKey) => this.decorateWith(ruleKey, [rule[ruleKey]].concat(subTexts)),
+        texts);
   };
   Object.keys(theme).forEach(name => {
     const rule = theme[name];
     this[name] = (typeof rule === "function")
         ? rule
-        : (...rest) => this.decorate([rule, "join"])(...rest);
+        : function decoratedStyle (...texts) { return this.decorateWith([rule, "join"], texts); };
   });
   return this;
-};
+}
 
 const themes = {
   default: {
-    none (...rest) { return rest; },
-    join (...rest) { return [].concat(...rest).join(" "); },
-    prefix (...rest) { return [].concat(rest[(rest.length || 1) - 1] || [], ...rest.slice(1)); },
-    suffix (...rest) { return rest; },
-    first (...rest) {
-      return [].concat(...rest.slice(0, -1)
-          .map((e, index) => ((index > 0) ? e : this.subDecorate(rest[rest.length - 1])(e))));
+    none (...texts) { return texts; },
+    join (...texts) { return [].concat(...texts).join(" "); },
+    prefix (...texts) { return texts; },
+    suffix (suffix, ...texts) { return texts.concat(suffix); },
+    first (firstRule, first, ...texts) {
+      if ((first === undefined) && !texts.length) return [];
+      return [this.decorateWith(firstRule, [first])].concat(texts);
     },
-    nonfirst (...rest) {
-      const mappedRest = this.subDecorate(rest[rest.length - 1])(...rest.slice(1, -1));
-      return ((rest.length <= 1) ? []
-          : [rest[0]].concat(mappedRest || (typeof mappedRest === "number") ? mappedRest : []));
+    nonfirst (nonFirstRule, first, ...texts) {
+      if ((first === undefined) && !texts.length) return [];
+      if (!texts.length) return [first];
+      return [first].concat(this.decorateWith(nonFirstRule, texts));
     },
-    newlinesplit (...rest) {
-      return  [].concat(...[].concat(...rest).map(
-        entry => [].concat(...String(entry).split("\n").map(line => [line, "\n"]))));
+    newlinesplit (...texts) {
+      return [].concat(...[].concat(...texts).map(
+        text => [].concat(...String(text).split("\n").map(line => [line, "\n"]))));
     },
-    flatsplit (...rest) {
-      return [].concat(...[].concat(...rest).map(entry => String(entry).split(" ")));
+    flatsplit (...texts) {
+      return [].concat(...[].concat(...texts).map(
+        text => String(text).split(" ")));
     },
-    default (...rest) {
-      return ((rest.length <= 1) ? rest
-        : (e => (e.length <= 1 ? e : e.slice(0, -1)))(
-            rest.filter(e => (e || (typeof e === "number")))));
+    default (defaultValue, ...texts) {
+      return texts.length > 1 || (texts[0] !== undefined) ? texts : [defaultValue];
     },
-    cardinal (...rest) {
-      if (!rest.length) return [];
-      if (rest.length === 1) return cardinal.highlight(rest[0], vlm.cardinalDefault);
-      return rest.slice(0, -1).map(s =>
-          cardinal.highlight(s, rest[rest.length - 1] || vlm.cardinalDefault));
+    cardinal (...textsAndOptions) {
+      const options = { ...vlm.cardinalDefault };
+      const ret = [];
+      for (const textOrOpt of textsAndOptions) {
+        if (typeof textOrOpt === "string") ret.push(cardinal.highlight(textOrOpt, options));
+        else if (textOrOpt && (typeof textOrOpt === "object")) Object.assign(options, textOrOpt);
+      }
+      return ret;
     },
 
     echo: "dim",
@@ -377,24 +380,22 @@ const themes = {
 const activeColors = Object.create(colors);
 vlm.theme = activeColors._setTheme(themes.default);
 
-themes.styleless = [
-  ...Object.keys(themes.default),
+themes.codeless = [
   "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white", "gray", "grey",
   "bgBlack", "bgRed", "bgGreen", "bgYellow", "bgBlue", "bgMagenta", "bgCyan", "bgWhite",
   "reset", "bold", "dim", "italic", "underline", "inverse", "hidden", "strikethrough",
 ].reduce((theme, key) => {
   Object.defineProperty(theme, key,
-      { value (...rest) { return rest.map(k => String(k)).join(" "); }, enumerable: true });
+      { value (...texts) { return texts.map(k => String(k)).join(" "); }, enumerable: true });
   return theme;
 }, Object.create(activeColors));
-
 
 const _renderers = {
   omit: null,
   json: (value) => JSON.stringify(value, null, 2),
   "json-compact": (value) => JSON.stringify(value),
   "markdown-cli": (value) => markdownify.default(value, vlm.theme),
-  markdown: (value) => markdownify.default(value, themes.styleless),
+  markdown: (value) => markdownify.default(value, themes.codeless),
 };
 
 module.exports = {
@@ -555,7 +556,7 @@ characters to be equal although '/' is recommended anywhere possible.
 };
 
 function _addUniversalOptions (vargs_,
-      { strict = true, global = false, hidden = false, theme = themes.styleless }) {
+      { strict = true, global = false, hidden = false, theme = themes.codeless }) {
   function _postProcess (options) {
     Object.keys(options).forEach(name => {
       if (options[name].hidden) delete options[name].group;
@@ -1137,7 +1138,7 @@ function _locateDependedPools (initialPoolBase, poolDirectories) {
       if (candidate.match(/^node_modules/) && shell.test("-f", packageJsonPath)) {
         vlm.warn(`node_modules missing for ${packageJsonPath}!`,
             "\nSome dependent commands will likely be missing.",
-            `Run '${colors.executable("yarn install")}' to make dependent commands available.\n`);
+            `Run '${vlm.theme.executable("yarn install")}' to make dependent commands available.\n`);
       }
     });
     if (pathBase === "/") break;
@@ -1480,10 +1481,11 @@ function _introspectCommands (theme, vargs_, introspect, commands_, commandGlob,
     }
   }
   if (isWildcard_) return chapters;
-  const visiblePoolName = Object.keys(pools).find(key => key && !(pools[key]["..."] || {}).hide);
+  const visiblePoolName = Object.keys(pools).find(
+      key => (key !== "...") && !(pools[key]["..."] || {}).hide);
   if (!visiblePoolName) return undefined;
   const command = pools[visiblePoolName];
-  const keys = Object.keys(command).filter(k => k);
+  const keys = Object.keys(command).filter(k => (k !== "..."));
   if (keys.length !== 1) return command;
   const ret = command[keys[0]];
   if (typeof ret !== "object" || !ret || Array.isArray(ret)) return ret;
@@ -1511,6 +1513,7 @@ function _introspectCommands (theme, vargs_, introspect, commands_, commandGlob,
       ].filter(c => introspect.show[Object.keys(c)[0]]),
     } };
     const trivialKey = Object.keys(introspect.show).length === 1 && Object.keys(introspect.show)[0];
+    if (trivialKey) poolIntro["..."].columns = [["", poolIntro["..."].columns[0][trivialKey]]];
     Object.keys(pool.commands)
     .sort()
     .forEach(name => {

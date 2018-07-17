@@ -181,7 +181,7 @@ function _createObjectBlock (value, layout, ret, theme) {
       totalElementCount = columns.length;
     } else if (layout.height === 2) {
       // Gather all column names from row properties.
-      layout.entries.forEach(([rowKey, rowLayout]) => {
+      layout.entries.forEach(([rowKey]) => {
         const elements = ((ret[rowKey] || {})[_layoutKey] || {}).columns;
         if (elements) {
           elements.forEach(element => {

@@ -5,16 +5,16 @@
  * generalization of the es6 spread operation.
  *
  * Additionally deepExtend introduces the *spread operation* and the *spreader properties*.
- * As first class properties (default "...") these spreader properties can be used to /describe/
+ * As first class properties (default key "...") these spreader properties can be used to /describe/
  * localized, lazily evaluated, and context-dependent deep extend operations as persistent,
  * fully JSON-compatible data.
  *
  * The idiomatic example is shared JSON configurations (similar to babel presets or eslint extends):
  *
  * Given two JSON files:
- * # common.json
+ * // common.json
  * `{ kind: "project", name: "unnamed", plugins: ["basicplugin"] }`
- * # myproject.json
+ * // myproject.json
  * `{ "...": "./common.json", name: "myproject", plugins: ["myplugin"] }`
  *
  * When myproject.json is deep-extended onto {} (with the contextual configSpread callback)
@@ -47,9 +47,10 @@
  * If a source object of some nested deep append phase has a spreader property (by default "...")
  * then right before it is deep assigned a spread operation is performed:
  * 1. The spread callback is called like so:
- *    const intermediate = spread(spreadee["..."], target, spreadee, targetContainer, key).
+ *    const intermediate = spread(source["..."], target, source, key, targetParent,
+ *    sourceParent).
  * 2. If the returned intermediate is undefined the subsequent deep assign of the source is skipped
- *    and deep assign returns targetContainer[key].
+ *    and deep assign returns targetParent[key].
  * 3. Otherwise the intermediate is deep assigned onto the target value, potentially recursively
  *    evaluating further spread operations.
  * 4. Finally the original source object is omitted the spreader property and deep assigned onto

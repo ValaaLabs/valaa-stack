@@ -43,7 +43,8 @@ async function _inquireIfCustomThenAlwaysConfirm (vlm, category, selection, answ
   if (selection === "<custom>") {
     answers[category] = await vlm.inquireText(`Enter custom valaa.${category}:`);
   }
-  await vlm.invoke(`.configure/.${category}/${answers[category]}`, ["--show-describe"]);
+  vlm.speak(
+      await vlm.invoke(`.configure/.${category}/${answers[category]}`, ["--show-introduction"]));
   return await vlm.inquireConfirm(`Confirm valaa.${category} selection: '${answers[category]}'?`);
 }
 
