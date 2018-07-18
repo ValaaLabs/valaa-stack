@@ -1,56 +1,11 @@
-const _layoutKey = "";
+const deepExtend = require("@valos/tools/deepExtend").default;
 
-module.exports = {
-  default: function markdownify (value, theme, context) {
-    // https://github.github.com/gfm/#introduction
-    const markdownifyTheme = Object.assign(Object.create(theme), {
-      code (...rest) {
-        const body = rest.slice(0, -1);
-        const last = body[body.length - 1];
-        return [`\`\`\`${rest[rest.length - 1]}`,
-          (rest[0] || "")[0] === "\n" ? "" : "\n",
-          body,
-          (last || "")[last.length - 1] === "\n" ? "" : "\n",
-          "```",
-        ];
-      },
-      sectionIndexes: [],
-      heading: function heading (...rest) {
-        let sectionIndexString = "";
-        if (this.hasOwnProperty("sectionIndexes")) {
-          ++this.sectionIndexes[this.sectionIndexes.length - 1];
-          sectionIndexString = !this.sectionIndexes ? "" : ` ${this.sectionIndexes.join(".")}`;
-        }
-        return ((typeof rest[rest.length - 1] !== "number") ? rest : [
-          "\n",
-          "#".repeat(Math.max(1, Math.min(6, rest[rest.length - 1]))),
-          sectionIndexString,
-          " ", ...rest.slice(0, -1),
-        ]);
-      },
-      // paragraphIndent: 0,
-      // paragraphPrefix: "",
-      // pageWidth: 71,
-      paragraphize: function paragraphize (text, indent = this.paragraphIndent,
-          prefix = this.paragraphPrefix, pageWidth = this.pageWidth) {
-        return _layoutSectionText(text, indent || 0, prefix || "", pageWidth || 71);
-      },
-    });
-    const blockTree = _createBlockTree(value, context, markdownifyTheme);
-    // console.log("blockTree:", JSON.stringify(blockTree, null, 2));
-    return _renderBlock(blockTree, context, markdownifyTheme);
-  },
-  addLayoutOrderedProperty (target, name, entry, customLayout) {
-    const targetLayout = target["..."] || (target["..."] = {});
-    const entries = targetLayout.entries || (targetLayout.entries = []);
-    entries.push(customLayout === undefined ? name : [name, customLayout]);
-    target[name] = entry;
-  }
-};
+const _layoutKey = "";
+const _spreaderKey = "...";
 
 /**
  * Converts and returns the given value as a Github Formatted Markdown
- * string.
+ * string, see https://github.github.com/gfm/#introduction
  *
  * Purpose of this tool two-fold: to make it possible to have all
  * github markdown documents as JSON objects and also to be able to
@@ -74,7 +29,7 @@ module.exports = {
  * GFM output string.
  *
  * Non-surprising production rules:
- * 1. Strings map as-is, numbers map JSON.stringify, null as "-" and
+ * 1. Strings as-is, numbers with JSON.stringify, null as "-" and
  *    undefined as "".
  * 2. Empty arrays [] and objects {} affect layout but they are removed
  *    from containing arrays and objects. Empty keys "" are removed.
@@ -99,195 +54,270 @@ module.exports = {
  * @param {*} context
  * @returns
  */
-
-function _createBlockTree (value, contextLayout, theme) {
-  const layout = {
-    type: "text",
-    height: 0, depth: ((contextLayout && contextLayout.depth) || 0) + 1,
-    trivial: true,
-  };
-  let ret = { [_layoutKey]: layout };
-  if (typeof value !== "object") ret = value;
-  else if (value === null) ret = "";
-  else if (typeof value === "function") {
-    layout.renderer = value;
-  } else if (Array.isArray(value)) _createArrayBlock(value, layout, ret, theme);
-  else if (layout.text === undefined) _createObjectBlock(value, layout, ret, theme);
-  if (contextLayout && (contextLayout.height <= layout.height)) {
-    contextLayout.height = layout.height + 1;
-  }
-  if (contextLayout && !layout.trivial) delete contextLayout.trivial;
-  return ret;
+function markdownify (value, theme, context) {
+  const niceRenderable = deepExtend(undefined, value, createDeepExtendOptions());
+  // console.log("niceRenderable:", JSON.stringify(niceRenderable, null, 2));
+  const markdownifyTheme = createRenderTheme(theme);
+  return _renderBlock(niceRenderable, context, markdownifyTheme);
 }
 
-function _createArrayBlock (value, layout, ret, theme) {
+module.exports = {
+  default: markdownify,
+  createDeepExtendOptions,
+  createRenderTheme,
+  render: _renderBlock,
+  addLayoutOrderedProperty (target, name, entry, customLayout) {
+    const targetLayout = target[_spreaderKey] || (target[_spreaderKey] = {});
+    const entries = targetLayout.entries || (targetLayout.entries = []);
+    entries.push(customLayout === undefined ? name : [name, customLayout]);
+    target[name] = entry;
+  },
+};
+
+function _getLayout (value, layoutKey = _layoutKey) {
+  if ((typeof value !== "object") || (value === null) || Array.isArray(value)) return undefined;
+  return value[layoutKey];
+  // console.log("\ngetLayout", value, layoutKey, "\nGOT:", layout, "\n");
+  // return (typeof layout !== "string") ? layout : require(layout);
+}
+
+/*
+  ######  #    #   #####  ######  #    #  #####
+  #        #  #      #    #       ##   #  #    #
+  #####     ##       #    #####   # #  #  #    #
+  #         ##       #    #       #  # #  #    #
+  #        #  #      #    #       #   ##  #    #
+  ######  #    #     #    ######  #    #  #####
+*/
+
+function createDeepExtendOptions (customizations) {
+  return Object.assign(Object.create(_deepExtendOptions), customizations);
+}
+
+const _deepExtendOptions = Object.freeze({
+  require: require, // eslint-disable-line
+  spreaderKey: _spreaderKey,
+  spread (spreaderValue, target, source, key, targetContainer, sourceContainer) {
+    const extendee = (typeof spreaderValue === "string")
+        ? this.require(spreaderValue)
+        : { [_layoutKey]: spreaderValue };
+    if (!Array.isArray(source)) return extendee;
+    let inter = this.extend(target, extendee, key, targetContainer, sourceContainer);
+    if (source.length >= 2) {
+      inter = this.extend(inter, source.slice(2), key, targetContainer, sourceContainer);
+    }
+    targetContainer[key] = inter;
+    return undefined; // Stop further spread-extending
+  },
+  customizer (target, source, key, targetContainer) {
+    // console.log("target:", target, "\nsource:", source, "\nkey:", key, "\n");
+    if (typeof source !== "object") return undefined;
+    if (source === null) return "";
+    if ((source[0] === _spreaderKey) || source[_spreaderKey]) return undefined;
+    const ret = target || {};
+    const layout = ret[_layoutKey] = deepExtend(_getLayout(ret) || {
+      trivial: true, height: 0, depth: ((_getLayout(targetContainer) || {}).depth || 0) + 1,
+    }, _getLayout(source));
+    return Array.isArray(source)
+        ? this._extendArrayBlock(ret, source, layout)
+        : this._extendObjectBlock(ret, source, layout);
+  },
+  postProcessor (block, source, key, targetContainer) {
+    const layout = _getLayout(block);
+    const contextLayout = _getLayout(targetContainer);
+    if (contextLayout) {
+      contextLayout.height = Math.max(contextLayout.height, ((layout && layout.height) || 0) + 1);
+      if (layout && !layout.trivial) delete contextLayout.trivial;
+    }
+  },
+  _extendArrayBlock,
+  _extendObjectBlock,
+  _extractObjectEntries,
+  _resolveObjectColumns,
+  _postProcessObjectEntries,
+});
+
+function _extendArrayBlock (target, sourceArray, layout) {
   layout.type = "array";
-  // layout.empty = true;
-  let iterables = value;
-  if (value[0] === "...") {
-    if (typeof value[1] !== "object" || value[1] === null) {
-      console.error("Unrecognized ['...', layout], expected object layout, got", typeof value[1],
-          " with:", value);
-    } else {
-      Object.assign(layout, value[1]);
-    }
-    iterables = value.slice(2);
-  }
-  layout.entries = iterables.map((entry, index) => {
-    const block = _createBlockTree(entry, layout, theme);
-    const entryLayout = !Array.isArray(block) && block[_layoutKey];
+  const lastTargetIndex = target.length || 0;
+  layout.entries = (layout.entries || []).concat(sourceArray.map((sourceEntry, index) => {
+    const block = this.extend(undefined, sourceEntry, lastTargetIndex + index, target, sourceArray);
+    const entryLayout = _getLayout(block);
     const subEntries = (entryLayout || {}).entries || [];
-    if (subEntries.length === 1 && (entryLayout.type === "object")) {
-      const subBlock = block[subEntries[0]];
-      const subLayout = _getLayout(subBlock);
-      if (subLayout && subLayout.type === "array") subLayout.type = "list";
-      ret[subEntries[0]] = subBlock;
-      return subEntries[0];
+    if ((subEntries.length !== 1) || (entryLayout.type !== "object")) {
+      target[lastTargetIndex + index] = block;
+      return index;
     }
-    ret[index] = block;
-    return index;
-  });
+    // Expand single-property 'label' objects to parent
+    const subBlock = block[subEntries[0]];
+    const subLayout = _getLayout(subBlock);
+    if (subLayout && (subLayout.heading === undefined)) subLayout.heading = "";
+    if (subLayout && subLayout.type === "array") subLayout.type = "list";
+    target[subEntries[0]] = subBlock;
+    return subEntries[0];
+  }));
+  this._resolveObjectColumns(target, layout);
+  return target;
 }
 
-function _getLayout (value) {
-  return (value && (typeof value === "object") && value[_layoutKey]) || undefined;
-}
-
-function _createObjectBlock (value, layout, ret, theme) {
+function _extendObjectBlock (target, sourceObject, layout) {
   layout.type = "object";
-  if (value["..."]) Object.assign(layout, value["..."]);
-  if (layout.defaultHeadings === undefined) layout.defaultHeadings = true;
-  const entries = layout.entries || [null];
-  _extractEntries(entries, value, layout.entries = [], ret);
+  const newEntries = [];
+  this._extractObjectEntries(layout.entries || null, sourceObject, newEntries, target, layout);
   delete layout.trivial;
+  if (newEntries.length) layout.entries = newEntries;
   // layout.empty = true;
-  let onlyNumbers = true;
-  layout.entries.forEach(([e]) => {
-    if (isNaN(e)) onlyNumbers = false;
-    // if ((typeof ret[e] !== "object") || !(ret[e]["."] || {}).empty) delete layout.empty;
+  let hasOnlyNumbers;
+  (layout.entries || []).forEach(entry => {
+    const key = _getKey(entry);
+    if (isNaN(key)) hasOnlyNumbers = false;
+    else if ((String(key) !== "0") && hasOnlyNumbers === undefined) hasOnlyNumbers = true;
+    // if ((typeof target[e] !== "object") || !(target[e]["."] || {}).empty) delete layout.empty;
   });
-  if (onlyNumbers) layout.type = "numbered";
+  if (hasOnlyNumbers) layout.type = "numbered";
   if (layout.columns) {
     const columns = layout.columns;
-    const columnLookup = {};
-    _extractEntries(columns, undefined, layout.columns = [], columnLookup);
-  } else if (layout.type !== "numbered") {
-    let totalElementCount = 0;
-    let columns = [];
-    const columnLookup = {};
-    if (layout.height === 1) {
-      columns = layout.entries.map(e => { columnLookup[e[0]] = e[1]; return e; });
-      delete layout.entries;
-      totalElementCount = columns.length;
-    } else if (layout.height === 2) {
-      // Gather all column names from row properties.
-      layout.entries.forEach(([rowKey]) => {
-        const elements = ((ret[rowKey] || {})[_layoutKey] || {}).columns;
-        if (elements) {
-          elements.forEach(element => {
-            const [elementKey, elementLayout] = Array.isArray(element) ? element : [element];
-            let columnLayout = elementLayout || columnLookup[elementKey];
-            if (!columnLayout) {
-              columnLayout = columnLookup[elementKey] = {};
-              columns.push([elementKey, columnLayout]);
-            }
-            ++totalElementCount;
-            columnLayout.entryCount = (columnLayout.entryCount || 0) + 1;
-          });
-        }
-      });
-    }
-    if (totalElementCount > (columns.length * (layout.entries || [1]).length) / 2) {
-      // Only tablify if more than half of the elements are filled
-      Object.assign(layout, { columns });
-    }
-  }
-  _postProcess(layout.entries);
-  _postProcess(layout.columns);
-  function _postProcess (seq) {
-    if (!(seq || []).length) return;
-    for (let i = 0; i < seq.length; ++i) {
-      const entry = ret[seq[i][0]];
-      const entryLayout = (entry && (typeof entry === "object") && entry[_layoutKey]) || undefined;
-      const after = entryLayout && (entryLayout.indexAfter || entryLayout.after);
-      if (entryLayout && entryLayout.indexAfter) layout.indexSections = true;
-      const afterIndex = (after === undefined)
-          ? -1 : seq.findIndex(e => (String(e[0]) === String(after)));
-      if ((afterIndex >= 0) && ((afterIndex + 1) !== i)) {
-        const extractee = seq.splice(i, 1);
-        seq.splice(afterIndex + (afterIndex < i ? 1 : 0), 0, extractee[0]);
-        if (afterIndex > i) --i;
-      }
-    }
-    seq.forEach(([e, layout_], index) => { if (!Object.keys(layout_).length) seq[index] = e; });
-  }
+    this._extractObjectEntries(columns, undefined, layout.columns = [], {}, layout);
+  } else this._resolveObjectColumns(target, layout);
+  this._postProcessObjectEntries(target, layout.entries, layout);
+  this._postProcessObjectEntries(target, layout.columns, layout);
+  return target;
+}
 
-  /*
-  if (layout.type === "object") {
-    if (layout.height === 1) {
-      // Heuristics for deciding between horizontal or vertical trivial tablification is here
-      if (!((layout.heading || {}).name || "").match(/s$/)
-          && (layout.mappingKeyLayouts.length < 4)) {
-        return _renderTable(undefined, [block], layout.mappingKeyLayouts, block, layout, theme);
-      }
-      // Vertical layout: two columns: "key" and "value", key/value pairs as rows
-      return _renderTable(undefined, Object.entries(block).filter(entry => (entry[0] !== _layoutKey)),
-          [[0, { text: "key" }], [1, { text: "value" }]], { 0: {}, 1: {} }, layout, theme);
-    } else if (layout.chapters || (layout.height > 2)
-        || !(layout.columns || (layout.minHeight <- dead === 2))) {
-      return _renderChapters(layout.mappingKeyLayouts, block, layout, theme);
+function _extractObjectEntries (entry, sourceObject, targetEntries, target, layout) {
+  // If entryBlock is omitted the entries are inside a layout structure. Limit some operations,
+  // notably provide an undefined contextLayout for recursive processing.
+  if ((entry === undefined) || (entry === _layoutKey) || (entry === _spreaderKey)) return;
+  const callSelf = e => this._extractObjectEntries(e, sourceObject, targetEntries, target, layout);
+  if (entry === null) {
+    if (sourceObject) Object.keys(sourceObject).sort().forEach(callSelf);
+  } else if (Array.isArray(entry)) {
+    if ((entry.length !== 2) || (typeof entry[0] !== "string") || (typeof entry[1] !== "object")) {
+      entry.forEach(callSelf);
+      return;
     }
-    return _renderTable(layout.mappingKeyLayouts.map(([key]) => key), block,
-        layout.columns, layout.columnLookup, layout, theme);
-  }
-  if (layout.type === "array") {
-    if ((layout.height === 2) && ((layout.sections || []).length <= 2)
-        && layout.sections[layout.sections.length - 1][0][_layoutKey].type === "object") {
-      const arrayLayout = (layout.sections.length === 2) && layout.sections[0];
-      return _renderTable(undefined, layout.sections[layout.sections.length - 1],
-          layout.columns, layout.columnLookup, arrayLayout, theme);
+    const [key, entryLayout] = entry;
+    if (sourceObject && (sourceObject[key] === undefined)) return;
+    if (!target[key]) {
+      const entryBlock = !sourceObject
+          ? { [_layoutKey]: {} }
+          : this.extend(undefined, sourceObject[key], key, target, sourceObject);
+      targetEntries.push(entry);
+      target[key] = entryBlock;
     }
-    // TODO(iridian): Add lists etc.
-    return layout.mappingKeyLayouts.map(([key]) => _renderBlock(block[key], layout, theme))
-        .join("\n");
-  }
-  */
-  function _extractEntries (entry, sourceObject, targetKeyLayouts, targetLookup) {
-    // If entryBlock is omitted the entries are inside a layout structure. Limit some operations,
-    // notably provide an undefined contextLayout for recursive processing.
-    if ((entry === undefined) || (entry === "") || (entry === "...")) return;
-    const selfRecurser = e => _extractEntries(e, sourceObject, targetKeyLayouts, targetLookup);
-    if (entry === null) {
-      if (sourceObject) Object.keys(sourceObject).sort().forEach(selfRecurser);
-    } else if (Array.isArray(entry)) {
-      if ((entry.length === 2) && (typeof entry[0] === "string") && typeof entry[1] === "object") {
-        if ((!sourceObject || (sourceObject[entry[0]] !== undefined))) {
-          if (!targetLookup[entry[0]]) {
-            const entryBlock = !sourceObject
-                ? { [_layoutKey]: {} }
-                : _createBlockTree(sourceObject[entry[0]], layout, theme);
-            targetKeyLayouts.push(entry);
-            targetLookup[entry[0]] = entryBlock;
+    // Update layout.
+    if (Object.keys(entry || {}).length) {
+      Object.assign(targetEntries.find(([key_]) => (key_ === key))[1], entryLayout);
+    }
+  } else if (typeof entry === "object") {
+    Object.keys(entry).sort().map(key => [key, entry[key]]).forEach(callSelf);
+  } else callSelf([String(entry), {}]);
+}
+
+function _resolveObjectColumns (target, layout) {
+  if (layout.type === "numbered" || layout.chapters || !layout.entries) return;
+  let totalElementCount = 0;
+  let columns = [];
+  const columnLookup = {};
+  if (layout.height === 1) {
+    columns = layout.entries.map(e => { columnLookup[e[0]] = e[1]; return e; });
+    delete layout.entries;
+    totalElementCount = columns.length;
+  } else if (layout.height === 2) {
+    // Gather all column names from row properties.
+    layout.entries.forEach(entry => {
+      const rowKey = _getKey(entry);
+      const elements = ((target[rowKey] || {})[_layoutKey] || {}).columns;
+      if (elements) {
+        elements.forEach(element => {
+          const [elementKey, elementLayout] = Array.isArray(element) ? element : [element];
+          let columnLayout = elementLayout || columnLookup[elementKey];
+          if (!columnLayout) {
+            columnLayout = columnLookup[elementKey] = {};
+            columns.push([elementKey, columnLayout]);
           }
-          // Update layout.
-          if (Object.keys(entry || {}).length) {
-            Object.assign(targetKeyLayouts.find(([key]) => (key === entry[0]))[1], entry[1]);
-          }
-        }
-      } else {
-        entry.forEach(selfRecurser);
+          ++totalElementCount;
+          columnLayout.entryCount = (columnLayout.entryCount || 0) + 1;
+        });
       }
-    } else if (typeof entry === "object") {
-      Object.keys(entry).sort().map(key => [key, entry[key]]).forEach(selfRecurser);
-    } else selfRecurser([String(entry), {}]);
+    });
+  }
+  if (columns.length
+      && (totalElementCount > (columns.length * (layout.entries || [1]).length) / 2)) {
+    // Only tablify if more than half of the elements are filled
+    Object.assign(layout, { columns });
   }
 }
+
+function _postProcessObjectEntries (target, entries, layout) {
+  if (!(entries || []).length) return;
+  for (let i = 0; i < entries.length; ++i) {
+    const entry = target[entries[i][0]];
+    const entryLayout = (entry && (typeof entry === "object") && entry[_layoutKey]) || undefined;
+    const after = entryLayout && (entryLayout.indexAfter || entryLayout.after);
+    if (entryLayout && entryLayout.indexAfter) layout.indexSections = true;
+    const afterIndex = (after === undefined)
+        ? -1 : entries.findIndex(e => (String(e[0]) === String(after)));
+    if ((afterIndex >= 0) && ((afterIndex + 1) !== i)) {
+      const extractee = entries.splice(i, 1);
+      entries.splice(afterIndex + (afterIndex < i ? 1 : 0), 0, extractee[0]);
+      if (afterIndex > i) --i;
+    }
+  }
+  entries.forEach((entry, index) => {
+    if (Array.isArray(entry) && !Object.keys(entry[1] || {}).length) entries[index] = entry[0];
+  });
+}
+
+/*
+  #####   ######  #    #  #####   ######  #####
+  #    #  #       ##   #  #    #  #       #    #
+  #    #  #####   # #  #  #    #  #####   #    #
+  #####   #       #  # #  #    #  #       #####
+  #   #   #       #   ##  #    #  #       #   #
+  #    #  ######  #    #  #####   ######  #    #
+*/
+
+function createRenderTheme (theme, customizations) {
+  return Object.assign(Object.create(theme), _markdownifyStyles, customizations);
+}
+
+const _markdownifyStyles = Object.freeze({
+  // join (...texts) { return [].concat(...texts).join(""); },
+  code (language, ...body) {
+    const last = body[body.length - 1] || "";
+    return [`\`\`\`${language}`,
+      ((body[0] || "")[0] === "\n") ? "" : "\n",
+      ...body,
+      (last[last.length - 1] === "\n") ? "" : "\n",
+      "```",
+    ];
+  },
+  sectionIndexes: [],
+  heading: function heading (maybeHeadingLevel, ...rest) {
+    let numbers = [];
+    if (this.hasOwnProperty("sectionIndexes")) {
+      ++this.sectionIndexes[this.sectionIndexes.length - 1];
+      numbers = [this.sectionIndexes.map(i => `${i}.`).join("")];
+    }
+    return (typeof maybeHeadingLevel !== "number")
+        ? [maybeHeadingLevel, ...rest]
+        : [`\n${"#".repeat(Math.max(1, Math.min(6, maybeHeadingLevel)))}`, ...numbers, ...rest];
+  },
+  // paragraphIndent: 0,
+  // paragraphPrefix: "",
+  // lineLength: 71,
+  paragraphize: function paragraphize (text, indent = this.paragraphIndent,
+      prefix = this.paragraphPrefix, lineLength = this.lineLength) {
+    return _layoutSectionText(text, indent || 0, prefix || "", lineLength || 71);
+  },
+});
 
 function _renderBlock (block, contextLayout, theme) {
   // console.log("block:", JSON.stringify(block, null, 2));
   if (typeof block === "string") {
     if (!theme.hasOwnProperty("paragraphStyle")) return block;
-    return theme.decorate(theme.paragraphStyle)(block);
+    return theme.decoratorOf(theme.paragraphStyle)(block);
   }
   if (block === undefined) return "";
   if ((typeof block === "boolean") || (typeof block === "number")) return String(block);
@@ -296,9 +326,9 @@ function _renderBlock (block, contextLayout, theme) {
     const arrayTheme = isOutermost ? theme : Object.create(theme);
     const entries = block.map(entry => _renderBlock(entry, contextLayout, arrayTheme));
     if (!isOutermost) return entries.join(" ");
-    return entries.map(theme.decorate(theme.paragraphStyle)).join("\n");
+    return entries.map(theme.decoratorOf(theme.paragraphStyle)).join("\n");
   }
-  const layout = block[_layoutKey];
+  const layout = _getLayout(block);
   if (layout.hide) return "";
   if (layout.text !== undefined) return layout.text;
   if (layout.columns) {
@@ -317,6 +347,7 @@ function _renderBlock (block, contextLayout, theme) {
 }
 
 function _renderChapters (chapters, chapterLookup, chaptersLayout, sectionTheme) {
+  // console.log("renderChapters:", chapters, "\nchaptersLayout:", chaptersLayout);
   const retRows = [];
   if (chaptersLayout.indexSections) {
     sectionTheme.sectionIndexes = [...sectionTheme.sectionIndexes, 0];
@@ -325,24 +356,23 @@ function _renderChapters (chapters, chapterLookup, chaptersLayout, sectionTheme)
     const [chapterName, chapterLayout] = Array.isArray(chapter) ? chapter : [chapter];
     const chapterBlock = chapterLookup[chapterName];
     const lookups = [
-      (typeof chapterBlock === "object") && chapterBlock[_layoutKey],
+      _getLayout(chapterBlock),
       chapterLayout, {
-        heading: isNaN(chapterName) && chaptersLayout.defaultHeadings
-            && { text: chapterName, style: "bold" }
+        heading: isNaN(chapterName) && { text: chapterName, style: "bold" }
       },
     ];
     if (_getLayoutProperty(lookups, "hide")) return;
     const heading = _getLayoutProperty(lookups, "heading");
-    const headingText = typeof heading === "string" ? heading : (heading && heading.text);
+    const headingText = (typeof heading === "string") ? heading : (heading && heading.text);
     if (headingText) {
-      retRows.push(sectionTheme.decorate([
+      retRows.push(sectionTheme.decoratorOf([
         _getLayoutProperty(lookups, "heading", "style"), { heading: chaptersLayout.depth }
       ])(headingText));
     }
     const chapterText = _renderBlock(chapterBlock, chaptersLayout, sectionTheme);
     const style = _getLayoutProperty(lookups, "elementStyle")
         || _getLayoutProperty(lookups, "style");
-    retRows.push(!style ? chapterText : sectionTheme.decorate(style)(chapterText));
+    retRows.push(!style ? chapterText : sectionTheme.decoratorOf(style)(chapterText));
   });
   return retRows.join("\n");
 }
@@ -372,56 +402,70 @@ function _getLayoutProperty (lookups, ...steps) {
 }
 
 function _renderTable (rowKeys, rowLookup, columns, layout, tableTheme) {
+  // console.log("_renderTable, keys:", rowKeys, "\nrowLookup:", rowLookup, "\ncolumns:", columns);
   const rows = [];
   const _escpipe = (v, column) => (column.oob ? v : ((v && v.replace(/\|/g, "\\|")) || ""));
-  const columnKeyLayouts = columns.map(entry => {
+  const columnKeyLayouts = [];
+  const oobColumnKeyLayouts = []; // out-of-band ie. too big to fit the table.
+  columns.forEach(entry => {
     const [name, layout_] = Array.isArray(entry) ? entry : [entry];
-    return [name, Object.assign({}, layout_)];
+    (!(layout_ || {}).oob ? columnKeyLayouts : oobColumnKeyLayouts)
+        .push([name, Object.assign({}, layout_)]);
   });
-  const renderHeaders = !layout || !layout.hideHeaders;
-  if (renderHeaders) {
-    rows.push(columnKeyLayouts.map(([columnKey, columnLayout]) => ([
-      _escpipe(columnLayout.text || columnKey, columnLayout), columnLayout.style,
-    ])));
-    rows.push(columnKeyLayouts.map(() => ([""]))); // placeholder
-  }
-  rows.push(...rowKeys.map(rowKey => {
-    // no rowKeys means rowLookup is an array.
+  const headerRow = !(layout && layout.hideHeaders)
+      && columnKeyLayouts.map(([columnKey, columnLayout]) => ([
+        _escpipe(columnLayout.text || columnKey, columnLayout),
+        columnLayout.style,
+      ]));
+  let pendingHeaderRow = headerRow;
+  for (const rowKey of rowKeys) {
     const rowData = rowLookup[rowKey];
-    const entryLayouts = (((typeof rowData === "object") && rowData && rowData["..."]) || {})
-        .entryLayouts || {};
-    return columnKeyLayouts.map(([columnKey, columnLayout]) => {
-      const text = (columnKey === null) || (typeof rowData !== "object")
+    const elementLayouts = (_getLayout(rowData) || {}).entryLayouts || {};
+    const _columnElementRenderer = ([columnKey, columnLayout]) => {
+      let text = (columnKey === "") || (typeof rowData !== "object")
           ? rowData : (rowData || {})[columnKey];
-      const entryLayout = entryLayouts[columnKey];
-      const lookups = [entryLayout, columnLayout];
+      const elementLayout = elementLayouts[columnKey];
+      const lookups = [elementLayout, columnLayout];
+      if (typeof text !== "string") text = _renderBlock(text, layout, tableTheme);
       return [
-        _escpipe(String(text), entryLayout || columnLayout),
+        _escpipe(text, elementLayout || columnLayout),
         _getLayoutProperty(lookups, "elementStyle") || _getLayoutProperty(lookups, "style"),
       ];
-    });
-  }));
-  columnKeyLayouts.forEach(([columnKey, columnLayout], columnIndex) => {
-    columnLayout.width = columnLayout.oob
-        ? 3 : Math.max(...rows.map(row => (row[columnIndex][0] || "").length));
-  });
-  if (renderHeaders) {
-    rows[1] = columnKeyLayouts.map(([, columnLayout]) => ([
-      `${(columnLayout.align || "right") !== "right" ? ":" : "-"}${
-          "-".repeat(columnLayout.width - 2)}${
-          (columnLayout.align || "left") !== "left" ? ":" : "-"}`,
-      ""
-    ]));
+    };
+    if (pendingHeaderRow) {
+      rows.push(pendingHeaderRow);
+      pendingHeaderRow = null;
+      rows.push(null); // header underline placeholder
+    }
+    rows.push(columnKeyLayouts.map(_columnElementRenderer));
+    if (oobColumnKeyLayouts.length) {
+      rows.push(...oobColumnKeyLayouts.map(_columnElementRenderer));
+      pendingHeaderRow = headerRow;
+    }
   }
-  return rows.map(row => row.map(([text_, style_], index) => {
-    const columnLayout = columnKeyLayouts[index][1];
-    if (!columnLayout) return "";
-    let text = (typeof text_ === "string") ? text_ : `<${typeof text_}>`;
-    const pad = (columnLayout.width || 0) - text.length;
-    const style = (style_ !== undefined) ? style_ : columnLayout.elementStyle || columnLayout.style;
-    text = !style ? text : tableTheme.decorate(style)(text);
-    return `${text}${" ".repeat(pad > 0 ? pad : 0)}`;
-  }).join("|")).join("\n");
+  // TODO: render pending headers if table is empty?
+  columnKeyLayouts.forEach(([columnKey, columnLayout], columnIndex) => {
+    columnLayout.width = Math.max(...rows.map(
+        row => ((Array.isArray(row && row[0]) && row[columnIndex][0]) || "").length));
+  });
+  // console.log("layouts:", columnKeyLayouts, oobColumnKeyLayouts, "\nrows:", rows);
+  return rows.map(row => {
+    if (row === null) { // header underline placeholder
+      return columnKeyLayouts.map(([, columnLayout]) =>
+        `${(columnLayout.align || "right") !== "right" ? ":" : "-"}${
+            "-".repeat(columnLayout.width - 2)}${
+            (columnLayout.align || "left") !== "left" ? ":" : "-"}`
+      ).join("|");
+    }
+    const _renderElement = ([text_, style_], index) => {
+      const columnLayout = (index === undefined) ? { width: 0 } : columnKeyLayouts[index][1];
+      const text = (typeof text_ === "string") ? text_ : `<${typeof text_}>`;
+      return `${!style_ ? text : tableTheme.decoratorOf(style_)(text)
+          }${" ".repeat(Math.max(0, (columnLayout.width || 0) - text.length))}`;
+    };
+    if (row.length && !Array.isArray(row[0])) return _renderElement(row); // oob column
+    return row.map(_renderElement).join("|");
+  }).join("\n");
 }
 
 function _layoutSectionText (section, indent = 0, prefix = "", width = 71) {

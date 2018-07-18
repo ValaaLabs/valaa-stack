@@ -5,4 +5,4 @@ export default function isPromise (promiseCandidate: any) {
       && (promiseCandidate !== null)
       && (typeof promiseCandidate.then !== "undefined")
       && (Promise.resolve(promiseCandidate) === promiseCandidate);
-}
+};
