@@ -70,90 +70,117 @@
  * deepExtend({de:{ep:{ foo: [1] }}}, {de:{ep:{ foo: arrayRewriter }}})-> {de:{ep:{ foo: [3] }}}
  *
  *
- * Elementary merge rules as "lhs ... rhs -> result" productions based on rhs type:
+ * Elementary extend rules as "target ... source -> result" productions based on source type:
  *
- * rhs: undefined | {}          -> lhs
- * rhs: { "...": spr, ...rest } -> deepExtend(deepExtend(lhs, spr), rest)
- * rhs: Array                   -> asArray(lhs, (ret =>
- *                                     rhs.forEach(e => ret.push(deepExtend(null, [e])))))
- * rhs: Object                  -> asObject(lhs, (ret => Object.keys(rhs).forEach(key =>
- *                                     { ret[key] = deepExtend(ret[key], [rhs[key]]); });
- * rhs: any                     -> rhs
+ * source: undefined | {}          -> target
+ * source: { "...": spr, ...rest } -> deepExtend(deepExtend(target, spread(spr, ...)), rest)
+ * source: Array                   -> asArray(target, (ret =>
+ *                                     source.forEach(e => ret.push(deepExtend(null, [e])))))
+ * source: Object                  -> asObject(target, (ret => Object.keys(source).forEach(key =>
+ *                                     { ret[key] = deepExtend(ret[key], [source[key]]); });
+ * source: any                     -> source
  *
  * @export
  * @param {*} target
  * @param {*} spreadee
  * @param {*} stack
  */
-exports.default = function deepExtend (target /* : Object */, spreadee /* : Array<any> */,
+exports.default = function deepExtend (target /* : Object */, source /* : Array<any> */,
     options /* : {
-  spreadProperty?: string, spread?: Function, customize?: Function, keyPath?: Array<any>,
+  spread?: Function,
+  spreaderKey?: string,
+  customizer?: Function,
+  keyPath?: Array<any>,
 }*/) {
-  return {
-    spreadProperty: "...",
-    ...options,
-    entrySpread (target_, spreadee_, targetKey, targetContainer, spreadeeContainer) {
-      // console.log("entrySpread, targetContainer/key:", targetContainer, targetKey,
-      //    "\n\ttarget:", JSON.stringify(target_), "<- spreadee:", spreadee_);
-      const result = options.spread && options.spread.call(
-          this, target_, spreadee_, targetKey, targetContainer, spreadeeContainer);
-      if (result !== undefined) return result;
-      const ret = this.spread(target_, spreadee_);
-      return !spreadeeContainer ? ret : this.merge(ret, spreadeeContainer);
-    },
-    spread (target_, spreadee_) {
+  const stack = options || {};
+  stack.extend = extend;
+  if (stack.spreaderKey === undefined) stack.spreaderKey = "...";
+  if (stack.spreaderKey && !stack.spread) {
+    if (!stack.require) stack.require = require;
+    stack.spread = function spread (spreadee_, target_, source_, targetKey,
+        targetParent, sourceParent /* , stack_ */) {
       if ((spreadee_ === null) || (spreadee_ === undefined)) return undefined;
       if (typeof spreadee_ === "function") return spreadee_(target_);
-      if (!Array.isArray(spreadee_)) return this.merge(target_, spreadee_, false);
+      if (typeof spreadee_ === "string") return this.require(spreadee_);
+      if (!Array.isArray(spreadee_)) {
+        return this.extend(target_, spreadee_, targetKey, targetParent, sourceParent);
+      }
       let ret = target_;
       for (const entry of spreadee_) {
-        ret = this.merge(ret, entry, false);
+        ret = this.extend(ret, entry);
       }
       return ret;
-    },
-    merge (lhs, rhs, ignoreSpread = true, lhsKey, lhsContainer, rhsContainer) {
-      if (this.customizer) {
-        const newValue = this.customizer(lhs, rhs, lhsKey, lhsContainer, rhsContainer, this);
-        if (newValue !== undefined) return newValue;
-      }
-      if (typeof rhs !== "object") return rhs !== undefined ? rhs : lhs;
-      if (rhs === null) return null;
-      let ret = lhs;
-      if (rhs === lhs) throw new Error("Cannot merge to self");
-      if (Array.isArray(rhs)) {
-        const appendOpKeyPath = this.keyPath && [...this.keyPath, 0];
-        if (!Array.isArray(ret)) ret = [];
-        for (const re of rhs) {
-          if (appendOpKeyPath) {
-            (this.keyPath = appendOpKeyPath)[appendOpKeyPath.length - 1] = ret.length;
+    };
+  }
+  return stack.extend(target, source, undefined, undefined, undefined, false);
+
+  function extend (target_, source_, targetKey, targetParent, sourceParent, skipSpread = false) {
+    let ret = this.customizer
+        && this.customizer(target_, source_, targetKey, targetParent, sourceParent, this);
+    if (ret === undefined) {
+      ret = target_;
+      if (typeof source_ !== "object") ret = (source_ === undefined ? target_ : source_);
+      else if (source_ === null) ret = null;
+      else if (source_ === target_) throw new Error("Cannot extend to self");
+      else if (Array.isArray(source_)) {
+        if (!skipSpread && this.spreaderKey && (source_[0] === this.spreaderKey)) {
+          for (let i = 1; i !== source_.length; ++i) {
+            if (_setRetFromSpreadAndMaybeBail(this, source_[i])) break;
           }
-          const newValue = this.merge(null, re, false, ret.length, ret, rhs);
-          if (newValue !== undefined) ret.push(newValue);
-        }
-        return ret;
-      }
-      if (!ignoreSpread && this.spreadProperty && rhs.hasOwnProperty(this.spreadProperty)) {
-        return this.entrySpread(lhs, rhs[this.spreadProperty], lhsKey, lhsContainer, rhs);
-      }
-      let spliceCount = Array.isArray(ret) ? 0 : undefined;
-      const updateOpKeyPath = this.keyPath && [...this.keyPath, ""];
-      for (const key of Object.keys(rhs)) {
-        if (key === this.spreadProperty) continue;
-        if ((ret === null) || (typeof ret !== "object")) ret = {};
-        const retKey = spliceCount === undefined ? key : key - spliceCount;
-        if (updateOpKeyPath) (this.keyPath = updateOpKeyPath)[updateOpKeyPath.length - 1] = retKey;
-        const newValue = this.merge(ret[retKey], rhs[key], false, retKey, ret, rhs);
-        if (newValue === undefined) {
-          if (spliceCount === undefined) delete ret[retKey];
-          else {
-            ret.splice(retKey, 1);
-            ++spliceCount;
+        } else if (Array.isArray(ret) || !_setRetFromCacheAndMaybeBail()) {
+          const newKeyPath = this.keyPath && [...this.keyPath, 0];
+          for (const entry of source_) {
+            if (newKeyPath) (this.keyPath = newKeyPath)[newKeyPath.length - 1] = ret.length;
+            const newEntry = this.extend(undefined, entry, ret.length, ret, source_);
+            if (newEntry !== undefined) ret.push(newEntry);
           }
-        } else {
-          ret[retKey] = newValue;
+        }
+      } else if (!skipSpread && this.spreaderKey && source_.hasOwnProperty(this.spreaderKey)) {
+        if (!_setRetFromSpreadAndMaybeBail(this, source_[this.spreaderKey])) {
+          const src = !this.customizer ? source_ : { ...source_ };
+          if (this.customizer) delete src[this.spreaderKey];
+          ret = this.extend(ret, src, targetKey, targetParent, sourceParent, true);
+        }
+      } else {
+        const targetIsArray = Array.isArray(ret);
+        const updateOpKeyPath = this.keyPath && [...this.keyPath, ""];
+        for (const key of Object.keys(source_)) {
+          if (key === this.spreaderKey) continue;
+          if (((ret === null) || (typeof ret !== "object")) && _setRetFromCacheAndMaybeBail()) break;
+          if (updateOpKeyPath) (this.keyPath = updateOpKeyPath)[updateOpKeyPath.length - 1] = key;
+          const newValue = this.extend(ret[key], source_[key], key, ret, source_);
+          if (newValue !== undefined) ret[key] = newValue;
+          else if (!targetIsArray) delete ret[key];
+        }
+        if (targetIsArray) {
+          for (let i = 0; i !== ret.length; ++i) if (ret[i] === undefined) ret.splice(i--, 1);
         }
       }
-      return ret;
-    },
-  }.entrySpread(target, spreadee);
+    }
+    const post = this.postProcessor
+        && this.postProcessor(ret, source_, targetKey, targetParent, sourceParent, this);
+    return (post !== undefined) ? post : ret;
+
+    function _setRetFromSpreadAndMaybeBail (stack_, spreaderValue) {
+      const spreadee = stack_.spread(
+          spreaderValue, ret, source_, targetKey, targetParent, sourceParent, stack_);
+      if (spreadee === undefined) {
+        ret = targetParent && targetParent[targetKey];
+        return true;
+      }
+      ret = stack_.extend(ret, spreadee, targetKey, targetParent, sourceParent);
+      return false;
+    }
+    // Returns true on cache hit for immediate return: source has already extended the target
+    function _setRetFromCacheAndMaybeBail () {
+      const cache = stack.cache || (stack.cache = new Map());
+      const cacheHit = cache.get(source_);
+      if (cacheHit) {
+        ret = cacheHit;
+        return true;
+      }
+      cache.set(source_, (ret = (Array.isArray(source_) ? [] : {})));
+      return false;
+    }
+  }
 };

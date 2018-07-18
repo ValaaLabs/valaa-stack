@@ -14,6 +14,7 @@ const shell = require("shelljs");
 const yargs = require("yargs/yargs");
 const yargsParser = require("yargs-parser").detailed;
 const markdownify = require("../markdownify");
+const deepExtend = require("@valos/tools/deepExtend").default;
 
 cardinal.tomorrowNight = require("cardinal/themes/tomorrow-night");
 
@@ -449,6 +450,11 @@ characters to be equal although '/' is recommended anywhere possible.
           alias: "verbose", count: true, global: false,
           description: "Be noisy. -vv... -> be more noisy.",
         },
+        vlm: {
+          group: "Valma root options:",
+          type: "object", global: false,
+          description: "Set global vlm object fields (f.ex. --vlm.lineLength=60)",
+        },
         echos: {
           group: "Valma root options:",
           type: "boolean", global: false, default: true,
@@ -712,6 +718,11 @@ const packageConfigStatus = {
 const toolsetsConfigStatus = {
   path: vlm.path.join(process.cwd(), "toolsets.json"), updated: false,
 };
+
+// Allow --vlm to override any implicit vlm modifications (ie. --vlm.verbosity=100 overrides -v)
+if (globalVargv.vlmOption) {
+  deepExtend(vlm, globalVargv.vlmOption);
+}
 
 vlm.contextVargv = globalVargv;
 module.exports
@@ -1092,6 +1103,7 @@ function _parseUntilLastPositional (vargs_, argv_, commandUsage, context) {
     }
     ret[positional.slice(1, -1)] = ret._.shift();
   }
+  if (ret.vlm) ret.vlmOption = ret.vlm;
   ret.vlm = vargs_.vlm;
   return ret;
 }
