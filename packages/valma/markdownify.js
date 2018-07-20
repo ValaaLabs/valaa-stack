@@ -452,9 +452,9 @@ function _renderTable (rowKeys, rowLookup, columns, layout, tableTheme) {
   return rows.map(row => {
     if (row === null) { // header underline placeholder
       return columnKeyLayouts.map(([, columnLayout]) =>
-        `${(columnLayout.align || "right") !== "right" ? ":" : "-"}${
-            "-".repeat(columnLayout.width - 2)}${
-            (columnLayout.align || "left") !== "left" ? ":" : "-"}`
+          `${(columnLayout.align || "right") !== "right" ? ":" : "-"}${
+              "-".repeat(Math.max(0, (columnLayout.width || 0) - 2))}${
+              (columnLayout.align || "left") !== "left" ? ":" : "-"}`
       ).join("|");
     }
     const _renderElement = ([text_, style_], index) => {

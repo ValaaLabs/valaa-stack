@@ -875,7 +875,7 @@ async function invoke (commandSelector, args, options = {}) {
   invokeVLM.contextVLM = this;
   // Remove everything after space so that exports.command can be given as commandSelector as-is
   // (these often have yargs usage arguments after the command selector itself).
-  const selector = commandSelector.split(" ")[0];
+  const selector = commandSelector && commandSelector.split(" ")[0];
   const argv = (options.processArgs !== false) ? __processArgs(args) : args;
   if (!options.suppressOutermostEcho) {
     invokeVLM.echo(`${this.getContextIndexText()}>> ${invokeVLM.getContextIndexText()}vlm`,
@@ -1006,7 +1006,7 @@ async function _invoke (commandSelector, argv) {
 
       if (subIntrospect) {
         ret = ret.concat(subIntrospect.builtinHelp
-            ? activeCommand.subVLM._renderBuiltinHelp(subIntrospect)
+            ? activeCommand.vlm._renderBuiltinHelp(subIntrospect)
             : this._introspectCommands(subIntrospect, { [commandName]: activeCommand },
                 commandSelector, isWildcardCommand, subVLM.vargv.matchAll));
       } else if (isWildcardCommand && activeCommand.disabled) {

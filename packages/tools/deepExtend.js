@@ -96,12 +96,17 @@ exports.default = function deepExtend (target /* : Object */, source /* : Array<
   stack.extend = extend;
   if (stack.spreaderKey === undefined) stack.spreaderKey = "...";
   if (stack.spreaderKey && !stack.spread) {
-    if (!stack.require) stack.require = require;
     stack.spread = function spread (spreadee_, target_, source_, targetKey,
         targetParent, sourceParent /* , stack_ */) {
       if ((spreadee_ === null) || (spreadee_ === undefined)) return undefined;
       if (typeof spreadee_ === "function") return spreadee_(target_);
-      if (typeof spreadee_ === "string") return this.require(spreadee_);
+      if (typeof spreadee_ === "string") {
+        if (!this.require) {
+          throw new Error(`No deepExtend.options.require specified (needed by default spread ${
+              ""} for spreadee '${spreadee_}')`);
+        }
+        return this.require(spreadee_);
+      }
       if (!Array.isArray(spreadee_)) {
         return this.extend(target_, spreadee_, targetKey, targetParent, sourceParent);
       }

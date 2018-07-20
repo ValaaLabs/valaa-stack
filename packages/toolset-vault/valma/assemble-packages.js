@@ -106,7 +106,7 @@ exports.handler = async (yargv) => {
     const updatedPackages = vlm.shell.exec(`npx -c "lerna updated --json --loglevel=silent"`);
     if (updatedPackages.code) {
       vlm.warn("No updated packages found, exiting",
-          `(or lerna error with code ${vlm.theme.warn(updatedPackages.code)}`);
+          `(or lerna error with code ${vlm.theme.warning(updatedPackages.code)}`);
       return;
     }
     updatedPackageNames = JSON.parse(updatedPackages).map(p => p.name);
