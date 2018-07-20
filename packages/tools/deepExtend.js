@@ -112,7 +112,7 @@ exports.default = function deepExtend (target /* : Object */, source /* : Array<
       return ret;
     };
   }
-  return stack.extend(target, source, undefined, undefined, undefined, false);
+  return stack.extend(target, source);
 
   function extend (target_, source_, targetKey, targetParent, sourceParent, skipSpread = false) {
     let ret = this.customizer

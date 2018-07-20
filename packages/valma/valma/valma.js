@@ -22,7 +22,7 @@ cardinal.tomorrowNight = require("cardinal/themes/tomorrow-night");
                   import/no-dynamic-require
 */
 
-const globalVargs = _createVargs(process.argv.slice(2));
+const globalVargs = __createVargs(process.argv.slice(2));
 
 /*
    #    ######    ###
@@ -47,7 +47,7 @@ const defaultCommandPrefix = "valma-";
 
 // vlm - the Valma global API singleton - these are available to all command scripts via their
 // yargs.vlm (in scripts exports.builder) as well as yargv.vlm (in scripts exports.handler).
-const vlm = globalVargs.vlm = {
+const _vlm = globalVargs.vlm = {
   // Calls valma command with argv.
   // Any plain objects are expanded to boolean or parameterized flags depending on the value type.
   invoke,
@@ -149,22 +149,26 @@ const vlm = globalVargs.vlm = {
     }
   },
 
-  inquireText: async (message, default_ = "") =>
-      (await vlm.inquire({
-        type: "input", name: "text", message, default: default_,
-      })).text,
-  inquireConfirm: async (message, default_ = true) =>
-      (await vlm.inquire({
-        type: "confirm", name: "confirm", message, default: default_,
-      })).confirm,
+  async inquireText (message, default_ = "") {
+    return (await this.inquire({
+      type: "input", name: "text", message, default: default_,
+    })).text;
+  },
+  async inquireConfirm (message, default_ = true) {
+    return (await _vlm.inquire({
+      type: "confirm", name: "confirm", message, default: default_,
+    })).confirm;
+  },
 
   contextCommand: "vlm",
   contextIndex: undefined,
-  getContextName: function getContextName () {
+  getContextName () {
     return `${this.getContextIndexText()}${this.contextCommand}`;
   },
-  getContextIndexText: function getContextIndexText () {
-    return (this.contextIndex === undefined) ? "" : `[${this.contextIndex}] `;
+  getContextIndexText () {
+    if (this.contextIndex === undefined) return "";
+    if (!this.hasOwnProperty("contextIndex")) this.contextIndex = nextContextIndex++;
+    return `[${this.contextIndex}] `;
   },
 
   render (type, ...rest) {
@@ -190,7 +194,7 @@ const vlm = globalVargs.vlm = {
     return this;
   },
   result (...rest) {
-    const output = this.render(globalVargv.results, ...rest.map(result =>
+    const output = this.render(_vlm.vargv.results, ...rest.map(result =>
     // If the result has a heading, wrap it inside an object so that the heading will be shown.
         ((typeof result === "object") && ((result || {})["..."] || {}).heading
             ? { result } : result)));
@@ -297,6 +301,24 @@ const vlm = globalVargs.vlm = {
     }
     return this;
   },
+
+  // Implementation details
+  _invoke,
+  _parseUntilLastPositional,
+  _locateDependedPools,
+  _refreshActivePools,
+  _availablePools: [],
+  _activePools: [],
+  _selectActiveCommands,
+  _determineIntrospection,
+  _renderBuiltinHelp,
+  _introspectCommands,
+  _introspectPool,
+  _fillVargvInteractively,
+  _reloadPackageAndToolsetsConfigs,
+  _getConfigAtPath,
+  _flushPendingConfigWrites,
+  _commitUpdates,
 };
 
 colors._setTheme = _setTheme;
@@ -352,7 +374,7 @@ const themes = {
       return texts.length > 1 || (texts[0] !== undefined) ? texts : [defaultValue];
     },
     cardinal (...textsAndOptions) {
-      const options = { ...vlm.cardinalDefault };
+      const options = { ..._vlm.cardinalDefault };
       const ret = [];
       for (const textOrOpt of textsAndOptions) {
         if (typeof textOrOpt === "string") ret.push(cardinal.highlight(textOrOpt, options));
@@ -380,7 +402,7 @@ const themes = {
 };
 
 const activeColors = Object.create(colors);
-vlm.theme = activeColors._setTheme(themes.default);
+_vlm.theme = activeColors._setTheme(themes.default);
 
 themes.codeless = [
   "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white", "gray", "grey",
@@ -396,7 +418,7 @@ const _renderers = {
   omit: null,
   json: (value) => JSON.stringify(value, null, 2),
   "json-compact": (value) => JSON.stringify(value),
-  "markdown-cli": (value) => markdownify.default(value, vlm.theme),
+  "markdown-cli": (value) => markdownify.default(value, _vlm.theme),
   markdown: (value) => markdownify.default(value, themes.codeless),
 };
 
@@ -538,7 +560,7 @@ module.exports = {
   handler, // Defined below.
 };
 
-function _addUniversalOptions (vargs_,
+function __addUniversalOptions (vargs_,
       { strict = true, global = false, hidden = false, theme = themes.codeless }) {
   function _postProcess (options) {
     Object.keys(options).forEach(name => {
@@ -632,136 +654,144 @@ function _addUniversalOptions (vargs_,
   ###    #    #     #       #      #### #    #    #  #    #     #    #    #
 */
 
-vlm.isCompleting = (process.argv[2] === "--get-yargs-completions");
-const processArgv = vlm.isCompleting ? process.argv.slice(3) : process.argv.slice(2);
+_vlm.isCompleting = (process.argv[2] === "--get-yargs-completions");
+const processArgv = _vlm.isCompleting ? process.argv.slice(3) : process.argv.slice(2);
 
 let nextContextIndex;
 
-_addUniversalOptions(globalVargs, { strict: !vlm.isCompleting, hidden: false });
+__addUniversalOptions(globalVargs, { strict: !_vlm.isCompleting, hidden: false });
 module.exports.builder(globalVargs);
-const globalVargv = _parseUntilLastPositional(globalVargs, processArgv, module.exports.command);
+_vlm.vargs = globalVargs;
+_vlm.vargv = _vlm._parseUntilLastPositional(processArgv, module.exports.command);
 
-const _commandPrefix = globalVargv.commandPrefix;
+const _commandPrefix = _vlm.vargv.commandPrefix;
 
-vlm.verbosity = vlm.isCompleting ? 0 : globalVargv.verbose;
-vlm.interactive = vlm.isCompleting ? 0 : globalVargv.interactive;
-if (!globalVargv.echos || vlm.isCompleting) vlm.echo = function noEcho () { return this; };
+_vlm.verbosity = _vlm.isCompleting ? 0 : _vlm.vargv.verbose;
+_vlm.interactive = _vlm.isCompleting ? 0 : _vlm.vargv.interactive;
+if (!_vlm.vargv.echos || _vlm.isCompleting) _vlm.echo = function noEcho () { return this; };
 else {
   nextContextIndex = 0;
+  _vlm.contextIndex = nextContextIndex++;
 }
-if (!globalVargv.logs || vlm.isCompleting) vlm.log = function noLog () { return this; };
-if (!globalVargv.infos || vlm.isCompleting) vlm.info = function noInfo () { return this; };
-if (!globalVargv.instructs || vlm.isCompleting) vlm.instruct = function noInstr () { return this; };
-if (!globalVargv.warnings || vlm.isCompleting) vlm.warn = function noWarning () { return this; };
-if (!globalVargv.babbles || vlm.isCompleting) vlm.babble = function noBabble () { return this; };
-if (!globalVargv.expounds || vlm.isCompleting) vlm.expound = function noExpound () { return this; };
+if (!_vlm.vargv.logs || _vlm.isCompleting) _vlm.log = function noLog () { return this; };
+if (!_vlm.vargv.infos || _vlm.isCompleting) _vlm.info = function noInfo () { return this; };
+if (!_vlm.vargv.instructs || _vlm.isCompleting) _vlm.instruct = function noIns () { return this; };
+if (!_vlm.vargv.warnings || _vlm.isCompleting) _vlm.warn = function noWarning () { return this; };
+if (!_vlm.vargv.babbles || _vlm.isCompleting) _vlm.babble = function noBabble () { return this; };
+if (!_vlm.vargv.expounds || _vlm.isCompleting) _vlm.expound = function noExpou () { return this; };
 
-vlm.ifVerbose(1).babble("phase 1, init:", "determine global options and available pools.",
-    `\n\tcommand: ${vlm.theme.command(globalVargv.command)
-        }, verbosity: ${vlm.verbosity}, interactive: ${vlm.interactive}, echo: ${globalVargv.echo}`,
+_vlm.ifVerbose(1).babble("phase 1, init:", "determine global options and available pools.",
+    `\n\tcommand: ${_vlm.theme.command(_vlm.vargv.command)
+        }, verbosity: ${_vlm.verbosity}, interactive: ${_vlm.interactive}, echo: ${_vlm.vargv.echo}`,
     "\n\tprocess.argv:", ...process.argv
 ).ifVerbose(2).babble("paths:", "cwd:", process.cwd(),
     "\n\tprocess.env.VLM_GLOBAL_POOL:", process.env.VLM_GLOBAL_POOL,
     "\n\tprocess.env.VLM_PATH:", process.env.VLM_PATH,
     "\n\tprocess.env.PATH:", process.env.PATH,
     "\n\tdefaultPaths:", JSON.stringify(defaultPaths)
-).ifVerbose(3).expound("global options:", globalVargv);
+).ifVerbose(3).expound("global options:", _vlm.vargv);
 
-const _availablePools = [];
 // When a command begins with ./ or contains the command prefix (if it is non-empty) it is
 // considered a direct file valma command. It's parent directory is made the initial "file" pool.
-let poolBase = globalVargv.poolBase;
-if ((_commandPrefix && (globalVargv.command || "").includes(_commandPrefix))
-    || (globalVargv.command || "").slice(0, 2) === "./") {
-  if (globalVargv.isCompleting) process.exit(0); // Let bash filename completion do its thing.
+let poolBase = _vlm.vargv.poolBase;
+if ((_commandPrefix && (_vlm.vargv.command || "").includes(_commandPrefix))
+    || (_vlm.vargv.command || "").slice(0, 2) === "./") {
+  if (_vlm.vargv.isCompleting) process.exit(0); // Let bash filename completion do its thing.
   const commandMatcher = new RegExp(`(.*/)?(\\.?)${_commandPrefix}(.*?)(.js)?$`);
-  const match = globalVargv.command.match(commandMatcher);
-  globalVargv.command = match ? `${match[2]}${match[3]}` : "";
-  const filePoolPath = vlm.path.resolve((match && match[1]) || "");
-  _availablePools.push({ name: "file", path: filePoolPath });
+  const match = _vlm.vargv.command.match(commandMatcher);
+  _vlm.vargv.command = match ? `${match[2]}${match[3]}` : "";
+  const filePoolPath = _vlm.path.resolve((match && match[1]) || "");
+  _vlm._availablePools.push({ name: "file", path: filePoolPath });
   poolBase = filePoolPath;
 }
-_availablePools.push(..._locateDependedPools(poolBase, globalVargv.poolDirectories));
-_availablePools.push({ name: "global", path: globalVargv.globalPool });
+_vlm._availablePools.push(..._vlm._locateDependedPools(poolBase, _vlm.vargv.poolDirectories));
+_vlm._availablePools.push({ name: "global", path: _vlm.vargv.globalPool });
 
-vlm.ifVerbose(2)
-    .expound("available pools:", _availablePools);
-
-let _activePools = [];
+_vlm.ifVerbose(2)
+    .expound("available pools:", _vlm._availablePools);
 
 const packageConfigStatus = {
-  path: vlm.path.join(process.cwd(), "package.json"), updated: false,
+  path: _vlm.path.join(process.cwd(), "package.json"), updated: false,
 };
 const toolsetsConfigStatus = {
-  path: vlm.path.join(process.cwd(), "toolsets.json"), updated: false,
+  path: _vlm.path.join(process.cwd(), "toolsets.json"), updated: false,
 };
 
 // Allow --vlm to override any implicit vlm modifications (ie. --vlm.verbosity=100 overrides -v)
-if (globalVargv.vlmOption) {
-  deepExtend(vlm, globalVargv.vlmOption);
+if (_vlm.vargv.vlmOption) {
+  deepExtend(_vlm, _vlm.vargv.vlmOption);
 }
 
-vlm.contextVargv = globalVargv;
+process.on("SIGINT", () => {
+  _vlm.exception("interrupted by SIGINT:", "killing all child processes");
+  setTimeout(() => process.exit(-1));
+});
+process.on("SIGTERM", () => {
+  _vlm.exception("terminated by SIGINT:", "killing all child processes");
+  setTimeout(() => process.exit(-1));
+});
+
 module.exports
-    .handler(globalVargv)
+    .handler(_vlm.vargv)
     .then(result => {
       if (result !== undefined) {
-        vlm.result(result);
+        _vlm.result(result);
         process.exit(0);
       }
     })
     .catch(error => {
       if (error !== undefined) {
-        vlm.exception(error.stack || error);
+        _vlm.exception(error.stack || error);
       }
       process.exit(typeof error === "number" ? error : ((error && error.code) || -1));
     });
 
 // Only function definitions from hereon.
 
-async function handler (vargv, customVLM) {
+async function handler (vargv) {
   // Phase21: Pre-load args with so-far empty pools to detect fully builtin commands (which don't
   // need forwarding).
-  const fullyBuiltin = vlm.isCompleting || !vargv.command;
+  const fullyBuiltin = _vlm.isCompleting || !vargv.command;
+  const contextVLM = vargv.vlm;
 
   const needNPM = !fullyBuiltin && vargv.npmConfigEnv && !process.env.npm_package_name;
   const needVLMPath = !fullyBuiltin && !process.env.VLM_PATH;
   const needForward = !fullyBuiltin && needVLMPath;
 
-  vlm.ifVerbose(1)
+  contextVLM.ifVerbose(1)
       .babble("phase 2, main:", "determine active commands, forwards, and do validations.",
           "\n\tfullyBuiltin:", fullyBuiltin, ", needNPM:", needNPM, ", needVLMPath:", needVLMPath,
               ", needForward:", needForward);
 
   // Phase 2: Load pools and forward to 'vlm' if needed (if a more specific 'vlm' is found or if the
   // node environment or 'vlm' needs to be loaded)
-  const forwardPool = _refreshActivePools((pool, poolHasVLM, specificEnoughVLMSeen) => {
-    vlm.ifVerbose(3)
+  const forwardPool = contextVLM._refreshActivePools((pool, poolHasVLM, specificEnoughVLMSeen) => {
+    contextVLM.ifVerbose(3)
         .babble(`evaluating pool ${pool.path}`, "has 'vlm':", poolHasVLM,
             "vlm seen:", specificEnoughVLMSeen);
-    if (!globalVargv.forward || fullyBuiltin || !poolHasVLM
+    if (!_vlm.vargv.forward || fullyBuiltin || !poolHasVLM
         || (specificEnoughVLMSeen && !needForward)
         || (!specificEnoughVLMSeen && !vargv.promote)) return undefined;
     Object.assign(process.env, {
       VLM_PATH: process.env.VLM_PATH || pool.path,
-      VLM_GLOBAL_POOL: process.env.VLM_GLOBAL_POOL || globalVargv.globalPool,
+      VLM_GLOBAL_POOL: process.env.VLM_GLOBAL_POOL || _vlm.vargv.globalPool,
       INIT_CWD: process.cwd(),
       PATH: `${[
         pool.path,
-        _activePools[_activePools.length - 1].path,
-        _activePools[0].path,
+        contextVLM._activePools[contextVLM._activePools.length - 1].path,
+        contextVLM._activePools[0].path,
       ].join(":")}:${process.env.PATH}`,
-      _: vlm.path.join(pool.path, "vlm"),
+      _: contextVLM.path.join(pool.path, "vlm"),
     });
     const myRealVLM = fs.realpathSync(process.argv[1]);
     pool.vlmPath = path.join(pool.path, "vlm");
     const forwardRealVLM = fs.realpathSync(pool.vlmPath);
     if (myRealVLM === forwardRealVLM) return undefined;
-    vlm.ifVerbose(1)
-        .info(`forwarding to vlm at require('${vlm.theme.path(pool.vlmPath)}')`,
-            "via pool", vlm.theme.path(pool.path),
-            "\n\treal path:", vlm.theme.path(forwardRealVLM), `(current vlm "${
-                  vlm.theme.path(myRealVLM)})"`);
+    contextVLM.ifVerbose(1)
+        .info(`forwarding to vlm at require('${contextVLM.theme.path(pool.vlmPath)}')`,
+            "via pool", contextVLM.theme.path(pool.path),
+            "\n\treal path:", contextVLM.theme.path(forwardRealVLM), `(current vlm "${
+                contextVLM.theme.path(myRealVLM)})"`);
     return pool;
   });
   if (forwardPool) {
@@ -771,66 +801,63 @@ async function handler (vargv, customVLM) {
     return undefined;
   }
   if (needNPM) {
-    await _loadNPMConfigVariables();
+    await __loadNPMConfigVariables();
   }
 
-  if (vlm.isCompleting) {
-    vlm.contextVargv = globalVargv;
-    vlm.invoke(vargv.command, vargv._);
+  if (_vlm.isCompleting) {
+    // skip remainder of init so that possible warning messages dont clutter completions
+    contextVLM.invoke(vargv.command, vargv._,
+        { suppressOutermostEcho: true, processArgs: false });
     return null;
   }
 
-  process.on("SIGINT", () => {
-    vlm.exception("interrupted by SIGINT:", "killing all child processes");
-    setTimeout(() => process.exit(-1));
-  });
-  process.on("SIGTERM", () => {
-    vlm.exception("terminated by SIGINT:", "killing all child processes");
-    setTimeout(() => process.exit(-1));
-  });
-
   // Do validations.
 
-  vlm.ifVerbose(2)
+  contextVLM.ifVerbose(2)
       .expound("activePools:",
-          ...[].concat(..._activePools.map(pool => ["\n", Object.assign({}, pool, {
-            listing: vlm.verbosity < 3
+          ...[].concat(...contextVLM._activePools.map(pool => ["\n", Object.assign({}, pool, {
+            listing: contextVLM.verbosity < 3
                 ? "<hidden>"
                 : Array.isArray(pool.listing) && pool.listing.map(entry => entry.name)
           })])),
           "\n");
 
   if (!fullyBuiltin && needVLMPath && !process.env.VLM_PATH) {
-    vlm.error("could not find 'vlm' in PATH or in any pool");
+    contextVLM.error("could not find 'vlm' in PATH or in any pool");
     process.exit(-1);
   }
 
   if (!semver.satisfies(process.versions.node, nodeCheck)) {
-    vlm.warn(`your node version is old (${process.versions.node}):`,
+    contextVLM.warn(`your node version is old (${process.versions.node}):`,
         "recommended to have at least", nodeCheck);
   }
 
-  _reloadPackageAndToolsetsConfigs();
+  contextVLM._reloadPackageAndToolsetsConfigs();
 
   if (!process.env.npm_config_user_agent) {
-    if (needNPM && vlm.packageConfig) {
-      vlm.warn("could not load NPM config environment variables");
+    if (needNPM && contextVLM.packageConfig) {
+      contextVLM.warn("could not load NPM config environment variables");
     }
   } else {
     const npmVersion = (process.env.npm_config_user_agent || "").match(/npm\/([^ ]*) /);
     if (npmVersion && !semver.satisfies(npmVersion[1], npmCheck)) {
-      vlm.warn(`your npm version is old (${npmVersion[1]})`,
+      contextVLM.warn(`your npm version is old (${npmVersion[1]})`,
           "recommended to have at least", npmCheck);
     }
   }
 
-  const subVLM = Object.create(customVLM || vlm);
+  return await contextVLM.invoke(vargv.command, vargv._,
+      { suppressOutermostEcho: true, processArgs: false, flushConfigWrites: true });
+
+  /*
+  const subVLM = Object.create(contextVLM);
   subVLM.contextVargv = vargv;
   const maybeRet = subVLM.invoke(vargv.command, vargv._);
   subVLM.invoke = invokeWithEcho;
   const ret = await maybeRet;
-  _flushPendingConfigWrites(vlm);
+  subVLM._flushPendingConfigWrites();
   return ret;
+  */
 }
 
 /*
@@ -843,30 +870,38 @@ async function handler (vargv, customVLM) {
   ####   #    #  ######  ######    #     #    #  ######  #    #  #    #
 */
 
-async function invokeWithEcho (commandSelector, args) {
-  // Remove everything after space so that exports.command can be given as commandSelector as-is
-  // (they occasionally have yargs usage arguments after the command selector).
+async function invoke (commandSelector, args, options = {}) {
   const invokeVLM = Object.create(this);
-  if (nextContextIndex !== undefined) invokeVLM.contextIndex = nextContextIndex++;
+  invokeVLM.contextVLM = this;
+  // Remove everything after space so that exports.command can be given as commandSelector as-is
+  // (these often have yargs usage arguments after the command selector itself).
   const selector = commandSelector.split(" ")[0];
-  const argv = _processArgs(args);
-  invokeVLM.echo(`${this.getContextIndexText()}>> ${invokeVLM.getContextIndexText()}vlm`,
-      this.theme.command(selector, ...argv));
+  const argv = (options.processArgs !== false) ? __processArgs(args) : args;
+  if (!options.suppressOutermostEcho) {
+    invokeVLM.echo(`${this.getContextIndexText()}>> ${invokeVLM.getContextIndexText()}vlm`,
+        invokeVLM.theme.command(selector, ...argv));
+  }
   let echoResult;
   try {
-    const ret = await invoke.call(invokeVLM, selector, argv);
+    const ret = await invokeVLM._invoke(selector, argv);
     echoResult = invokeVLM.theme.blue((JSON.stringify(ret) || "undefined").slice(0, 71));
     return ret;
   } catch (error) {
     echoResult = invokeVLM.theme.error("exception:", String(error));
     throw error;
   } finally {
-    invokeVLM.echo(`${this.getContextIndexText()}<< ${invokeVLM.getContextIndexText()}vlm`,
-        `${vlm.theme.command(selector)}:`, echoResult);
+    if (!options.suppressOutermostEcho) {
+      invokeVLM.echo(`${this.getContextIndexText()}<< ${invokeVLM.getContextIndexText()}vlm`,
+          `${invokeVLM.theme.command(selector)}:`, echoResult);
+    }
+    if (options.flushConfigWrites) {
+      invokeVLM._flushPendingConfigWrites();
+      this._reloadPackageAndToolsetsConfigs();
+    }
   }
 }
 
-async function invoke (commandSelector, argv) {
+async function _invoke (commandSelector, argv) {
   if (!Array.isArray(argv)) {
     throw new Error(`vlm.invoke: argv must be an array, got ${typeof argv}`);
   }
@@ -874,14 +909,13 @@ async function invoke (commandSelector, argv) {
     throw new Error(`vlm.invoke: 'this' must be a valid vlm context`);
   }
 
-  const contextVargv = this.contextVargv;
-  const contextVLM = contextVargv.vlm;
-  const commandGlob = _underToSlash((contextVargv.matchAll || this.isCompleting)
-      ? _globFromPrefixSelector(commandSelector, contextVargv.matchAll)
-      : _globFromExactSelector(commandSelector || "*"));
+  const contextVargv = this.contextVLM.vargv;
+  const commandGlob = __underToSlash((contextVargv.matchAll || this.isCompleting)
+      ? __globFromPrefixSelector(commandSelector, contextVargv.matchAll)
+      : __globFromExactSelector(commandSelector || "*"));
   const isWildcardCommand = !commandSelector || (commandSelector.indexOf("*") !== -1);
-  const introspect = _determineIntrospection(
-      module.exports, contextVargv, commandSelector, isWildcardCommand, true);
+  const introspect = this.contextVLM._determineIntrospection(
+      module.exports, commandSelector, isWildcardCommand, true);
 
   // Phase 3: filter available command pools against the command glob
 
@@ -892,35 +926,42 @@ async function invoke (commandSelector, argv) {
       .expound("introspect:", introspect)
       .expound("contextVargv:", { ...contextVargv, vlm: "<hidden>" });
 
-  const activeCommands = _selectActiveCommands(this, _activePools, commandGlob, argv, introspect);
+  const activeCommands = this._selectActiveCommands(commandGlob, argv, introspect);
 
   if (this.isCompleting || contextVargv.bashCompletion) {
     globalVargs.completion("bash-completion", (current, argvSoFar) => {
-      const rule = _underToSlash(_globFromPrefixSelector(argvSoFar._[1], argvSoFar.matchAll));
-      const ret = [].concat(..._activePools.map(pool => pool.listing
-          .filter(node => !_isDirectory(node) && minimatch(_underToSlash(node.name || ""), rule,
+      const rule = __underToSlash(__globFromPrefixSelector(argvSoFar._[1], argvSoFar.matchAll));
+      const ret = [].concat(...this._activePools.map(pool => pool.listing
+          .filter(node => !__isDirectory(node) && minimatch(__underToSlash(node.name || ""), rule,
               { dot: argvSoFar.matchAll }))
-          .map(node => _valmaCommandFromPath(node.name))));
+          .map(node => __valmaCommandFromPath(node.name))));
       return ret;
     });
-    _parse(globalVargs, contextVargv.bashCompletion ? ["bash-completion"] : process.argv.slice(2));
+    globalVargs.parse(contextVargv.bashCompletion ? ["bash-completion"] : process.argv.slice(2));
     return 0;
   }
 
   this.ifVerbose(2)
       .expound("activeCommands: {", ...Object.keys(activeCommands).map(
-                key => `\n\t\t${key}: ${activeCommands[key].filePath}`),
+              key => `\n\t\t${key}: ${activeCommands[key].filePath}`),
           "\n\t}");
 
   if (introspect) {
-    return _introspectCommands(this.theme, globalVargs, introspect, activeCommands, commandGlob,
-        isWildcardCommand, contextVargv.matchAll);
+    return introspect.builtinHelp
+        ? this._renderBuiltinHelp(introspect)
+        : this._introspectCommands(introspect, activeCommands, commandGlob,
+            isWildcardCommand, contextVargv.matchAll);
   }
 
-  if (!isWildcardCommand && !Object.keys(activeCommands).length) {
-    vlm.error(`cannot find command '${vlm.theme.command(commandSelector)}' from active pools:`,
-        ..._activePools.map(activePool => `\n\t"${vlm.path.join(activePool.path, commandGlob)}"`));
-    return -1;
+  if (!isWildcardCommand) {
+    if (!Object.keys(activeCommands).length) {
+      this.error(
+          `cannot find command '${this.theme.command(commandSelector)}' from active pools:`,
+          ...this._activePools.map(
+              activePool => `\n\t"${this.path.join(activePool.path, commandGlob)}"`));
+      return -1;
+    }
+    Object.values(activeCommands)[0].vlm.contextIndex += 0;
   }
 
   // Phase 4: Dispatch the command(s)
@@ -931,11 +972,12 @@ async function invoke (commandSelector, argv) {
   this.ifVerbose(1)
       .babble("phase 4, dispatch:", ...(dryRunCommands ? ["--dry-run"] : []),
           this.theme.command(commandGlob, ...argv),
-          "\n\tactive commands:", ...Object.keys(activeCommands).map(c => vlm.theme.command(c)));
+          "\n\tactive commands:",
+          ...Object.keys(activeCommands).map(c => this.theme.command(c)));
   globalVargs.help();
 
   // Reverse order to have matching global command names execute first (still obeying overrides)
-  for (const activePool of _activePools.slice().reverse()) {
+  for (const activePool of this._activePools.slice().reverse()) {
     for (const commandName of Object.keys(activePool.commands).sort()) {
       const activeCommand = activeCommands[commandName];
       if (!activeCommand) continue;
@@ -946,27 +988,27 @@ async function invoke (commandSelector, argv) {
         continue;
       }
       if (!module) {
-        vlm.error(`missing symlink target for`, vlm.theme.command(commandName),
+        this.error(`missing symlink target for`, this.theme.command(commandName),
             "ignoring command script at", activeCommand.filePath);
         continue;
       }
 
       const subVLM = activeCommand.vlm;
-      const subVargv = _parseUntilLastPositional(activeCommand.subVargs, argv, module.command,
-          { vlm: subVLM });
-      const subIntrospect = _determineIntrospection(module, subVargv, commandName);
+      subVLM.vargv = subVLM._parseUntilLastPositional(argv, module.command);
+      const subIntrospect = subVLM._determineIntrospection(module, commandName);
 
       this.ifVerbose(3)
           .babble("parsed:", this.theme.command(commandName, ...argv),
               activeCommand.disabled ? `: disabled, ${activeCommand.disabled}` : ""
       ).ifVerbose(4)
-          .expound("\tsubArgv:", subVargv)
+          .expound("\tsubArgv:", subVLM.vargv)
           .expound("\tsubIntrospect:", subIntrospect);
 
       if (subIntrospect) {
-        ret = ret.concat(_introspectCommands(this.theme, activeCommand.subVargs,
-            subIntrospect, { [commandName]: activeCommand }, commandSelector,
-            isWildcardCommand, subVargv.matchAll));
+        ret = ret.concat(subIntrospect.builtinHelp
+            ? activeCommand.subVLM._renderBuiltinHelp(subIntrospect)
+            : this._introspectCommands(subIntrospect, { [commandName]: activeCommand },
+                commandSelector, isWildcardCommand, subVLM.vargv.matchAll));
       } else if (isWildcardCommand && activeCommand.disabled) {
         this.ifVerbose(1)
             .info(`Skipping disabled command '${this.theme.command(commandName)}'`,
@@ -977,13 +1019,12 @@ async function invoke (commandSelector, argv) {
           this.warn(`Invoking a disabled command '${commandName}' explicitly`,
               `(${activeCommand.disabled})`);
         }
-        subVLM.contextVargv = subVargv;
         try {
           if (isWildcardCommand) {
-            this.echo(`${contextVLM.getContextIndexText()}>>* ${subVLM.getContextIndexText()}vlm`,
+            this.echo(`${this.getContextIndexText()}>>* ${subVLM.getContextIndexText()}vlm`,
                 this.theme.command(commandName, ...argv));
           }
-          await _tryInteractive(subVargv, activeCommand.subVargs);
+          await subVLM._fillVargvInteractively();
           if (subVLM.toolset) {
             const requiresPath = ["commands", commandName, "requires"];
             const tool = subVLM.tool;
@@ -996,11 +1037,11 @@ async function invoke (commandSelector, argv) {
                 this.theme.command(commandName)}`;
               try {
                 this.echo(`${subVLM.getContextIndexText()}>>>? ${header}`, "via",
-                    ...(tool ? ["tool", subVLM.theme.package(tool), "of"] : []),
-                    "toolset", subVLM.theme.package(subVLM.toolset));
+                    ...(tool ? ["tool", this.theme.package(tool), "of"] : []),
+                    "toolset", this.theme.package(subVLM.toolset));
                 requireResult = await subVLM.execute(requires[i]);
               } catch (error) {
-                requireResult = subVLM.error(`<exception>: ${String(error)}`);
+                requireResult = this.error(`<exception>: ${String(error)}`);
                 throw error;
               } finally {
                 this.echo(`${subVLM.getContextIndexText()}<<<? ${header}:`,
@@ -1024,7 +1065,7 @@ async function invoke (commandSelector, argv) {
           if (subVLM.listMatchingCommands(preCommands).length) {
             await subVLM.invoke(preCommands);
           }
-          ret.push(await module.handler(subVargv));
+          ret.push(await module.handler(subVLM.vargv));
           const postCommands = `${detailCommandPrefix}/.post/**/*`;
           if (subVLM.listMatchingCommands(preCommands).length) {
             await subVLM.invoke(postCommands);
@@ -1034,7 +1075,7 @@ async function invoke (commandSelector, argv) {
             let retValue = JSON.stringify(ret[ret.length - 1]);
             if (retValue === undefined) retValue = "undefined";
             if (isWildcardCommand) {
-              this.echo(`${contextVLM.getContextIndexText()}<<* ${subVLM.getContextIndexText()}vlm`,
+              this.echo(`${this.getContextIndexText()}<<* ${subVLM.getContextIndexText()}vlm`,
                   `${this.theme.command(commandName)}:`,
                   this.theme.blue(retValue.slice(0, 40), retValue.length > 40 ? "..." : ""));
             }
@@ -1044,7 +1085,7 @@ async function invoke (commandSelector, argv) {
     }
   }
   if (dryRunCommands) {
-    _introspectCommands(this.theme, globalVargs, _determineIntrospection(module, contextVargv),
+    this._introspectCommands(this.contextVLM._determineIntrospection(module),
         dryRunCommands, commandSelector, isWildcardCommand, contextVargv.matchAll);
   }
   return isWildcardCommand ? ret : ret[0];
@@ -1060,15 +1101,12 @@ async function invoke (commandSelector, argv) {
 ######   ######     #    #    #     #    ######
 */
 
-function _parse (vargs_, ...rest) {
-  const ret = vargs_.parse(...rest);
-  return ret;
-}
-
-function _parseUntilLastPositional (vargs_, argv_, commandUsage, context) {
+function _parseUntilLastPositional (argv_, commandUsage) {
   const endIndex = argv_.findIndex(arg => (arg === "--") || (arg[0] !== "-"));
   const args = argv_.slice(0, (endIndex === -1) ? undefined : endIndex);
-  const ret = _parse(vargs_, args, context);
+  const ret = this.vargs.parse(args);
+  if (ret.vlm) ret.vlmOption = ret.vlm;
+  ret.vlm = this;
   const usageParts = commandUsage.split(" ");
   const positionals = usageParts.slice(1).filter(param => (param[1] !== "-"));
   ret._ = (endIndex === -1) ? [] : argv_.slice(endIndex);
@@ -1080,66 +1118,69 @@ function _parseUntilLastPositional (vargs_, argv_, commandUsage, context) {
     }
     ret[positional.slice(1, -1)] = ret._.shift();
   }
-  if (ret.vlm) ret.vlmOption = ret.vlm;
-  ret.vlm = vargs_.vlm;
   return ret;
 }
 
 // eslint-disable-next-line no-bitwise
-function _isDirectory (candidate) { return candidate.mode & 0x4000; }
+function __isDirectory (candidate) { return candidate.mode & 0x4000; }
 
 // If the command begins with a dot, insert the command prefix _after_ the dot; this is useful
 // as directories beginning with . don't match /**/ and * glob matchers and can be considered
 // implementation detail.
-function _globFromExactSelector (commandBody) {
+function __globFromExactSelector (commandBody) {
   return !commandBody ? _commandPrefix
       : (commandBody[0] === ".") ? `.${_commandPrefix}${commandBody.slice(1)}`
       : `${_commandPrefix}${commandBody}`;
 }
 
-function _globFromPrefixSelector (partialCommand = "", matchAll) {
+function __globFromPrefixSelector (partialCommand = "", matchAll) {
   return matchAll && !((partialCommand || "")[0] === ".")
       ? `{.,}${_commandPrefix}${partialCommand || ""}{,*/**/}*`
-      : `${_globFromExactSelector(partialCommand)}{,*/**/}*`;
+      : `${__globFromExactSelector(partialCommand)}{,*/**/}*`;
 }
 
-function _valmaCommandFromPath (pathname) {
+function __valmaCommandFromPath (pathname) {
   const match = pathname.match(new RegExp(`(\\.?)${_commandPrefix}(.*)`));
-  return _underToSlash(`${match[1]}${match[2]}`);
+  return __underToSlash(`${match[1]}${match[2]}`);
 }
 
-function _underToSlash (text = "") {
+function __underToSlash (text = "") {
   if (typeof text !== "string") throw new Error(`expected string, got: ${JSON.stringify(text)}`);
   return text.replace(/_/g, "/");
 }
 
 function _locateDependedPools (initialPoolBase, poolDirectories) {
+  // TODO(iridian): eventually make less singletony to allow for different sub-invokation
+  // current working diretory execution contexts (now fixed in the initial cwd)
   let pathBase = initialPoolBase;
   const ret = [];
   while (pathBase) {
     poolDirectories.forEach(candidate => {
-      const poolPath = vlm.path.join(pathBase, candidate);
+      const poolPath = this.path.join(pathBase, candidate);
       if (shell.test("-d", poolPath)) {
         ret.push({ name: `${pathBase.match(/([^/]*)\/?$/)[1]}/${candidate}`, path: poolPath });
         return;
       }
-      const packageJsonPath = vlm.path.join(pathBase, "package.json");
+      const packageJsonPath = this.path.join(pathBase, "package.json");
       if (candidate.match(/^node_modules/) && shell.test("-f", packageJsonPath)) {
-        vlm.warn(`node_modules missing for ${packageJsonPath}!`,
+        this.warn(`node_modules missing for ${packageJsonPath}!`,
             "\nSome dependent commands will likely be missing.",
-            `Run '${vlm.theme.executable("yarn install")}' to make dependent commands available.\n`);
+            `Run '${this.theme.executable("yarn install")
+                }' to make dependent commands available.\n`);
       }
     });
     if (pathBase === "/") break;
-    pathBase = vlm.path.join(pathBase, "..");
+    pathBase = this.path.join(pathBase, "..");
   }
   return ret;
 }
 
 function _refreshActivePools (tryShortCircuit) {
-  _activePools = [];
+  // TODO(iridian): same as _locateDependedPools: make _activePools properly context dependent.
+  // Now splicing so that only the root _vlm._activePools is affected.
+  this._activePools.splice(0, -1);
   let specificEnoughVLMSeen = false;
-  for (const pool of _availablePools) {
+  for (const pool of this._availablePools) {
     if (!pool.path || !shell.test("-d", pool.path)) continue;
     let poolHasVLM = false;
     pool.listing = shell.ls("-lAR", pool.path)
@@ -1148,7 +1189,7 @@ function _refreshActivePools (tryShortCircuit) {
           if (file.name === "vlm") poolHasVLM = true;
           return false;
         });
-    _activePools.push(pool);
+    this._activePools.push(pool);
     if (process.argv[1].indexOf(pool.path) === 0) specificEnoughVLMSeen = true;
     const shortCircuit = tryShortCircuit
         && tryShortCircuit(pool, poolHasVLM, specificEnoughVLMSeen);
@@ -1157,27 +1198,26 @@ function _refreshActivePools (tryShortCircuit) {
   return undefined;
 }
 
-function _selectActiveCommands (contextVLM, activePools, commandGlob, argv, introspect) {
+function _selectActiveCommands (commandGlob, argv, introspect) {
   if (introspect && introspect.identityPool) return introspect.identityPool.commands;
   const ret = {};
-  for (const pool of activePools) {
+  for (const pool of this._activePools) {
     if (!pool.commands) pool.commands = {};
     pool.stats = {};
     pool.listing.forEach(file => {
-      const normalizedName = _underToSlash(file.name);
-      const matches = minimatch(normalizedName, commandGlob,
-          { dot: contextVLM.contextVargv.matchAll });
-      contextVLM.ifVerbose(3)
+      const normalizedName = __underToSlash(file.name);
+      const matches = minimatch(normalizedName, commandGlob, { dot: this.vargv.matchAll });
+      this.ifVerbose(3)
           .babble(`evaluating file ${file.name}`, "matches:", matches, "vs glob:", commandGlob,
-          ", dir:", _isDirectory(file), ", normalizedName:", normalizedName);
+          ", dir:", __isDirectory(file), ", normalizedName:", normalizedName);
       if (!matches) {
         pool.stats.nonmatching = (pool.stats.nonmatching || 0) + 1;
         return;
       }
-      if (_isDirectory(file)) return;
-      const commandName = _valmaCommandFromPath(file.name);
+      if (__isDirectory(file)) return;
+      const commandName = __valmaCommandFromPath(file.name);
       const poolCommand = pool.commands[commandName] || (pool.commands[commandName] = {
-        name: commandName, pool, file, filePath: vlm.path.join(pool.path, file.name),
+        name: commandName, pool, file, filePath: this.path.join(pool.path, file.name),
       });
       if (ret[commandName]) {
         pool.stats.overridden = (pool.stats.overridden || 0) + 1;
@@ -1185,12 +1225,12 @@ function _selectActiveCommands (contextVLM, activePools, commandGlob, argv, intr
       }
       if (!poolCommand.module && shell.test("-e", poolCommand.filePath)) {
         poolCommand.module = require(poolCommand.filePath);
-        contextVLM.ifVerbose(3)
-          .babble(`    command ${commandName} module found at path`, poolCommand.filePath);
+        this.ifVerbose(3)
+            .babble(`    command ${commandName} module found at path`, poolCommand.filePath);
       }
       const module = poolCommand.module;
       if (!module || !module.command || !module.describe || !module.handler) {
-        if (vlm.isCompleting || introspect || contextVLM.contextVargv.dryRun) {
+        if (this.isCompleting || introspect || this.vargv.dryRun) {
           ret[commandName] = { ...poolCommand };
           return;
         }
@@ -1198,16 +1238,15 @@ function _selectActiveCommands (contextVLM, activePools, commandGlob, argv, intr
             }': can't open for reading or exports.command, ...describe or ...handler missing`);
       }
 
-      const subVargs = _createVargs(argv);
-      _addUniversalOptions(subVargs, { global: true, hidden: !globalVargv.help });
+      const subVargs = __createVargs(argv);
+      __addUniversalOptions(subVargs, { global: true, hidden: !_vlm.vargv.help });
 
-      subVargs.vlm = Object.assign(Object.create(contextVLM), module.vlm,
-          { contextCommand: commandName });
-      if (nextContextIndex !== undefined) subVargs.vlm.contextIndex = nextContextIndex++;
+      subVargs.vlm = Object.assign(Object.create(this),
+          module.vlm,
+          { contextCommand: commandName, vargs: subVargs });
 
       const activeCommand = ret[commandName] = {
         ...poolCommand,
-        subVargs,
         vlm: subVargs.vlm,
         disabled: (module.disabled
             && ((typeof module.disabled !== "function")
@@ -1221,13 +1260,13 @@ function _selectActiveCommands (contextVLM, activePools, commandGlob, argv, intr
       }
       const exportedCommandName = module.command.match(/^([^ ]*)/)[1];
       if (exportedCommandName !== commandName) {
-        contextVLM.warn(`Command name mismatch between exported command name '${
-            contextVLM.theme.command(exportedCommandName)}' and command name '${
-            contextVLM.theme.command(commandName)}' inferred from file:`, file.name);
+        this.warn(`Command name mismatch between exported command name '${
+            this.theme.command(exportedCommandName)}' and command name '${
+            this.theme.command(commandName)}' inferred from file:`, file.name);
       }
 
       subVargs.usage(module.command.replace(exportedCommandName, "$0"), module.describe);
-      if (!activeCommand.disabled || contextVLM.contextVargv.matchAll) {
+      if (!activeCommand.disabled || this.vargv.matchAll) {
         globalVargs.command(module.command, module.describe,
             ...(!activeCommand.disabled && module.builder ? [module.builder] : []), () => {});
       } else {
@@ -1242,7 +1281,7 @@ function _selectActiveCommands (contextVLM, activePools, commandGlob, argv, intr
  * Load all npm config variables to process.env as if running valma via 'npx -c'
  * FIXME(iridian): horribly broken.
  */
-async function _loadNPMConfigVariables () {
+async function __loadNPMConfigVariables () {
   /*
   Broken: current implementation is a silly attempt - only npm config list -l --json options are
   loaded, omitting all npm_lifetime, npm_package_ config etc. options.
@@ -1253,8 +1292,8 @@ async function _loadNPMConfigVariables () {
   Upside of current solution is that running "npm config list" is very fast, and can be optimized
   further too: npm can be programmatically invoked.
   */
-  if (globalVargv.packageConfigEnv) {
-    vlm.error("did not load npm_package_* variables (not implemented yet)");
+  if (_vlm.vargv.packageConfigEnv) {
+    _vlm.error("did not load npm_package_* variables (not implemented yet)");
   }
   Object.assign(process.env, {
     npm_execpath: "/usr/lib/node_modules/npm/bin/npm-cli.js",
@@ -1265,7 +1304,7 @@ async function _loadNPMConfigVariables () {
   const execFile = util.promisify(childProcess.execFile);
   const { stdout, stderr } = await execFile("npm", ["config", "list", "-l", "--json"]);
   if (stderr) {
-    vlm.error("leaving: can't load npm config with 'npm config list -l --json'");
+    _vlm.error("leaving: can't load npm config with 'npm config list -l --json'");
     process.exit(-1);
   }
   const npmConfig = JSON.parse(stdout);
@@ -1277,14 +1316,11 @@ async function _loadNPMConfigVariables () {
 }
 
 function listMatchingCommands (commandSelector, matchAll = false) {
-  const minimatcher = _underToSlash(_globFromExactSelector(commandSelector || "*"));
-  const ret = [].concat(..._activePools.map(pool => pool.listing
-      .map(file => _underToSlash(file.name))
-      .filter(name => {
-        const ret_ = minimatch(name, minimatcher, { dot: matchAll });
-        return ret_;
-      })
-      .map(name => _valmaCommandFromPath(name))
+  const minimatcher = __underToSlash(__globFromExactSelector(commandSelector || "*"));
+  const ret = [].concat(...this._activePools.map(pool => pool.listing
+      .map(file => __underToSlash(file.name))
+      .filter(name => minimatch(name, minimatcher, { dot: matchAll }))
+      .map(name => __valmaCommandFromPath(name))
   )).filter((v, i, a) => (a.indexOf(v) === i));
   this.ifVerbose(1)
       .expound(matchAll ? "listMatchingCommands:" : "listAllMatchingCommands:",
@@ -1312,14 +1348,15 @@ function listAllMatchingCommands (commandSelector) {
  * @returns
  */
 async function execute (args, spawnOptions = {}) {
-  const argv = _processArgs(args);
+  this._flushPendingConfigWrites();
+  const argv = __processArgs(args);
   if ((argv[0] === "vlm") && !Object.keys(spawnOptions).length) {
     argv.shift();
-    return await module.exports.handler(
-        _parseUntilLastPositional(globalVargs, argv, module.exports.command), this);
+    const vargv = this._parseUntilLastPositional(argv, module.exports.command);
+    return await this.invoke(vargv.command, vargv._,
+        { processArgs: false, flushConfigWrites: true });
   }
   return new Promise((resolve, failure) => {
-    _flushPendingConfigWrites(this);
     this.echo(`${this.getContextIndexText()}>>$`, `${this.theme.executable(...argv)}`);
     const _onDone = (code, signal) => {
       if (code || signal) {
@@ -1327,14 +1364,14 @@ async function execute (args, spawnOptions = {}) {
         this.theme.error("<error>:", code || signal));
         failure(code || signal);
       } else {
-        _refreshActivePools();
-        _reloadPackageAndToolsetsConfigs();
+        this._refreshActivePools();
+        this._reloadPackageAndToolsetsConfigs();
         this.echo(`${this.getContextIndexText()}<<$`, `${this.theme.executable(argv[0])}:`,
             this.theme.warning("execute return values not implemented yet"));
         resolve();
       }
     };
-    if (this.contextVargv && this.contextVargv.dryRun && !spawnOptions.noDryRun) {
+    if (this.vargv && this.vargv.dryRun && !spawnOptions.noDryRun) {
       this.echo("      dry-run: skipping execution and returning:",
       this.theme.blue(spawnOptions.dryRunReturn || 0));
       _onDone(spawnOptions.dryRunReturn || 0);
@@ -1370,11 +1407,11 @@ async function execute (args, spawnOptions = {}) {
 // Booleans are filtered if not associated with a key, in which case they become a valueless --<key>
 // or --no-<key> depending on the truthiness.
 // Objects are expanded with as a sequence of "--<key>=<value>", where 'value' is passed through
-// _processArgs recursively. Nest values containing whitespace twice or they will be split.
+// __processArgs recursively. Nest values containing whitespace twice or they will be split.
 // Array values are expanded as sequence of "--<key>=<value1> --<key>=<value2> ...".
 // type like so: ["y", { foo: "bar", val: true, nothing: null, neg: false, bar: ["xy", false, 0] }]
 //            -> ["y", "--foo", "bar", "--val", "--no-neg", "--bar=xy", "--no-bar", "--bar=0"]
-function _processArgs (args) {
+function __processArgs (args) {
   return [].concat(...[].concat(args).map(entry =>
     ((typeof entry === "string")
         ? entry.split(" ")
@@ -1394,18 +1431,18 @@ function _processArgs (args) {
   }
 }
 
-function _determineIntrospection (module, vargv, selector, isWildcard, invokeEntry) {
+function _determineIntrospection (module, selector, isWildcard, invokeEntry) {
   const ret = { module, show: {} };
-  Object.keys(vargv).forEach(key => {
-    if (vargv[key] && (key.slice(0, 5) === "show-")) ret.show[key.slice(5)] = vargv[key];
+  Object.keys(this.vargv).forEach(key => {
+    if (this.vargv[key] && (key.slice(0, 5) === "show-")) ret.show[key.slice(5)] = this.vargv[key];
   });
-  if ((globalVargv.help || vargv.help) && (!selector || !invokeEntry)) {
+  if ((_vlm.vargv.help || this.vargv.help) && (!selector || !invokeEntry)) {
     return { module, builtinHelp: true };
   }
   ret.entryIntro = Object.keys(ret.show).length;
 
   if (selector && !ret.entryIntro) return undefined;
-  if (!selector && ret.entryIntro && !vargv.dryRun && !vargv.matchAll) {
+  if (!selector && ret.entryIntro && !this.vargv.dryRun && !this.vargv.matchAll) {
     // Introspect context
     ret.identityPool = { path: path.dirname(process.argv[1]), commands: {} };
     ret.identityPool.commands.vlm = {
@@ -1413,29 +1450,29 @@ function _determineIntrospection (module, vargv, selector, isWildcard, invokeEnt
     };
   }
   if (!selector && !ret.entryIntro) { // show default listing
-    if (!vargv.dryRun) ret.defaultUsage = true;
+    if (!this.vargv.dryRun) ret.defaultUsage = true;
     ret.show.usage = true;
     ret.show.description = true;
   }
   ret.displayHeaders = isWildcard && !ret.identityPool;
   if (!ret.show.name && !ret.show.usage) {
-    if (!isWildcard && vargv.dryRun) ret.show.usage = true;
+    if (!isWildcard && this.vargv.dryRun) ret.show.usage = true;
     else if (!ret.entryIntro) ret.show.name = true;
   }
   return ret;
 }
 
-function _introspectCommands (theme, vargs_, introspect, commands_, commandGlob, isWildcard_,
-    matchAll) {
-  if (introspect.builtinHelp) {
-    vargs_.vlm = vlm;
-    vargs_.$0 = theme.command(introspect.module.command.match(/^[^ ]*/)[0]);
-    vargs_.showHelp("log");
-    return [];
-  }
+function _renderBuiltinHelp (introspect) {
+  this.vargs.vlm = this;
+  this.vargs.$0 = this.theme.command(introspect.module.command.match(/^[^ ]*/)[0]);
+  this.vargs.showHelp("log");
+  return [];
+}
+
+function _introspectCommands (introspect, commands_, commandGlob, isWildcard_, matchAll) {
   if (introspect.identityPool) {
-    const poolIntro = _introspectPool(
-        introspect.identityPool, false, false, introspect.identityPool.commands);
+    const poolIntro = this._introspectPool(
+        introspect, introspect.identityPool, introspect.identityPool.commands, matchAll);
     if ((poolIntro["..."] || {}).columns.length === 1) poolIntro["..."].hideHeaders = true;
     return poolIntro;
   }
@@ -1452,16 +1489,17 @@ function _introspectCommands (theme, vargs_, introspect, commands_, commandGlob,
       chapters.usage = "";
     }
   }
-  for (const pool of [..._activePools].reverse()) {
-    const poolIntro = _introspectPool(pool, isWildcard_, globalVargv.pools, commands_);
+  for (const pool of [...this._activePools].reverse()) {
+    const poolIntro = this._introspectPool(introspect, pool, commands_, matchAll,
+        isWildcard_, _vlm.vargv.pools);
     markdownify.addLayoutOrderedProperty(pools, pool.name, poolIntro);
     const isEmpty = !Object.keys(poolIntro).filter(k => (k !== "...")).length;
-    if (isWildcard_ && (!isEmpty || globalVargv.pools || matchAll)) {
+    if (isWildcard_ && (!isEmpty || _vlm.vargv.pools || matchAll)) {
       poolIntro["..."].heading = {
         style: "bold",
-        text: `${vlm.path.join(pool.name, commandGlob)} ${
+        text: `${this.path.join(pool.name, commandGlob)} ${
             isEmpty ? "has no shown commands" : "commands:"} (${
-                theme.info(Object.keys(pool.stats || {}).map(
+              this.theme.info(Object.keys(pool.stats || {}).map(
                     s => `${s}: ${pool.stats[s]}`).join(", "))
             })`
       };
@@ -1480,99 +1518,103 @@ function _introspectCommands (theme, vargs_, introspect, commands_, commandGlob,
   if (typeof ret !== "object" || !ret || Array.isArray(ret)) return ret;
   ret["..."] = Object.assign(ret["..."] || {}, { entries: (command["..."] || {}).columns });
   return ret;
-
-  function _introspectPool (pool, isWildcard, showOverridden, introedCommands) {
-    const missingFile = "<file_missing>";
-    const missingPackage = "<package_missing>";
-    const poolIntro = { "...": {
-      stats: pool.stats,
-      columns: [
-        { name: { text: "command", style: "command" } },
-        { usage: { style: "command" } },
-        { description: { style: { default: missingPackage } } },
-        { package: { style: "package" } },
-        { version: { style: [{ default: missingPackage }, "version"] } },
-        { pool: { text: "source pool" } },
-        { file: { text: "script path", style: "path" } },
-        { resolved: { text: "real file path", style: [{ default: missingFile }, "path"] } },
-        { introduction: {
-          oob: true, elementStyle: isWildcard && { prefix: "\n", suffix: "\n" }
-        } },
-        { source: { oob: true, elementStyle: "cardinal" } },
-      ].filter(c => introspect.show[Object.keys(c)[0]]),
-    } };
-    const trivialKey = Object.keys(introspect.show).length === 1 && Object.keys(introspect.show)[0];
-    if (trivialKey) poolIntro["..."].columns = [["", poolIntro["..."].columns[0][trivialKey]]];
-    Object.keys(pool.commands)
-    .sort()
-    .forEach(name => {
-      const poolCommand = pool.commands[name];
-      if (!poolCommand || !introedCommands[name]
-          || (poolCommand.disabled && isWildcard && !matchAll)) return;
-      const info = _commandInfo(poolCommand.filePath, pool.path);
-      const module = poolCommand.module
-          || (poolCommand.module = info.resolvedPath && require(info.resolvedPath));
-      const rowData = { disabled: !!poolCommand.disabled };
-      if (!module || !module.command) rowData.missing = true;
-      if (poolCommand.disabled) rowData.disabled = true;
-      if ((introedCommands[name] || { pool }).pool !== pool) {
-        if (!showOverridden) return;
-        rowData.overridden = true;
-        rowData.entries = { name: { style: "overridden", }, usage: { style: "overridden " } };
-      }
-      const _addData = (property, data) => introspect.show[property] && (rowData[property] = data);
-      _addData("name", poolCommand.disabled ? `(${name})` : name);
-      _addData("usage", (module && module.command) || `${name} ${missingPackage}`);
-      _addData("description", (module && module.describe) || missingPackage);
-      _addData("package", info.package);
-      _addData("version", info.version || missingPackage);
-      _addData("pool", info.poolPath);
-      _addData("file", info.filePath);
-      _addData("resolved", info.resolvedPath || missingFile);
-      if (introspect.show.introduction) {
-        rowData.introduction = !module ? null : (module.introduction || module.describe);
-        if (rowData.introduction === null) {
-          vlm.warn(`Cannot read command '${name}' script introduction from:`, info.resolvedPath);
-        }
-      }
-      if (introspect.show.source) {
-        rowData.source = !module ? null : String(shell.head({ "-n": 1000000 }, info.resolvedPath));
-        if (rowData.source === null) {
-          vlm.warn(`Cannot read command '${name}' script source from:`, info.resolvedPath);
-        }
-      }
-      poolIntro[name] = trivialKey ? rowData[trivialKey] : rowData;
-    });
-    return poolIntro;
-  }
 }
 
-function _commandInfo (filePath, poolPath) {
+function _introspectPool (introspect, pool, introedCommands, matchAll, isWildcard, showOverridden) {
+  const missingFile = "<file_missing>";
+  const missingPackage = "<package_missing>";
+  const poolIntro = { "...": {
+    stats: pool.stats,
+    columns: [
+      { name: { text: "command", style: "command" } },
+      { usage: { style: "command" } },
+      { description: { style: { default: missingPackage } } },
+      { package: { style: "package" } },
+      { version: { style: [{ default: missingPackage }, "version"] } },
+      { pool: { text: "source pool" } },
+      { file: { text: "script path", style: "path" } },
+      { resolved: { text: "real file path", style: [{ default: missingFile }, "path"] } },
+      { introduction: {
+        oob: true, elementStyle: isWildcard && { prefix: "\n", suffix: "\n" }
+      } },
+      { source: { oob: true, elementStyle: "cardinal" } },
+    ].filter(c => introspect.show[Object.keys(c)[0]]),
+  } };
+  const trivialKey = Object.keys(introspect.show).length === 1 && Object.keys(introspect.show)[0];
+  if (trivialKey) poolIntro["..."].columns = [["", poolIntro["..."].columns[0][trivialKey]]];
+  Object.keys(pool.commands)
+  .sort()
+  .forEach(name => {
+    const poolCommand = pool.commands[name];
+    if (!poolCommand || !introedCommands[name]
+        || (poolCommand.disabled && isWildcard && !matchAll)) return;
+    const info = __commandInfo(poolCommand.filePath, pool.path);
+    const module = poolCommand.module
+        || (poolCommand.module = info.resolvedPath && require(info.resolvedPath));
+    const rowData = { disabled: !!poolCommand.disabled };
+    if (!module || !module.command) rowData.missing = true;
+    if (poolCommand.disabled) rowData.disabled = true;
+    if ((introedCommands[name] || { pool }).pool !== pool) {
+      if (!showOverridden) return;
+      rowData.overridden = true;
+      rowData.entries = { name: { style: "overridden", }, usage: { style: "overridden " } };
+    }
+    const _addData = (property, data) => introspect.show[property] && (rowData[property] = data);
+    _addData("name", poolCommand.disabled ? `(${name})` : name);
+    _addData("usage", (module && module.command) || `${name} ${missingPackage}`);
+    _addData("description", (module && module.describe) || missingPackage);
+    _addData("package", info.package);
+    _addData("version", info.version || missingPackage);
+    _addData("pool", info.poolPath);
+    _addData("file", info.filePath);
+    _addData("resolved", info.resolvedPath || missingFile);
+    if (introspect.show.introduction) {
+      rowData.introduction = !module ? null : (module.introduction || module.describe);
+      if (rowData.introduction === null) {
+        this.warn(`Cannot read command '${name}' script introduction from:`,
+            info.resolvedPath);
+      }
+    }
+    if (introspect.show.source) {
+      rowData.source = !module ? null : String(shell.head({ "-n": 1000000 }, info.resolvedPath));
+      if (rowData.source === null) {
+        this.warn(`Cannot read command '${name}' script source from:`, info.resolvedPath);
+      }
+    }
+    poolIntro[name] = trivialKey ? rowData[trivialKey] : rowData;
+  });
+  return poolIntro;
+}
+
+function __commandInfo (filePath, poolPath) {
   const ret = { filePath, poolPath };
   if (!filePath || !shell.test("-e", filePath)) return ret;
   ret.resolvedPath = fs.realpathSync(filePath);
   let remaining = path.dirname(ret.resolvedPath);
   while (remaining !== "/") {
-    const packagePath = vlm.path.join(remaining, "package.json");
+    const packagePath = _vlm.path.join(remaining, "package.json");
     if (shell.test("-f", packagePath)) {
       const packageJson = JSON.parse(shell.head({ "-n": 1000000 }, packagePath));
       return { ...ret, version: packageJson.version, package: packageJson.name };
     }
-    remaining = vlm.path.join(remaining, "..");
+    remaining = _vlm.path.join(remaining, "..");
   }
   return ret;
 }
 
-async function _tryInteractive (subVargv, subYargs) {
-  const interactiveOptions = subYargs.getOptions().interactive;
-  if (!vlm.interactive || !interactiveOptions) return subVargv;
-  delete subYargs.getOptions().interactive;
+async function _fillVargvInteractively () {
+  const interactiveOptions = this.vargs.getOptions().interactive;
+  if (!this.interactive || !interactiveOptions) {
+    // TODO(iridian): Add assertions if some required vargs are not set.
+    return this.vargv;
+  }
+  delete this.vargs.getOptions().interactive;
   const questions = [];
   for (const optionName of Object.keys(interactiveOptions)) {
     const option = interactiveOptions[optionName];
     const question = Object.assign({}, option.interactive);
     if (question.when !== "always") {
-      if ((question.when !== "if-undefined") || (typeof subVargv[optionName] !== "undefined")) {
+      if ((question.when !== "if-undefined") || (typeof this.vargv[optionName] !== "undefined")) {
         continue;
       }
     }
@@ -1603,43 +1645,44 @@ async function _tryInteractive (subVargv, subYargs) {
     // if (!question.suffix) ...;
     questions.push(question);
   }
-  if (!Object.keys(questions).length) return subVargv;
+  if (!Object.keys(questions).length) return this.vargv;
   const answers = {};
   for (const question of questions) {
     do {
-      Object.assign(answers, await vlm.inquire([question]));
+      Object.assign(answers, await this.inquire([question]));
     } while (question.confirm && !await question.confirm(answers[question.name], answers));
   }
   // FIXME(iridian): handle de-hyphenations, camelcases etc. all other option variants.
   // Now only updating the verbatim option.
-  return Object.assign(subVargv, answers);
+  return Object.assign(this.vargv, answers);
 }
 
 
 function _reloadPackageAndToolsetsConfigs () {
+  // TODO(iridian): Implement locally pending config writes. See _flushPendingConfigWrites
   if (shell.test("-f", packageConfigStatus.path)) {
     try {
-      vlm.packageConfig = JSON.parse(shell.head({ "-n": 1000000 }, packageConfigStatus.path));
-      _deepFreeze(vlm.packageConfig);
+      _vlm.packageConfig = JSON.parse(shell.head({ "-n": 1000000 }, packageConfigStatus.path));
+      __deepFreeze(_vlm.packageConfig);
     } catch (error) {
-      vlm.exception(String(error), `while reading ${packageConfigStatus.path}`);
+      this.exception(String(error), `while reading ${packageConfigStatus.path}`);
       throw error;
     }
   }
   if (shell.test("-f", toolsetsConfigStatus.path)) {
     try {
-      vlm.toolsetsConfig = JSON.parse(shell.head({ "-n": 1000000 }, toolsetsConfigStatus.path));
-      _deepFreeze(vlm.toolsetsConfig);
+      _vlm.toolsetsConfig = JSON.parse(shell.head({ "-n": 1000000 }, toolsetsConfigStatus.path));
+      __deepFreeze(_vlm.toolsetsConfig);
     } catch (error) {
-      vlm.exception(String(error), `while reading ${packageConfigStatus.path}`);
+      _vlm.exception(String(error), `while reading ${packageConfigStatus.path}`);
       throw error;
     }
   }
 }
 
-function getPackageConfig (...keys) { return _getConfigAtPath(this.packageConfig, keys); }
-function getToolsetsConfig (...keys) { return _getConfigAtPath(this.toolsetsConfig, keys); }
-function getValmaConfig (...keys) { return _getConfigAtPath(this.toolsetsConfig, keys); }
+function getPackageConfig (...keys) { return this._getConfigAtPath(this.packageConfig, keys); }
+function getToolsetsConfig (...keys) { return this._getConfigAtPath(this.toolsetsConfig, keys); }
+function getValmaConfig (...keys) { return this._getConfigAtPath(this.toolsetsConfig, keys); }
 
 function _getConfigAtPath (root, keys) {
   return [].concat(...keys)
@@ -1649,36 +1692,38 @@ function _getConfigAtPath (root, keys) {
 }
 
 function updatePackageConfig (updates) {
+  // TODO(iridian): Implement locally pending config writes. See _flushPendingConfigWrites
   if (typeof updates !== "object" || !updates) {
     throw new Error(`Invalid arguments for updatePackageConfig, expexted object, got ${
         typeof update}`);
   }
-  if (!vlm.packageConfig) {
+  if (!_vlm.packageConfig) {
     throw new Error("vlm.updatePackageConfig: cannot update package.json as it doesn't exist");
   }
-  const updatedConfig = _deepAssign(vlm.packageConfig, updates);
-  if (updatedConfig !== vlm.packageConfig) {
+  const updatedConfig = __deepAssign(_vlm.packageConfig, updates);
+  if (updatedConfig !== _vlm.packageConfig) {
     packageConfigStatus.updated = true;
-    vlm.packageConfig = updatedConfig;
-    vlm.ifVerbose(1)
+    _vlm.packageConfig = updatedConfig;
+    _vlm.ifVerbose(1)
         .info("package.json updated:", updates);
   }
 }
 
 function updateToolsetsConfig (updates) {
+  // TODO(iridian): Implement locally pending config writes. See _flushPendingConfigWrites
   if (typeof updates !== "object" || !updates) {
     throw new Error(`Invalid arguments for updateToolsetsConfig, expexted object, got ${
         typeof update}`);
   }
-  if (!vlm.toolsetsConfig) {
-    vlm.toolsetsConfig = {};
+  if (!_vlm.toolsetsConfig) {
+    _vlm.toolsetsConfig = {};
     toolsetsConfigStatus.updated = true;
   }
-  const updatedConfig = _deepAssign(vlm.toolsetsConfig, updates);
-  if (updatedConfig !== vlm.toolsetsConfig) {
+  const updatedConfig = __deepAssign(_vlm.toolsetsConfig, updates);
+  if (updatedConfig !== _vlm.toolsetsConfig) {
     toolsetsConfigStatus.updated = true;
-    vlm.toolsetsConfig = updatedConfig;
-    vlm.ifVerbose(1)
+    _vlm.toolsetsConfig = updatedConfig;
+    _vlm.ifVerbose(1)
         .info("toolsets.json updated:", updates);
   }
 }
@@ -1738,20 +1783,20 @@ function createStandardToolsetOption (description) {
 }
 
 
-function _deepFreeze (object) {
+function __deepFreeze (object) {
   if (typeof object !== "object" || !object) return;
   Object.freeze(object);
-  Object.values(object).forEach(_deepFreeze);
+  Object.values(object).forEach(__deepFreeze);
 }
 
-function _deepAssign (target, source) {
+function __deepAssign (target, source) {
   if (typeof source === "undefined") return target;
   if (Array.isArray(target)) return target.concat(source);
   if ((typeof source !== "object") || (source === null)
       || (typeof target !== "object") || (target === null)) return source;
   let objectTarget = target;
   Object.keys(source).forEach(sourceKey => {
-    const newValue = _deepAssign(target[sourceKey], source[sourceKey]);
+    const newValue = __deepAssign(target[sourceKey], source[sourceKey]);
     if (newValue !== objectTarget[sourceKey]) {
       if (objectTarget === target) objectTarget = { ...target };
       objectTarget[sourceKey] = newValue;
@@ -1761,33 +1806,39 @@ function _deepAssign (target, source) {
 }
 
 function _flushPendingConfigWrites () {
-  _commitUpdates("toolsets.json", toolsetsConfigStatus, () => vlm.toolsetsConfig);
-  _commitUpdates("package.json", packageConfigStatus, () => {
+  // TODO(iridian): Implement locally pending config writes.
+  // Right now pending config writes are globally stored in _vlm. This kind of works
+  // but the resulting semantics are not clean and might result in inconsistent/partial config
+  // writes. The config files could be stored in the local vlm contexts and selectively written only
+  // when the command associated with a context successfully completes.
+  this._commitUpdates("toolsets.json", toolsetsConfigStatus, () => _vlm.toolsetsConfig);
+  this._commitUpdates("package.json", packageConfigStatus, () => {
     const reorderedConfig = {};
-    reorderedConfig.name = vlm.packageConfig.name;
-    reorderedConfig.version = vlm.packageConfig.version;
-    if (vlm.packageConfig.valaa !== undefined) reorderedConfig.valaa = vlm.packageConfig.valaa;
-    Object.keys(vlm.packageConfig).forEach(key => {
-      if (reorderedConfig[key] === undefined) reorderedConfig[key] = vlm.packageConfig[key];
+    reorderedConfig.name = _vlm.packageConfig.name;
+    reorderedConfig.version = _vlm.packageConfig.version;
+    if (_vlm.packageConfig.valaa !== undefined) reorderedConfig.valaa = _vlm.packageConfig.valaa;
+    Object.keys(_vlm.packageConfig).forEach(key => {
+      if (reorderedConfig[key] === undefined) reorderedConfig[key] = _vlm.packageConfig[key];
     });
     return reorderedConfig;
   });
 }
 
 function _commitUpdates (filename, configStatus, createUpdatedConfig) {
+  // TODO(iridian): Implement locally pending config writes. See _flushPendingConfigWrites
   if (!configStatus.updated) return;
-  if (vlm.contextVargv && vlm.contextVargv.dryRun) {
-    vlm.info(`commit '${filename}' updates --dry-run:`, "not committing queued updates to file");
+  if (_vlm.vargv && _vlm.vargv.dryRun) {
+    this.info(`commit '${filename}' updates --dry-run:`, "not committing queued updates to file");
     return;
   }
   const configString = JSON.stringify(createUpdatedConfig(), null, 2);
   shell.ShellString(`${configString}\n`).to(configStatus.path);
-  vlm.ifVerbose(1)
+  this.ifVerbose(1)
       .info(`committed '${filename}' updates to file:`);
   configStatus.updated = false;
 }
 
-function _createVargs (args, cwd = process.cwd()) {
+function __createVargs (args, cwd = process.cwd()) {
   // Get a proper, clean yargs instance for neat extending.
   const ret = yargs(args, cwd, require);
 
