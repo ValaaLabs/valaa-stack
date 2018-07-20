@@ -8,8 +8,9 @@ import { invariantifyString, invariantifyObject } from "~/tools/invariantify";
  * different aspects of the partition.
  *
  * URI scheme part: denotes the main partition storage strategy. One of the following:
- *   - "valaa-transient": partition is local to the client and not persisted across client restarts.
+ *   - "valaa-memory": partition resides in memory and will not survive across restarts.
  *     authority part must be empty, thus making this URI not a URL.
+ *   - "valaa-transient": deprecated alias for valaa-memory
  *   - "valaa-local": partition is local to the client device but is persisted.
  *     authority part must be empty, thus making this URI not a URL.
  *   Future candidate schemes:
@@ -106,6 +107,10 @@ export function getPartitionAuthorityURIStringFrom (partitionURI: PartitionURI):
 
 export function createLocalPartitionURIFromRawId (rawId: string): PartitionURI {
   return createPartitionURI("valaa-local:", rawId);
+}
+
+export function createMemoryPartitionURIFromRawId (rawId: string): PartitionURI {
+  return createPartitionURI("valaa-memory:", rawId);
 }
 
 export function createTransientPartitionURIFromRawId (rawId: string): PartitionURI {

@@ -106,7 +106,7 @@ export function universalizePartitionMutation (bard: Bard, id: VRef) {
       partitionAuthorityURI = getPartitionAuthorityURIStringFrom(partitionURI);
       partitionRawId = getPartitionRawIdFrom(partitionURI);
     } else {
-      partitionAuthorityURI = "valaa-transient:";
+      partitionAuthorityURI = "valaa-memory:";
       partitionRawId = smallestNonGhostId.rawId();
     }
 

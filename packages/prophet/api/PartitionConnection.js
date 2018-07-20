@@ -45,7 +45,10 @@ export default class PartitionConnection extends LogEventGenerator {
   partitionRawId (): string { return getPartitionRawIdFrom(this._partitionURI); }
 
   isLocal () { return this._partitionURI.protocol === "valaa-local:"; }
-  isTransient () { return this._partitionURI.protocol === "valaa-transient:"; }
+  isTransient () {
+    return (this._partitionURI.protocol === "valaa-transient:")
+        || (this._partitionURI.protocol === "valaa-memory:");
+  }
 
   isConnected () {
     if (this._upstreamConnection) return this._upstreamConnection.isConnected();

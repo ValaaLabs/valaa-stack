@@ -14,6 +14,7 @@ import { AuthorityNexus, FalseProphet, FalseProphetDiscourse, Oracle, Prophecy, 
 import ProphetTestAPI from "~/prophet/test/ProphetTestAPI";
 import createValaaTestScheme from "~/prophet/test/scheme-valaa-test";
 import createValaaLocalScheme from "~/prophet/schemeModules/valaa-local";
+import createValaaMemoryScheme from "~/prophet/schemeModules/valaa-memory";
 import createValaaTransientScheme from "~/prophet/schemeModules/valaa-transient";
 
 import * as ValaaScriptDecoders from "~/script/mediaDecoders";
@@ -128,6 +129,7 @@ export function createOracle (scribe: Scribe) {
   const authorityNexus = new AuthorityNexus();
   authorityNexus.addSchemeModule(createValaaLocalScheme({ logger: scribe.getLogger() }));
   authorityNexus.addSchemeModule(createValaaTransientScheme({ logger: scribe.getLogger() }));
+  authorityNexus.addSchemeModule(createValaaMemoryScheme({ logger: scribe.getLogger() }));
   authorityNexus.addSchemeModule(createValaaTestScheme({ logger: scribe.getLogger() }));
   return new Oracle({
     name: "Test Oracle",

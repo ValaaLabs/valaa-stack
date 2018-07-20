@@ -35,7 +35,7 @@ describe("partitions", () => {
     created({ id: "A_child2", typeName: "TestThing",
       initialState: {
         owner: vRef("A_parent", "children"),
-        partitionAuthorityURI: "valaa-transient:",
+        partitionAuthorityURI: "valaa-memory:",
       },
     }),
     created({ id: "A_grandchild", typeName: "TestThing",
@@ -81,7 +81,7 @@ describe("partitions", () => {
     expect(child2PartitionURI)
         .toEqual(createTransientPartitionURIFromRawId("A_child2"));
     expect(harness.run(child2, "partitionAuthorityURI"))
-        .toEqual("valaa-transient:");
+        .toEqual("valaa-memory:");
     expect(harness.run(child2, "partition"))
         .toBe(child2);
 
