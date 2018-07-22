@@ -3,7 +3,7 @@ import { created, addedToFields, transacted } from "~/raem/command";
 import { vRef } from "~/raem/ValaaReference";
 
 import { createRAEMTestHarness } from "~/raem/test/RAEMTestHarness";
-import { createLocalPartitionURIFromRawId, createTransientPartitionURIFromRawId }
+import { createLocalPartitionURIFromRawId, createMemoryPartitionURIFromRawId }
     from "~/raem/tools/PartitionURI";
 
 const testAuthorityURI = "valaa-test:";
@@ -79,7 +79,7 @@ describe("partitions", () => {
     const child2PartitionURI = harness.run(child2, "id").partitionURI();
 
     expect(child2PartitionURI)
-        .toEqual(createTransientPartitionURIFromRawId("A_child2"));
+        .toEqual(createMemoryPartitionURIFromRawId("A_child2"));
     expect(harness.run(child2, "partitionAuthorityURI"))
         .toEqual("valaa-memory:");
     expect(harness.run(child2, "partition"))

@@ -95,14 +95,14 @@ export function getURIQueryField (uri: URL | string, fieldName: string): ?any {
 
 export function getPartitionRawIdFrom (partitionURI: PartitionURI): string {
   if ((typeof partitionURI !== "object") || !partitionURI || !partitionURI.href) {
-    console.log("YEAH:", typeof partitionURI, !partitionURI, !partitionURI.href);
     invariantifyObject(partitionURI, "partitionURI", { instanceof: URL, allowEmpty: true });
   }
   return decodeURIComponent(partitionURI.query.id);
 }
 
 export function getPartitionAuthorityURIStringFrom (partitionURI: PartitionURI): string {
-  return `${partitionURI.protocol}${partitionURI.host || ""}${partitionURI.pathname}`;
+  return `${partitionURI.protocol}${partitionURI.host ? `//${partitionURI.host}` : ""}${
+      partitionURI.pathname}`;
 }
 
 export function createLocalPartitionURIFromRawId (rawId: string): PartitionURI {
