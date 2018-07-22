@@ -449,9 +449,16 @@ const customLiveExpressionOpHandlers = {
   "§?": liveTernary,
   "§//": null,
   "§[]": undefined,
-  "§.<-": throwMutationLiveKueryError,
+  // Allow immediate object live mutations; parameter object computed properties use this.
+  "§.<-": function liveFieldSet (subscriber: VrapperSubscriber, head: any, kueryVAKON: Array<any>,
+      scope: any) {
+    return liveFieldOrScopeSet(subscriber, head, kueryVAKON, scope, head);
+  },
   // Allow immediate scope live mutations; they have valid uses as intermediate values.
-  "§$<-": liveScopeSet,
+  "§$<-": function liveScopeSet (subscriber: VrapperSubscriber, head: any, kueryVAKON: Array<any>,
+      scope: any) {
+    return liveFieldOrScopeSet(subscriber, head, kueryVAKON, scope, scope);
+  },
   "§expression": undefined,
   "§literal": undefined,
   "§evalk": liveEvalk,
@@ -571,15 +578,15 @@ function liveOr (subscriber: VrapperSubscriber, head: any, kueryVAKON: Array<any
   return value;
 }
 
-function liveScopeSet (subscriber: VrapperSubscriber, head: any, kueryVAKON: Array<any>,
-    scope: any) {
+function liveFieldOrScopeSet (subscriber: VrapperSubscriber, head: any, kueryVAKON: Array<any>,
+    scope: any, target: any) {
   for (let index = 0; index + 1 !== kueryVAKON.length; ++index) {
     const setter = kueryVAKON[index + 1];
     if ((typeof setter !== "object") || (setter === null)) continue;
     if (Array.isArray(setter)) {
       const name = subscriber._processLiteral(head, setter[0], scope, true);
       const value = subscriber._processLiteral(head, setter[1], scope, true);
-      scope[name] = value;
+      target[name] = value;
     } else {
       subscriber._processKuery(head, setter, scope);
     }

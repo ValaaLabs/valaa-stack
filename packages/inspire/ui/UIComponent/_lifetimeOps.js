@@ -111,8 +111,11 @@ function _createContextAndSetFocus (component: UIComponent, newFocus: any, newPr
     }
   }
   if (newProps.context) {
-    for (const key of Object.keys(newProps.context)) {
-      setScopeValue(uiContext, key, newProps.context[key]);
+    for (const name of Object.getOwnPropertyNames(newProps.context)) {
+      setScopeValue(uiContext, name, newProps.context[name]);
+    }
+    for (const symbol of Object.getOwnPropertySymbols(newProps.context)) {
+      setScopeValue(uiContext, symbol, newProps.context[symbol]);
     }
   }
   uiContext.reactComponent = component;
