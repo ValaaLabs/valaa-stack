@@ -4,7 +4,7 @@
     "type": "vault",
     "domain": "kernel"
   },
-  "version": "0.30.0-prerelease",
+  "version": "0.30.0",
   "description": "Valaa common infrastructure tools and libraries monorepo.",
   "license": "MIT",
   "author": "Valaa Technologies Ltd",
@@ -27,11 +27,11 @@
     "publish-packages": "vlm publish-packages "
   },
   "devDependencies": {
-    "@valos/toolset-revealer": ">0.30.0-prerelease",
-    "@valos/toolset-vault": ">0.30.0-prerelease",
+    "@valos/toolset-revealer": "^0.30.0",
+    "@valos/toolset-vault": "^0.30.0",
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.5.0",
-    "valma": ">0.30.0-prerelease",
+    "valma": "^0.30.0",
     "yalc": "^1.0.0-pre.22"
   }
 }

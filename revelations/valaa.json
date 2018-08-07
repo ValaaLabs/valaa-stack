@@ -1,14 +1,14 @@
 {
   "name": "@valos/revelation",
-  "version": "0.30.0-prerelease",
+  "version": "0.30.0",
   "description": "Valaa Inspire revelation root",
   "author": "Valaa Technologies Ltd",
   "license": "MIT",
   "private": false,
 
-  "valaa": { "engine": { "name": "@valos/inspire", "version": "0.30.0-prerelease" } },
+  "valaa": { "engine": { "name": "@valos/inspire", "version": "0.30.0" } },
   "gateway": {
-    "version": "0.30.0-prerelease",
+    "version": "0.30.0",
     "runtime": "/valaa/inspire/valaa-inspire.js"
   }
 }
